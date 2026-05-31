@@ -1,16 +1,17 @@
-//___FILEHEADER___
-
 import SwiftUI
 import SwiftData
 
 @main
-struct ___PACKAGENAME:identifier___App: App {
+struct BreathRelaxStretchApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            BodyPart.self,
+            Exercise.self,
+            Routine.self,
+            Session.self,
+            UserProfile.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
@@ -20,7 +21,7 @@ struct ___PACKAGENAME:identifier___App: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            HomeView()
         }
         .modelContainer(sharedModelContainer)
     }
