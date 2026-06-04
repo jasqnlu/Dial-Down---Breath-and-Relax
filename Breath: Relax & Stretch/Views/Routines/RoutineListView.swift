@@ -7,12 +7,20 @@ struct RoutineListView: View {
 
     var body: some View {
         NavigationStack {
-            List(routines) { routine in
-                RoutineRow(routine: routine)
+            ScrollView {
+                let items: [Routine] = Array(routines)
+                LazyVStack(spacing: 0) {
+                    ForEach(0..<items.count, id: \.self) { i in
+                        RoutineRow(routine: items[i])
+                            .padding(.horizontal)
+                            .padding(.vertical, 4)
+                        Divider().padding(.leading)
+                    }
+                }
             }
             .navigationTitle("Routines")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button {
                         showingBuilder = true
                     } label: {

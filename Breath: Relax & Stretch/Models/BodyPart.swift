@@ -9,7 +9,7 @@ enum BodyLayer: String, Codable, CaseIterable {
 
 @Model
 final class BodyPart {
-    var id: UUID
+    var uuid: UUID
     var name: String            // e.g. "Hamstring", "Quadricep"
     var layer: BodyLayer        // .skin, .muscle, .skeleton
     var group: String           // e.g. "Leg", "Back", "Arm"
@@ -17,14 +17,14 @@ final class BodyPart {
     var connectedParts: [String]
 
     init(
-        id: UUID = UUID(),
+        uuid: UUID = UUID(),
         name: String,
         layer: BodyLayer,
         group: String,
         svgPathID: String,
         connectedParts: [String] = []
     ) {
-        self.id = id
+        self.uuid = uuid
         self.name = name
         self.layer = layer
         self.group = group

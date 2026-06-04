@@ -10,7 +10,7 @@ struct ExerciseDetailView: View {
 
                 // Meta info
                 HStack(spacing: 16) {
-                    StatChip(icon: "clock", label: "\(exercise.durationSeconds / 60) min")
+                    StatChip(icon: "clock", label: exercise.durationFormatted)
                     StatChip(icon: "chart.bar", label: difficultyLabel)
                     StatChip(icon: "figure.mind.and.body", label: exercise.type.rawValue)
                 }
@@ -68,7 +68,6 @@ struct ExerciseDetailView: View {
             .padding(.vertical)
         }
         .navigationTitle(exercise.name)
-        .navigationBarTitleDisplayMode(.large)
         .safeAreaInset(edge: .bottom) {
             Button {
                 showingPlayer = true
@@ -83,7 +82,7 @@ struct ExerciseDetailView: View {
             }
             .background(.regularMaterial)
         }
-        .fullScreenCover(isPresented: $showingPlayer) {
+        .sheet(isPresented: $showingPlayer) {
             SessionPlayerView(exercises: [exercise])
         }
     }

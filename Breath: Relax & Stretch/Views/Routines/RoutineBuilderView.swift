@@ -7,11 +7,16 @@ struct RoutineBuilderView: View {
 
     @Query private var exercises: [Exercise]
     @State private var routineName = ""
-    @State private var selectedExercises: [Exercise] = []
+    // Store IDs (plain value types) instead of @Model objects to avoid SwiftData binding issues
+    @State private var selectedIDs: [UUID] = []
     @State private var isPublic = false
     @State private var showingExercisePicker = false
 
-    var totalDuration: Int {
+    private var selectedExercises: [Exercise] {
+        selectedIDs.compactMap { id in exercises.first { $0.uuid == id } }
+    }
+
+    private var totalDuration: Int {
         selectedExercises.reduce(0) { $0 + $1.durationSeconds }
     }
 
@@ -23,21 +28,25 @@ struct RoutineBuilderView: View {
                 }
 
                 Section {
-                    ForEach(selectedExercises) { exercise in
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(exercise.name).font(.subheadline)
-                                Text("\(exercise.durationSeconds / 60)m · \(exercise.type.rawValue)")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                    ForEach(selectedIDs.indices, id: \.self) { index in
+                        if let exercise = exercises.first(where: { $0.uuid == selectedIDs[index] }) {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(exercise.name).font(.subheadline)
+                                    Text("\(exercise.durationFormatted) · \(exercise.type.rawValue)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Button(role: .destructive) {
+                                    selectedIDs.remove(at: index)
+                                } label: {
+                                    Image(systemName: "minus.circle.fill")
+                                }
+                                .buttonStyle(.plain)
+                                .foregroundStyle(.red)
                             }
                         }
-                    }
-                    .onMove { from, to in
-                        selectedExercises.move(fromOffsets: from, toOffset: to)
-                    }
-                    .onDelete { offsets in
-                        selectedExercises.remove(atOffsets: offsets)
                     }
 
                     Button {
@@ -49,8 +58,8 @@ struct RoutineBuilderView: View {
                     HStack {
                         Text("Exercises")
                         Spacer()
-                        if !selectedExercises.isEmpty {
-                            Text("\(totalDuration / 60) min total")
+                        if !selectedIDs.isEmpty {
+                            Text(totalDuration < 60 ? "\(totalDuration)s total" : "\(totalDuration / 60)m total")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -64,18 +73,17 @@ struct RoutineBuilderView: View {
                 }
             }
             .navigationTitle("New Routine")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { saveRoutine() }
-                        .disabled(routineName.isEmpty || selectedExercises.isEmpty)
+                        .disabled(routineName.isEmpty || selectedIDs.isEmpty)
                 }
             }
             .sheet(isPresented: $showingExercisePicker) {
-                ExercisePickerView(selectedExercises: $selectedExercises)
+                ExercisePickerView(allExercises: Array(exercises), selectedIDs: $selectedIDs)
             }
         }
     }
@@ -83,7 +91,7 @@ struct RoutineBuilderView: View {
     private func saveRoutine() {
         let routine = Routine(
             name: routineName,
-            exerciseIDs: selectedExercises.map(\.id),
+            exerciseIDs: selectedIDs,
             isPublic: isPublic
         )
         modelContext.insert(routine)
@@ -95,41 +103,49 @@ struct RoutineBuilderView: View {
 
 struct ExercisePickerView: View {
     @Environment(\.dismiss) private var dismiss
-    @Query private var exercises: [Exercise]
-    @Binding var selectedExercises: [Exercise]
+    let allExercises: [Exercise]
+    @Binding var selectedIDs: [UUID]
     @State private var searchText = ""
 
-    var filtered: [Exercise] {
-        exercises.filter { searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText) }
+    private var filtered: [Exercise] {
+        allExercises.filter { searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText) }
     }
 
     var body: some View {
         NavigationStack {
-            List(filtered) { exercise in
-                Button {
-                    if !selectedExercises.contains(where: { $0.id == exercise.id }) {
-                        selectedExercises.append(exercise)
-                    }
-                    dismiss()
-                } label: {
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(exercise.name).foregroundStyle(.primary)
-                            Text("\(exercise.durationSeconds / 60)m · \(exercise.type.rawValue)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(filtered, id: \.uuid) { ex in
+                        Button {
+                            if !selectedIDs.contains(ex.uuid) {
+                                selectedIDs.append(ex.uuid)
+                            }
+                            dismiss()
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(ex.name)
+                                        .foregroundStyle(.primary)
+                                    Text("\(ex.durationFormatted) · \(ex.type.rawValue)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                if selectedIDs.contains(ex.uuid) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(.accentColor)
+                                }
+                            }
+                            .padding(.horizontal)
+                            .padding(.vertical, 12)
                         }
-                        Spacer()
-                        if selectedExercises.contains(where: { $0.id == exercise.id }) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.accentColor)
-                        }
+                        .buttonStyle(.plain)
+                        Divider().padding(.leading)
                     }
                 }
             }
             .searchable(text: $searchText)
             .navigationTitle("Add Exercise")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Done") { dismiss() }

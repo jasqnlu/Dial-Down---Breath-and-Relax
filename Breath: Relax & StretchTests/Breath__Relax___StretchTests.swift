@@ -1,10 +1,9 @@
-//___FILEHEADER___
-
 import Testing
+@testable import Breath_Relax___Stretch
 
-struct ___FILEBASENAME:identifier___ {
+struct BreathRelaxStretchTests {
 
-    @Test func example() async throws {
+    @Test func exampleTest() async throws {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.
         // Swift Testing Documentation
         // https://developer.apple.com/documentation/testing

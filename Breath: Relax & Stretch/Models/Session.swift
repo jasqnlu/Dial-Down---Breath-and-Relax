@@ -3,7 +3,7 @@ import SwiftData
 
 @Model
 final class Session {
-    var id: UUID
+    var uuid: UUID
     var routineID: UUID
     var startedAt: Date
     var completedAt: Date?
@@ -16,13 +16,13 @@ final class Session {
     }
 
     init(
-        id: UUID = UUID(),
+        uuid: UUID = UUID(),
         routineID: UUID,
         startedAt: Date = Date(),
         completionPercent: Double = 0,
         pointsEarned: Int = 0
     ) {
-        self.id = id
+        self.uuid = uuid
         self.routineID = routineID
         self.startedAt = startedAt
         self.completionPercent = completionPercent

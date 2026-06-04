@@ -12,14 +12,14 @@
 			containerPortal = 8506FCD82FCBA3210029F3D0 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 8506FCDF2FCBA3210029F3D0;
-			remoteInfo = "Breath: Relax & Stretch";
+			remoteInfo = BreathRelaxStretch;
 		};
 		8506FCFA2FCBA3220029F3D0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 8506FCD82FCBA3210029F3D0 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 8506FCDF2FCBA3210029F3D0;
-			remoteInfo = "Breath: Relax & Stretch";
+			remoteInfo = BreathRelaxStretch;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -110,10 +110,10 @@
 			fileSystemSynchronizedGroups = (
 				8506FCE22FCBA3210029F3D0 /* Breath: Relax & Stretch */,
 			);
-			name = "Breath: Relax & Stretch";
+			name = BreathRelaxStretch;
 			packageProductDependencies = (
 			);
-			productName = "Breath: Relax & Stretch";
+			productName = BreathRelaxStretch;
 			productReference = 8506FCE02FCBA3210029F3D0 /* Breath: Relax & Stretch.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -413,8 +413,9 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MARKETING_VERSION = 1.0;
+				INFOPLIST_KEY_CFBundleDisplayName = "Breath: Relax & Stretch";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.jasonlu.Breath--Relax---Stretch";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = BreathRelaxStretch;
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -450,6 +451,7 @@
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_CFBundleDisplayName = "Breath: Relax & Stretch";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
@@ -458,7 +460,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.jasonlu.Breath--Relax---Stretch";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = BreathRelaxStretch;
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -494,7 +496,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Breath: Relax & Stretch.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Breath: Relax & Stretch";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BreathRelaxStretch.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BreathRelaxStretch";
 				XROS_DEPLOYMENT_TARGET = 26.5;
 			};
 			name = Debug;
@@ -520,7 +522,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Breath: Relax & Stretch.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Breath: Relax & Stretch";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BreathRelaxStretch.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BreathRelaxStretch";
 				XROS_DEPLOYMENT_TARGET = 26.5;
 			};
 			name = Release;

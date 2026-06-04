@@ -9,7 +9,7 @@ enum ExerciseType: String, Codable, CaseIterable {
 
 @Model
 final class Exercise {
-    var id: UUID
+    var uuid: UUID
     var name: String
     var type: ExerciseType
     var targetBodyParts: [String]   // BodyPart names this exercise targets
@@ -18,8 +18,17 @@ final class Exercise {
     var instructions: [String]      // step-by-step instructions
     var mediaURL: String?           // animation or image URL
 
+    /// Human-readable duration: "30s", "2m", "1m 30s"
+    var durationFormatted: String {
+        let m = durationSeconds / 60
+        let s = durationSeconds % 60
+        if m == 0 { return "\(s)s" }
+        if s == 0 { return "\(m)m" }
+        return "\(m)m \(s)s"
+    }
+
     init(
-        id: UUID = UUID(),
+        uuid: UUID = UUID(),
         name: String,
         type: ExerciseType,
         targetBodyParts: [String],
@@ -28,7 +37,7 @@ final class Exercise {
         instructions: [String],
         mediaURL: String? = nil
     ) {
-        self.id = id
+        self.uuid = uuid
         self.name = name
         self.type = type
         self.targetBodyParts = targetBodyParts

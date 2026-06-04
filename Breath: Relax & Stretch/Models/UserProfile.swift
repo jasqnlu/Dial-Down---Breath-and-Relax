@@ -3,7 +3,7 @@ import SwiftData
 
 @Model
 final class UserProfile {
-    var id: String
+    var profileID: String
     var displayName: String
     var totalMinutes: Int
     var totalPoints: Int
@@ -11,8 +11,8 @@ final class UserProfile {
     var lastSessionDate: Date?
     var badges: [String]
 
-    init(id: String, displayName: String) {
-        self.id = id
+    init(profileID: String, displayName: String) {
+        self.profileID = profileID
         self.displayName = displayName
         self.totalMinutes = 0
         self.totalPoints = 0

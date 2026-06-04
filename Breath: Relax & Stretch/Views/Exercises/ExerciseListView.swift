@@ -16,15 +16,23 @@ struct ExerciseListView: View {
 
     var body: some View {
         NavigationStack {
-            List(filtered) { exercise in
-                NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
-                    ExerciseRow(exercise: exercise)
+            ScrollView {
+                let items: [Exercise] = Array(filtered)
+                LazyVStack(spacing: 0) {
+                    ForEach(0..<items.count, id: \.self) { i in
+                        NavigationLink(destination: ExerciseDetailView(exercise: items[i])) {
+                            ExerciseRow(exercise: items[i])
+                                .padding(.horizontal)
+                                .padding(.vertical, 4)
+                        }
+                        Divider().padding(.leading)
+                    }
                 }
             }
             .searchable(text: $searchText, prompt: "Search exercises")
             .navigationTitle("Exercises")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Menu {
                         Button("All Types") { selectedType = nil }
                         Divider()
@@ -70,7 +78,7 @@ struct ExerciseRow: View {
             Text(exercise.name)
                 .font(.headline)
             HStack(spacing: 12) {
-                Label("\(exercise.durationSeconds / 60)m", systemImage: "clock")
+                Label(exercise.durationFormatted, systemImage: "clock")
                 Label(exercise.type.rawValue, systemImage: "figure.mind.and.body")
                 Label(difficultyLabel, systemImage: "chart.bar")
             }

@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 struct SessionPlayerView: View {
     let exercises: [Exercise]
