@@ -1,18 +1,28 @@
 import SwiftUI
+import SwiftData
 import Combine
 
 struct SessionPlayerView: View {
     let exercises: [Exercise]
+    var routineID: UUID = UUID()          // pass the routine's UUID when launching
     var onComplete: ((Int) -> Void)? = nil
 
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+
     @State private var currentIndex = 0
     @State private var secondsRemaining = 0
     @State private var isPaused = false
     @State private var showingSummary = false
     @State private var totalPointsEarned = 0
+    @State private var sessionStarted = Date()
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    // Haptics
+    private let impactLight   = UIImpactFeedbackGenerator(style: .light)
+    private let impactMedium  = UIImpactFeedbackGenerator(style: .medium)
+    private let notifySuccess = UINotificationFeedbackGenerator()
 
     var currentExercise: Exercise? {
         guard currentIndex < exercises.count else { return nil }
@@ -30,7 +40,13 @@ struct SessionPlayerView: View {
                 playerContent(exercise: exercise)
             }
         }
-        .onAppear { startExercise() }
+        .onAppear {
+            sessionStarted = Date()
+            startExercise()
+            impactLight.prepare()
+            impactMedium.prepare()
+            notifySuccess.prepare()
+        }
         .onReceive(timer) { _ in
             guard !isPaused, !showingSummary else { return }
             if secondsRemaining > 0 {
@@ -66,7 +82,6 @@ struct SessionPlayerView: View {
 
             Spacer()
 
-            // Exercise name
             Text(exercise.name)
                 .font(.largeTitle)
                 .fontWeight(.bold)
@@ -80,20 +95,18 @@ struct SessionPlayerView: View {
 
             Spacer()
 
-            // Breathing animation circle
             BreathingCircle(isPaused: isPaused)
                 .padding()
 
-            // Countdown timer
             Text(timeString(secondsRemaining))
                 .font(.system(size: 64, weight: .thin, design: .rounded))
                 .monospacedDigit()
 
             Spacer()
 
-            // Controls
             HStack(spacing: 48) {
                 Button {
+                    impactLight.impactOccurred()
                     advanceToNext(completion: 0.5)
                 } label: {
                     Image(systemName: "forward.skip")
@@ -102,6 +115,7 @@ struct SessionPlayerView: View {
                 }
 
                 Button {
+                    impactLight.impactOccurred()
                     isPaused.toggle()
                 } label: {
                     Image(systemName: isPaused ? "play.circle.fill" : "pause.circle.fill")
@@ -109,7 +123,6 @@ struct SessionPlayerView: View {
                         .foregroundStyle(Color.accentColor)
                 }
 
-                // Spacer to balance the skip button
                 Image(systemName: "forward.skip")
                     .font(.title)
                     .hidden()
@@ -127,12 +140,45 @@ struct SessionPlayerView: View {
 
     private func advanceToNext(completion: Double) {
         totalPointsEarned += GamificationService.points(for: currentExercise, completion: completion)
+
         if currentIndex + 1 < exercises.count {
+            impactMedium.impactOccurred()
             currentIndex += 1
             startExercise()
         } else {
+            // Session complete
+            notifySuccess.notificationOccurred(.success)
+            saveSession(completion: completion)
             showingSummary = true
         }
+    }
+
+    // MARK: - Persistence
+
+    private func saveSession(completion: Double) {
+        let completedAt = Date()
+
+        // Save Session record
+        let session = Session(
+            routineID: routineID,
+            startedAt: sessionStarted,
+            completionPercent: completion,
+            pointsEarned: totalPointsEarned
+        )
+        session.completedAt = completedAt
+        modelContext.insert(session)
+
+        // Update or create UserProfile
+        let descriptor = FetchDescriptor<UserProfile>()
+        if let profile = try? modelContext.fetch(descriptor).first {
+            profile.totalPoints   += totalPointsEarned
+            profile.totalMinutes  += max(1, Int(completedAt.timeIntervalSince(sessionStarted) / 60))
+            GamificationService.updateStreak(for: profile)
+            let newBadges = GamificationService.newBadges(for: profile)
+            GamificationService.applyBadges(newBadges, to: profile)
+        }
+
+        try? modelContext.save()
     }
 
     private func timeString(_ seconds: Int) -> String {
@@ -190,4 +236,5 @@ struct BreathingCircle: View {
             instructions: ["Breathe in slowly.", "Hold.", "Breathe out."]
         )
     ])
+    .modelContainer(for: [Session.self, UserProfile.self], inMemory: true)
 }

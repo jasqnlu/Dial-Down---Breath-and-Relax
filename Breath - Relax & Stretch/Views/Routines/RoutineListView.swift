@@ -4,6 +4,7 @@ import SwiftData
 struct RoutineListView: View {
     @Query private var routines: [Routine]
     @State private var showingBuilder = false
+    @State private var showingBrowser = false
 
     var body: some View {
         NavigationStack {
@@ -27,6 +28,13 @@ struct RoutineListView: View {
                         Image(systemName: "plus")
                     }
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showingBrowser = true
+                    } label: {
+                        Label("Browse", systemImage: "globe")
+                    }
+                }
             }
             .overlay {
                 if routines.isEmpty {
@@ -39,6 +47,10 @@ struct RoutineListView: View {
             }
             .sheet(isPresented: $showingBuilder) {
                 RoutineBuilderView()
+            }
+            .sheet(isPresented: $showingBrowser) {
+                BorrowRoutineView()
+                    .environmentObject(AuthManager.shared)
             }
         }
     }

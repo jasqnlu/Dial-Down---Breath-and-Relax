@@ -2,6 +2,8 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
+    @EnvironmentObject private var auth: AuthManager
+
     var body: some View {
         TabView {
             BodyMapView()

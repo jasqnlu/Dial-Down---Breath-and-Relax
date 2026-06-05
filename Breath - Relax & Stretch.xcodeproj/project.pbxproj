@@ -24,25 +24,25 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		8506FCE02FCBA3210029F3D0 /* Breath: Relax & Stretch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Breath: Relax & Stretch.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		8506FCEF2FCBA3220029F3D0 /* Breath: Relax & StretchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Breath: Relax & StretchTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		8506FCF92FCBA3220029F3D0 /* Breath: Relax & StretchUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Breath: Relax & StretchUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8506FCE02FCBA3210029F3D0 /* Breath - Relax & Stretch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "Breath - Relax & Stretch.app"; path = BreathRelaxStretch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8506FCEF2FCBA3220029F3D0 /* Breath - Relax & StretchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Breath - Relax & StretchTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8506FCF92FCBA3220029F3D0 /* Breath - Relax & StretchUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Breath - Relax & StretchUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		8506FCE22FCBA3210029F3D0 /* Breath: Relax & Stretch */ = {
+		8506FCE22FCBA3210029F3D0 /* Breath - Relax & Stretch */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Breath: Relax & Stretch";
+			path = "Breath - Relax & Stretch";
 			sourceTree = "<group>";
 		};
-		8506FCF22FCBA3220029F3D0 /* Breath: Relax & StretchTests */ = {
+		8506FCF22FCBA3220029F3D0 /* Breath - Relax & StretchTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Breath: Relax & StretchTests";
+			path = "Breath - Relax & StretchTests";
 			sourceTree = "<group>";
 		};
-		8506FCFC2FCBA3220029F3D0 /* Breath: Relax & StretchUITests */ = {
+		8506FCFC2FCBA3220029F3D0 /* Breath - Relax & StretchUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Breath: Relax & StretchUITests";
+			path = "Breath - Relax & StretchUITests";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -75,9 +75,9 @@
 		8506FCD72FCBA3210029F3D0 = {
 			isa = PBXGroup;
 			children = (
-				8506FCE22FCBA3210029F3D0 /* Breath: Relax & Stretch */,
-				8506FCF22FCBA3220029F3D0 /* Breath: Relax & StretchTests */,
-				8506FCFC2FCBA3220029F3D0 /* Breath: Relax & StretchUITests */,
+				8506FCE22FCBA3210029F3D0 /* Breath - Relax & Stretch */,
+				8506FCF22FCBA3220029F3D0 /* Breath - Relax & StretchTests */,
+				8506FCFC2FCBA3220029F3D0 /* Breath - Relax & StretchUITests */,
 				8506FCE12FCBA3210029F3D0 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -85,9 +85,9 @@
 		8506FCE12FCBA3210029F3D0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8506FCE02FCBA3210029F3D0 /* Breath: Relax & Stretch.app */,
-				8506FCEF2FCBA3220029F3D0 /* Breath: Relax & StretchTests.xctest */,
-				8506FCF92FCBA3220029F3D0 /* Breath: Relax & StretchUITests.xctest */,
+				8506FCE02FCBA3210029F3D0 /* Breath - Relax & Stretch.app */,
+				8506FCEF2FCBA3220029F3D0 /* Breath - Relax & StretchTests.xctest */,
+				8506FCF92FCBA3220029F3D0 /* Breath - Relax & StretchUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,9 +95,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8506FCDF2FCBA3210029F3D0 /* Breath: Relax & Stretch */ = {
+		8506FCDF2FCBA3210029F3D0 /* BreathRelaxStretch */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8506FD032FCBA3220029F3D0 /* Build configuration list for PBXNativeTarget "Breath: Relax & Stretch" */;
+			buildConfigurationList = 8506FD032FCBA3220029F3D0 /* Build configuration list for PBXNativeTarget "BreathRelaxStretch" */;
 			buildPhases = (
 				8506FCDC2FCBA3210029F3D0 /* Sources */,
 				8506FCDD2FCBA3210029F3D0 /* Frameworks */,
@@ -108,18 +108,18 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				8506FCE22FCBA3210029F3D0 /* Breath: Relax & Stretch */,
+				8506FCE22FCBA3210029F3D0 /* Breath - Relax & Stretch */,
 			);
 			name = BreathRelaxStretch;
 			packageProductDependencies = (
 			);
 			productName = BreathRelaxStretch;
-			productReference = 8506FCE02FCBA3210029F3D0 /* Breath: Relax & Stretch.app */;
+			productReference = 8506FCE02FCBA3210029F3D0 /* Breath - Relax & Stretch.app */;
 			productType = "com.apple.product-type.application";
 		};
-		8506FCEE2FCBA3220029F3D0 /* Breath: Relax & StretchTests */ = {
+		8506FCEE2FCBA3220029F3D0 /* Breath - Relax & StretchTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8506FD062FCBA3220029F3D0 /* Build configuration list for PBXNativeTarget "Breath: Relax & StretchTests" */;
+			buildConfigurationList = 8506FD062FCBA3220029F3D0 /* Build configuration list for PBXNativeTarget "Breath - Relax & StretchTests" */;
 			buildPhases = (
 				8506FCEB2FCBA3220029F3D0 /* Sources */,
 				8506FCEC2FCBA3220029F3D0 /* Frameworks */,
@@ -131,18 +131,18 @@
 				8506FCF12FCBA3220029F3D0 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				8506FCF22FCBA3220029F3D0 /* Breath: Relax & StretchTests */,
+				8506FCF22FCBA3220029F3D0 /* Breath - Relax & StretchTests */,
 			);
-			name = "Breath: Relax & StretchTests";
+			name = "Breath - Relax & StretchTests";
 			packageProductDependencies = (
 			);
-			productName = "Breath: Relax & StretchTests";
-			productReference = 8506FCEF2FCBA3220029F3D0 /* Breath: Relax & StretchTests.xctest */;
+			productName = "Breath - Relax & StretchTests";
+			productReference = 8506FCEF2FCBA3220029F3D0 /* Breath - Relax & StretchTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		8506FCF82FCBA3220029F3D0 /* Breath: Relax & StretchUITests */ = {
+		8506FCF82FCBA3220029F3D0 /* Breath - Relax & StretchUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8506FD092FCBA3220029F3D0 /* Build configuration list for PBXNativeTarget "Breath: Relax & StretchUITests" */;
+			buildConfigurationList = 8506FD092FCBA3220029F3D0 /* Build configuration list for PBXNativeTarget "Breath - Relax & StretchUITests" */;
 			buildPhases = (
 				8506FCF52FCBA3220029F3D0 /* Sources */,
 				8506FCF62FCBA3220029F3D0 /* Frameworks */,
@@ -154,13 +154,13 @@
 				8506FCFB2FCBA3220029F3D0 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				8506FCFC2FCBA3220029F3D0 /* Breath: Relax & StretchUITests */,
+				8506FCFC2FCBA3220029F3D0 /* Breath - Relax & StretchUITests */,
 			);
-			name = "Breath: Relax & StretchUITests";
+			name = "Breath - Relax & StretchUITests";
 			packageProductDependencies = (
 			);
-			productName = "Breath: Relax & StretchUITests";
-			productReference = 8506FCF92FCBA3220029F3D0 /* Breath: Relax & StretchUITests.xctest */;
+			productName = "Breath - Relax & StretchUITests";
+			productReference = 8506FCF92FCBA3220029F3D0 /* Breath - Relax & StretchUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -186,7 +186,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 8506FCDB2FCBA3210029F3D0 /* Build configuration list for PBXProject "Breath: Relax & Stretch" */;
+			buildConfigurationList = 8506FCDB2FCBA3210029F3D0 /* Build configuration list for PBXProject "Breath - Relax & Stretch" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -200,9 +200,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8506FCDF2FCBA3210029F3D0 /* Breath: Relax & Stretch */,
-				8506FCEE2FCBA3220029F3D0 /* Breath: Relax & StretchTests */,
-				8506FCF82FCBA3220029F3D0 /* Breath: Relax & StretchUITests */,
+				8506FCDF2FCBA3210029F3D0 /* BreathRelaxStretch */,
+				8506FCEE2FCBA3220029F3D0 /* Breath - Relax & StretchTests */,
+				8506FCF82FCBA3220029F3D0 /* Breath - Relax & StretchUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -258,12 +258,12 @@
 /* Begin PBXTargetDependency section */
 		8506FCF12FCBA3220029F3D0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 8506FCDF2FCBA3210029F3D0 /* Breath: Relax & Stretch */;
+			target = 8506FCDF2FCBA3210029F3D0 /* BreathRelaxStretch */;
 			targetProxy = 8506FCF02FCBA3220029F3D0 /* PBXContainerItemProxy */;
 		};
 		8506FCFB2FCBA3220029F3D0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 8506FCDF2FCBA3210029F3D0 /* Breath: Relax & Stretch */;
+			target = 8506FCDF2FCBA3210029F3D0 /* BreathRelaxStretch */;
 			targetProxy = 8506FCFA2FCBA3220029F3D0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -390,6 +390,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Breath - Relax & Stretch/Breath - Relax & Stretch.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7ZT4KUSC4W;
@@ -398,6 +399,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Breath: Relax & Stretch";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -413,7 +415,6 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MARKETING_VERSION = 1.0;
-				INFOPLIST_KEY_CFBundleDisplayName = "Breath: Relax & Stretch";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.jasonlu.Breath--Relax---Stretch";
 				PRODUCT_NAME = BreathRelaxStretch;
 				REGISTER_APP_GROUPS = YES;
@@ -435,6 +436,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Breath - Relax & Stretch/Breath - Relax & Stretch.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7ZT4KUSC4W;
@@ -443,6 +445,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Breath: Relax & Stretch";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -451,7 +454,6 @@
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_CFBundleDisplayName = "Breath: Relax & Stretch";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
@@ -479,6 +481,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_ENTITLEMENTS = "Breath - Relax & Stretch/Breath - Relax & Stretch.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7ZT4KUSC4W;
@@ -505,6 +508,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_ENTITLEMENTS = "Breath - Relax & Stretch/Breath - Relax & Stretch.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7ZT4KUSC4W;
@@ -530,6 +534,7 @@
 		8506FD0A2FCBA3220029F3D0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Breath - Relax & Stretch/Breath - Relax & Stretch.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7ZT4KUSC4W;
@@ -547,7 +552,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_TARGET_NAME = "Breath: Relax & Stretch";
+				TEST_TARGET_NAME = "Breath - Relax & Stretch";
 				XROS_DEPLOYMENT_TARGET = 26.5;
 			};
 			name = Debug;
@@ -555,6 +560,7 @@
 		8506FD0B2FCBA3220029F3D0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Breath - Relax & Stretch/Breath - Relax & Stretch.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7ZT4KUSC4W;
@@ -572,7 +578,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_TARGET_NAME = "Breath: Relax & Stretch";
+				TEST_TARGET_NAME = "Breath - Relax & Stretch";
 				XROS_DEPLOYMENT_TARGET = 26.5;
 			};
 			name = Release;
@@ -580,7 +586,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8506FCDB2FCBA3210029F3D0 /* Build configuration list for PBXProject "Breath: Relax & Stretch" */ = {
+		8506FCDB2FCBA3210029F3D0 /* Build configuration list for PBXProject "Breath - Relax & Stretch" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8506FD012FCBA3220029F3D0 /* Debug */,
@@ -589,7 +595,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8506FD032FCBA3220029F3D0 /* Build configuration list for PBXNativeTarget "Breath: Relax & Stretch" */ = {
+		8506FD032FCBA3220029F3D0 /* Build configuration list for PBXNativeTarget "BreathRelaxStretch" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8506FD042FCBA3220029F3D0 /* Debug */,
@@ -598,7 +604,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8506FD062FCBA3220029F3D0 /* Build configuration list for PBXNativeTarget "Breath: Relax & StretchTests" */ = {
+		8506FD062FCBA3220029F3D0 /* Build configuration list for PBXNativeTarget "Breath - Relax & StretchTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8506FD072FCBA3220029F3D0 /* Debug */,
@@ -607,7 +613,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8506FD092FCBA3220029F3D0 /* Build configuration list for PBXNativeTarget "Breath: Relax & StretchUITests" */ = {
+		8506FD092FCBA3220029F3D0 /* Build configuration list for PBXNativeTarget "Breath - Relax & StretchUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8506FD0A2FCBA3220029F3D0 /* Debug */,

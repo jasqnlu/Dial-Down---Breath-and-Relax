@@ -1,5 +1,5 @@
 import Testing
-@testable import Breath_Relax___Stretch
+@testable import BreathRelaxStretch
 
 struct BreathRelaxStretchTests {
 

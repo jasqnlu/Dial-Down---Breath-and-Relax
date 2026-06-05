@@ -3,6 +3,8 @@ import SwiftData
 
 @main
 struct BreathRelaxStretchApp: App {
+    @StateObject private var auth = AuthManager.shared
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             BodyPart.self,
@@ -21,13 +23,14 @@ struct BreathRelaxStretchApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            RootView()
+                .environmentObject(auth)
                 .onAppear { seedIfNeeded() }
         }
         .modelContainer(sharedModelContainer)
     }
 
-    // MARK: - Seed data
+    // MARK: - Seed exercises
 
     private func seedIfNeeded() {
         let context = sharedModelContainer.mainContext
@@ -35,7 +38,7 @@ struct BreathRelaxStretchApp: App {
         guard (try? context.fetchCount(descriptor)) == 0 else { return }
 
         guard
-            let url = Bundle.main.url(forResource: "SeedData", withExtension: "json"),
+            let url  = Bundle.main.url(forResource: "SeedData", withExtension: "json"),
             let data = try? Data(contentsOf: url),
             let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
             let exercises = json["exercises"] as? [[String: Any]]
@@ -53,18 +56,50 @@ struct BreathRelaxStretchApp: App {
             else { continue }
 
             let mediaURL = raw["mediaURL"] as? String
-            let exercise = Exercise(
-                name: name,
-                type: type,
-                targetBodyParts: parts,
-                durationSeconds: duration,
-                difficulty: difficulty,
-                instructions: instructions,
-                mediaURL: mediaURL
-            )
-            context.insert(exercise)
+            context.insert(Exercise(
+                name: name, type: type, targetBodyParts: parts,
+                durationSeconds: duration, difficulty: difficulty,
+                instructions: instructions, mediaURL: mediaURL
+            ))
         }
-
         try? context.save()
+    }
+}
+
+// MARK: - Root routing view
+
+struct RootView: View {
+    @EnvironmentObject private var auth: AuthManager
+    @Environment(\.modelContext) private var modelContext
+
+    var body: some View {
+        Group {
+            if !auth.isSignedIn {
+                AuthView()
+            } else if auth.needsTwoFactor {
+                TwoFactorView()
+            } else {
+                HomeView()
+            }
+        }
+        .animation(.easeInOut(duration: 0.35), value: auth.isSignedIn)
+        .animation(.easeInOut(duration: 0.35), value: auth.needsTwoFactor)
+        .onChange(of: auth.isSignedIn) { _, signedIn in
+            if signedIn { ensureUserProfile() }
+        }
+        .onAppear {
+            if auth.isSignedIn { ensureUserProfile() }
+        }
+    }
+
+    // MARK: - Create profile on first sign-in
+
+    private func ensureUserProfile() {
+        let descriptor = FetchDescriptor<UserProfile>()
+        guard let existing = try? modelContext.fetch(descriptor), existing.isEmpty else { return }
+        let name = auth.displayName.isEmpty ? "User" : auth.displayName
+        let profile = UserProfile(profileID: auth.userEmail, displayName: name)
+        modelContext.insert(profile)
+        try? modelContext.save()
     }
 }

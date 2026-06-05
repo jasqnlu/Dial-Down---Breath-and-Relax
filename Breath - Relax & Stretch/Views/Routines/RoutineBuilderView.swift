@@ -83,7 +83,9 @@ struct RoutineBuilderView: View {
                 }
             }
             .sheet(isPresented: $showingExercisePicker) {
-                ExercisePickerView(allExercises: Array(exercises), selectedIDs: $selectedIDs)
+                ExercisePickerView(allExercises: Array(exercises), selectedIDs: selectedIDs) { id in
+                    if !selectedIDs.contains(id) { selectedIDs.append(id) }
+                }
             }
         }
     }
@@ -104,7 +106,8 @@ struct RoutineBuilderView: View {
 struct ExercisePickerView: View {
     @Environment(\.dismiss) private var dismiss
     let allExercises: [Exercise]
-    @Binding var selectedIDs: [UUID]
+    let selectedIDs: [UUID]
+    let onSelect: (UUID) -> Void
     @State private var searchText = ""
 
     private var filtered: [Exercise] {
@@ -115,33 +118,7 @@ struct ExercisePickerView: View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    ForEach(filtered, id: \.uuid) { ex in
-                        Button {
-                            if !selectedIDs.contains(ex.uuid) {
-                                selectedIDs.append(ex.uuid)
-                            }
-                            dismiss()
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(ex.name)
-                                        .foregroundStyle(.primary)
-                                    Text("\(ex.durationFormatted) · \(ex.type.rawValue)")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                                Spacer()
-                                if selectedIDs.contains(ex.uuid) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(.accentColor)
-                                }
-                            }
-                            .padding(.horizontal)
-                            .padding(.vertical, 12)
-                        }
-                        .buttonStyle(.plain)
-                        Divider().padding(.leading)
-                    }
+                    exerciseRows(filtered)
                 }
             }
             .searchable(text: $searchText)
@@ -151,6 +128,35 @@ struct ExercisePickerView: View {
                     Button("Done") { dismiss() }
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private func exerciseRows(_ items: [Exercise]) -> some View {
+        ForEach(Array(items.enumerated()), id: \.offset) { _, ex in
+            Button {
+                onSelect(ex.uuid)
+                dismiss()
+            } label: {
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(ex.name)
+                            .foregroundStyle(.primary)
+                        Text("\(ex.durationFormatted) · \(ex.type.rawValue)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    if selectedIDs.contains(ex.uuid) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.tint)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 12)
+            }
+            .buttonStyle(.plain)
+            Divider().padding(.leading)
         }
     }
 }

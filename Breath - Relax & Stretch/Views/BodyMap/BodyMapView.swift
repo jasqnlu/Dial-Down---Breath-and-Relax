@@ -1,8 +1,10 @@
 import SwiftUI
+import SwiftData
 
 struct BodyMapView: View {
     @State private var currentLayer: BodyLayer = .skin
     @State private var highlightedPart: String? = nil
+    @State private var navigateToPart: String? = nil
 
     var body: some View {
         NavigationStack {
@@ -15,24 +17,27 @@ struct BodyMapView: View {
                 .pickerStyle(.segmented)
                 .padding()
 
-                // TODO: Replace BodyMapPlaceholder with real SVG body map (Phase 2)
                 BodyMapPlaceholder(layer: currentLayer, highlightedPart: $highlightedPart)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 if let part = highlightedPart {
-                    BodyPartInfoBanner(partName: part)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    BodyPartInfoBanner(partName: part) {
+                        navigateToPart = part
+                    }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
             .navigationTitle("Body Map")
             .animation(.easeInOut(duration: 0.3), value: currentLayer)
             .animation(.easeInOut(duration: 0.2), value: highlightedPart)
+            .navigationDestination(item: $navigateToPart) { part in
+                BodyPartExercisesView(bodyPart: part)
+            }
         }
     }
 }
 
 // MARK: - Placeholder body map (grid of tappable regions)
-// Replace this with a real SVG or SpriteKit body diagram in Phase 2
 
 struct BodyMapPlaceholder: View {
     let layer: BodyLayer
@@ -81,6 +86,8 @@ struct BodyMapPlaceholder: View {
                             )
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("\(region) body region")
+                    .accessibilityHint("Double tap to select and find exercises")
                 }
             }
             .padding()
@@ -88,26 +95,77 @@ struct BodyMapPlaceholder: View {
     }
 }
 
-// MARK: - Info banner shown when a body part is selected
+// MARK: - Info banner
 
 struct BodyPartInfoBanner: View {
     let partName: String
+    let onFindExercises: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(partName)
-                .font(.headline)
-            Text("Tap to find stretches targeting this area")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(partName)
+                    .font(.headline)
+                Text("Tap to find stretches targeting this area")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button {
+                onFindExercises()
+            } label: {
+                Label("Find Exercises", systemImage: "figure.mind.and.body")
+                    .font(.caption)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(.tint.opacity(0.12))
+                    .foregroundStyle(.tint)
+                    .clipShape(Capsule())
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(.regularMaterial)
         .shadow(color: .black.opacity(0.08), radius: 6, y: -2)
     }
 }
 
+// MARK: - Filtered exercise list for a body part
+
+struct BodyPartExercisesView: View {
+    let bodyPart: String
+    @Query private var allExercises: [Exercise]
+
+    private var filtered: [Exercise] {
+        allExercises.filter { ex in
+            ex.targetBodyParts.contains { $0.localizedCaseInsensitiveContains(bodyPart)
+                || bodyPart.localizedCaseInsensitiveContains($0) }
+        }
+    }
+
+    var body: some View {
+        Group {
+            if filtered.isEmpty {
+                ContentUnavailableView(
+                    "No Exercises Found",
+                    systemImage: "figure.mind.and.body",
+                    description: Text("No exercises target \(bodyPart) yet.")
+                )
+            } else {
+                List {
+                    ForEach(filtered, id: \.uuid) { exercise in
+                        NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
+                            ExerciseRow(exercise: exercise)
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle(bodyPart)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
 #Preview {
     BodyMapView()
+        .modelContainer(for: Exercise.self, inMemory: true)
 }
