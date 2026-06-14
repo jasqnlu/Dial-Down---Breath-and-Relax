@@ -16,6 +16,11 @@ struct HomeView: View {
                     Label("Exercises", systemImage: "list.bullet")
                 }
 
+            BreathingView()
+                .tabItem {
+                    Label("Breathe", systemImage: "wind")
+                }
+
             RoutineListView()
                 .tabItem {
                     Label("Routines", systemImage: "rectangle.stack")

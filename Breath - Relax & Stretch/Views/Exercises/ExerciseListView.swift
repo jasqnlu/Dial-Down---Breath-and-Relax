@@ -5,6 +5,7 @@ struct ExerciseListView: View {
     @Query private var exercises: [Exercise]
     @State private var searchText = ""
     @State private var selectedType: ExerciseType? = nil
+    @State private var showingCreate = false
 
     var filtered: [Exercise] {
         exercises.filter { ex in
@@ -45,6 +46,17 @@ struct ExerciseListView: View {
                               : "line.3.horizontal.decrease.circle.fill")
                     }
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showingCreate = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel("Create exercise")
+                }
+            }
+            .sheet(isPresented: $showingCreate) {
+                CreateExerciseView()
             }
             .overlay {
                 if filtered.isEmpty {
@@ -86,6 +98,8 @@ struct ExerciseRow: View {
             .foregroundStyle(.secondary)
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(exercise.name), \(exercise.type.rawValue), \(exercise.durationFormatted), \(difficultyLabel)")
     }
 }
 

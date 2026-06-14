@@ -3,7 +3,10 @@
     {
       "name": "Deep Belly Breath",
       "type": "breath",
-      "targetBodyParts": ["Core", "Chest"],
+      "targetBodyParts": [
+        "Core",
+        "Chest"
+      ],
       "durationSeconds": 120,
       "difficulty": 1,
       "instructions": [
@@ -18,7 +21,10 @@
     {
       "name": "Box Breathing",
       "type": "breath",
-      "targetBodyParts": ["Chest", "Core"],
+      "targetBodyParts": [
+        "Chest",
+        "Core"
+      ],
       "durationSeconds": 180,
       "difficulty": 1,
       "instructions": [
@@ -34,7 +40,11 @@
     {
       "name": "Neck Side Stretch",
       "type": "stretch",
-      "targetBodyParts": ["Neck", "Left Shoulder", "Right Shoulder"],
+      "targetBodyParts": [
+        "Neck",
+        "Left Shoulder",
+        "Right Shoulder"
+      ],
       "durationSeconds": 60,
       "difficulty": 1,
       "instructions": [
@@ -43,12 +53,17 @@
         "Hold for 15 seconds, feeling the stretch on the left side of your neck.",
         "Return to center.",
         "Repeat on the left side."
-      ]
+      ],
+      "caution": "Move slowly and never force your neck. Skip if you have a neck injury, recent whiplash, or numbness/tingling in your arms."
     },
     {
       "name": "Standing Hamstring Stretch",
       "type": "stretch",
-      "targetBodyParts": ["Left Leg", "Right Leg", "Lower Back"],
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg",
+        "Lower Back"
+      ],
       "durationSeconds": 90,
       "difficulty": 2,
       "instructions": [
@@ -62,7 +77,12 @@
     {
       "name": "Cat-Cow Flow",
       "type": "both",
-      "targetBodyParts": ["Upper Back", "Lower Back", "Core", "Neck"],
+      "targetBodyParts": [
+        "Upper Back",
+        "Lower Back",
+        "Core",
+        "Neck"
+      ],
       "durationSeconds": 120,
       "difficulty": 1,
       "instructions": [
@@ -76,7 +96,11 @@
     {
       "name": "Seated Spinal Twist",
       "type": "stretch",
-      "targetBodyParts": ["Upper Back", "Lower Back", "Core"],
+      "targetBodyParts": [
+        "Upper Back",
+        "Lower Back",
+        "Core"
+      ],
       "durationSeconds": 60,
       "difficulty": 1,
       "instructions": [
@@ -90,7 +114,12 @@
     {
       "name": "Child's Pose",
       "type": "stretch",
-      "targetBodyParts": ["Lower Back", "Upper Back", "Left Leg", "Right Leg"],
+      "targetBodyParts": [
+        "Lower Back",
+        "Upper Back",
+        "Left Leg",
+        "Right Leg"
+      ],
       "durationSeconds": 90,
       "difficulty": 1,
       "instructions": [
@@ -104,7 +133,11 @@
     {
       "name": "Shoulder Roll",
       "type": "stretch",
-      "targetBodyParts": ["Left Shoulder", "Right Shoulder", "Neck"],
+      "targetBodyParts": [
+        "Left Shoulder",
+        "Right Shoulder",
+        "Neck"
+      ],
       "durationSeconds": 30,
       "difficulty": 1,
       "instructions": [
@@ -117,7 +150,10 @@
     {
       "name": "4-7-8 Breathing",
       "type": "breath",
-      "targetBodyParts": ["Chest", "Core"],
+      "targetBodyParts": [
+        "Chest",
+        "Core"
+      ],
       "durationSeconds": 150,
       "difficulty": 2,
       "instructions": [
@@ -132,7 +168,11 @@
     {
       "name": "Hip Flexor Stretch",
       "type": "stretch",
-      "targetBodyParts": ["Left Leg", "Right Leg", "Core"],
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg",
+        "Core"
+      ],
       "durationSeconds": 90,
       "difficulty": 2,
       "instructions": [
@@ -141,6 +181,622 @@
         "Keep your torso upright and core engaged.",
         "Hold for 30 seconds.",
         "Switch sides and repeat."
+      ]
+    },
+    {
+      "name": "Doorway Chest Opener",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Chest",
+        "Left Shoulder",
+        "Right Shoulder"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Stand in a doorway and place your forearms on each side of the frame.",
+        "Position your elbows at shoulder height, bent at 90 degrees.",
+        "Step one foot forward and gently lean through the doorway.",
+        "Feel the stretch across your chest and front shoulders.",
+        "Hold for 20–30 seconds, then relax."
+      ],
+      "caution": "Don't push into shoulder pain. Avoid if you have a shoulder injury or instability."
+    },
+    {
+      "name": "Seated Figure-Four Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Hips",
+        "Left Leg",
+        "Right Leg"
+      ],
+      "durationSeconds": 90,
+      "difficulty": 2,
+      "instructions": [
+        "Sit on the edge of a chair with both feet flat on the floor.",
+        "Cross your right ankle over your left knee, forming a figure 4.",
+        "Flex your right foot to protect your knee.",
+        "Gently press down on your right knee and lean forward slightly.",
+        "Hold for 30 seconds, then switch sides."
+      ]
+    },
+    {
+      "name": "Wrist Flexor Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Forearm",
+        "Right Forearm"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Extend your right arm in front of you with the palm facing up.",
+        "Use your left hand to gently pull your fingers back toward you.",
+        "Hold for 15–20 seconds, feeling the stretch along the inner forearm.",
+        "Release and repeat on the other side."
+      ]
+    },
+    {
+      "name": "Standing Quad Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Stand on your left leg, holding a wall or chair for balance if needed.",
+        "Bend your right knee and grasp your right ankle behind you.",
+        "Keep your knees together and stand tall.",
+        "Hold for 20–30 seconds, feeling the stretch along the front of your thigh.",
+        "Switch legs and repeat."
+      ]
+    },
+    {
+      "name": "Calf Stretch at Wall",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg",
+        "Left Foot",
+        "Right Foot"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Stand facing a wall with your hands flat against it.",
+        "Step your right foot back into a lunge, keeping the heel flat on the floor.",
+        "Keep your back leg straight and lean toward the wall.",
+        "Hold for 20–30 seconds, feeling the stretch in your calf.",
+        "Switch legs and repeat."
+      ]
+    },
+    {
+      "name": "Chin Tuck (Forward Head Reset)",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Head",
+        "Neck"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or stand tall with your shoulders relaxed.",
+        "Gently retract your chin straight back — as if making a 'double chin'.",
+        "Hold for 3–5 seconds.",
+        "Release and repeat 10 times.",
+        "This resets the cervical spine and reduces forward-head posture."
+      ]
+    },
+    {
+      "name": "Alternate Nostril Breathing",
+      "type": "breath",
+      "targetBodyParts": [
+        "Chest",
+        "Core"
+      ],
+      "durationSeconds": 180,
+      "difficulty": 2,
+      "instructions": [
+        "Sit comfortably. Rest your left hand on your lap.",
+        "Bring your right hand to your face. Place your index and middle fingers on your forehead.",
+        "Close your right nostril with your thumb. Inhale slowly through the left nostril for 4 counts.",
+        "Close your left nostril with your ring finger. Open your right nostril and exhale for 4 counts.",
+        "Inhale through the right nostril for 4 counts.",
+        "Close the right nostril and exhale through the left for 4 counts.",
+        "This completes one cycle. Repeat for the full duration."
+      ]
+    },
+    {
+      "name": "Pursed Lip Breathing",
+      "type": "breath",
+      "targetBodyParts": [
+        "Chest",
+        "Core"
+      ],
+      "durationSeconds": 120,
+      "difficulty": 1,
+      "instructions": [
+        "Sit comfortably and relax your neck and shoulders.",
+        "Inhale slowly through your nose for 2 counts.",
+        "Pucker or 'purse' your lips as if you are going to whistle.",
+        "Exhale slowly through pursed lips for 4 counts.",
+        "Repeat for the full duration."
+      ]
+    },
+    {
+      "name": "Cross-Body Arm Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Arm",
+        "Right Arm",
+        "Left Shoulder",
+        "Right Shoulder"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Stand or sit tall.",
+        "Bring your right arm across your chest at shoulder height.",
+        "Use your left forearm to press your right arm gently closer to your chest.",
+        "Hold for 20 seconds, feeling the stretch in the back of your shoulder.",
+        "Release and repeat on the other side."
+      ],
+      "caution": "Stop if you feel shoulder pinching. Avoid if you have a rotator-cuff injury."
+    },
+    {
+      "name": "Wrist Circles",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Forearm",
+        "Right Forearm"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Extend both arms in front of you with hands loosely balled into fists.",
+        "Slowly rotate your wrists in large circles — 10 times clockwise.",
+        "Reverse direction for 10 circles counter-clockwise.",
+        "Shake your hands out gently to finish."
+      ]
+    },
+    {
+      "name": "Standing Side Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Core",
+        "Left Arm",
+        "Right Arm"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Stand with feet hip-width apart.",
+        "Raise your right arm overhead and place your left hand on your hip.",
+        "Lean gently to the left, reaching your right arm over in an arc.",
+        "Hold for 20 seconds, feeling the stretch along your right side.",
+        "Return to center and switch sides."
+      ]
+    },
+    {
+      "name": "Glute Bridge",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Hips",
+        "Lower Back",
+        "Left Leg",
+        "Right Leg"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 2,
+      "instructions": [
+        "Lie on your back with knees bent and feet flat on the floor, hip-width apart.",
+        "Press your feet into the floor and squeeze your glutes.",
+        "Lift your hips until your body forms a straight line from knees to shoulders.",
+        "Hold for 2–3 seconds at the top.",
+        "Lower slowly and repeat for 10–15 reps."
+      ]
+    },
+    {
+      "name": "Supine Knee-to-Chest",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Lower Back",
+        "Core",
+        "Hips"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Lie on your back with legs extended.",
+        "Draw your right knee toward your chest with both hands.",
+        "Keep your left leg flat on the floor (or bent for comfort).",
+        "Hold for 20–30 seconds, breathing deeply.",
+        "Switch legs and repeat."
+      ]
+    },
+    {
+      "name": "Pelvic Tilt",
+      "type": "both",
+      "targetBodyParts": [
+        "Lower Back",
+        "Core",
+        "Hips"
+      ],
+      "durationSeconds": 90,
+      "difficulty": 1,
+      "instructions": [
+        "Lie on your back with knees bent, feet flat, arms relaxed at sides.",
+        "Inhale to prepare.",
+        "Exhale: gently flatten your lower back into the floor by tightening your abdominals.",
+        "Hold for 5 counts, then release.",
+        "Inhale as you return to the neutral curve.",
+        "Repeat 10–15 times rhythmically with your breath."
+      ]
+    },
+    {
+      "name": "Ankle Alphabet",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Foot",
+        "Right Foot"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Sit in a chair with your right foot lifted off the floor.",
+        "Using your big toe as a pointer, trace each letter of the alphabet in the air.",
+        "Move only from the ankle — keep your leg still.",
+        "Finish the full alphabet, then switch to the left foot."
+      ]
+    },
+    {
+      "name": "Overhead Tricep Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Arm",
+        "Right Arm"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Stand or sit tall.",
+        "Raise your right arm overhead, then bend your elbow to reach your right hand toward your left shoulder blade.",
+        "Use your left hand to gently press your right elbow back and down.",
+        "Hold for 20 seconds, feeling the stretch along the back of your upper arm.",
+        "Switch sides and repeat."
+      ]
+    },
+    {
+      "name": "Happy Baby Pose",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Hips",
+        "Lower Back",
+        "Left Leg",
+        "Right Leg"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Lie on your back and draw both knees toward your chest.",
+        "Grab the outside edges of your feet (or your ankles or shins).",
+        "Open your knees wider than your torso and pull them toward your armpits.",
+        "Flex your feet so soles face upward.",
+        "Rock gently side to side if it feels good. Hold and breathe deeply."
+      ]
+    },
+    {
+      "name": "Legs Up the Wall",
+      "type": "both",
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg",
+        "Lower Back"
+      ],
+      "durationSeconds": 300,
+      "difficulty": 1,
+      "instructions": [
+        "Sit sideways next to a wall, then swing your legs up as you lie back.",
+        "Rest your legs vertically against the wall with your back flat on the floor.",
+        "Let your arms rest comfortably at your sides, palms up.",
+        "Breathe slowly and deeply, allowing your body to relax completely.",
+        "Stay for up to 5 minutes. To come out, slide your knees to one side first."
+      ]
+    },
+    {
+      "name": "Lion's Breath",
+      "type": "breath",
+      "targetBodyParts": [
+        "Head",
+        "Neck",
+        "Chest"
+      ],
+      "durationSeconds": 90,
+      "difficulty": 1,
+      "instructions": [
+        "Kneel or sit comfortably. Place your hands on your knees.",
+        "Inhale deeply through your nose.",
+        "Open your mouth wide, stretch your tongue out and down toward your chin.",
+        "Exhale forcefully through your mouth, making a 'haaaa' sound.",
+        "At the same time, open your eyes wide and look between your eyebrows.",
+        "Relax and repeat 5–8 times."
+      ],
+      "caution": "Skip if you have jaw (TMJ) issues. Stop if you feel lightheaded."
+    },
+    {
+      "name": "Eye Palming",
+      "type": "both",
+      "targetBodyParts": [
+        "Head"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Rub your palms together briskly until they feel warm.",
+        "Close your eyes and gently cup your palms over them — do not press on the eyeballs.",
+        "Breathe slowly and feel the warmth and darkness calming your eyes.",
+        "Hold for 30–60 seconds.",
+        "Slowly lower your hands and blink your eyes open gently."
+      ]
+    },
+    {
+      "name": "Reverse Prayer Hands",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Forearm",
+        "Right Forearm",
+        "Left Shoulder",
+        "Right Shoulder"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 2,
+      "instructions": [
+        "Stand or sit tall. Bring your arms behind your back.",
+        "Turn your hands so your fingers point down, then rotate them inward until fingertips point up.",
+        "Press your palms together behind your back as much as is comfortable.",
+        "Hold for 20–30 seconds, feeling the stretch in your wrists and forearms.",
+        "Release gently and shake out your wrists."
+      ]
+    },
+    {
+      "name": "Thoracic Open Book",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Chest",
+        "Upper Back",
+        "Left Shoulder",
+        "Right Shoulder"
+      ],
+      "durationSeconds": 120,
+      "difficulty": 2,
+      "instructions": [
+        "Lie on your right side with knees stacked and bent to 90 degrees.",
+        "Extend both arms forward at shoulder height, palms together.",
+        "Inhale, then exhale as you rotate your left arm up and open it to the left, following with your gaze.",
+        "Keep your knees stacked and let your upper body rotate — not your hips.",
+        "Return to start on the next inhale. Repeat 10 times, then switch sides."
+      ],
+      "caution": "Ease off if you have a disc problem or sharp back pain. Keep the movement gentle and controlled."
+    },
+    {
+      "name": "Seated Neck Rolls",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Neck",
+        "Head",
+        "Left Shoulder",
+        "Right Shoulder"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Sit upright with shoulders relaxed and hands resting on your thighs.",
+        "Drop your chin toward your chest.",
+        "Slowly roll your head to the right, bringing your right ear toward your right shoulder.",
+        "Continue rolling back to centre and over to the left.",
+        "Avoid rolling fully back — keep the movement in the front half of the circle.",
+        "Perform 5 slow rolls each direction."
+      ]
+    },
+    {
+      "name": "Standing Pigeon at Desk",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Hips",
+        "Left Leg",
+        "Right Leg"
+      ],
+      "durationSeconds": 90,
+      "difficulty": 2,
+      "instructions": [
+        "Stand facing a desk or table at hip height.",
+        "Place your right leg on the desk, bent at the knee in a 90-degree angle.",
+        "Flex your right foot to protect your knee.",
+        "Stand tall or fold forward over your leg for a deeper stretch.",
+        "Hold for 30–45 seconds, then switch sides."
+      ]
+    },
+    {
+      "name": "Seated Calf Raise",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg",
+        "Left Foot",
+        "Right Foot"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Sit in a chair with both feet flat on the floor.",
+        "Press the balls of your feet into the floor and lift your heels as high as possible.",
+        "Hold at the top for 1–2 seconds.",
+        "Lower your heels slowly back to the floor.",
+        "Repeat for 15–20 reps to warm up the calves and ankles."
+      ],
+      "caution": "Hold something stable for balance. Skip if you have an acute ankle or Achilles injury."
+    },
+    {
+      "name": "Diaphragmatic Breath with Counting",
+      "type": "breath",
+      "targetBodyParts": [
+        "Core",
+        "Chest"
+      ],
+      "durationSeconds": 180,
+      "difficulty": 1,
+      "instructions": [
+        "Lie on your back with your knees bent and one hand on your belly.",
+        "Inhale slowly through your nose for 4 counts, letting your belly rise under your hand.",
+        "Exhale slowly through your mouth for 8 counts, letting your belly fall.",
+        "Keep your chest as still as possible — only your belly should move.",
+        "Repeat for the full duration, focusing on the count."
+      ]
+    },
+    {
+      "name": "Triceps & Elbow Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Arm",
+        "Right Arm",
+        "Left Elbow",
+        "Right Elbow"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Reach one arm overhead and bend the elbow, dropping your hand behind your head.",
+        "Use the opposite hand to gently draw the elbow inward.",
+        "Hold and breathe for 20–30 seconds.",
+        "Switch sides and repeat."
+      ],
+      "caution": "Gentle pressure only. Stop if you feel sharp elbow or shoulder pain."
+    },
+    {
+      "name": "Wrist & Forearm Release",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Forearm",
+        "Right Forearm",
+        "Left Hand",
+        "Right Hand"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Extend one arm forward, palm up.",
+        "Use your other hand to gently pull the fingers down and back toward you.",
+        "Hold 20 seconds, then flip the palm down and repeat.",
+        "Switch arms."
+      ],
+      "caution": "Ease off if you have carpal tunnel symptoms — numbness or tingling means stop and rest."
+    },
+    {
+      "name": "Seated Hamstring Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Hamstring",
+        "Right Hamstring",
+        "Lower Back"
+      ],
+      "durationSeconds": 90,
+      "difficulty": 1,
+      "instructions": [
+        "Sit on the floor with one leg extended, the other tucked in.",
+        "Hinge forward from the hips, reaching toward your toes.",
+        "Keep your back long rather than rounding it.",
+        "Hold 30 seconds and switch legs."
+      ],
+      "caution": "Move from the hips and don't bounce. Stop if you feel pain or tingling down the leg (possible sciatica)."
+    },
+    {
+      "name": "Standing Calf Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Calf",
+        "Right Calf"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Stand facing a wall, hands on it at chest height.",
+        "Step one foot back, keeping the heel down and the back leg straight.",
+        "Lean into the wall until you feel a stretch in the back calf.",
+        "Hold 20–30 seconds, then switch."
+      ],
+      "caution": "Stop immediately for sudden sharp calf pain or swelling — that needs medical attention."
+    },
+    {
+      "name": "Shin & Ankle Mobiliser",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Shin",
+        "Right Shin",
+        "Left Foot",
+        "Right Foot"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Sit tall in a chair.",
+        "Slowly point and flex one foot through its full range.",
+        "Then circle the ankle 5 times each direction.",
+        "Switch feet and repeat."
+      ]
+    },
+    {
+      "name": "Figure-4 Glute Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Glutes",
+        "Hips"
+      ],
+      "durationSeconds": 90,
+      "difficulty": 2,
+      "instructions": [
+        "Lie on your back with both knees bent.",
+        "Cross one ankle over the opposite thigh to make a figure-4.",
+        "Reach through and gently pull the back thigh toward your chest.",
+        "Hold 30 seconds and switch sides."
+      ],
+      "caution": "Keep it gentle. Skip if you have a hip replacement or sharp hip/groin pain."
+    },
+    {
+      "name": "Knee-to-Chest Release",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Lower Back",
+        "Glutes",
+        "Left Knee",
+        "Right Knee"
+      ],
+      "durationSeconds": 90,
+      "difficulty": 1,
+      "instructions": [
+        "Lie on your back on a comfortable surface.",
+        "Draw one knee toward your chest, clasping your hands around the shin.",
+        "Keep the other leg relaxed and your lower back gently grounded.",
+        "Hold 20–30 seconds, then switch legs."
+      ],
+      "caution": "Stop if you feel pain shooting down your leg or worsening back pain."
+    },
+    {
+      "name": "Upper Back Cat-Cow",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Upper Back",
+        "Neck",
+        "Lower Back"
+      ],
+      "durationSeconds": 90,
+      "difficulty": 1,
+      "instructions": [
+        "Start on hands and knees, wrists under shoulders.",
+        "Inhale and drop your belly, lifting your chest and gaze (cow).",
+        "Exhale and round your upper back toward the ceiling (cat).",
+        "Flow slowly with your breath for 8–10 rounds."
       ]
     }
   ]

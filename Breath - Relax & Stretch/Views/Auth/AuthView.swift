@@ -24,7 +24,7 @@ struct AuthView: View {
                     Image(systemName: "figure.mind.and.body")
                         .font(.system(size: 72, weight: .thin))
                         .foregroundStyle(.white)
-                        .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
+                        .shadow(color: Color.primary.opacity(0.15), radius: 8, y: 4)
 
                     Text("Breath")
                         .font(.system(size: 42, weight: .bold, design: .rounded))
@@ -59,25 +59,30 @@ struct AuthView: View {
                     .frame(height: 54)
                     .cornerRadius(14)
 
-                    // Sign in with Google
-                    Button {
-                        // In a real app: GoogleSignIn.signIn(...)
-                        // For now we stub with a demo account so the app is fully navigable
-                        auth.signInWithGoogle(name: "Google User", email: "user@gmail.com")
-                    } label: {
+                    // Sign in with Google (not yet implemented — real OAuth required)
+                    Button {} label: {
                         HStack(spacing: 10) {
                             Image(systemName: "g.circle.fill")
                                 .font(.title2)
-                                .foregroundStyle(Color(red: 0.92, green: 0.26, blue: 0.21))
+                                .foregroundStyle(Color(red: 0.92, green: 0.26, blue: 0.21).opacity(0.4))
                             Text("Continue with Google")
                                 .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(.primary.opacity(0.4))
+                            Spacer()
+                            Text("Coming Soon")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color(.systemFill), in: Capsule())
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 54)
-                        .background(.white)
+                        .padding(.horizontal, 16)
+                        .background(Color(.systemBackground).opacity(0.7))
                         .cornerRadius(14)
                     }
+                    .disabled(true)
 
                     // Email / Password
                     Button {

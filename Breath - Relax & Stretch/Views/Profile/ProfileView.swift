@@ -1,101 +1,233 @@
 import SwiftUI
 import SwiftData
+import PhotosUI
+
+// MARK: - Profile tab selector
+
+private enum ProfileTab: String, CaseIterable {
+    case account    = "Account"
+    case settings   = "Settings"
+    case appearance = "Appearance"
+
+    var icon: String {
+        switch self {
+        case .account:    return "person.circle"
+        case .settings:   return "gearshape"
+        case .appearance: return "paintpalette"
+        }
+    }
+}
+
+// MARK: - ProfileView
 
 struct ProfileView: View {
     @Query private var profiles: [UserProfile]
     @EnvironmentObject private var auth: AuthManager
-    @State private var twoFAOn: Bool = false
+
+    @State private var selectedTab: ProfileTab = .account
     @State private var showSignOutConfirm = false
+
+    // Profile photo
+    @State private var profileImage: Image?
+    @State private var photoPickerItem: PhotosPickerItem?
+
+    // Header display
+    @AppStorage("accentColorName")  private var accentColorName = "Blue"
+    @AppStorage("showStreakEmoji") private var showStreakEmoji = true
+
+    private let accentOptions: [(name: String, color: Color)] = [
+        ("Blue", .blue), ("Purple", .purple), ("Pink", .pink),
+        ("Red",  .red),  ("Orange", .orange), ("Green", .green),
+    ]
 
     var profile: UserProfile? { profiles.first }
 
+    // MARK: Body
+
     var body: some View {
         NavigationStack {
-            if let profile = profile {
+            VStack(spacing: 0) {
+                // ── Profile header ────────────────────────────────────────────
+                profileHeader
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    .background(.regularMaterial)
+
+                Divider()
+
+                // ── 3-segment tab bar ─────────────────────────────────────────
+                tabBar
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(.regularMaterial)
+
+                Divider()
+
+                // ── Tab content ───────────────────────────────────────────────
                 List {
-                    // MARK: Avatar + name
-                    Section {
-                        HStack(spacing: 16) {
-                            Circle()
-                                .fill(Color.accentColor.opacity(0.18))
-                                .frame(width: 60, height: 60)
-                                .overlay {
-                                    Text(profile.displayName.prefix(1).uppercased())
-                                        .font(.title2.bold())
-                                        .foregroundStyle(Color.accentColor)
-                                }
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(profile.displayName)
-                                    .font(.headline)
-                                if !auth.userEmail.isEmpty {
-                                    Text(auth.userEmail)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                                Text("🔥 \(profile.streak) day streak")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                    switch selectedTab {
+                    case .account:
+                        ProfileAccountTab(profile: profile,
+                                          showSignOutConfirm: $showSignOutConfirm)
+                    case .settings:
+                        ProfileSettingsTab()
+                    case .appearance:
+                        ProfileAppearanceTab()
+                    }
+                }
+                .listStyle(.insetGrouped)
+                .animation(.easeInOut(duration: 0.2), value: selectedTab)
+            }
+            .navigationTitle("Profile")
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear { profileImage = loadProfilePhoto() }
+            .onChange(of: photoPickerItem) { _, item in
+                Task {
+                    guard let item else { return }
+                    do {
+                        if let data = try await item.loadTransferable(type: Data.self) {
+                            saveProfilePhoto(data)
+                            if let uiImage = UIImage(data: data) {
+                                profileImage = Image(uiImage: uiImage)
                             }
                         }
-                        .padding(.vertical, 6)
-                    }
-
-                    // MARK: Stats
-                    Section("Stats") {
-                        LabeledContent("Total Minutes") { Text("\(profile.totalMinutes)") }
-                        LabeledContent("Total Points")  { Text("\(profile.totalPoints)") }
-                        LabeledContent("Current Streak") { Text("\(profile.streak) days") }
-                        LabeledContent("Badges Earned") { Text("\(profile.badges.count)") }
-                    }
-
-                    // MARK: Badges
-                    Section {
-                        NavigationLink(destination: BadgesView(earnedBadges: profile.badges)) {
-                            Label("View All Badges", systemImage: "medal")
-                        }
-                    }
-
-                    // MARK: Security
-                    Section("Security") {
-                        Toggle(isOn: $twoFAOn) {
-                            Label("Two-Factor Authentication", systemImage: "faceid")
-                        }
-                        .onChange(of: twoFAOn) { _, val in
-                            auth.twoFAEnabled = val
-                        }
-
-                        LabeledContent("Signed in with") {
-                            Text(auth.provider.rawValue.capitalized)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
-                    // MARK: Sign Out
-                    Section {
-                        Button(role: .destructive) {
-                            showSignOutConfirm = true
-                        } label: {
-                            Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
-                        }
-                    }
+                    } catch { /* ignore photo loading errors */ }
                 }
-                .navigationTitle("Profile")
-                .onAppear { twoFAOn = auth.twoFAEnabled }
-                .confirmationDialog("Sign out of your account?", isPresented: $showSignOutConfirm, titleVisibility: .visible) {
-                    Button("Sign Out", role: .destructive) { auth.signOut() }
-                    Button("Cancel", role: .cancel) {}
-                }
-            } else {
-                ContentUnavailableView(
-                    "No Profile",
-                    systemImage: "person.circle",
-                    description: Text("Sign in to track your progress and earn badges.")
-                )
-                .navigationTitle("Profile")
+            }
+            .confirmationDialog("Sign out of your account?",
+                                isPresented: $showSignOutConfirm,
+                                titleVisibility: .visible) {
+                Button("Sign Out", role: .destructive) { auth.signOut() }
+                Button("Cancel", role: .cancel) {}
             }
         }
     }
+
+    // MARK: - Header
+
+    private var profileHeader: some View {
+        HStack(spacing: 16) {
+            PhotosPicker(selection: $photoPickerItem, matching: .images) {
+                ZStack(alignment: .bottomTrailing) {
+                    avatarCircle
+                        .frame(width: 64, height: 64)
+
+                    // Camera badge
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(5)
+                        .background(accentColor, in: Circle())
+                        .offset(x: 2, y: 2)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Change profile photo")
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(profile?.displayName ?? auth.displayName)
+                    .font(.title3.bold())
+                if !auth.userEmail.isEmpty {
+                    Text(auth.userEmail)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                if let profile {
+                    HStack(spacing: 4) {
+                        if showStreakEmoji { Text("🔥") }
+                        Text("\(profile.streak) day streak · \(profile.totalPoints) pts")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
+            Spacer()
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            "Profile: \(profile?.displayName ?? auth.displayName). \(profile?.streak ?? 0) day streak."
+        )
+    }
+
+    @ViewBuilder
+    private var avatarCircle: some View {
+        if let img = profileImage {
+            img.resizable().scaledToFill().clipShape(Circle())
+        } else {
+            ZStack {
+                Circle().fill(accentColor.opacity(0.15))
+                Text((profile?.displayName ?? auth.displayName).prefix(1).uppercased())
+                    .font(.title.bold())
+                    .foregroundStyle(accentColor)
+            }
+        }
+    }
+
+    // MARK: - 3-segment tab bar
+
+    private var tabBar: some View {
+        HStack(spacing: 0) {
+            ForEach(ProfileTab.allCases, id: \.self) { tab in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { selectedTab = tab }
+                } label: {
+                    VStack(spacing: 4) {
+                        Image(systemName: tab.icon)
+                            .font(.system(size: 18,
+                                          weight: selectedTab == tab ? .semibold : .regular))
+                        Text(tab.rawValue)
+                            .font(.system(size: 11,
+                                          weight: selectedTab == tab ? .semibold : .regular))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .foregroundStyle(selectedTab == tab ? accentColor : .secondary)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(selectedTab == tab ? accentColor.opacity(0.12) : Color.clear)
+                    )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(tab.rawValue)
+                .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
+            }
+        }
+        .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: - Profile photo helpers
+
+    private var profilePhotoURL: URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("profile_photo.jpg")
+    }
+
+    private func saveProfilePhoto(_ data: Data) {
+        guard let uiImage = UIImage(data: data) else { return }
+        let size = CGSize(width: 512, height: 512)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let resized = renderer.image { _ in
+            uiImage.draw(in: CGRect(origin: .zero, size: size))
+        }
+        let jpeg = resized.jpegData(compressionQuality: 0.85) ?? data
+        try? jpeg.write(to: profilePhotoURL, options: .atomic)
+    }
+
+    private func loadProfilePhoto() -> Image? {
+        guard let data = try? Data(contentsOf: profilePhotoURL),
+              let uiImage = UIImage(data: data) else { return nil }
+        return Image(uiImage: uiImage)
+    }
+
+    // MARK: - Accent color
+
+    private var accentColor: Color {
+        accentOptions.first { $0.name == accentColorName }?.color ?? .accentColor
+    }
 }
+
+// MARK: - Preview
 
 #Preview {
     ProfileView()

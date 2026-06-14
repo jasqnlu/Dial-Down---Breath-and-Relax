@@ -1,24 +1,48 @@
 import SwiftUI
+import AVKit
 
 struct ExerciseDetailView: View {
     let exercise: Exercise
     @State private var showingPlayer = false
+    @State private var player: AVPlayer?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
 
-                // Meta info
+                // ── Meta chips ──────────────────────────────────────────────
                 HStack(spacing: 16) {
-                    StatChip(icon: "clock", label: exercise.durationFormatted)
-                    StatChip(icon: "chart.bar", label: difficultyLabel)
+                    StatChip(icon: "clock",             label: exercise.durationFormatted)
+                    StatChip(icon: "chart.bar",         label: difficultyLabel)
                     StatChip(icon: "figure.mind.and.body", label: exercise.type.rawValue)
                 }
                 .padding(.horizontal)
 
+                // ── Safety caution (only when the exercise has one) ─────────
+                if let caution = exercise.caution, !caution.isEmpty {
+                    CautionCard(text: caution)
+                        .padding(.horizontal)
+                }
+
                 Divider()
 
-                // Target body parts
+                // ── Video / media preview ───────────────────────────────────
+                if let p = player {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Preview")
+                            .font(.headline)
+                            .padding(.horizontal)
+
+                        VideoPlayer(player: p)
+                            .frame(height: 220)
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .padding(.horizontal)
+                    }
+
+                    Divider()
+                }
+
+                // ── Target body parts ────────────────────────────────────────
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Targets")
                         .font(.headline)
@@ -41,7 +65,7 @@ struct ExerciseDetailView: View {
 
                 Divider()
 
-                // Step-by-step instructions
+                // ── Step-by-step instructions ────────────────────────────────
                 VStack(alignment: .leading, spacing: 14) {
                     Text("Instructions")
                         .font(.headline)
@@ -63,11 +87,25 @@ struct ExerciseDetailView: View {
                     }
                 }
 
+                // ── Global medical disclaimer ───────────────────────────────
+                MedicalDisclaimerNote()
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+
                 Spacer(minLength: 80)
             }
             .padding(.vertical)
         }
         .navigationTitle(exercise.name)
+        .onAppear {
+            if let urlString = exercise.mediaURL, let url = URL(string: urlString) {
+                player = AVPlayer(url: url)
+            }
+        }
+        .onDisappear {
+            player?.pause()
+            player = nil
+        }
         .safeAreaInset(edge: .bottom) {
             Button {
                 showingPlayer = true
@@ -97,6 +135,8 @@ struct ExerciseDetailView: View {
     }
 }
 
+// MARK: - Stat chip
+
 struct StatChip: View {
     let icon: String
     let label: String
@@ -108,5 +148,6 @@ struct StatChip: View {
             .padding(.vertical, 6)
             .background(Color(.secondarySystemFill))
             .clipShape(RoundedRectangle(cornerRadius: 8))
+            .accessibilityLabel(label)
     }
 }

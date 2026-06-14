@@ -17,6 +17,7 @@ final class Exercise {
     var difficulty: Int             // 1 = easy, 2 = medium, 3 = hard
     var instructions: [String]      // step-by-step instructions
     var mediaURL: String?           // animation or image URL
+    var caution: String?            // optional safety note / contraindication
 
     /// Human-readable duration: "30s", "2m", "1m 30s"
     var durationFormatted: String {
@@ -35,7 +36,8 @@ final class Exercise {
         durationSeconds: Int,
         difficulty: Int,
         instructions: [String],
-        mediaURL: String? = nil
+        mediaURL: String? = nil,
+        caution: String? = nil
     ) {
         self.uuid = uuid
         self.name = name
@@ -45,5 +47,6 @@ final class Exercise {
         self.difficulty = difficulty
         self.instructions = instructions
         self.mediaURL = mediaURL
+        self.caution = caution
     }
 }

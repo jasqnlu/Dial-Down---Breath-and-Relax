@@ -10,8 +10,11 @@ struct BorrowRoutineView: View {
     @State private var borrowedIDs: Set<UUID> = []
     @State private var showingConfirmation: Routine? = nil
 
+    // Public routines from other users, ranked by popularity
     private var publicRoutines: [Routine] {
-        allRoutines.filter { $0.isPublic && $0.authorID != auth.userEmail }
+        allRoutines
+            .filter { $0.isPublic && $0.authorID != auth.userEmail }
+            .sorted { $0.borrowCount > $1.borrowCount }
     }
 
     var body: some View {
@@ -21,12 +24,12 @@ struct BorrowRoutineView: View {
                     ContentUnavailableView(
                         "No Public Routines",
                         systemImage: "globe",
-                        description: Text("No one has shared a public routine yet. Create one and mark it public!")
+                        description: Text("No one has shared a routine yet. Create one and publish it to the community!")
                     )
                 } else {
                     List {
                         Section {
-                            Text("Browse routines shared by the community. Tap one to fork it into your own library.")
+                            Text("Browse community routines, ranked by popularity. Fork one to add it to your library.")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         }
@@ -73,6 +76,8 @@ struct BorrowRoutineView: View {
     // MARK: - Fork logic
 
     private func fork(_ routine: Routine) {
+        routine.borrowCount += 1
+
         let forked = Routine(
             name: routine.name + " (Borrowed)",
             exerciseIDs: routine.exerciseIDs,
@@ -81,7 +86,13 @@ struct BorrowRoutineView: View {
             isPublic: false
         )
         modelContext.insert(forked)
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            #if DEBUG
+            print("⚠️ SwiftData save failed in BorrowRoutineView: \(error)")
+            #endif
+        }
         borrowedIDs.insert(routine.uuid)
         showingConfirmation = nil
     }
@@ -99,14 +110,21 @@ private struct BorrowRoutineRow: View {
     let isBorrowed: Bool
     let onBorrow: () -> Void
 
+    private var displayAuthor: String? {
+        routine.authorName ?? routine.authorID
+    }
+
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(routine.name)
                     .font(.headline)
+
                 HStack(spacing: 10) {
-                    Label("\(routine.exerciseIDs.count) exercises", systemImage: "list.number")
-                    if let author = routine.authorID, !author.isEmpty {
+                    Label("\(routine.exerciseIDs.count) exercise\(routine.exerciseIDs.count == 1 ? "" : "s")",
+                          systemImage: "list.number")
+
+                    if let author = displayAuthor, !author.isEmpty {
                         Label(author, systemImage: "person")
                             .lineLimit(1)
                     }
@@ -116,6 +134,19 @@ private struct BorrowRoutineRow: View {
             }
 
             Spacer()
+
+            // Popularity badge
+            if routine.borrowCount > 0 {
+                VStack(spacing: 2) {
+                    Image(systemName: "flame.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.orange)
+                    Text("\(routine.borrowCount)")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.orange)
+                }
+                .frame(width: 28)
+            }
 
             if isBorrowed {
                 Image(systemName: "checkmark.circle.fill")

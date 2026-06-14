@@ -10,11 +10,24 @@ struct BadgesView: View {
     }
 
     let allBadges: [BadgeDefinition] = [
-        BadgeDefinition(name: "First Breath",     icon: "wind",                       description: "Complete your first session"),
-        BadgeDefinition(name: "Streak Starter",   icon: "flame",                      description: "Achieve a 3-day streak"),
-        BadgeDefinition(name: "Full Body",         icon: "figure.mind.and.body",       description: "Target all major muscle groups in one session"),
-        BadgeDefinition(name: "Routine Builder",   icon: "rectangle.stack.badge.plus", description: "Create your first custom routine"),
-        BadgeDefinition(name: "Borrowed & Built",  icon: "arrow.triangle.branch",      description: "Fork a public routine and complete it"),
+        // First session
+        BadgeDefinition(name: "First Breath",         icon: "wind",                        description: "Complete your very first session"),
+        // Streak milestones
+        BadgeDefinition(name: "Streak Starter",       icon: "flame",                       description: "Achieve a 3-day streak"),
+        BadgeDefinition(name: "Weekly Warrior",       icon: "flame.fill",                  description: "Keep a 7-day streak"),
+        BadgeDefinition(name: "Month of Mindfulness", icon: "calendar.badge.checkmark",    description: "Keep a 30-day streak"),
+        // Time milestones
+        BadgeDefinition(name: "30 Min Club",          icon: "clock",                       description: "Accumulate 30 minutes of practice"),
+        BadgeDefinition(name: "Hour Hero",            icon: "clock.badge.checkmark",       description: "Accumulate 1 hour of practice"),
+        BadgeDefinition(name: "5 Hour Club",          icon: "clock.badge.fill",            description: "Accumulate 5 hours of practice"),
+        // Points milestones
+        BadgeDefinition(name: "Century",              icon: "star",                        description: "Earn 100 total points"),
+        BadgeDefinition(name: "High Achiever",        icon: "star.leadinghalf.filled",     description: "Earn 500 total points"),
+        BadgeDefinition(name: "Elite Breather",       icon: "star.fill",                   description: "Earn 1,000 total points"),
+        // Special
+        BadgeDefinition(name: "Full Body",            icon: "figure.mind.and.body",        description: "Target 5+ muscle groups in one session"),
+        BadgeDefinition(name: "Routine Builder",      icon: "rectangle.stack.badge.plus",  description: "Create your first custom routine"),
+        BadgeDefinition(name: "Borrowed & Built",     icon: "arrow.triangle.branch",       description: "Complete a routine borrowed from the library"),
     ]
 
     var body: some View {

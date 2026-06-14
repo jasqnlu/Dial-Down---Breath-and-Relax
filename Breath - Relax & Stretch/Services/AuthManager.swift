@@ -3,7 +3,7 @@ import Combine
 import AuthenticationServices
 import Security
 import LocalAuthentication
-import CryptoKit
+import CommonCrypto
 
 // MARK: - Auth Provider
 
@@ -88,29 +88,36 @@ final class AuthManager: ObservableObject {
         persist(name: name, email: email, providerVal: .apple)
     }
 
-    // MARK: - Sign in with Google (stub)
-
-    func signInWithGoogle(name: String, email: String) {
-        persist(name: name, email: email, providerVal: .google)
-    }
-
     // MARK: - Email / Password
 
     /// Returns nil on success, error string on failure.
     func signUp(name: String, email: String, password: String) -> String? {
-        guard !name.isEmpty          else { return "Name is required." }
-        guard email.contains("@")   else { return "Enter a valid email address." }
-        guard password.count >= 8   else { return "Password must be at least 8 characters." }
-        if keychainLoad(account: email) != nil { return "An account with that email already exists." }
-        keychainSave(account: email, value: sha256(password))
+        guard !name.isEmpty        else { return "Name is required." }
+        guard email.contains("@") else { return "Enter a valid email address." }
+        guard password.count >= 8 else { return "Password must be at least 8 characters." }
+        if keychainLoadCredential(account: email) != nil {
+            return "An account with that email already exists."
+        }
+        let salt = generateSalt()
+        let hash = pbkdf2(password, salt: salt)
+        keychainSave(account: email, value: "\(salt.hexString):\(hash)")
+        keychainSave(account: "name:\(email)", value: name)
         persist(name: name, email: email, providerVal: .email)
         return nil
     }
 
     func signIn(email: String, password: String) -> String? {
-        guard let stored = keychainLoad(account: email) else { return "No account found for this email." }
-        guard stored == sha256(password) else { return "Incorrect password." }
-        let name = UserDefaults.standard.string(forKey: kDisplayName) ?? "User"
+        guard let stored = keychainLoadCredential(account: email) else {
+            return "No account found for this email."
+        }
+        let parts = stored.split(separator: ":", maxSplits: 1).map(String.init)
+        guard parts.count == 2, let saltData = Data(hexString: parts[0]) else {
+            return "Account data is corrupted. Please create a new account."
+        }
+        guard pbkdf2(password, salt: saltData) == parts[1] else {
+            return "Incorrect password."
+        }
+        let name = keychainLoadCredential(account: "name:\(email)") ?? "User"
         persist(name: name, email: email, providerVal: .email)
         return nil
     }
@@ -157,7 +164,7 @@ final class AuthManager: ObservableObject {
         SecItemAdd(query as CFDictionary, nil)
     }
 
-    private func keychainLoad(account: String) -> String? {
+    private func keychainLoadCredential(account: String) -> String? {
         let query: [CFString: Any] = [
             kSecClass:       kSecClassGenericPassword,
             kSecAttrService: keychainService,
@@ -171,10 +178,52 @@ final class AuthManager: ObservableObject {
         return String(data: data, encoding: .utf8)
     }
 
-    // MARK: - SHA-256
+    // MARK: - PBKDF2 (100k rounds, SHA-256, 16-byte random salt)
 
-    private func sha256(_ input: String) -> String {
-        let digest = SHA256.hash(data: Data(input.utf8))
-        return digest.map { String(format: "%02x", $0) }.joined()
+    private func generateSalt() -> Data {
+        var salt = Data(repeating: 0, count: 16)
+        salt.withUnsafeMutableBytes {
+            _ = SecRandomCopyBytes(kSecRandomDefault, 16, $0.baseAddress!)
+        }
+        return salt
     }
+
+    private func pbkdf2(_ password: String, salt: Data) -> String {
+        let passwordData = Data(password.utf8)
+        var derivedKey = Data(repeating: 0, count: 32)
+        var status = Int32(kCCSuccess)
+        _ = derivedKey.withUnsafeMutableBytes { derivedPtr in
+            passwordData.withUnsafeBytes { passwordPtr in
+                salt.withUnsafeBytes { saltPtr in
+                    status = CCKeyDerivationPBKDF(
+                        CCPBKDFAlgorithm(kCCPBKDF2),
+                        passwordPtr.baseAddress?.assumingMemoryBound(to: Int8.self),
+                        passwordData.count,
+                        saltPtr.baseAddress?.assumingMemoryBound(to: UInt8.self),
+                        salt.count,
+                        CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
+                        UInt32(100_000),
+                        derivedPtr.baseAddress?.assumingMemoryBound(to: UInt8.self),
+                        32
+                    )
+                }
+            }
+        }
+        return status == kCCSuccess ? derivedKey.hexString : ""
+    }
+}
+
+// MARK: - Data hex helpers (file-private)
+
+private extension Data {
+    init?(hexString: String) {
+        guard hexString.count.isMultiple(of: 2) else { return nil }
+        let bytes = stride(from: 0, to: hexString.count, by: 2).compactMap {
+            UInt8(hexString.dropFirst($0).prefix(2), radix: 16)
+        }
+        guard bytes.count == hexString.count / 2 else { return nil }
+        self.init(bytes)
+    }
+
+    var hexString: String { map { String(format: "%02x", $0) }.joined() }
 }

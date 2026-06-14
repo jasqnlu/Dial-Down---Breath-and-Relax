@@ -23,9 +23,12 @@ struct BreathRelaxStretchApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environmentObject(auth)
-                .onAppear { seedIfNeeded() }
+            OnboardingGate {
+                RootView()
+            }
+            .environmentObject(auth)
+            .onAppear { seedIfNeeded() }
+            .task { await syncRemoteCatalog() }
         }
         .modelContainer(sharedModelContainer)
     }
@@ -56,13 +59,73 @@ struct BreathRelaxStretchApp: App {
             else { continue }
 
             let mediaURL = raw["mediaURL"] as? String
+            let caution  = raw["caution"] as? String
             context.insert(Exercise(
                 name: name, type: type, targetBodyParts: parts,
                 durationSeconds: duration, difficulty: difficulty,
-                instructions: instructions, mediaURL: mediaURL
+                instructions: instructions, mediaURL: mediaURL, caution: caution
             ))
         }
-        try? context.save()
+        do {
+            try context.save()
+        } catch {
+            #if DEBUG
+            print("⚠️ SwiftData seed save failed: \(error)")
+            #endif
+        }
+    }
+
+    // MARK: - Remote catalog sync (best-effort, offline-first)
+
+    /// After the bundled seed loads, pull the curated catalog from Supabase and
+    /// upsert it into SwiftData. No-ops (silently) when the backend isn't
+    /// configured or the device is offline — the seed catalog stays in place.
+    @MainActor
+    private func syncRemoteCatalog() async {
+        guard SupabaseService.isConfigured else { return }
+        do {
+            let remote = try await SupabaseService.shared.fetchExercises()
+            guard !remote.isEmpty else { return }
+            upsertExercises(remote, into: sharedModelContainer.mainContext)
+        } catch {
+            // Offline or backend error — bundled seed remains the source of truth.
+        }
+    }
+
+    @MainActor
+    private func upsertExercises(_ remote: [RemoteExercise], into context: ModelContext) {
+        let existing = (try? context.fetch(FetchDescriptor<Exercise>())) ?? []
+        var byID: [UUID: Exercise] = [:]
+        for ex in existing { byID[ex.uuid] = ex }
+
+        for r in remote {
+            guard let id = UUID(uuidString: r.id),
+                  let type = ExerciseType(rawValue: r.type.capitalized) else { continue }
+            if let ex = byID[id] {
+                ex.name            = r.name
+                ex.type            = type
+                ex.targetBodyParts = r.targetBodyParts
+                ex.durationSeconds = r.durationSeconds
+                ex.difficulty      = r.difficulty
+                ex.instructions    = r.instructions
+                ex.mediaURL        = r.mediaURL
+                ex.caution         = r.caution
+            } else {
+                context.insert(Exercise(
+                    uuid: id, name: r.name, type: type,
+                    targetBodyParts: r.targetBodyParts,
+                    durationSeconds: r.durationSeconds, difficulty: r.difficulty,
+                    instructions: r.instructions, mediaURL: r.mediaURL, caution: r.caution
+                ))
+            }
+        }
+        do {
+            try context.save()
+        } catch {
+            #if DEBUG
+            print("⚠️ SwiftData upsert save failed: \(error)")
+            #endif
+        }
     }
 }
 
@@ -100,6 +163,12 @@ struct RootView: View {
         let name = auth.displayName.isEmpty ? "User" : auth.displayName
         let profile = UserProfile(profileID: auth.userEmail, displayName: name)
         modelContext.insert(profile)
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            #if DEBUG
+            print("⚠️ SwiftData profile save failed: \(error)")
+            #endif
+        }
     }
 }

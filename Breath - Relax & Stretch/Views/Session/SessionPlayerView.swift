@@ -1,10 +1,12 @@
 import SwiftUI
 import SwiftData
 import Combine
+import AudioToolbox
 
 struct SessionPlayerView: View {
     let exercises: [Exercise]
-    var routineID: UUID = UUID()          // pass the routine's UUID when launching
+    var routineID: UUID = UUID()
+    var isBorrowedRoutine: Bool = false   // true when playing a forked public routine
     var onComplete: ((Int) -> Void)? = nil
 
     @Environment(\.modelContext) private var modelContext
@@ -16,6 +18,8 @@ struct SessionPlayerView: View {
     @State private var showingSummary = false
     @State private var totalPointsEarned = 0
     @State private var sessionStarted = Date()
+    /// Set to false in .onDisappear so the timer stops processing ticks after dismiss
+    @State private var sessionActive = false
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -23,6 +27,12 @@ struct SessionPlayerView: View {
     private let impactLight   = UIImpactFeedbackGenerator(style: .light)
     private let impactMedium  = UIImpactFeedbackGenerator(style: .medium)
     private let notifySuccess = UINotificationFeedbackGenerator()
+
+    // Sound IDs (AudioToolbox built-in system sounds — no audio files needed)
+    private let soundTick:       SystemSoundID = 1104  // keyboard click — breathing cue
+    private let soundTransition: SystemSoundID = 1057  // short tock — exercise advance
+    private let soundComplete:   SystemSoundID = 1016  // tweet chime — session done
+    @State private var breathTick = 0  // counts seconds to fire cue every 4s
 
     var currentExercise: Exercise? {
         guard currentIndex < exercises.count else { return nil }
@@ -41,16 +51,25 @@ struct SessionPlayerView: View {
             }
         }
         .onAppear {
+            sessionActive  = true
             sessionStarted = Date()
             startExercise()
             impactLight.prepare()
             impactMedium.prepare()
             notifySuccess.prepare()
         }
+        .onDisappear {
+            sessionActive = false   // stop timer processing after dismiss animation
+        }
         .onReceive(timer) { _ in
-            guard !isPaused, !showingSummary else { return }
+            guard sessionActive, !isPaused, !showingSummary else { return }
             if secondsRemaining > 0 {
                 secondsRemaining -= 1
+                // Breathing tick every 4 seconds
+                breathTick += 1
+                if breathTick % 4 == 0 {
+                    AudioServicesPlaySystemSound(soundTick)
+                }
             } else {
                 advanceToNext(completion: 1.0)
             }
@@ -113,6 +132,7 @@ struct SessionPlayerView: View {
                         .font(.title)
                         .foregroundStyle(.secondary)
                 }
+                .accessibilityLabel("Skip exercise")
 
                 Button {
                     impactLight.impactOccurred()
@@ -122,6 +142,7 @@ struct SessionPlayerView: View {
                         .font(.system(size: 72))
                         .foregroundStyle(Color.accentColor)
                 }
+                .accessibilityLabel(isPaused ? "Resume session" : "Pause session")
 
                 Image(systemName: "forward.skip")
                     .font(.title)
@@ -143,11 +164,14 @@ struct SessionPlayerView: View {
 
         if currentIndex + 1 < exercises.count {
             impactMedium.impactOccurred()
+            AudioServicesPlaySystemSound(soundTransition)
             currentIndex += 1
+            breathTick = 0
             startExercise()
         } else {
             // Session complete
             notifySuccess.notificationOccurred(.success)
+            AudioServicesPlaySystemSound(soundComplete)
             saveSession(completion: completion)
             showingSummary = true
         }
@@ -157,8 +181,8 @@ struct SessionPlayerView: View {
 
     private func saveSession(completion: Double) {
         let completedAt = Date()
+        let bodyPartsCovered = Set(exercises.flatMap { $0.targetBodyParts })
 
-        // Save Session record
         let session = Session(
             routineID: routineID,
             startedAt: sessionStarted,
@@ -168,17 +192,25 @@ struct SessionPlayerView: View {
         session.completedAt = completedAt
         modelContext.insert(session)
 
-        // Update or create UserProfile
         let descriptor = FetchDescriptor<UserProfile>()
         if let profile = try? modelContext.fetch(descriptor).first {
             profile.totalPoints   += totalPointsEarned
             profile.totalMinutes  += max(1, Int(completedAt.timeIntervalSince(sessionStarted) / 60))
             GamificationService.updateStreak(for: profile)
-            let newBadges = GamificationService.newBadges(for: profile)
+            let newBadges = GamificationService.newBadges(for: profile, bodyPartsCovered: bodyPartsCovered)
             GamificationService.applyBadges(newBadges, to: profile)
+            if isBorrowedRoutine {
+                GamificationService.awardBadge("Borrowed & Built", to: profile)
+            }
         }
 
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            #if DEBUG
+            print("⚠️ SwiftData save failed in SessionPlayerView: \(error)")
+            #endif
+        }
     }
 
     private func timeString(_ seconds: Int) -> String {

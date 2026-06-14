@@ -4,13 +4,18 @@ import SwiftData
 struct RoutineBuilderView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var auth: AuthManager
 
     @Query private var exercises: [Exercise]
+    @Query private var allRoutines: [Routine]
+
     @State private var routineName = ""
     // Store IDs (plain value types) instead of @Model objects to avoid SwiftData binding issues
     @State private var selectedIDs: [UUID] = []
     @State private var isPublic = false
     @State private var showingExercisePicker = false
+
+    private let maxPublicRoutines = 3
 
     private var selectedExercises: [Exercise] {
         selectedIDs.compactMap { id in exercises.first { $0.uuid == id } }
@@ -18,6 +23,14 @@ struct RoutineBuilderView: View {
 
     private var totalDuration: Int {
         selectedExercises.reduce(0) { $0 + $1.durationSeconds }
+    }
+
+    private var myPublicCount: Int {
+        allRoutines.filter { $0.isPublic && $0.authorID == auth.userEmail }.count
+    }
+
+    private var publishLimitReached: Bool {
+        myPublicCount >= maxPublicRoutines
     }
 
     var body: some View {
@@ -67,9 +80,18 @@ struct RoutineBuilderView: View {
                 }
 
                 Section {
-                    Toggle("Make Public", isOn: $isPublic)
+                    Toggle("Publish to Community", isOn: $isPublic)
+                        .disabled(!isPublic && publishLimitReached)
                 } footer: {
-                    Text("Public routines can be borrowed by other users.")
+                    if isPublic {
+                        Text("Your routine will appear in the community library. You've used \(myPublicCount) of \(maxPublicRoutines) publish slots.")
+                    } else if publishLimitReached {
+                        Text("You've reached the \(maxPublicRoutines)-routine publish limit. Un-publish an existing routine to free a slot.")
+                            .foregroundStyle(.red)
+                    } else {
+                        let remaining = maxPublicRoutines - myPublicCount
+                        Text("Share this routine with the community (\(remaining) publish slot\(remaining == 1 ? "" : "s") remaining).")
+                    }
                 }
             }
             .navigationTitle("New Routine")
@@ -94,9 +116,24 @@ struct RoutineBuilderView: View {
         let routine = Routine(
             name: routineName,
             exerciseIDs: selectedIDs,
+            authorID: auth.userEmail,
+            authorName: isPublic ? auth.displayName : nil,
             isPublic: isPublic
         )
         modelContext.insert(routine)
+
+        if let profile = (try? modelContext.fetch(FetchDescriptor<UserProfile>()))?.first {
+            GamificationService.awardBadge("Routine Builder", to: profile)
+        }
+
+        do {
+            try modelContext.save()
+        } catch {
+            #if DEBUG
+            print("⚠️ SwiftData save failed in RoutineBuilderView: \(error)")
+            #endif
+        }
+
         dismiss()
     }
 }
