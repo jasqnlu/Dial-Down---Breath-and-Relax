@@ -26,6 +26,7 @@ struct BodyFigureCanvas: View {
     let annotationMode: Bool
     let selectedTool: DrawingTool
     let selectedSensation: SensationColor
+    var sex: String = "male"            // "male" or "female"
     @ObservedObject var store: AnnotationStore
     @Binding var markedRegions: Set<String>
 
@@ -43,10 +44,14 @@ struct BodyFigureCanvas: View {
             let figureSize = geo.size
 
             ZStack {
-                // 1. Silhouette (same outline both ways; a spine hint marks the back)
-                SilhouetteShape()
-                    .fill(layer.silhouetteFill)
-                    .overlay(SilhouetteShape().stroke(Color(.systemGray3), lineWidth: 1))
+                // 1. Silhouette (gender-specific)
+                silhouetteView
+
+                // 1b. Anatomical detail overlays — front view only
+                if facing == .front {
+                    FacialFeaturesCanvas(sex: sex)
+                    BodyDetailCanvas()
+                }
 
                 if facing == .back {
                     backDetailLines(in: figureSize)
@@ -106,6 +111,21 @@ struct BodyFigureCanvas: View {
         }
         .padding(.horizontal, 28)
         .padding(.vertical, 6)
+    }
+
+    // MARK: - Gender-specific silhouette
+
+    @ViewBuilder
+    private var silhouetteView: some View {
+        if sex == "female" {
+            FemaleSilhouetteShape()
+                .fill(layer.silhouetteFill)
+                .overlay(FemaleSilhouetteShape().stroke(Color(.systemGray3), lineWidth: 1))
+        } else {
+            MaleSilhouetteShape()
+                .fill(layer.silhouetteFill)
+                .overlay(MaleSilhouetteShape().stroke(Color(.systemGray3), lineWidth: 1))
+        }
     }
 
     // MARK: - Region overlays

@@ -9,8 +9,8 @@ actor SupabaseService {
     // Replace these two values with your actual Supabase project URL and anon key.
     // Dashboard → Settings → API
     // Static lets on an actor are nonisolated — no @MainActor contamination.
-    private static let supabaseURL     = "https://YOUR_PROJECT.supabase.co"
-    private static let supabaseAnonKey = "YOUR_ANON_KEY"
+    private static let supabaseURL     = "https://supabase.com/dashboard/project/wmsutfittuxrvcwuywrk"
+    private static let supabaseAnonKey = "sb_publishable_fpbIp20MIAf3OV1Two6DhQ_MpZvy2Dc"
 
     /// True once real credentials are filled in above. While false (placeholder
     /// values), the app skips all remote calls and runs purely on the bundled

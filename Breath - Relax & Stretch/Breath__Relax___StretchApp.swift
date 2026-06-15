@@ -21,13 +21,18 @@ struct BreathRelaxStretchApp: App {
         }
     }()
 
+    @AppStorage("seedDataVersion") private var seedDataVersion: Int = 0
+
     var body: some Scene {
         WindowGroup {
             OnboardingGate {
                 RootView()
             }
             .environmentObject(auth)
-            .onAppear { seedIfNeeded() }
+            .onAppear {
+                seedIfNeeded()
+                migrateSeedIfNeeded()
+            }
             .task { await syncRemoteCatalog() }
         }
         .modelContainer(sharedModelContainer)
@@ -60,11 +65,16 @@ struct BreathRelaxStretchApp: App {
 
             let mediaURL = raw["mediaURL"] as? String
             let caution  = raw["caution"] as? String
-            context.insert(Exercise(
+            let exercise = Exercise(
                 name: name, type: type, targetBodyParts: parts,
                 durationSeconds: duration, difficulty: difficulty,
                 instructions: instructions, mediaURL: mediaURL, caution: caution
-            ))
+            )
+            if let posesRaw = raw["poses"],
+               let posesData = try? JSONSerialization.data(withJSONObject: posesRaw) {
+                exercise.posesData = posesData
+            }
+            context.insert(exercise)
         }
         do {
             try context.save()
@@ -73,6 +83,45 @@ struct BreathRelaxStretchApp: App {
             print("⚠️ SwiftData seed save failed: \(error)")
             #endif
         }
+    }
+
+    // MARK: - Seed migration (adds pose data to exercises seeded before v2)
+
+    private func migrateSeedIfNeeded() {
+        guard seedDataVersion < 2 else { return }
+
+        guard
+            let url  = Bundle.main.url(forResource: "SeedData", withExtension: "json"),
+            let data = try? Data(contentsOf: url),
+            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let rawExercises = json["exercises"] as? [[String: Any]]
+        else { return }
+
+        // Build name → posesData map from bundle seed
+        var posesByName: [String: Data] = [:]
+        for raw in rawExercises {
+            guard
+                let name     = raw["name"] as? String,
+                let posesRaw = raw["poses"],
+                let poseData = try? JSONSerialization.data(withJSONObject: posesRaw)
+            else { continue }
+            posesByName[name] = poseData
+        }
+
+        let context = sharedModelContainer.mainContext
+        let existing = (try? context.fetch(FetchDescriptor<Exercise>())) ?? []
+        var changed = false
+        for exercise in existing {
+            if exercise.posesData.isEmpty, let poseData = posesByName[exercise.name] {
+                exercise.posesData = poseData
+                changed = true
+            }
+        }
+
+        if changed {
+            try? context.save()
+        }
+        seedDataVersion = 2
     }
 
     // MARK: - Remote catalog sync (best-effort, offline-first)

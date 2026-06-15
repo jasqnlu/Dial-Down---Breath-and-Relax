@@ -24,6 +24,20 @@ struct ExerciseDetailView: View {
                         .padding(.horizontal)
                 }
 
+                // ── Stick figure animation ─────────────────────────────────
+                if !exercise.poses.isEmpty {
+                    StickFigureView(
+                        poses: exercise.poses,
+                        activeBodyParts: Set(exercise.targetBodyParts)
+                    )
+                    .frame(maxWidth: 260)
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity)
+                    .background(Color(.secondarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .padding(.horizontal)
+                }
+
                 Divider()
 
                 // ── Video / media preview ───────────────────────────────────

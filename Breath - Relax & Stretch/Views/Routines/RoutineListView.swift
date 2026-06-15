@@ -4,25 +4,37 @@ import SwiftData
 struct RoutineListView: View {
     @Query private var routines: [Routine]
     @Query private var exercises: [Exercise]
+    @Environment(\.modelContext) private var modelContext
 
     @State private var showingBuilder  = false
     @State private var showingBrowser  = false
     @State private var routineToPlay: Routine?
+    @State private var routineToEdit: Routine?
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 0) {
-                    ForEach(routines) { routine in
-                        RoutineRow(routine: routine) {
-                            routineToPlay = routine
+            List {
+                ForEach(routines) { routine in
+                    RoutineRow(routine: routine) {
+                        routineToPlay = routine
+                    }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button(role: .destructive) {
+                            modelContext.delete(routine)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
                         }
-                        .padding(.horizontal)
-                        .padding(.vertical, 4)
-                        Divider().padding(.leading)
+
+                        Button {
+                            routineToEdit = routine
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
+                        .tint(.orange)
                     }
                 }
             }
+            .listStyle(.plain)
             .navigationTitle("Routines")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -47,6 +59,10 @@ struct RoutineListView: View {
             }
             .sheet(isPresented: $showingBuilder) {
                 RoutineBuilderView()
+                    .environmentObject(AuthManager.shared)
+            }
+            .sheet(item: $routineToEdit) { routine in
+                RoutineBuilderView(routineToEdit: routine)
                     .environmentObject(AuthManager.shared)
             }
             .sheet(isPresented: $showingBrowser) {
@@ -124,7 +140,7 @@ struct RoutineRow: View {
             .disabled(routine.exerciseIDs.isEmpty)
             .accessibilityLabel("Play \(routine.name)")
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, 4)
     }
 }
 

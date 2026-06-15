@@ -18,6 +18,13 @@ final class Exercise {
     var instructions: [String]      // step-by-step instructions
     var mediaURL: String?           // animation or image URL
     var caution: String?            // optional safety note / contraindication
+    var posesData: Data = Data()    // JSON-encoded [ExercisePose]; empty = no animation
+
+    /// Decoded pose keyframes for the stick-figure animation.
+    var poses: [ExercisePose] {
+        get { (try? JSONDecoder().decode([ExercisePose].self, from: posesData)) ?? [] }
+        set { posesData = (try? JSONEncoder().encode(newValue)) ?? Data() }
+    }
 
     /// Human-readable duration: "30s", "2m", "1m 30s"
     var durationFormatted: String {

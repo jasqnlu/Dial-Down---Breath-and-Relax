@@ -5,10 +5,107 @@ import SwiftUI
 struct ProfileSettingsTab: View {
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
     @AppStorage("reminderHour")         private var reminderHour = 8
-    @AppStorage("sessionReminderDays")  private var reminderDays = 5
+    @AppStorage("reminderWeekdays")     private var weekdaysStr = "2,3,4,5,6" // Mon–Fri default
+    @AppStorage("bodyMapSex")           private var bodyMapSex = "male"
+    @AppStorage("onboardingGoals")      private var goalsStr = ""
+
+    private let allGoals: [(id: String, label: String, icon: String)] = [
+        ("flexibility",      "Flexibility",       "figure.flexibility"),
+        ("stress_relief",    "Stress Relief",     "leaf.fill"),
+        ("pain_relief",      "Pain Relief",       "bandage.fill"),
+        ("better_breathing", "Better Breathing",  "wind"),
+    ]
+
+    private var selectedGoals: Set<String> {
+        Set(goalsStr.split(separator: ",").map(String.init))
+    }
+
+    private func toggleGoal(_ id: String) {
+        var current = selectedGoals
+        if current.contains(id) { current.remove(id) } else { current.insert(id) }
+        goalsStr = current.sorted().joined(separator: ",")
+    }
+
+    // Calendar weekday numbers 1=Sun … 7=Sat, with display labels
+    private let weekdays: [(Int, String)] = [
+        (2,"Mo"), (3,"Tu"), (4,"We"), (5,"Th"), (6,"Fr"), (7,"Sa"), (1,"Su")
+    ]
+
+    private var selectedWeekdays: Set<Int> {
+        get { Set(weekdaysStr.split(separator: ",").compactMap { Int($0) }) }
+    }
+
+    private func toggleWeekday(_ day: Int) {
+        var current = selectedWeekdays
+        if current.contains(day) {
+            current.remove(day)
+        } else {
+            current.insert(day)
+        }
+        weekdaysStr = current.sorted().map(String.init).joined(separator: ",")
+        reschedule(weekdays: current)
+    }
+
+    private func reschedule(weekdays days: Set<Int>) {
+        guard notificationsEnabled, !days.isEmpty else { return }
+        NotificationService.shared.scheduleReminders(hour: reminderHour, weekdays: days)
+    }
 
     var body: some View {
         Group {
+            // Goals
+            Section {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                    ForEach(allGoals, id: \.id) { goal in
+                        let selected = selectedGoals.contains(goal.id)
+                        Button { toggleGoal(goal.id) } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: goal.icon)
+                                    .font(.subheadline)
+                                    .foregroundStyle(selected ? Color.accentColor : .secondary)
+                                Text(goal.label)
+                                    .font(.subheadline)
+                                    .foregroundStyle(selected ? Color.accentColor : .primary)
+                                Spacer(minLength: 0)
+                                if selected {
+                                    Image(systemName: "checkmark")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(Color.accentColor)
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(
+                                selected
+                                    ? Color.accentColor.opacity(0.10)
+                                    : Color(.secondarySystemFill),
+                                in: RoundedRectangle(cornerRadius: 10)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .strokeBorder(selected ? Color.accentColor : Color.clear, lineWidth: 1.5)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(selected ? .isSelected : [])
+                    }
+                }
+                .padding(.vertical, 4)
+            } header: {
+                Text("My Goals")
+            } footer: {
+                Text("Shapes the "For You" exercises in the Exercises tab.")
+            }
+
+            // Body Map
+            Section("Body Map") {
+                Picker("Body Type", selection: $bodyMapSex) {
+                    Text("Male").tag("male")
+                    Text("Female").tag("female")
+                }
+                .pickerStyle(.segmented)
+            }
+
             // Reminders
             Section("Reminders") {
                 Toggle(isOn: $notificationsEnabled) {
@@ -19,8 +116,7 @@ struct ProfileSettingsTab: View {
                         if enabled {
                             let granted = await NotificationService.shared.requestPermission()
                             if granted {
-                                NotificationService.shared.scheduleDailyReminder(
-                                    hour: reminderHour, daysPerWeek: reminderDays)
+                                reschedule(weekdays: selectedWeekdays)
                             } else {
                                 notificationsEnabled = false
                             }
@@ -33,23 +129,41 @@ struct ProfileSettingsTab: View {
                 if notificationsEnabled {
                     Stepper(value: $reminderHour, in: 5...22) {
                         Label {
-                            Text("Reminder at \(hourString(reminderHour))")
+                            Text("Remind me at \(hourString(reminderHour))")
                         } icon: {
                             Image(systemName: "clock")
                         }
                     }
                     .onChange(of: reminderHour) { _, h in
-                        NotificationService.shared.scheduleDailyReminder(
-                            hour: h, daysPerWeek: reminderDays)
+                        reschedule(weekdays: selectedWeekdays)
                     }
 
-                    Stepper(value: $reminderDays, in: 1...7) {
-                        Label {
-                            Text("\(reminderDays) day\(reminderDays == 1 ? "" : "s") per week")
-                        } icon: {
-                            Image(systemName: "calendar")
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Days")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        HStack(spacing: 6) {
+                            ForEach(weekdays, id: \.0) { (day, label) in
+                                let selected = selectedWeekdays.contains(day)
+                                Button {
+                                    toggleWeekday(day)
+                                } label: {
+                                    Text(label)
+                                        .font(.caption.weight(.semibold))
+                                        .frame(width: 34, height: 34)
+                                        .background(
+                                            selected ? Color.accentColor : Color(.secondarySystemFill),
+                                            in: Circle()
+                                        )
+                                        .foregroundStyle(selected ? .white : .primary)
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel(fullDayName(day))
+                                .accessibilityAddTraits(selected ? .isSelected : [])
+                            }
                         }
                     }
+                    .padding(.vertical, 4)
                 }
             }
 
@@ -120,5 +234,10 @@ struct ProfileSettingsTab: View {
         var c = Calendar.current.dateComponents([.hour, .minute], from: Date())
         c.hour = h; c.minute = 0
         return fmt.string(from: Calendar.current.date(from: c) ?? Date())
+    }
+
+    private func fullDayName(_ weekday: Int) -> String {
+        let names = [1:"Sunday",2:"Monday",3:"Tuesday",4:"Wednesday",5:"Thursday",6:"Friday",7:"Saturday"]
+        return names[weekday] ?? "Day \(weekday)"
     }
 }

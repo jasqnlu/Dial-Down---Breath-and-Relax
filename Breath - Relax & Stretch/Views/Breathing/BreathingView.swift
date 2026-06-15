@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import Combine
+import StoreKit
 
 // BreathingPattern and BreathPhase enums live in BreathingModels.swift
 
@@ -26,6 +27,10 @@ struct BreathingView: View {
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.requestReview) private var requestReview
+
+    @AppStorage("totalSessionsCompleted") private var totalSessionsCompleted = 0
+    @State private var shouldRequestReview = false
 
     // Fixed breathing-session routine ID (not tied to a real Routine record).
     // NOTE: must be a valid hex UUID — the previous literal contained non-hex
@@ -60,6 +65,14 @@ struct BreathingView: View {
         }
         .onReceive(timer) { _ in
             tickTimer()
+        }
+        .onChange(of: showCompletion) { _, showing in
+            guard showing, shouldRequestReview else { return }
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(1.5))
+                requestReview()
+                shouldRequestReview = false
+            }
         }
     }
 
@@ -538,6 +551,12 @@ struct BreathingView: View {
             #if DEBUG
             print("⚠️ SwiftData save failed in BreathingView: \(error)")
             #endif
+        }
+
+        totalSessionsCompleted += 1
+        let reviewMilestones: Set<Int> = [3, 10, 25]
+        if reviewMilestones.contains(totalSessionsCompleted) {
+            shouldRequestReview = true
         }
     }
 }

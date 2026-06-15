@@ -18,6 +18,11 @@ struct ExerciseListView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
+                // Personalized section — hidden while the user is actively searching or filtering
+                if searchText.isEmpty && selectedType == nil {
+                    ForYouSection(allExercises: exercises)
+                }
+
                 let items: [Exercise] = Array(filtered)
                 LazyVStack(spacing: 0) {
                     ForEach(0..<items.count, id: \.self) { i in

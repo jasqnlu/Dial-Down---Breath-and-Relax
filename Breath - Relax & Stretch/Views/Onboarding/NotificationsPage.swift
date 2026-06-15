@@ -62,13 +62,18 @@ struct NotificationsPage: View {
 
     private func requestNotificationsAndComplete() {
         isRequesting = true
-        UNUserNotificationCenter.current()
-            .requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in
-                DispatchQueue.main.async {
-                    isRequesting = false
-                    onComplete()
-                }
+        Task {
+            let granted = await NotificationService.shared.requestPermission()
+            if granted {
+                // Schedule Mon–Fri at 8 am (matches ProfileSettingsTab defaults)
+                NotificationService.shared.scheduleReminders(
+                    hour: 8, weekdays: [2, 3, 4, 5, 6])
             }
+            await MainActor.run {
+                isRequesting = false
+                onComplete()
+            }
+        }
     }
 }
 

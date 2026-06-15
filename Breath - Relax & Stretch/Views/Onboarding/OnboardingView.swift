@@ -26,7 +26,7 @@ struct OnboardingView: View {
     @AppStorage("onboardingGoals")        private var onboardingGoals = ""
 
     @State private var currentPage = 0
-    private let totalPages = 4
+    private let totalPages = 5
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -34,21 +34,24 @@ struct OnboardingView: View {
                 WelcomePage()
                     .tag(0)
 
-                GoalPickerPage(selectedGoals: onboardingGoalsBinding)
+                GenderPickerPage()
                     .tag(1)
 
-                BodyMapIntroPage()
+                GoalPickerPage(selectedGoals: onboardingGoalsBinding)
                     .tag(2)
 
-                NotificationsPage(onComplete: completeOnboarding)
+                BodyMapIntroPage()
                     .tag(3)
+
+                NotificationsPage(onComplete: completeOnboarding)
+                    .tag(4)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.easeInOut, value: currentPage)
 
-            // Bottom overlay: dots + Next button (pages 0-2);
-            // page 3 provides its own action buttons.
-            if currentPage < 3 {
+            // Bottom overlay: dots + Next button (pages 0-3);
+            // page 4 provides its own action buttons.
+            if currentPage < 4 {
                 VStack(spacing: 20) {
                     PageDotsIndicator(total: totalPages, current: currentPage)
 

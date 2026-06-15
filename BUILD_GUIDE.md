@@ -225,8 +225,7 @@ Breath: Relax & Stretch/
 │   └── Profile/ProfileView.swift
 ├── Services/
 │   ├── SupabaseService.swift
-│   ├── GamificationService.swift
-│   └── BodyHighlightService.swift
+│   └── GamificationService.swift
 └── Resources/
     ├── BodyMap.svg
     └── SeedData.json

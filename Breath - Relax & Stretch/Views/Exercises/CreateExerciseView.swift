@@ -21,9 +21,21 @@ struct CreateExerciseView: View {
 
     // MARK: - Constants
     private let allBodyParts: [String] = [
-        "Head", "Neck", "Shoulders", "Chest", "Upper Back", "Lower Back",
-        "Core", "Hips", "Glutes", "Quadriceps", "Hamstrings", "Calves",
-        "Feet", "Arms", "Forearms"
+        "Head", "Neck",
+        "Left Shoulder", "Right Shoulder",
+        "Chest", "Upper Back", "Lower Back", "Core",
+        "Hips", "Glutes",
+        "Left Arm", "Right Arm",
+        "Left Elbow", "Right Elbow",
+        "Left Forearm", "Right Forearm",
+        "Left Hand", "Right Hand",
+        "Left Leg", "Right Leg",
+        "Left Hamstring", "Right Hamstring",
+        "Left Knee", "Right Knee",
+        "Left Calf", "Right Calf",
+        "Left Shin", "Right Shin",
+        "Left Ankle", "Right Ankle",
+        "Left Foot", "Right Foot",
     ]
 
     // MARK: - Validation

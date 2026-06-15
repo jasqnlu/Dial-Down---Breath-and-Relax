@@ -10,7 +10,7 @@ final class Routine {
     var authorName: String?      // display name captured at publish time
     var borrowedFromID: UUID?    // tracks the original routine this was forked from
     var isPublic: Bool
-    var borrowCount: Int         // times forked by other users (popularity)
+    var borrowCount: Int = 0     // times forked by other users (popularity)
     var createdAt: Date
 
     init(

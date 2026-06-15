@@ -39,4 +39,5 @@ struct HomeView: View {
     let container = try! ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
     HomeView()
         .modelContainer(container)
+        .environmentObject(AuthManager.shared)
 }

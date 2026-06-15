@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import Combine
 import AudioToolbox
+import StoreKit
 
 struct SessionPlayerView: View {
     let exercises: [Exercise]
@@ -11,6 +12,9 @@ struct SessionPlayerView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.requestReview) private var requestReview
+
+    @AppStorage("totalSessionsCompleted") private var totalSessionsCompleted = 0
 
     @State private var currentIndex = 0
     @State private var secondsRemaining = 0
@@ -20,6 +24,7 @@ struct SessionPlayerView: View {
     @State private var sessionStarted = Date()
     /// Set to false in .onDisappear so the timer stops processing ticks after dismiss
     @State private var sessionActive = false
+    @State private var shouldRequestReview = false
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -60,6 +65,14 @@ struct SessionPlayerView: View {
         }
         .onDisappear {
             sessionActive = false   // stop timer processing after dismiss animation
+        }
+        .onChange(of: showingSummary) { _, showing in
+            guard showing, shouldRequestReview else { return }
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(1.5))
+                requestReview()
+                shouldRequestReview = false
+            }
         }
         .onReceive(timer) { _ in
             guard sessionActive, !isPaused, !showingSummary else { return }
@@ -114,8 +127,18 @@ struct SessionPlayerView: View {
 
             Spacer()
 
-            BreathingCircle(isPaused: isPaused)
-                .padding()
+            if exercise.type != .breath, !exercise.poses.isEmpty {
+                StickFigureView(
+                    poses: exercise.poses,
+                    activeBodyParts: Set(exercise.targetBodyParts),
+                    isPaused: isPaused
+                )
+                .frame(maxWidth: 220)
+                .padding(.horizontal)
+            } else {
+                BreathingCircle(isPaused: isPaused)
+                    .padding()
+            }
 
             Text(timeString(secondsRemaining))
                 .font(.system(size: 64, weight: .thin, design: .rounded))
@@ -210,6 +233,12 @@ struct SessionPlayerView: View {
             #if DEBUG
             print("⚠️ SwiftData save failed in SessionPlayerView: \(error)")
             #endif
+        }
+
+        totalSessionsCompleted += 1
+        let reviewMilestones: Set<Int> = [3, 10, 25]
+        if reviewMilestones.contains(totalSessionsCompleted) {
+            shouldRequestReview = true
         }
     }
 

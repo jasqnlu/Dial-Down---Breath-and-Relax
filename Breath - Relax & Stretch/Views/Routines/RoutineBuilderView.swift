@@ -9,13 +9,16 @@ struct RoutineBuilderView: View {
     @Query private var exercises: [Exercise]
     @Query private var allRoutines: [Routine]
 
+    var routineToEdit: Routine? = nil
+
     @State private var routineName = ""
-    // Store IDs (plain value types) instead of @Model objects to avoid SwiftData binding issues
     @State private var selectedIDs: [UUID] = []
     @State private var isPublic = false
     @State private var showingExercisePicker = false
 
     private let maxPublicRoutines = 3
+
+    private var isEditing: Bool { routineToEdit != nil }
 
     private var selectedExercises: [Exercise] {
         selectedIDs.compactMap { id in exercises.first { $0.uuid == id } }
@@ -26,7 +29,7 @@ struct RoutineBuilderView: View {
     }
 
     private var myPublicCount: Int {
-        allRoutines.filter { $0.isPublic && $0.authorID == auth.userEmail }.count
+        allRoutines.filter { $0.isPublic && $0.authorID == auth.userEmail && $0.uuid != routineToEdit?.uuid }.count
     }
 
     private var publishLimitReached: Bool {
@@ -61,6 +64,7 @@ struct RoutineBuilderView: View {
                             }
                         }
                     }
+                    .onMove { selectedIDs.move(fromOffsets: $0, toOffset: $1) }
 
                     Button {
                         showingExercisePicker = true
@@ -94,13 +98,13 @@ struct RoutineBuilderView: View {
                     }
                 }
             }
-            .navigationTitle("New Routine")
+            .navigationTitle(isEditing ? "Edit Routine" : "New Routine")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { saveRoutine() }
+                    Button(isEditing ? "Update" : "Save") { saveRoutine() }
                         .disabled(routineName.isEmpty || selectedIDs.isEmpty)
                 }
             }
@@ -109,21 +113,35 @@ struct RoutineBuilderView: View {
                     if !selectedIDs.contains(id) { selectedIDs.append(id) }
                 }
             }
+            .onAppear {
+                if let r = routineToEdit {
+                    routineName  = r.name
+                    selectedIDs  = r.exerciseIDs
+                    isPublic     = r.isPublic
+                }
+            }
         }
     }
 
     private func saveRoutine() {
-        let routine = Routine(
-            name: routineName,
-            exerciseIDs: selectedIDs,
-            authorID: auth.userEmail,
-            authorName: isPublic ? auth.displayName : nil,
-            isPublic: isPublic
-        )
-        modelContext.insert(routine)
+        if let r = routineToEdit {
+            r.name        = routineName
+            r.exerciseIDs = selectedIDs
+            r.isPublic    = isPublic
+            r.authorName  = isPublic ? auth.displayName : nil
+        } else {
+            let routine = Routine(
+                name: routineName,
+                exerciseIDs: selectedIDs,
+                authorID: auth.userEmail,
+                authorName: isPublic ? auth.displayName : nil,
+                isPublic: isPublic
+            )
+            modelContext.insert(routine)
 
-        if let profile = (try? modelContext.fetch(FetchDescriptor<UserProfile>()))?.first {
-            GamificationService.awardBadge("Routine Builder", to: profile)
+            if let profile = (try? modelContext.fetch(FetchDescriptor<UserProfile>()))?.first {
+                GamificationService.awardBadge("Routine Builder", to: profile)
+            }
         }
 
         do {

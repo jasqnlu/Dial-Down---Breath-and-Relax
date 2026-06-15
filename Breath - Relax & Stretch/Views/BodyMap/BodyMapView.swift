@@ -4,6 +4,8 @@ import SwiftData
 // MARK: - BodyMapView
 
 struct BodyMapView: View {
+    @AppStorage("bodyMapSex") private var bodyMapSex = "male"
+
     @State private var currentLayer: BodyLayer = .skin
     @State private var facing: BodyFacing = .front
 
@@ -71,6 +73,7 @@ struct BodyMapView: View {
                                      annotationMode: annotationMode,
                                      selectedTool: selectedTool,
                                      selectedSensation: selectedSensation,
+                                     sex: bodyMapSex,
                                      store: annotationStore,
                                      markedRegions: $markedRegions)
                         .scaleEffect(zoomScale, anchor: .center)
@@ -87,7 +90,7 @@ struct BodyMapView: View {
                         }
                         .overlay(alignment: .top) {
                             if detailLevel == .fine {
-                                Text("Fingers — tap an individual finger")
+                                Text("Zoom detail — tap fingers, toes, eyes & nose")
                                     .font(.caption2.weight(.medium))
                                     .padding(.horizontal, 10).padding(.vertical, 5)
                                     .background(.regularMaterial, in: Capsule())
