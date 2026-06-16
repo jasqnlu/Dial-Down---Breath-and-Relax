@@ -13,7 +13,10 @@ struct BreathRelaxStretchApp: App {
             Session.self,
             UserProfile.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        // .automatic = sync via iCloud when the user is signed in; falls back to
+        // local-only storage if iCloud is unavailable. Requires iCloud + CloudKit
+        // capabilities in Xcode → Signing & Capabilities.
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false, cloudKitDatabase: .automatic)
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {

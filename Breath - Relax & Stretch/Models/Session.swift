@@ -3,12 +3,13 @@ import SwiftData
 
 @Model
 final class Session {
-    var uuid: UUID
-    var routineID: UUID
-    var startedAt: Date
-    var completedAt: Date?
-    var completionPercent: Double
-    var pointsEarned: Int
+    // Inline defaults required for CloudKit (iCloud) sync compatibility.
+    var uuid: UUID = UUID()
+    var routineID: UUID = UUID()
+    var startedAt: Date = Date()
+    var completedAt: Date? = nil
+    var completionPercent: Double = 0
+    var pointsEarned: Int = 0
 
     var durationMinutes: Int {
         guard let end = completedAt else { return 0 }

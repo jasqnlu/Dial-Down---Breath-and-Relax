@@ -8,6 +8,7 @@ struct ProfileSettingsTab: View {
     @AppStorage("reminderWeekdays")     private var weekdaysStr = "2,3,4,5,6" // Mon–Fri default
     @AppStorage("bodyMapSex")           private var bodyMapSex = "male"
     @AppStorage("onboardingGoals")      private var goalsStr = ""
+    @AppStorage("voiceCuesEnabled")     private var voiceCuesEnabled = false
 
     private let allGoals: [(id: String, label: String, icon: String)] = [
         ("flexibility",      "Flexibility",       "figure.flexibility"),
@@ -106,6 +107,15 @@ struct ProfileSettingsTab: View {
                 .pickerStyle(.segmented)
             }
 
+            // Session
+            Section("Session") {
+                Toggle(isOn: $voiceCuesEnabled) {
+                    Label("Voice Cues", systemImage: "waveform")
+                }
+            } footer: {
+                Text("Announces exercise names and breathing phases aloud during sessions.")
+            }
+
             // Reminders
             Section("Reminders") {
                 Toggle(isOn: $notificationsEnabled) {
@@ -165,6 +175,18 @@ struct ProfileSettingsTab: View {
                     }
                     .padding(.vertical, 4)
                 }
+            }
+
+            // Integrations
+            Section("Integrations") {
+                Button {
+                    Task { await HealthKitService.shared.requestAuthorization() }
+                } label: {
+                    Label("Connect Apple Health", systemImage: "heart.fill")
+                        .foregroundStyle(.red)
+                }
+            } footer: {
+                Text("Logs stretch sessions as Flexibility workouts and breathing sessions as Mindful Minutes. Google Health and other apps that sync with Apple Health will receive the data automatically.")
             }
 
             // Data

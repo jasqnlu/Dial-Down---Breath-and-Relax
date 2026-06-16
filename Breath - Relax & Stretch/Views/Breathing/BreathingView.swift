@@ -426,6 +426,7 @@ struct BreathingView: View {
     }
 
     private func transition(to phase: BreathPhase, duration: Int) {
+        VoiceCueService.shared.speak(phase.displayLabel.replacingOccurrences(of: "...", with: ""))
         withAnimation(.easeInOut(duration: 0.4)) {
             currentPhase    = phase
             circleColor     = phase.color
@@ -454,6 +455,7 @@ struct BreathingView: View {
         if !isRunning {
             startSession()
         } else {
+            if !isPaused { VoiceCueService.shared.stop() }
             withAnimation(.easeInOut(duration: 0.2)) {
                 isPaused.toggle()
             }
@@ -481,6 +483,7 @@ struct BreathingView: View {
     }
 
     private func stopSession() {
+        VoiceCueService.shared.stop()
         withAnimation(.easeInOut(duration: 0.35)) {
             isRunning  = false
             isPaused   = false
@@ -558,6 +561,21 @@ struct BreathingView: View {
         if reviewMilestones.contains(totalSessionsCompleted) {
             shouldRequestReview = true
         }
+
+        // HealthKit — log as Mindful Session (shows in Health → Mindfulness)
+        Task {
+            await HealthKitService.shared.requestAuthorization()
+            await HealthKitService.shared.logBreathingSession(
+                startedAt: sessionStarted, completedAt: completedAt)
+        }
+
+        // Widget — update shared data so home screen widgets refresh
+        let streak = (try? modelContext.fetch(FetchDescriptor<UserProfile>()).first?.streak) ?? 0
+        WidgetDataService.write(
+            streak: streak,
+            totalSessions: totalSessionsCompleted,
+            lastSessionDate: completedAt
+        )
     }
 }
 

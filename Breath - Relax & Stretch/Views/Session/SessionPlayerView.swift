@@ -64,7 +64,8 @@ struct SessionPlayerView: View {
             notifySuccess.prepare()
         }
         .onDisappear {
-            sessionActive = false   // stop timer processing after dismiss animation
+            sessionActive = false
+            VoiceCueService.shared.stop()
         }
         .onChange(of: showingSummary) { _, showing in
             guard showing, shouldRequestReview else { return }
@@ -180,6 +181,9 @@ struct SessionPlayerView: View {
     private func startExercise() {
         secondsRemaining = currentExercise?.durationSeconds ?? 60
         isPaused = false
+        if let exercise = currentExercise {
+            VoiceCueService.shared.speak(exercise.name)
+        }
     }
 
     private func advanceToNext(completion: Double) {
@@ -240,6 +244,21 @@ struct SessionPlayerView: View {
         if reviewMilestones.contains(totalSessionsCompleted) {
             shouldRequestReview = true
         }
+
+        // HealthKit — log as Flexibility workout
+        Task {
+            await HealthKitService.shared.requestAuthorization()
+            await HealthKitService.shared.logStretchSession(
+                startedAt: sessionStarted, completedAt: completedAt)
+        }
+
+        // Widget — update shared data so home screen widgets refresh
+        let streak = (try? modelContext.fetch(FetchDescriptor<UserProfile>()).first?.streak) ?? 0
+        WidgetDataService.write(
+            streak: streak,
+            totalSessions: totalSessionsCompleted,
+            lastSessionDate: completedAt
+        )
     }
 
     private func timeString(_ seconds: Int) -> String {

@@ -9,16 +9,17 @@ enum ExerciseType: String, Codable, CaseIterable {
 
 @Model
 final class Exercise {
-    var uuid: UUID
-    var name: String
-    var type: ExerciseType
-    var targetBodyParts: [String]   // BodyPart names this exercise targets
-    var durationSeconds: Int
-    var difficulty: Int             // 1 = easy, 2 = medium, 3 = hard
-    var instructions: [String]      // step-by-step instructions
-    var mediaURL: String?           // animation or image URL
-    var caution: String?            // optional safety note / contraindication
-    var posesData: Data = Data()    // JSON-encoded [ExercisePose]; empty = no animation
+    // Inline defaults required for CloudKit (iCloud) sync compatibility.
+    var uuid: UUID = UUID()
+    var name: String = ""
+    var type: ExerciseType = ExerciseType.stretch
+    var targetBodyParts: [String] = []
+    var durationSeconds: Int = 60
+    var difficulty: Int = 1
+    var instructions: [String] = []
+    var mediaURL: String? = nil
+    var caution: String? = nil
+    var posesData: Data = Data()
 
     /// Decoded pose keyframes for the stick-figure animation.
     var poses: [ExercisePose] {

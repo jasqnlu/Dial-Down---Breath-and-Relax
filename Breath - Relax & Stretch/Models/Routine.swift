@@ -3,15 +3,16 @@ import SwiftData
 
 @Model
 final class Routine {
-    var uuid: UUID
-    var name: String
-    var exerciseIDs: [UUID]     // ordered list of Exercise UUIDs
-    var authorID: String?
-    var authorName: String?      // display name captured at publish time
-    var borrowedFromID: UUID?    // tracks the original routine this was forked from
-    var isPublic: Bool
-    var borrowCount: Int = 0     // times forked by other users (popularity)
-    var createdAt: Date
+    // Inline defaults required for CloudKit (iCloud) sync compatibility.
+    var uuid: UUID = UUID()
+    var name: String = ""
+    var exerciseIDs: [UUID] = []
+    var authorID: String? = nil
+    var authorName: String? = nil
+    var borrowedFromID: UUID? = nil
+    var isPublic: Bool = false
+    var borrowCount: Int = 0
+    var createdAt: Date = Date()
 
     init(
         uuid: UUID = UUID(),
