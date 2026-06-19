@@ -19,6 +19,7 @@ struct BreathingView: View {
     @State private var totalRounds:      Int             = 5
     @State private var sessionStarted:   Date            = Date()
     @State private var showCompletion:   Bool            = false
+    @State private var showingCustomEditor: Bool         = false
 
     // Animation
     @State private var circleScale:  CGFloat = 1.0
@@ -30,7 +31,10 @@ struct BreathingView: View {
     @Environment(\.requestReview) private var requestReview
 
     @AppStorage("totalSessionsCompleted") private var totalSessionsCompleted = 0
+    @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
+    @AppStorage("hasSeenInitialPaywall") private var hasSeenInitialPaywall = false
     @State private var shouldRequestReview = false
+    @State private var shouldShowPaywall = false
 
     // Fixed breathing-session routine ID (not tied to a real Routine record).
     // NOTE: must be a valid hex UUID — the previous literal contained non-hex
@@ -73,6 +77,12 @@ struct BreathingView: View {
                 requestReview()
                 shouldRequestReview = false
             }
+        }
+        .sheet(isPresented: $shouldShowPaywall) {
+            PaywallView()
+        }
+        .sheet(isPresented: $showingCustomEditor) {
+            CustomPatternEditorView()
         }
     }
 
@@ -194,6 +204,16 @@ struct BreathingView: View {
                     .padding(.horizontal, 32)
                     .transition(.opacity)
                     .animation(.easeInOut(duration: 0.3), value: selectedPattern)
+
+                if selectedPattern == .custom {
+                    Button {
+                        showingCustomEditor = true
+                    } label: {
+                        Label("Edit Pattern", systemImage: "pencil")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .padding(.top, 4)
+                }
             }
 
             // Round counter
@@ -535,7 +555,9 @@ struct BreathingView: View {
             completionPercent: 1.0,
             pointsEarned:      pointsEarned
         )
-        session.completedAt = completedAt
+        session.completedAt     = completedAt
+        session.sessionLabel    = selectedPattern.rawValue
+        session.roundsCompleted = totalRounds
         modelContext.insert(session)
 
         // Update UserProfile if present
@@ -557,9 +579,14 @@ struct BreathingView: View {
         }
 
         totalSessionsCompleted += 1
-        let reviewMilestones: Set<Int> = [3, 10, 25]
-        if reviewMilestones.contains(totalSessionsCompleted) {
-            shouldRequestReview = true
+        if totalSessionsCompleted == 3 && !hasSeenInitialPaywall {
+            hasSeenInitialPaywall = true
+            shouldShowPaywall = true
+        } else {
+            let reviewMilestones: Set<Int> = [10, 25]
+            if reviewMilestones.contains(totalSessionsCompleted) {
+                shouldRequestReview = true
+            }
         }
 
         // HealthKit — log as Mindful Session (shows in Health → Mindfulness)
@@ -567,6 +594,13 @@ struct BreathingView: View {
             await HealthKitService.shared.requestAuthorization()
             await HealthKitService.shared.logBreathingSession(
                 startedAt: sessionStarted, completedAt: completedAt)
+        }
+
+        // Calendar — opt-in, mirrors the session as an event
+        if calendarSyncEnabled {
+            CalendarService.shared.logCompletedSession(
+                title: "\(selectedPattern.rawValue) (\(totalRounds) rounds)",
+                start: sessionStarted, end: completedAt)
         }
 
         // Widget — update shared data so home screen widgets refresh

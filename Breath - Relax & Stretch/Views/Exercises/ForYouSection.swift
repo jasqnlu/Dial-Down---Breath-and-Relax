@@ -14,34 +14,7 @@ struct ForYouSection: View {
     }
 
     private var recommendedExercises: [Exercise] {
-        guard !activeGoals.isEmpty else { return [] }
-        let byName = Dictionary(uniqueKeysWithValues:
-            Dictionary(grouping: allExercises, by: \.name)
-                .compactMapValues(\.first)
-                .map { ($0.key, $0.value) }
-        )
-
-        // Interleave exercises from each goal so all goals contribute equally
-        var seen = Set<UUID>()
-        var result: [Exercise] = []
-        let goalLists = activeGoals.map { goal in
-            goal.exerciseNames.compactMap { byName[$0] }
-        }
-
-        var index = 0
-        while result.count < 8 {
-            var addedAny = false
-            for list in goalLists where index < list.count {
-                let ex = list[index]
-                if seen.insert(ex.uuid).inserted {
-                    result.append(ex)
-                    addedAny = true
-                }
-            }
-            if !addedAny { break }
-            index += 1
-        }
-        return result
+        GoalMeta.recommend(from: allExercises, activeGoalIDs: Set(goalsStr.split(separator: ",").map(String.init)), limit: 8)
     }
 
     private var sessionExercises: [Exercise] {
@@ -185,6 +158,36 @@ struct GoalMeta {
     let id: String
     let displayName: String
     let exerciseNames: [String]
+
+    /// Interleaves exercises from each active goal so all goals contribute
+    /// equally, deduped, up to `limit`. Shared by ForYouSection and the
+    /// widget's quick-session deep link.
+    static func recommend(from allExercises: [Exercise], activeGoalIDs: Set<String>, limit: Int) -> [Exercise] {
+        let activeGoals = GoalMeta.all.filter { activeGoalIDs.contains($0.id) }
+        guard !activeGoals.isEmpty else { return [] }
+        let byName = Dictionary(grouping: allExercises, by: \.name).compactMapValues(\.first)
+
+        var seen = Set<UUID>()
+        var result: [Exercise] = []
+        let goalLists = activeGoals.map { goal in
+            goal.exerciseNames.compactMap { byName[$0] }
+        }
+
+        var index = 0
+        while result.count < limit {
+            var addedAny = false
+            for list in goalLists where index < list.count {
+                let ex = list[index]
+                if seen.insert(ex.uuid).inserted {
+                    result.append(ex)
+                    addedAny = true
+                }
+            }
+            if !addedAny { break }
+            index += 1
+        }
+        return result
+    }
 
     static let all: [GoalMeta] = [
         GoalMeta(

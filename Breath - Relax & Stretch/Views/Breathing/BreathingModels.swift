@@ -7,6 +7,7 @@ enum BreathingPattern: String, CaseIterable, Identifiable {
     case fourSevenEight = "4-7-8"
     case belly          = "Belly Breathing"
     case energising     = "Energising"
+    case custom         = "Custom"
 
     var id: String { rawValue }
 
@@ -16,6 +17,7 @@ enum BreathingPattern: String, CaseIterable, Identifiable {
         case .fourSevenEight: return "lungs.fill"
         case .belly:          return "circle.fill"
         case .energising:     return "bolt.fill"
+        case .custom:         return "slider.horizontal.3"
         }
     }
 
@@ -29,16 +31,26 @@ enum BreathingPattern: String, CaseIterable, Identifiable {
             return "Diaphragmatic breathing to deepen relaxation and release tension."
         case .energising:
             return "Short exhale ratio to boost alertness and mental clarity."
+        case .custom:
+            return "Your own rhythm — tap \"Edit Pattern\" below to set the timing."
         }
     }
 
     /// Durations: (inhale, hold, exhale, hold2) in seconds. 0 = skip phase.
+    /// `.custom` reads from UserDefaults, written by CustomPatternEditorView.
     var phases: (inhale: Int, hold: Int, exhale: Int, hold2: Int) {
         switch self {
         case .box:            return (4, 4, 4, 4)
         case .fourSevenEight: return (4, 7, 8, 0)
         case .belly:          return (4, 1, 6, 0)
         case .energising:     return (6, 0, 2, 0)
+        case .custom:
+            let d = UserDefaults.standard
+            let inhale = d.object(forKey: "customBreath.inhale") as? Int ?? 4
+            let hold   = d.object(forKey: "customBreath.hold")   as? Int ?? 4
+            let exhale = d.object(forKey: "customBreath.exhale") as? Int ?? 4
+            let hold2  = d.object(forKey: "customBreath.hold2")  as? Int ?? 0
+            return (inhale, hold, exhale, hold2)
         }
     }
 

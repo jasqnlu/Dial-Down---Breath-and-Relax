@@ -5,6 +5,7 @@ struct AuthView: View {
     @EnvironmentObject private var auth: AuthManager
     @State private var showEmailAuth = false
     @State private var appleError: String?
+    @State private var googleError: String?
 
     var body: some View {
         ZStack {
@@ -59,22 +60,26 @@ struct AuthView: View {
                     .frame(height: 54)
                     .cornerRadius(14)
 
-                    // Sign in with Google (not yet implemented — real OAuth required)
-                    Button {} label: {
+                    // Sign in with Google
+                    Button {
+                        Task { await signInWithGoogle() }
+                    } label: {
                         HStack(spacing: 10) {
                             Image(systemName: "g.circle.fill")
                                 .font(.title2)
-                                .foregroundStyle(Color(red: 0.92, green: 0.26, blue: 0.21).opacity(0.4))
+                                .foregroundStyle(Color(red: 0.92, green: 0.26, blue: 0.21).opacity(GoogleAuthService.isConfigured ? 1 : 0.4))
                             Text("Continue with Google")
                                 .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(.primary.opacity(0.4))
+                                .foregroundStyle(.primary.opacity(GoogleAuthService.isConfigured ? 1 : 0.4))
                             Spacer()
-                            Text("Coming Soon")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color(.systemFill), in: Capsule())
+                            if !GoogleAuthService.isConfigured {
+                                Text("Coming Soon")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color(.systemFill), in: Capsule())
+                            }
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 54)
@@ -82,7 +87,7 @@ struct AuthView: View {
                         .background(Color(.systemBackground).opacity(0.7))
                         .cornerRadius(14)
                     }
-                    .disabled(true)
+                    .disabled(!GoogleAuthService.isConfigured)
 
                     // Email / Password
                     Button {
@@ -105,7 +110,7 @@ struct AuthView: View {
                         )
                     }
 
-                    if let err = appleError {
+                    if let err = appleError ?? googleError {
                         Text(err)
                             .font(.caption)
                             .foregroundStyle(.red)
@@ -127,6 +132,19 @@ struct AuthView: View {
         .sheet(isPresented: $showEmailAuth) {
             EmailAuthView()
                 .environmentObject(auth)
+        }
+    }
+
+    private func signInWithGoogle() async {
+        guard let anchor = ASPresentationAnchor.currentWindow else { return }
+        do {
+            let user = try await GoogleAuthService.shared.signIn(presentationAnchor: anchor)
+            googleError = nil
+            auth.handleGoogleSignIn(name: user.name, email: user.email)
+        } catch GoogleAuthService.GoogleAuthError.cancelled {
+            // User dismissed the sheet — not an error worth surfacing.
+        } catch {
+            googleError = error.localizedDescription
         }
     }
 }

@@ -8,10 +8,24 @@ struct ProfileAccountTab: View {
     @EnvironmentObject private var auth: AuthManager
     @Binding var showSignOutConfirm: Bool
     @AppStorage("showStreakEmoji") private var showStreakEmoji = true
+    @ObservedObject private var store = StoreManager.shared
     @State private var twoFAOn = false
+    @State private var showingPaywall = false
 
     var body: some View {
         Group {
+            // Upgrade
+            if !store.isPro {
+                Section {
+                    Button {
+                        showingPaywall = true
+                    } label: {
+                        Label("Upgrade to Breath Pro", systemImage: "sparkles")
+                            .foregroundStyle(Color.accentColor)
+                    }
+                }
+            }
+
             // Stats
             if let profile {
                 Section("Your Stats") {
@@ -31,6 +45,17 @@ struct ProfileAccountTab: View {
                     }
                     NavigationLink(destination: ProgressChartsView()) {
                         Label("Progress & Charts", systemImage: "chart.bar.xaxis")
+                    }
+                }
+
+                Section("Community") {
+                    NavigationLink(destination: LeaderboardView()) {
+                        Label("Leaderboard", systemImage: "list.number")
+                    }
+                    if let url = challengeURL(for: profile) {
+                        ShareLink(item: url) {
+                            Label("Challenge a Friend", systemImage: "figure.2")
+                        }
                     }
                 }
             }
@@ -62,9 +87,16 @@ struct ProfileAccountTab: View {
             }
         }
         .onAppear { twoFAOn = auth.twoFAEnabled }
+        .sheet(isPresented: $showingPaywall) {
+            PaywallView()
+        }
     }
 
     // MARK: Helpers
+
+    private func challengeURL(for profile: UserProfile) -> URL? {
+        ChallengePayload(fromName: profile.displayName, streak: profile.streak, totalPoints: profile.totalPoints).shareURL
+    }
 
     private func statsRow(icon: String, color: Color,
                           label: String, value: String) -> some View {

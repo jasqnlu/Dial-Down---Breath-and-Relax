@@ -72,6 +72,32 @@ actor SupabaseService {
         try await post(path: "/rest/v1/routines", body: data, upsert: true)
     }
 
+    // MARK: - Community (leaderboard / public profile)
+
+    /// Upserts the local profile to a public-readable table so it can appear
+    /// on the leaderboard. Only points/streak/minutes are shared — no email,
+    /// just the display name and the stable id used to dedupe rows.
+    ///
+    /// Expected Supabase table `profiles`:
+    ///   id            text  primary key
+    ///   display_name  text  not null
+    ///   total_points  int4  not null
+    ///   streak        int4  not null
+    ///   total_minutes int4  not null
+    /// Enable RLS with a "read for all" select policy for the leaderboard.
+    func uploadProfile(_ profile: RemoteProfile) async throws {
+        // RemoteProfile.encode(to:) is @MainActor-isolated (Swift 6 inference);
+        // hop to main actor for the encode, then continue in the actor.
+        let data = try await MainActor.run { try JSONEncoder().encode(profile) }
+        try await post(path: "/rest/v1/profiles", body: data, upsert: true)
+    }
+
+    /// Fetches the top profiles by points for the leaderboard.
+    func fetchLeaderboard(limit: Int = 50) async throws -> [RemoteProfile] {
+        let data = try await get(path: "/rest/v1/profiles?select=*&order=total_points.desc&limit=\(limit)")
+        return try JSONDecoder().decode([RemoteProfile].self, from: data)
+    }
+
     // MARK: - Sessions
 
     /// Inserts a completed session to the remote database.

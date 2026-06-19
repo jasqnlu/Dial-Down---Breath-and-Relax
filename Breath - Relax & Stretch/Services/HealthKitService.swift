@@ -19,13 +19,19 @@ final class HealthKitService {
         return types
     }
 
+    private var readTypes: Set<HKObjectType> {
+        var types: Set<HKObjectType> = []
+        if let sleep = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) { types.insert(sleep) }
+        return types
+    }
+
     // MARK: - Authorization
 
     @discardableResult
     func requestAuthorization() async -> Bool {
         guard isAvailable else { return false }
         do {
-            try await store.requestAuthorization(toShare: writeTypes, read: [])
+            try await store.requestAuthorization(toShare: writeTypes, read: readTypes)
             return true
         } catch {
             return false
@@ -82,6 +88,44 @@ final class HealthKitService {
             #if DEBUG
             print("⚠️ HealthKit breathing log failed: \(error)")
             #endif
+        }
+    }
+
+    // MARK: - Reading
+
+    /// Total asleep time over the last 24h, summed across all sleep stages.
+    /// Returns nil if HealthKit is unavailable or no sleep data exists.
+    func lastNightSleepHours() async -> Double? {
+        guard isAvailable,
+              let sleepType = HKObjectType.categoryType(forIdentifier: .sleepAnalysis)
+        else { return nil }
+
+        let cal = Calendar.current
+        let now = Date()
+        guard let windowStart = cal.date(byAdding: .hour, value: -24, to: now) else { return nil }
+        let predicate = HKQuery.predicateForSamples(withStart: windowStart, end: now, options: .strictStartDate)
+
+        return await withCheckedContinuation { continuation in
+            let query = HKSampleQuery(
+                sampleType: sleepType, predicate: predicate,
+                limit: HKObjectQueryNoLimit, sortDescriptors: nil
+            ) { _, samples, _ in
+                guard let categorySamples = samples as? [HKCategorySample], !categorySamples.isEmpty else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+                let asleepValues: Set<Int> = [
+                    HKCategoryValueSleepAnalysis.asleepCore.rawValue,
+                    HKCategoryValueSleepAnalysis.asleepDeep.rawValue,
+                    HKCategoryValueSleepAnalysis.asleepREM.rawValue,
+                    HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue,
+                ]
+                let totalSeconds = categorySamples
+                    .filter { asleepValues.contains($0.value) }
+                    .reduce(0.0) { $0 + $1.endDate.timeIntervalSince($1.startDate) }
+                continuation.resume(returning: totalSeconds / 3600.0)
+            }
+            store.execute(query)
         }
     }
 }

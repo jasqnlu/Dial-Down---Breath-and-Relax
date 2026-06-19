@@ -15,6 +15,9 @@ struct SessionPlayerView: View {
     @Environment(\.requestReview) private var requestReview
 
     @AppStorage("totalSessionsCompleted") private var totalSessionsCompleted = 0
+    @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
+    @AppStorage("hasSeenInitialPaywall") private var hasSeenInitialPaywall = false
+    @State private var shouldShowPaywall = false
 
     @State private var currentIndex = 0
     @State private var secondsRemaining = 0
@@ -74,6 +77,9 @@ struct SessionPlayerView: View {
                 requestReview()
                 shouldRequestReview = false
             }
+        }
+        .sheet(isPresented: $shouldShowPaywall) {
+            PaywallView()
         }
         .onReceive(timer) { _ in
             guard sessionActive, !isPaused, !showingSummary else { return }
@@ -217,6 +223,7 @@ struct SessionPlayerView: View {
             pointsEarned: totalPointsEarned
         )
         session.completedAt = completedAt
+        session.exerciseIDs = exercises.map { $0.uuid }
         modelContext.insert(session)
 
         let descriptor = FetchDescriptor<UserProfile>()
@@ -240,9 +247,14 @@ struct SessionPlayerView: View {
         }
 
         totalSessionsCompleted += 1
-        let reviewMilestones: Set<Int> = [3, 10, 25]
-        if reviewMilestones.contains(totalSessionsCompleted) {
-            shouldRequestReview = true
+        if totalSessionsCompleted == 3 && !hasSeenInitialPaywall {
+            hasSeenInitialPaywall = true
+            shouldShowPaywall = true
+        } else {
+            let reviewMilestones: Set<Int> = [10, 25]
+            if reviewMilestones.contains(totalSessionsCompleted) {
+                shouldRequestReview = true
+            }
         }
 
         // HealthKit — log as Flexibility workout
@@ -250,6 +262,14 @@ struct SessionPlayerView: View {
             await HealthKitService.shared.requestAuthorization()
             await HealthKitService.shared.logStretchSession(
                 startedAt: sessionStarted, completedAt: completedAt)
+        }
+
+        // Calendar — opt-in, mirrors the session as an event
+        if calendarSyncEnabled {
+            let exerciseNames = exercises.map { $0.name }.joined(separator: ", ")
+            CalendarService.shared.logCompletedSession(
+                title: "Stretch Session: \(exerciseNames)",
+                start: sessionStarted, end: completedAt)
         }
 
         // Widget — update shared data so home screen widgets refresh

@@ -4,6 +4,7 @@ import SwiftData
 @main
 struct BreathRelaxStretchApp: App {
     @StateObject private var auth = AuthManager.shared
+    @StateObject private var deepLinkRouter = DeepLinkRouter()
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -32,11 +33,15 @@ struct BreathRelaxStretchApp: App {
                 RootView()
             }
             .environmentObject(auth)
+            .environmentObject(deepLinkRouter)
             .onAppear {
                 seedIfNeeded()
                 migrateSeedIfNeeded()
             }
             .task { await syncRemoteCatalog() }
+            .onOpenURL { url in
+                deepLinkRouter.handle(url)
+            }
         }
         .modelContainer(sharedModelContainer)
     }

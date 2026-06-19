@@ -14,6 +14,15 @@ struct RoutineListView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section {
+                    NavigationLink(destination: GuidedProgramsView()) {
+                        Label("Guided Programs", systemImage: "calendar.badge.clock")
+                    }
+                    NavigationLink(destination: ContentPacksView()) {
+                        Label("Content Packs", systemImage: "shippingbox.fill")
+                    }
+                }
+
                 ForEach(routines) { routine in
                     RoutineRow(routine: routine) {
                         routineToPlay = routine
@@ -31,6 +40,13 @@ struct RoutineListView: View {
                             Label("Edit", systemImage: "pencil")
                         }
                         .tint(.orange)
+
+                        if let url = shareURL(for: routine) {
+                            ShareLink(item: url) {
+                                Label("Share", systemImage: "square.and.arrow.up")
+                            }
+                            .tint(.blue)
+                        }
                     }
                 }
             }
@@ -91,6 +107,12 @@ struct RoutineListView: View {
     private func resolvedExercises(for routine: Routine) -> [Exercise] {
         let byID = Dictionary(uniqueKeysWithValues: exercises.map { ($0.uuid, $0) })
         return routine.exerciseIDs.compactMap { byID[$0] }
+    }
+
+    private func shareURL(for routine: Routine) -> URL? {
+        let names = resolvedExercises(for: routine).map { $0.name }
+        guard !names.isEmpty else { return nil }
+        return RoutineSharePayload(name: routine.name, exerciseNames: names).shareURL
     }
 }
 

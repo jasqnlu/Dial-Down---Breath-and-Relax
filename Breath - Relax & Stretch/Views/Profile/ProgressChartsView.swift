@@ -8,8 +8,17 @@ struct ProgressChartsView: View {
 
     @Query(sort: \Session.startedAt) private var sessions: [Session]
     @Query private var profiles: [UserProfile]
+    @Query private var exercises: [Exercise]
+
+    @State private var selectedDay: DaySelection?
+    @State private var showingStreakShare = false
 
     private var profile: UserProfile? { profiles.first }
+
+    private struct DaySelection: Identifiable {
+        let date: Date
+        var id: Date { date }
+    }
 
     // MARK: - Body
 
@@ -20,6 +29,7 @@ struct ProgressChartsView: View {
                     weeklyBarChartSection
                     allTimeStatsSection
                     streakCalendarSection
+                    yearHeatmapSection
                     pointsHistorySection
                 }
                 .padding(.horizontal, 16)
@@ -28,6 +38,31 @@ struct ProgressChartsView: View {
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Progress")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingStreakShare = true
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                    .accessibilityLabel("Share streak card")
+                }
+            }
+            .sheet(item: $selectedDay) { selection in
+                SessionDayDetailView(
+                    date: selection.date,
+                    sessions: sessionsOnDay(selection.date),
+                    exercises: exercises
+                )
+            }
+            .sheet(isPresented: $showingStreakShare) {
+                StreakCardShareSheet(
+                    streak: profile?.streak ?? longestStreak,
+                    totalPoints: profile?.totalPoints ?? sessions.reduce(0) { $0 + $1.pointsEarned },
+                    totalMinutes: totalMinutes,
+                    displayName: profile?.displayName ?? ""
+                )
+            }
         }
     }
 
@@ -141,6 +176,12 @@ struct ProgressChartsView: View {
                                             .foregroundStyle(cell.hasSession ? .white : .secondary)
                                     }
                                 }
+                                .onTapGesture {
+                                    if cell.hasSession, let date = cell.date {
+                                        selectedDay = DaySelection(date: date)
+                                    }
+                                }
+                                .accessibilityAddTraits(cell.hasSession ? .isButton : [])
                         }
                     }
                 }
@@ -148,6 +189,98 @@ struct ProgressChartsView: View {
             .padding()
             .cardStyle()
         }
+    }
+
+    // MARK: - Section 3b: Year Heatmap
+
+    private var yearHeatmapSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader("Year in Review")
+
+            VStack(alignment: .leading, spacing: 8) {
+                let weeks = yearHeatmapWeeks()
+                ScrollViewReader { proxy in
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(alignment: .top, spacing: 3) {
+                            ForEach(Array(weeks.enumerated()), id: \.offset) { weekIndex, week in
+                                VStack(spacing: 3) {
+                                    ForEach(week, id: \.self) { day in
+                                        let count = sessionCount(on: day)
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(heatColor(for: count, isFuture: day > Date()))
+                                            .frame(width: 10, height: 10)
+                                            .onTapGesture {
+                                                if count > 0 { selectedDay = DaySelection(date: day) }
+                                            }
+                                    }
+                                }
+                                .id(weekIndex)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    .onAppear {
+                        proxy.scrollTo(weeks.count - 1, anchor: .trailing)
+                    }
+                }
+
+                HStack(spacing: 4) {
+                    Text("Less")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    ForEach([0, 1, 2, 3], id: \.self) { level in
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(heatColor(for: level, isFuture: false))
+                            .frame(width: 10, height: 10)
+                    }
+                    Text("More")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding()
+            .cardStyle()
+        }
+    }
+
+    private func sessionCount(on date: Date) -> Int {
+        let cal = Calendar.current
+        return sessions.filter { cal.isDate($0.startedAt, inSameDayAs: date) }.count
+    }
+
+    private func heatColor(for count: Int, isFuture: Bool) -> Color {
+        if isFuture { return Color.clear }
+        switch count {
+        case 0:  return Color(.systemFill)
+        case 1:  return Color.accentColor.opacity(0.35)
+        case 2:  return Color.accentColor.opacity(0.65)
+        default: return Color.accentColor
+        }
+    }
+
+    // Returns 53ish columns of 7 days (Sun…Sat) covering the last 365 days, oldest first.
+    private func yearHeatmapWeeks() -> [[Date]] {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        guard let yearAgo = cal.date(byAdding: .day, value: -364, to: today) else { return [] }
+
+        let startWeekday = cal.component(.weekday, from: yearAgo) // 1 = Sunday
+        guard let alignedStart = cal.date(byAdding: .day, value: -(startWeekday - 1), to: yearAgo) else { return [] }
+
+        var columns: [[Date]] = []
+        var weekStart = alignedStart
+        while weekStart <= today {
+            var week: [Date] = []
+            for i in 0..<7 {
+                if let d = cal.date(byAdding: .day, value: i, to: weekStart) {
+                    week.append(d)
+                }
+            }
+            columns.append(week)
+            guard let next = cal.date(byAdding: .day, value: 7, to: weekStart) else { break }
+            weekStart = next
+        }
+        return columns
     }
 
     // MARK: - Section 4: Points History
@@ -265,6 +398,7 @@ struct ProgressChartsView: View {
     private struct CalendarCell: Identifiable {
         let id: Int          // index in the 35-cell grid
         let day: Int?        // nil for padding cells before month starts
+        let date: Date?      // nil for padding cells before month starts
         let hasSession: Bool
     }
 
@@ -294,14 +428,19 @@ struct ProgressChartsView: View {
         for i in 0..<totalCells {
             let dayNumber = i - leadingPads + 1
             if dayNumber < 1 || dayNumber > range.count {
-                cells.append(CalendarCell(id: i, day: nil, hasSession: false))
+                cells.append(CalendarCell(id: i, day: nil, date: nil, hasSession: false))
             } else {
                 let cellDate = cal.date(byAdding: .day, value: dayNumber - 1, to: monthStart)!
                 let hasSession = sessionDays.contains(cal.startOfDay(for: cellDate))
-                cells.append(CalendarCell(id: i, day: dayNumber, hasSession: hasSession))
+                cells.append(CalendarCell(id: i, day: dayNumber, date: cellDate, hasSession: hasSession))
             }
         }
         return cells
+    }
+
+    private func sessionsOnDay(_ date: Date) -> [Session] {
+        let cal = Calendar.current
+        return sessions.filter { cal.isDate($0.startedAt, inSameDayAs: date) }
     }
 
     // MARK: - Sub-views
@@ -367,7 +506,7 @@ private extension Date {
 // MARK: - Preview
 
 #Preview {
-    let schema = Schema([Session.self, UserProfile.self])
+    let schema = Schema([Session.self, UserProfile.self, Exercise.self])
     let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: schema, configurations: [config])
 

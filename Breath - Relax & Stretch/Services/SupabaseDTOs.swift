@@ -46,6 +46,22 @@ struct RemoteRoutine: Codable, Sendable {
     }
 }
 
+struct RemoteProfile: Codable, Sendable, Identifiable {
+    let id: String              // stable identifier — the user's auth email
+    let displayName: String
+    let totalPoints: Int
+    let streak: Int
+    let totalMinutes: Int
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case displayName  = "display_name"
+        case totalPoints  = "total_points"
+        case streak
+        case totalMinutes = "total_minutes"
+    }
+}
+
 struct RemoteSession: Codable, Sendable {
     let id: String
     let userID: String

@@ -9,6 +9,7 @@ struct ProfileSettingsTab: View {
     @AppStorage("bodyMapSex")           private var bodyMapSex = "male"
     @AppStorage("onboardingGoals")      private var goalsStr = ""
     @AppStorage("voiceCuesEnabled")     private var voiceCuesEnabled = false
+    @AppStorage("calendarSyncEnabled")  private var calendarSyncEnabled = false
 
     private let allGoals: [(id: String, label: String, icon: String)] = [
         ("flexibility",      "Flexibility",       "figure.flexibility"),
@@ -95,7 +96,7 @@ struct ProfileSettingsTab: View {
             } header: {
                 Text("My Goals")
             } footer: {
-                Text("Shapes the "For You" exercises in the Exercises tab.")
+                Text("Shapes the \"For You\" exercises in the Exercises tab.")
             }
 
             // Body Map
@@ -108,10 +109,12 @@ struct ProfileSettingsTab: View {
             }
 
             // Session
-            Section("Session") {
+            Section {
                 Toggle(isOn: $voiceCuesEnabled) {
                     Label("Voice Cues", systemImage: "waveform")
                 }
+            } header: {
+                Text("Session")
             } footer: {
                 Text("Announces exercise names and breathing phases aloud during sessions.")
             }
@@ -178,15 +181,29 @@ struct ProfileSettingsTab: View {
             }
 
             // Integrations
-            Section("Integrations") {
+            Section {
                 Button {
                     Task { await HealthKitService.shared.requestAuthorization() }
                 } label: {
                     Label("Connect Apple Health", systemImage: "heart.fill")
                         .foregroundStyle(.red)
                 }
+
+                Toggle(isOn: $calendarSyncEnabled) {
+                    Label("Add Sessions to Calendar", systemImage: "calendar")
+                }
+                .onChange(of: calendarSyncEnabled) { _, enabled in
+                    if enabled {
+                        Task {
+                            let granted = await CalendarService.shared.requestAccess()
+                            if !granted { calendarSyncEnabled = false }
+                        }
+                    }
+                }
+            } header: {
+                Text("Integrations")
             } footer: {
-                Text("Logs stretch sessions as Flexibility workouts and breathing sessions as Mindful Minutes. Google Health and other apps that sync with Apple Health will receive the data automatically.")
+                Text("Logs stretch sessions as Flexibility workouts and breathing sessions as Mindful Minutes, and reads last night's sleep to suggest a gentler routine when you're under-rested. Google Health and other apps that sync with Apple Health will receive the data automatically. Calendar sync adds a same-time event for each completed session and suggests a free slot for your next one.")
             }
 
             // Data

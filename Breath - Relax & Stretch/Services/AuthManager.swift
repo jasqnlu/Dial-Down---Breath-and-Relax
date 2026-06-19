@@ -88,6 +88,12 @@ final class AuthManager: ObservableObject {
         persist(name: name, email: email, providerVal: .apple)
     }
 
+    // MARK: - Sign in with Google
+
+    func handleGoogleSignIn(name: String, email: String) {
+        persist(name: name, email: email, providerVal: .google)
+    }
+
     // MARK: - Email / Password
 
     /// Returns nil on success, error string on failure.

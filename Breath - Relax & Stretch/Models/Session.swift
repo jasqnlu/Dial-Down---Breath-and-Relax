@@ -10,6 +10,9 @@ final class Session {
     var completedAt: Date? = nil
     var completionPercent: Double = 0
     var pointsEarned: Int = 0
+    var exerciseIDs: [UUID] = []      // exercises actually performed (empty for breathing sessions)
+    var sessionLabel: String? = nil   // breathing pattern name; nil for routine/exercise sessions
+    var roundsCompleted: Int = 0      // breathing sessions only
 
     var durationMinutes: Int {
         guard let end = completedAt else { return 0 }

@@ -1,0 +1,87 @@
+import SwiftUI
+import SwiftData
+
+// MARK: - ImportRoutineView
+// Confirmation sheet shown when the app is opened via a shared `breath://routine`
+// link. Exercises are matched by name against the local catalog — any that
+// don't exist locally are skipped and called out.
+
+struct ImportRoutineView: View {
+    let payload: RoutineSharePayload
+    let onDismiss: () -> Void
+
+    @Query private var exercises: [Exercise]
+    @Environment(\.modelContext) private var modelContext
+
+    private var matched: [Exercise] {
+        let byName = Dictionary(uniqueKeysWithValues: exercises.map { ($0.name, $0) })
+        return payload.exerciseNames.compactMap { byName[$0] }
+    }
+
+    private var missingCount: Int { payload.exerciseNames.count - matched.count }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                Image(systemName: "square.and.arrow.down.on.square.fill")
+                    .font(.system(size: 56))
+                    .foregroundStyle(Color.accentColor)
+                    .padding(.top, 24)
+
+                Text(payload.name)
+                    .font(.title2.bold())
+                    .multilineTextAlignment(.center)
+
+                Text("\(matched.count) of \(payload.exerciseNames.count) exercises found on your device")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                if missingCount > 0 {
+                    Text("\(missingCount) exercise\(missingCount == 1 ? "" : "s") couldn't be matched and will be skipped.")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+
+                List(matched) { exercise in
+                    Text(exercise.name)
+                }
+                .listStyle(.plain)
+
+                Button(action: saveRoutine) {
+                    Text("Add to My Routines")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(matched.isEmpty ? Color.gray : Color.accentColor)
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                }
+                .disabled(matched.isEmpty)
+                .padding(.horizontal)
+                .padding(.bottom, 24)
+            }
+            .navigationTitle("Shared Routine")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel", action: onDismiss)
+                }
+            }
+        }
+    }
+
+    private func saveRoutine() {
+        let routine = Routine(name: payload.name, exerciseIDs: matched.map { $0.uuid })
+        modelContext.insert(routine)
+        do {
+            try modelContext.save()
+        } catch {
+            #if DEBUG
+            print("⚠️ SwiftData save failed in ImportRoutineView: \(error)")
+            #endif
+        }
+        onDismiss()
+    }
+}
