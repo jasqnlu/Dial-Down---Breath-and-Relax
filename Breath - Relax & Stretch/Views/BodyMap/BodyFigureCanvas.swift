@@ -27,6 +27,10 @@ struct BodyFigureCanvas: View {
     let selectedTool: DrawingTool
     let selectedSensation: SensationColor
     var sex: String = "male"            // "male" or "female"
+    /// False when something else (e.g. the rotatable 3D skin model) is
+    /// rendering behind this view — skips the vector silhouette + its
+    /// facial/back detail lines so only regions + ink + live-draw show.
+    var showSilhouette: Bool = true
     @ObservedObject var store: AnnotationStore
     @Binding var markedRegions: Set<String>
 
@@ -44,18 +48,20 @@ struct BodyFigureCanvas: View {
             let figureSize = geo.size
 
             ZStack {
-                // 1. Silhouette (gender-specific)
-                silhouetteView
+                if showSilhouette {
+                    // 1. Silhouette (gender-specific)
+                    silhouetteView
 
-                // 1b. Anatomical detail overlays — front view only
-                if facing == .front {
-                    FacialFeaturesCanvas(sex: sex)
-                    BodyDetailCanvas()
-                }
+                    // 1b. Anatomical detail overlays — front view only
+                    if facing == .front {
+                        FacialFeaturesCanvas(sex: sex)
+                        BodyDetailCanvas()
+                    }
 
-                if facing == .back {
-                    backDetailLines(in: figureSize)
-                        .allowsHitTesting(false)
+                    if facing == .back {
+                        backDetailLines(in: figureSize)
+                            .allowsHitTesting(false)
+                    }
                 }
 
                 // 2. Saved ink for THIS facing — isolated compositing layer so the
@@ -114,17 +120,33 @@ struct BodyFigureCanvas: View {
     }
 
     // MARK: - Gender-specific silhouette
+    //
+    // Skin stays a flat tinted silhouette; Muscle/Skeleton layer in the
+    // anatomical artwork on top, clipped to the same outline.
 
     @ViewBuilder
     private var silhouetteView: some View {
         if sex == "female" {
-            FemaleSilhouetteShape()
-                .fill(layer.silhouetteFill)
-                .overlay(FemaleSilhouetteShape().stroke(Color(.systemGray3), lineWidth: 1))
+            ZStack {
+                FemaleSilhouetteShape().fill(layer.silhouetteFill)
+                anatomyOverlay.clipShape(FemaleSilhouetteShape())
+                FemaleSilhouetteShape().stroke(Color(.systemGray3), lineWidth: 1)
+            }
         } else {
-            MaleSilhouetteShape()
-                .fill(layer.silhouetteFill)
-                .overlay(MaleSilhouetteShape().stroke(Color(.systemGray3), lineWidth: 1))
+            ZStack {
+                MaleSilhouetteShape().fill(layer.silhouetteFill)
+                anatomyOverlay.clipShape(MaleSilhouetteShape())
+                MaleSilhouetteShape().stroke(Color(.systemGray3), lineWidth: 1)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var anatomyOverlay: some View {
+        switch layer {
+        case .skin:     EmptyView()
+        case .muscle:   MuscleAnatomyCanvas(facing: facing)
+        case .skeleton: SkeletonAnatomyCanvas(facing: facing)
         }
     }
 

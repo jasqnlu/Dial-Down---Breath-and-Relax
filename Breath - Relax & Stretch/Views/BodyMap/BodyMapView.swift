@@ -65,39 +65,62 @@ struct BodyMapView: View {
                     .padding(.vertical, 8)
                 }
 
-                // ── The body figure (zoomable: silhouette + ink + regions) ───
-                GeometryReader { geo in
-                    BodyFigureCanvas(layer: currentLayer,
-                                     facing: facing,
-                                     detail: detailLevel,
-                                     annotationMode: annotationMode,
-                                     selectedTool: selectedTool,
-                                     selectedSensation: selectedSensation,
-                                     sex: bodyMapSex,
-                                     store: annotationStore,
-                                     markedRegions: $markedRegions)
-                        .scaleEffect(zoomScale, anchor: .center)
-                        .offset(panOffset)
-                        // scaleEffect/offset are reversed during hit-testing, so
-                        // taps and drawing still map onto the true region geometry.
-                        .frame(width: geo.size.width, height: geo.size.height)
-                        .contentShape(Rectangle())
-                        .gesture(panGesture(container: geo.size))
-                        .simultaneousGesture(magnifyGesture)
-                        .clipped()
-                        .overlay(alignment: .bottomTrailing) {
-                            zoomControls.padding(12)
-                        }
-                        .overlay(alignment: .top) {
-                            if detailLevel == .fine {
-                                Text("Zoom detail — tap fingers, toes, eyes & nose")
-                                    .font(.caption2.weight(.medium))
-                                    .padding(.horizontal, 10).padding(.vertical, 5)
-                                    .background(.regularMaterial, in: Capsule())
-                                    .padding(.top, 6)
-                                    .transition(.opacity)
+                // ── The body figure ───────────────────────────────────────────
+                // Skin free-explore is a freely-rotatable 3D model with its
+                // own drag/pinch gestures. Muscle/Skeleton — and Skin while
+                // marking — share the 2D zoomable canvas: tap regions need a
+                // fixed front/back projection, so marking on Skin locks the
+                // model's rotation and overlays the same invisible region
+                // grid the 2D layers use, calibrated to the same footprint.
+                Group {
+                    if currentLayer == .skin && !annotationMode {
+                        BodySceneView(facing: facing)
+                    } else {
+                        GeometryReader { geo in
+                            ZStack {
+                                if currentLayer == .skin {
+                                    // Matches BodyFigureCanvas's own internal
+                                    // figure padding so the 3D render and the
+                                    // region grid it carries land in the same box.
+                                    BodySceneView(facing: facing, interactive: false)
+                                        .padding(.horizontal, 28)
+                                        .padding(.vertical, 6)
+                                }
+                                BodyFigureCanvas(layer: currentLayer,
+                                                 facing: facing,
+                                                 detail: detailLevel,
+                                                 annotationMode: annotationMode,
+                                                 selectedTool: selectedTool,
+                                                 selectedSensation: selectedSensation,
+                                                 sex: bodyMapSex,
+                                                 showSilhouette: currentLayer != .skin,
+                                                 store: annotationStore,
+                                                 markedRegions: $markedRegions)
                             }
+                                .scaleEffect(zoomScale, anchor: .center)
+                                .offset(panOffset)
+                                // scaleEffect/offset are reversed during hit-testing, so
+                                // taps and drawing still map onto the true region geometry.
+                                .frame(width: geo.size.width, height: geo.size.height)
+                                .contentShape(Rectangle())
+                                .gesture(panGesture(container: geo.size))
+                                .simultaneousGesture(magnifyGesture)
+                                .clipped()
+                                .overlay(alignment: .bottomTrailing) {
+                                    zoomControls.padding(12)
+                                }
+                                .overlay(alignment: .top) {
+                                    if detailLevel == .fine {
+                                        Text("Zoom detail — tap fingers, toes, eyes & nose")
+                                            .font(.caption2.weight(.medium))
+                                            .padding(.horizontal, 10).padding(.vertical, 5)
+                                            .background(.regularMaterial, in: Capsule())
+                                            .padding(.top, 6)
+                                            .transition(.opacity)
+                                    }
+                                }
                         }
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .animation(.easeInOut(duration: 0.15), value: detailLevel)
