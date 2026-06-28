@@ -122,10 +122,22 @@ struct ExerciseRow: View {
         }
     }
 
+    private var hasVideo: Bool {
+        VideoSource(urlString: exercise.mediaURL) != nil
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(exercise.name)
-                .font(.headline)
+            HStack(spacing: 6) {
+                Text(exercise.name)
+                    .font(.headline)
+                if hasVideo {
+                    Image(systemName: "play.rectangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                        .accessibilityHidden(true)
+                }
+            }
             HStack(spacing: 12) {
                 Label(exercise.durationFormatted, systemImage: "clock")
                 Label(exercise.type.rawValue, systemImage: "figure.mind.and.body")
@@ -136,7 +148,7 @@ struct ExerciseRow: View {
         }
         .padding(.vertical, 4)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(exercise.name), \(exercise.type.rawValue), \(exercise.durationFormatted), \(difficultyLabel)")
+        .accessibilityLabel("\(exercise.name), \(exercise.type.rawValue), \(exercise.durationFormatted), \(difficultyLabel)\(hasVideo ? ", has video" : "")")
     }
 }
 
@@ -180,10 +192,14 @@ private struct SleepSuggestionBanner: View {
 private struct SuggestedTimeBanner: View {
     let date: Date
 
-    private var timeLabel: String {
+    private static let timeFmt: DateFormatter = {
         let fmt = DateFormatter()
         fmt.dateFormat = "h:mm a"
-        return fmt.string(from: date)
+        return fmt
+    }()
+
+    private var timeLabel: String {
+        Self.timeFmt.string(from: date)
     }
 
     var body: some View {
