@@ -11,6 +11,7 @@ struct ExerciseListView: View {
     @State private var suggestedSlot: Date?
     @State private var lastNightSleepHours: Double?
     @State private var showingGentleSession = false
+    @State private var suggestedBannerDismissed = false
 
     var filtered: [Exercise] {
         exercises.filter { ex in
@@ -36,10 +37,12 @@ struct ExerciseListView: View {
                         .padding(.horizontal)
                         .padding(.top, 8)
                     }
-                    if let slot = suggestedSlot {
-                        SuggestedTimeBanner(date: slot)
-                            .padding(.horizontal)
-                            .padding(.top, 8)
+                    if let slot = suggestedSlot, !suggestedBannerDismissed {
+                        SuggestedTimeBanner(date: slot) {
+                            suggestedBannerDismissed = true
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
                     }
                     ForYouSection(allExercises: exercises)
                 }
@@ -199,12 +202,15 @@ private struct SleepSuggestionBanner: View {
 
 private struct SuggestedTimeBanner: View {
     let date: Date
+    let onDismiss: () -> Void
 
-    private var timeLabel: String {
+    private static let timeFmt: DateFormatter = {
         let fmt = DateFormatter()
         fmt.dateFormat = "h:mm a"
-        return fmt.string(from: date)
-    }
+        return fmt
+    }()
+
+    private var timeLabel: String { Self.timeFmt.string(from: date) }
 
     var body: some View {
         HStack(spacing: 10) {
@@ -214,6 +220,13 @@ private struct SuggestedTimeBanner: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer(minLength: 0)
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Dismiss suggestion")
         }
         .padding(10)
         .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
