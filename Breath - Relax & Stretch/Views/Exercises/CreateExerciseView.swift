@@ -19,6 +19,9 @@ struct CreateExerciseView: View {
     // MARK: - Instructions
     @State private var steps: [String] = [""]
 
+    // MARK: - Safety caution
+    @State private var caution: String = ""
+
     // MARK: - Constants
     private let allBodyParts: [String] = [
         "Head", "Neck",
@@ -62,6 +65,7 @@ struct CreateExerciseView: View {
                 durationDifficultySection
                 targetBodyPartsSection
                 instructionsSection
+                cautionSection
             }
             .navigationTitle("New Exercise")
             .navigationBarTitleDisplayMode(.inline)
@@ -201,6 +205,18 @@ struct CreateExerciseView: View {
         }
     }
 
+    private var cautionSection: some View {
+        Section {
+            TextField("e.g. Avoid if you have lower-back pain.", text: $caution, axis: .vertical)
+                .lineLimit(2...4)
+                .textInputAutocapitalization(.sentences)
+        } header: {
+            Text("Safety caution (optional)")
+        } footer: {
+            Text("Shown as a warning card on the exercise detail screen.")
+        }
+    }
+
     // MARK: - Save
 
     private func saveExercise() {
@@ -208,6 +224,7 @@ struct CreateExerciseView: View {
         let trimmedSteps = steps
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
+        let trimmedCaution = caution.trimmingCharacters(in: .whitespacesAndNewlines)
 
         let exercise = Exercise(
             name: trimmedName,
@@ -215,10 +232,12 @@ struct CreateExerciseView: View {
             targetBodyParts: Array(selectedBodyParts).sorted(),
             durationSeconds: durationSeconds,
             difficulty: difficulty,
-            instructions: trimmedSteps
+            instructions: trimmedSteps,
+            caution: trimmedCaution.isEmpty ? nil : trimmedCaution
         )
 
         modelContext.insert(exercise)
+        try? modelContext.save()
         dismiss()
     }
 }
