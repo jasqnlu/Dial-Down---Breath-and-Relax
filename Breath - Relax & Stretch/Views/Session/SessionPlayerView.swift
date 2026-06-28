@@ -25,11 +25,7 @@ struct SessionPlayerView: View {
     @State private var showingSummary = false
     @State private var totalPointsEarned = 0
     @State private var sessionStarted = Date()
-    /// Set to false in .onDisappear so the timer stops processing ticks after dismiss
-    @State private var sessionActive = false
     @State private var shouldRequestReview = false
-
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     // Haptics
     private let impactLight   = UIImpactFeedbackGenerator(style: .light)
@@ -59,7 +55,6 @@ struct SessionPlayerView: View {
             }
         }
         .onAppear {
-            sessionActive  = true
             sessionStarted = Date()
             startExercise()
             impactLight.prepare()
@@ -67,8 +62,19 @@ struct SessionPlayerView: View {
             notifySuccess.prepare()
         }
         .onDisappear {
-            sessionActive = false
             VoiceCueService.shared.stop()
+        }
+        .task {
+            for await _ in Timer.publish(every: 1, on: .main, in: .common).autoconnect().values {
+                guard !isPaused, !showingSummary else { continue }
+                if secondsRemaining > 0 {
+                    secondsRemaining -= 1
+                    breathTick += 1
+                    if breathTick % 4 == 0 { AudioServicesPlaySystemSound(soundTick) }
+                } else {
+                    advanceToNext(completion: 1.0)
+                }
+            }
         }
         .onChange(of: showingSummary) { _, showing in
             guard showing, shouldRequestReview else { return }
@@ -80,19 +86,6 @@ struct SessionPlayerView: View {
         }
         .sheet(isPresented: $shouldShowPaywall) {
             PaywallView()
-        }
-        .onReceive(timer) { _ in
-            guard sessionActive, !isPaused, !showingSummary else { return }
-            if secondsRemaining > 0 {
-                secondsRemaining -= 1
-                // Breathing tick every 4 seconds
-                breathTick += 1
-                if breathTick % 4 == 0 {
-                    AudioServicesPlaySystemSound(soundTick)
-                }
-            } else {
-                advanceToNext(completion: 1.0)
-            }
         }
     }
 
