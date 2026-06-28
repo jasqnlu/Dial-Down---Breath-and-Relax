@@ -44,11 +44,10 @@ struct ExerciseListView: View {
                     ForYouSection(allExercises: exercises)
                 }
 
-                let items: [Exercise] = Array(filtered)
                 LazyVStack(spacing: 0) {
-                    ForEach(0..<items.count, id: \.self) { i in
-                        NavigationLink(destination: ExerciseDetailView(exercise: items[i])) {
-                            ExerciseRow(exercise: items[i])
+                    ForEach(filtered, id: \.uuid) { exercise in
+                        NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
+                            ExerciseRow(exercise: exercise)
                                 .padding(.horizontal)
                                 .padding(.vertical, 4)
                         }
