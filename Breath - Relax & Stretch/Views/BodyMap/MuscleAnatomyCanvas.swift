@@ -31,11 +31,11 @@ struct MuscleAnatomyCanvas: View {
 
     // MARK: Palette
 
-    private let muscleBase = Color(red: 0.74, green: 0.21, blue: 0.18)
-    private var fill: Color     { muscleBase.opacity(0.55) }
-    private var fillDeep: Color { muscleBase.opacity(0.34) }
-    private var lineStroke: Color { muscleBase.opacity(0.85) }
-    private var tendon: Color   { Color.white.opacity(0.5) }
+    private let muscleBase  = Color(red: 0.80, green: 0.16, blue: 0.15)
+    private var fill: Color      { muscleBase.opacity(0.62) }
+    private var fillDeep: Color  { muscleBase.opacity(0.40) }
+    private var lineStroke: Color { muscleBase.opacity(0.90) }
+    private var tendon: Color    { Color.white.opacity(0.55) }
 
     // MARK: Drawing primitives
 

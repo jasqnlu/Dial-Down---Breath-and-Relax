@@ -6,38 +6,33 @@ struct HomeView: View {
     @EnvironmentObject private var router: DeepLinkRouter
     @Query private var exercises: [Exercise]
     @AppStorage("onboardingGoals") private var goalsStr = ""
+    @State private var selectedTab: Int = 0
 
     private var pendingActionBinding: Binding<DeepLinkAction?> {
         Binding(get: { router.pendingAction }, set: { router.pendingAction = $0 })
     }
 
     var body: some View {
-        TabView {
-            BodyMapView()
-                .tabItem {
-                    Label("Body", systemImage: "figure.stand")
-                }
+        ZStack(alignment: .bottom) {
+            // TabView handles lazy loading + nav-state preservation per tab.
+            // The default tab bar chrome is hidden; CustomTabBar floats on top.
+            TabView(selection: $selectedTab) {
+                BodyMapView().tag(0)
+                ExerciseListView().tag(1)
+                BreathingView().tag(2)
+                RoutineListView().tag(3)
+                ProfileView().tag(4)
+            }
+            .toolbar(.hidden, for: .tabBar)
+            // Add extra bottom inset so scrollable content clears the floating bar.
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: 80)
+            }
 
-            ExerciseListView()
-                .tabItem {
-                    Label("Exercises", systemImage: "list.bullet")
-                }
-
-            BreathingView()
-                .tabItem {
-                    Label("Breathe", systemImage: "wind")
-                }
-
-            RoutineListView()
-                .tabItem {
-                    Label("Routines", systemImage: "rectangle.stack")
-                }
-
-            ProfileView()
-                .tabItem {
-                    Label("Profile", systemImage: "person.circle")
-                }
+            CustomTabBar(selectedTab: $selectedTab)
+                .padding(.bottom, 10)
         }
+        .ignoresSafeArea(.keyboard)
         .sheet(item: pendingActionBinding) { action in
             switch action {
             case .quickSession:

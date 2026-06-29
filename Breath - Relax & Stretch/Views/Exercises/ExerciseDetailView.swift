@@ -1,10 +1,118 @@
 import SwiftUI
 import AVKit
+import WebKit
+
+// MARK: - VideoSource
+
+enum VideoSource {
+    case youtube(id: String)
+    case vimeo(id: String)
+    case rawVideo(url: URL)
+    case webLink(url: URL)
+
+    init?(urlString: String?) {
+        guard let str = urlString?.trimmingCharacters(in: .whitespaces),
+              !str.isEmpty,
+              let url = URL(string: str) else { return nil }
+        let host = url.host?.lowercased() ?? ""
+        if host.contains("youtube.com") || host.contains("youtu.be") {
+            if let id = Self.youtubeID(from: url) { self = .youtube(id: id); return }
+        }
+        if host.contains("vimeo.com"),
+           let id = url.pathComponents.last(where: { !$0.isEmpty && $0 != "/" }) {
+            self = .vimeo(id: id); return
+        }
+        if ["mp4", "mov", "m4v"].contains(url.pathExtension.lowercased()) {
+            self = .rawVideo(url: url); return
+        }
+        self = .webLink(url: url)
+    }
+
+    private static func youtubeID(from url: URL) -> String? {
+        if url.host?.contains("youtu.be") == true { return url.pathComponents.dropFirst().first }
+        if let comps = URLComponents(url: url, resolvingAgainstBaseURL: false),
+           let v = comps.queryItems?.first(where: { $0.name == "v" })?.value { return v }
+        if let idx = url.pathComponents.firstIndex(of: "embed"),
+           idx + 1 < url.pathComponents.count { return url.pathComponents[idx + 1] }
+        return nil
+    }
+
+    var embedURL: URL? {
+        switch self {
+        case .youtube(let id): return URL(string: "https://www.youtube.com/embed/\(id)?playsinline=1")
+        case .vimeo(let id):   return URL(string: "https://player.vimeo.com/video/\(id)?playsinline=1")
+        default:               return nil
+        }
+    }
+}
+
+// MARK: - VideoPreviewCard
+
+struct VideoPreviewCard: View {
+    let source: VideoSource
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Preview")
+                .font(.headline)
+                .padding(.horizontal)
+
+            switch source {
+            case .rawVideo(let url):
+                VideoPlayer(player: AVPlayer(url: url))
+                    .frame(height: 220)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .padding(.horizontal)
+
+            case .youtube, .vimeo:
+                if let embedURL = source.embedURL {
+                    WebEmbedView(url: embedURL)
+                        .frame(height: 220)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .padding(.horizontal)
+                }
+
+            case .webLink(let url):
+                Link(destination: url) {
+                    Label("Watch Video", systemImage: "play.rectangle.fill")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.accentColor.opacity(0.12))
+                        .foregroundStyle(Color.accentColor)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal)
+                }
+            }
+        }
+    }
+}
+
+private struct WebEmbedView: UIViewRepresentable {
+    let url: URL
+
+    func makeUIView(context: Context) -> WKWebView {
+        let cfg = WKWebViewConfiguration()
+        cfg.allowsInlineMediaPlayback = true
+        cfg.mediaTypesRequiringUserActionForPlayback = []
+        let wv = WKWebView(frame: .zero, configuration: cfg)
+        wv.backgroundColor = .black
+        wv.scrollView.isScrollEnabled = false
+        return wv
+    }
+
+    func updateUIView(_ wv: WKWebView, context: Context) {
+        wv.load(URLRequest(url: url))
+    }
+}
 
 struct ExerciseDetailView: View {
     let exercise: Exercise
     @State private var showingPlayer = false
-    @State private var player: AVPlayer?
+
+    /// Resolved video link (YouTube / Vimeo / file / web), if the exercise has one.
+    private var videoSource: VideoSource? {
+        VideoSource(urlString: exercise.mediaURL)
+    }
 
     var body: some View {
         ScrollView {
@@ -41,18 +149,10 @@ struct ExerciseDetailView: View {
                 Divider()
 
                 // ── Video / media preview ───────────────────────────────────
-                if let p = player {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Preview")
-                            .font(.headline)
-                            .padding(.horizontal)
-
-                        VideoPlayer(player: p)
-                            .frame(height: 220)
-                            .clipShape(RoundedRectangle(cornerRadius: 14))
-                            .padding(.horizontal)
-                    }
-
+                // Plays YouTube, Vimeo, other platforms (web view) or a raw
+                // video file (AVPlayer), depending on the exercise's link.
+                if let videoSource {
+                    VideoPreviewCard(source: videoSource)
                     Divider()
                 }
 
@@ -111,15 +211,6 @@ struct ExerciseDetailView: View {
             .padding(.vertical)
         }
         .navigationTitle(exercise.name)
-        .onAppear {
-            if let urlString = exercise.mediaURL, let url = URL(string: urlString) {
-                player = AVPlayer(url: url)
-            }
-        }
-        .onDisappear {
-            player?.pause()
-            player = nil
-        }
         .safeAreaInset(edge: .bottom) {
             Button {
                 showingPlayer = true

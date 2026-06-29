@@ -45,24 +45,13 @@ struct BodyMapView: View {
                         .padding(.vertical, 8)
                         .background(.regularMaterial)
                 } else {
-                    VStack(spacing: 8) {
-                        Picker("Layer", selection: $currentLayer) {
-                            ForEach(BodyLayer.allCases, id: \.self) { layer in
-                                Text(layer.rawValue).tag(layer)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-
-                        Picker("Facing", selection: $facing) {
-                            ForEach(BodyFacing.allCases) { f in
-                                Text(f.rawValue).tag(f)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .accessibilityLabel("Body facing")
+                    HStack(spacing: 8) {
+                        layerPickerRow
+                        Spacer(minLength: 8)
+                        facingToggleButton
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
                 }
 
                 // ── The body figure ───────────────────────────────────────────
@@ -176,6 +165,56 @@ struct BodyMapView: View {
                 UserDefaults.standard.set(Array(regions), forKey: "bodymap.markedRegions")
             }
         }
+    }
+
+    // MARK: - Layer + facing controls
+
+    private var layerPickerRow: some View {
+        HStack(spacing: 6) {
+            ForEach(BodyLayer.allCases, id: \.self) { layer in
+                let isActive = currentLayer == layer
+                Button {
+                    withAnimation(.spring(response: 0.28, dampingFraction: 0.76)) {
+                        currentLayer = layer
+                    }
+                } label: {
+                    Text(layer.rawValue)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(isActive ? .white : .secondary)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 7)
+                        .background {
+                            Capsule()
+                                .fill(isActive ? layer.accentColor : Color(.tertiarySystemFill))
+                        }
+                }
+                .buttonStyle(.plain)
+                .animation(.spring(response: 0.28, dampingFraction: 0.76), value: currentLayer)
+                .accessibilityLabel("\(layer.rawValue) layer")
+                .accessibilityAddTraits(isActive ? .isSelected : [])
+            }
+        }
+    }
+
+    private var facingToggleButton: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.28)) {
+                facing = facing == .front ? .back : .front
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "arrow.left.arrow.right")
+                    .font(.system(size: 10, weight: .medium))
+                Text(facing.rawValue)
+                    .font(.system(size: 13, weight: .semibold))
+            }
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(Color(.tertiarySystemFill), in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Toggle body facing — currently \(facing.rawValue)")
     }
 
     // MARK: - Zoom & pan
