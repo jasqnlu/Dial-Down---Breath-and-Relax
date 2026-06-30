@@ -25,8 +25,6 @@ struct BreathingView: View {
     @State private var circleScale:  CGFloat = 1.0
     @State private var circleColor:  Color   = BreathPhase.inhale.color
 
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
     @Environment(\.modelContext) private var modelContext
     @Environment(\.requestReview) private var requestReview
 
@@ -67,8 +65,10 @@ struct BreathingView: View {
             .navigationBarTitleDisplayMode(.large)
             .animation(.easeInOut(duration: 0.35), value: showCompletion)
         }
-        .onReceive(timer) { _ in
-            tickTimer()
+        .task {
+            for await _ in Timer.publish(every: 1, on: .main, in: .common).autoconnect().values {
+                tickTimer()
+            }
         }
         .onChange(of: showCompletion) { _, showing in
             guard showing, shouldRequestReview else { return }
