@@ -368,7 +368,7 @@ struct ProgressChartsView: View {
         let cal = Calendar.current
         let today = cal.startOfDay(for: Date())
         return (0..<7).reversed().map { offset -> DayPoint in
-            let day = cal.date(byAdding: .day, value: -offset, to: today)!
+            let day = cal.date(byAdding: .day, value: -offset, to: today) ?? today
             let label = day.shortWeekdayLabel
             let minutes = sessions
                 .filter { cal.isDate($0.startedAt, inSameDayAs: day) }
@@ -430,7 +430,7 @@ struct ProgressChartsView: View {
             if dayNumber < 1 || dayNumber > range.count {
                 cells.append(CalendarCell(id: i, day: nil, date: nil, hasSession: false))
             } else {
-                let cellDate = cal.date(byAdding: .day, value: dayNumber - 1, to: monthStart)!
+                let cellDate = cal.date(byAdding: .day, value: dayNumber - 1, to: monthStart) ?? monthStart
                 let hasSession = sessionDays.contains(cal.startOfDay(for: cellDate))
                 cells.append(CalendarCell(id: i, day: dayNumber, date: cellDate, hasSession: hasSession))
             }
