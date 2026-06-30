@@ -10,6 +10,7 @@ struct ProfileSettingsTab: View {
     @AppStorage("onboardingGoals")      private var goalsStr = ""
     @AppStorage("voiceCuesEnabled")     private var voiceCuesEnabled = false
     @AppStorage("calendarSyncEnabled")  private var calendarSyncEnabled = false
+    @State private var showingAppGuide = false
 
     private let allGoals: [(id: String, label: String, icon: String)] = [
         ("flexibility",      "Flexibility",       "figure.flexibility"),
@@ -252,6 +253,15 @@ struct ProfileSettingsTab: View {
                 }
             }
 
+            // Help
+            Section("Help") {
+                Button {
+                    showingAppGuide = true
+                } label: {
+                    Label("Replay App Tour", systemImage: "questionmark.circle")
+                }
+            }
+
             // About
             Section("About") {
                 LabeledContent("Version") {
@@ -262,6 +272,9 @@ struct ProfileSettingsTab: View {
                     Label("View on GitHub", systemImage: "curlybraces")
                 }
             }
+        }
+        .sheet(isPresented: $showingAppGuide) {
+            AppGuideView()
         }
     }
 

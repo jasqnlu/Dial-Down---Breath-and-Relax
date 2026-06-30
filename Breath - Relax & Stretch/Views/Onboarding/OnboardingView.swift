@@ -4,15 +4,26 @@ import SwiftUI
 
 struct OnboardingGate<Content: View>: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("hasSeenAppGuide") private var hasSeenAppGuide = false
     let content: Content
 
     init(@ViewBuilder content: () -> Content) {
         self.content = content()
     }
 
+    private var showingAppGuide: Binding<Bool> {
+        Binding(
+            get: { !hasSeenAppGuide },
+            set: { isShowing in hasSeenAppGuide = !isShowing }
+        )
+    }
+
     var body: some View {
         if hasCompletedOnboarding {
             content
+                .sheet(isPresented: showingAppGuide) {
+                    AppGuideView()
+                }
         } else {
             OnboardingView()
         }
