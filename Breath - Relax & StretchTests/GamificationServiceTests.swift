@@ -59,6 +59,27 @@ struct GamificationServiceTests {
         #expect(GamificationService.points(for: e, completion: 0.0)  == 7)
     }
 
+    // MARK: - Skip completion
+
+    @Test func skipCompletionScalesWithElapsedFraction() {
+        #expect(GamificationService.skipCompletion(elapsedSeconds: 30, durationSeconds: 60) == 0.5)
+        #expect(GamificationService.skipCompletion(elapsedSeconds: 45, durationSeconds: 60) == 0.75)
+        #expect(GamificationService.skipCompletion(elapsedSeconds: 60, durationSeconds: 60) == 1.0)
+    }
+
+    @Test func skipCompletionImmediateSkipHitsFloorNotZero() {
+        #expect(GamificationService.skipCompletion(elapsedSeconds: 0, durationSeconds: 60) == 0.1)
+        #expect(GamificationService.skipCompletion(elapsedSeconds: 1, durationSeconds: 60) == 0.1)
+    }
+
+    @Test func skipCompletionNeverExceedsOne() {
+        #expect(GamificationService.skipCompletion(elapsedSeconds: 999, durationSeconds: 60) == 1.0)
+    }
+
+    @Test func skipCompletionZeroDurationFallsBackToHalf() {
+        #expect(GamificationService.skipCompletion(elapsedSeconds: 0, durationSeconds: 0) == 0.5)
+    }
+
     @Test func unknownDifficultyFallsBackToBaseMultiplier() {
         // difficulty 5 isn't a known tier, so it uses the 1.0 default — same as difficulty 1.
         let base = GamificationService.points(for: makeExercise(duration: 60, difficulty: 1), completion: 1.0)

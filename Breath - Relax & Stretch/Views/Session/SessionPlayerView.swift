@@ -163,7 +163,7 @@ struct SessionPlayerView: View {
             HStack(spacing: 48) {
                 Button {
                     impactLight.impactOccurred()
-                    advanceToNext(completion: 0.5)
+                    advanceToNext(completion: skipCompletion())
                 } label: {
                     Image(systemName: "forward.skip")
                         .font(.title)
@@ -197,6 +197,11 @@ struct SessionPlayerView: View {
         if let exercise = currentExercise {
             VoiceCueService.shared.speak(exercise.name)
         }
+    }
+
+    private func skipCompletion() -> Double {
+        guard let duration = currentExercise?.durationSeconds else { return 0.5 }
+        return GamificationService.skipCompletion(elapsedSeconds: duration - secondsRemaining, durationSeconds: duration)
     }
 
     private func advanceToNext(completion: Double) {

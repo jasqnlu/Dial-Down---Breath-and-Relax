@@ -17,6 +17,16 @@ struct GamificationService {
         return max(1, Int(durationMinutes * difficultyMultiplier * completionBonus * 10))
     }
 
+    /// Scales skip completion by actual elapsed time vs. the exercise's
+    /// configured duration, so tapping skip immediately doesn't earn the same
+    /// credit as skipping seconds before the exercise would have finished.
+    /// A small floor keeps a glance-and-skip from earning literally nothing.
+    static func skipCompletion(elapsedSeconds: Int, durationSeconds: Int) -> Double {
+        guard durationSeconds > 0 else { return 0.5 }
+        let fraction = Double(elapsedSeconds) / Double(durationSeconds)
+        return max(0.1, min(1.0, fraction))
+    }
+
     // MARK: - Streak
 
     static func updateStreak(for profile: UserProfile) {
