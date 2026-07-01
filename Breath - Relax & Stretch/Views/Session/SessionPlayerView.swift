@@ -54,6 +54,20 @@ struct SessionPlayerView: View {
                     onComplete?(totalPointsEarned)
                     dismiss()
                 }
+            } else if exercises.isEmpty {
+                ContentUnavailableView(
+                    "No Exercises",
+                    systemImage: "figure.mind.and.body",
+                    description: Text("There are no exercises to play.")
+                )
+                .overlay(alignment: .topLeading) {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding()
+                }
             } else if let exercise = currentExercise {
                 playerContent(exercise: exercise)
             }
