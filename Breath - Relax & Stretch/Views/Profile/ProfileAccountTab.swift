@@ -7,7 +7,6 @@ struct ProfileAccountTab: View {
     let profile: UserProfile?
     @EnvironmentObject private var auth: AuthManager
     @Binding var showSignOutConfirm: Bool
-    @AppStorage("showStreakEmoji") private var showStreakEmoji = true
     @ObservedObject private var store = StoreManager.shared
     @State private var twoFAOn = false
     @State private var showingPaywall = false
