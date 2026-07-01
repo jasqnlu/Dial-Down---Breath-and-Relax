@@ -20,6 +20,7 @@ struct BodyMapView: View {
     @State private var selectedTool: DrawingTool       = .pen
     @State private var selectedSensation: SensationColor = sensationColors[0]
     @State private var showLegend = false
+    @State private var showClearConfirm = false
 
     // Zoom & pan
     @State private var zoomScale: CGFloat = 1
@@ -328,10 +329,7 @@ struct BodyMapView: View {
             .accessibilityLabel("Undo last stroke")
 
             Button(role: .destructive) {
-                withAnimation {
-                    annotationStore.clear()
-                    markedRegions.removeAll()
-                }
+                showClearConfirm = true
             } label: {
                 Image(systemName: "trash")
                     .font(.system(size: 16, weight: .medium))
@@ -339,6 +337,21 @@ struct BodyMapView: View {
             }
             .disabled(annotationStore.strokes.isEmpty && markedRegions.isEmpty)
             .accessibilityLabel("Clear all marks")
+            .confirmationDialog(
+                "Clear all marks?",
+                isPresented: $showClearConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("Clear All Marks", role: .destructive) {
+                    withAnimation {
+                        annotationStore.clear()
+                        markedRegions.removeAll()
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This removes every stroke and marked region on the body map. This can't be undone.")
+            }
 
             Button { showLegend = true } label: {
                 Image(systemName: "info.circle")
