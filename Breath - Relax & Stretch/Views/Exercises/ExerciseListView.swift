@@ -11,6 +11,7 @@ struct ExerciseListView: View {
     @State private var suggestedSlot: Date?
     @State private var lastNightSleepHours: Double?
     @State private var showingGentleSession = false
+    @State private var suggestedBannerDismissed = false
 
     var filtered: [Exercise] {
         exercises.filter { ex in
@@ -36,19 +37,20 @@ struct ExerciseListView: View {
                         .padding(.horizontal)
                         .padding(.top, 8)
                     }
-                    if let slot = suggestedSlot {
-                        SuggestedTimeBanner(date: slot)
-                            .padding(.horizontal)
-                            .padding(.top, 8)
+                    if let slot = suggestedSlot, !suggestedBannerDismissed {
+                        SuggestedTimeBanner(date: slot) {
+                            suggestedBannerDismissed = true
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
                     }
                     ForYouSection(allExercises: exercises)
                 }
 
-                let items: [Exercise] = Array(filtered)
                 LazyVStack(spacing: 0) {
-                    ForEach(0..<items.count, id: \.self) { i in
-                        NavigationLink(destination: ExerciseDetailView(exercise: items[i])) {
-                            ExerciseRow(exercise: items[i])
+                    ForEach(filtered, id: \.uuid) { exercise in
+                        NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
+                            ExerciseRow(exercise: exercise)
                                 .padding(.horizontal)
                                 .padding(.vertical, 4)
                         }
@@ -122,10 +124,31 @@ struct ExerciseRow: View {
         }
     }
 
+    private var videoSource: VideoSource? {
+        VideoSource(urlString: exercise.mediaURL)
+    }
+
+    private var videoBadgeTint: Color {
+        switch videoSource {
+        case .youTube:            return .red
+        case .vimeo:              return Color(red: 0.10, green: 0.66, blue: 0.93)
+        case .directFile, .web:   return .accentColor
+        case nil:                 return .clear
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(exercise.name)
-                .font(.headline)
+            HStack(spacing: 6) {
+                Text(exercise.name)
+                    .font(.headline)
+                if let source = videoSource {
+                    Image(systemName: source.symbolName)
+                        .font(.caption)
+                        .foregroundStyle(videoBadgeTint)
+                        .accessibilityHidden(true)
+                }
+            }
             HStack(spacing: 12) {
                 Label(exercise.durationFormatted, systemImage: "clock")
                 Label(exercise.type.rawValue, systemImage: "figure.mind.and.body")
@@ -136,7 +159,7 @@ struct ExerciseRow: View {
         }
         .padding(.vertical, 4)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(exercise.name), \(exercise.type.rawValue), \(exercise.durationFormatted), \(difficultyLabel)")
+        .accessibilityLabel("\(exercise.name), \(exercise.type.rawValue), \(exercise.durationFormatted), \(difficultyLabel)\(videoSource != nil ? ", has video" : "")")
     }
 }
 
@@ -179,12 +202,15 @@ private struct SleepSuggestionBanner: View {
 
 private struct SuggestedTimeBanner: View {
     let date: Date
+    let onDismiss: () -> Void
 
-    private var timeLabel: String {
+    private static let timeFmt: DateFormatter = {
         let fmt = DateFormatter()
         fmt.dateFormat = "h:mm a"
-        return fmt.string(from: date)
-    }
+        return fmt
+    }()
+
+    private var timeLabel: String { Self.timeFmt.string(from: date) }
 
     var body: some View {
         HStack(spacing: 10) {
@@ -194,6 +220,13 @@ private struct SuggestedTimeBanner: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer(minLength: 0)
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Dismiss suggestion")
         }
         .padding(10)
         .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
