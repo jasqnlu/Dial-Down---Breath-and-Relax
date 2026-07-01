@@ -131,7 +131,11 @@ final class AuthManager: ObservableObject {
     // MARK: - Sign out
 
     func signOut() {
-        UserDefaults.standard.set(false, forKey: kIsSignedIn)
+        let d = UserDefaults.standard
+        d.removeObject(forKey: kIsSignedIn)
+        d.removeObject(forKey: kDisplayName)
+        d.removeObject(forKey: kEmail)
+        d.removeObject(forKey: kProvider)
         isSignedIn     = false
         needsTwoFactor = false
         displayName    = ""
