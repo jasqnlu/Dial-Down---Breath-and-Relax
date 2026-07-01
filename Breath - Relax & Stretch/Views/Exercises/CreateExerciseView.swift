@@ -19,6 +19,14 @@ struct CreateExerciseView: View {
     // MARK: - Instructions
     @State private var steps: [String] = [""]
 
+    // MARK: - Video link
+    @State private var videoURL: String = ""
+
+    /// Parsed video link, used for the live "detected platform" hint.
+    private var detectedVideo: VideoSource? {
+        VideoSource(urlString: videoURL)
+    }
+
     // MARK: - Constants
     private let allBodyParts: [String] = [
         "Head", "Neck",
@@ -62,6 +70,7 @@ struct CreateExerciseView: View {
                 durationDifficultySection
                 targetBodyPartsSection
                 instructionsSection
+                videoSection
             }
             .navigationTitle("New Exercise")
             .navigationBarTitleDisplayMode(.inline)
@@ -201,6 +210,30 @@ struct CreateExerciseView: View {
         }
     }
 
+    private var videoSection: some View {
+        Section {
+            TextField("https://youtube.com/watch?v=…", text: $videoURL)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .keyboardType(.URL)
+                .textContentType(.URL)
+                .submitLabel(.done)
+        } header: {
+            Text("Video (optional)")
+        } footer: {
+            let trimmed = videoURL.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty {
+                Text("Paste a YouTube, Vimeo, or other video link to show a demo of this exercise.")
+            } else if let detectedVideo {
+                Label("\(detectedVideo.platformName) link detected", systemImage: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+            } else {
+                Label("That doesn't look like a valid video link.", systemImage: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+            }
+        }
+    }
+
     // MARK: - Save
 
     private func saveExercise() {
@@ -209,16 +242,20 @@ struct CreateExerciseView: View {
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
 
+        let trimmedVideo = videoURL.trimmingCharacters(in: .whitespacesAndNewlines)
+
         let exercise = Exercise(
             name: trimmedName,
             type: exerciseType,
             targetBodyParts: Array(selectedBodyParts).sorted(),
             durationSeconds: durationSeconds,
             difficulty: difficulty,
-            instructions: trimmedSteps
+            instructions: trimmedSteps,
+            mediaURL: trimmedVideo.isEmpty ? nil : trimmedVideo
         )
 
         modelContext.insert(exercise)
+        try? modelContext.save()
         dismiss()
     }
 }
