@@ -6,6 +6,17 @@ struct SessionSummaryView: View {
 
     var body: some View {
         VStack(spacing: 32) {
+            HStack {
+                Button(action: onDismiss) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityLabel("Close")
+                Spacer()
+            }
+            .padding([.horizontal, .top])
+
             Spacer()
 
             Image(systemName: "checkmark.circle.fill")
