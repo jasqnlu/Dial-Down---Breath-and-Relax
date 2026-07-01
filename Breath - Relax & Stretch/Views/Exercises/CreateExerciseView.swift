@@ -27,6 +27,9 @@ struct CreateExerciseView: View {
         VideoSource(urlString: videoURL)
     }
 
+    // MARK: - Safety caution
+    @State private var caution: String = ""
+
     // MARK: - Constants
     private let allBodyParts: [String] = [
         "Head", "Neck",
@@ -71,6 +74,7 @@ struct CreateExerciseView: View {
                 targetBodyPartsSection
                 instructionsSection
                 videoSection
+                cautionSection
             }
             .navigationTitle("New Exercise")
             .navigationBarTitleDisplayMode(.inline)
@@ -234,6 +238,18 @@ struct CreateExerciseView: View {
         }
     }
 
+    private var cautionSection: some View {
+        Section {
+            TextField("e.g. Avoid if you have lower-back pain.", text: $caution, axis: .vertical)
+                .lineLimit(2...4)
+                .textInputAutocapitalization(.sentences)
+        } header: {
+            Text("Safety caution (optional)")
+        } footer: {
+            Text("Shown as a warning card on the exercise detail screen.")
+        }
+    }
+
     // MARK: - Save
 
     private func saveExercise() {
@@ -241,6 +257,7 @@ struct CreateExerciseView: View {
         let trimmedSteps = steps
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
+        let trimmedCaution = caution.trimmingCharacters(in: .whitespacesAndNewlines)
 
         let trimmedVideo = videoURL.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -251,11 +268,18 @@ struct CreateExerciseView: View {
             durationSeconds: durationSeconds,
             difficulty: difficulty,
             instructions: trimmedSteps,
-            mediaURL: trimmedVideo.isEmpty ? nil : trimmedVideo
+            mediaURL: trimmedVideo.isEmpty ? nil : trimmedVideo,
+            caution: trimmedCaution.isEmpty ? nil : trimmedCaution
         )
 
         modelContext.insert(exercise)
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            #if DEBUG
+            print("⚠️ SwiftData save failed in CreateExerciseView: \(error)")
+            #endif
+        }
         dismiss()
     }
 }
