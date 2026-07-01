@@ -21,6 +21,11 @@ struct SessionPlayerView: View {
 
     @State private var currentIndex = 0
     @State private var secondsRemaining = 0
+    /// Wall-clock deadline for the current exercise. secondsRemaining is
+    /// derived from this each tick instead of being decremented, so a
+    /// backgrounded/locked device can't leave the countdown out of sync with
+    /// real elapsed time.
+    @State private var exerciseEndDate = Date()
     @State private var isPaused = false
     @State private var showingSummary = false
     @State private var totalPointsEarned = 0
@@ -81,8 +86,9 @@ struct SessionPlayerView: View {
         .task {
             for await _ in Timer.publish(every: 1, on: .main, in: .common).autoconnect().values {
                 guard !isPaused, !showingSummary else { continue }
-                if secondsRemaining > 0 {
-                    secondsRemaining -= 1
+                let remaining = max(0, Int(exerciseEndDate.timeIntervalSinceNow.rounded(.up)))
+                if remaining > 0 {
+                    secondsRemaining = remaining
                     breathTick += 1
                     if breathTick % 4 == 0 { AudioServicesPlaySystemSound(soundTick) }
                 } else {
@@ -173,7 +179,7 @@ struct SessionPlayerView: View {
 
                 Button {
                     impactLight.impactOccurred()
-                    isPaused.toggle()
+                    togglePause()
                 } label: {
                     Image(systemName: isPaused ? "play.circle.fill" : "pause.circle.fill")
                         .font(.system(size: 72))
@@ -192,11 +198,22 @@ struct SessionPlayerView: View {
     // MARK: - Logic
 
     private func startExercise() {
-        secondsRemaining = currentExercise?.durationSeconds ?? 60
+        let duration = currentExercise?.durationSeconds ?? 60
+        secondsRemaining = duration
+        exerciseEndDate = Date().addingTimeInterval(TimeInterval(duration))
         isPaused = false
         if let exercise = currentExercise {
             VoiceCueService.shared.speak(exercise.name)
         }
+    }
+
+    /// Toggling pause freezes secondsRemaining; resuming shifts the deadline
+    /// forward by whatever time was left so paused time isn't counted down.
+    private func togglePause() {
+        if isPaused {
+            exerciseEndDate = Date().addingTimeInterval(TimeInterval(secondsRemaining))
+        }
+        isPaused.toggle()
     }
 
     private func advanceToNext(completion: Double) {

@@ -15,6 +15,11 @@ struct BreathingView: View {
     @State private var isPaused:         Bool            = false
     @State private var currentPhase:     BreathPhase     = .inhale
     @State private var phaseSecondsLeft: Int             = 0
+    /// Wall-clock deadline for the current phase. phaseSecondsLeft is derived
+    /// from this each tick instead of being decremented, so a stalled Combine
+    /// timer (e.g. after backgrounding) can't leave the countdown out of sync
+    /// with real elapsed time.
+    @State private var phaseEndDate:     Date            = Date()
     @State private var round:            Int             = 0
     @State private var totalRounds:      Int             = 5
     @State private var sessionStarted:   Date            = Date()
@@ -401,8 +406,9 @@ struct BreathingView: View {
     private func tickTimer() {
         guard isRunning, !isPaused, !showCompletion else { return }
 
-        if phaseSecondsLeft > 1 {
-            phaseSecondsLeft -= 1
+        let remaining = Int(phaseEndDate.timeIntervalSinceNow.rounded(.up))
+        if remaining > 1 {
+            phaseSecondsLeft = remaining
         } else {
             advancePhase()
         }
@@ -447,6 +453,7 @@ struct BreathingView: View {
 
     private func transition(to phase: BreathPhase, duration: Int) {
         VoiceCueService.shared.speak(phase.displayLabel.replacingOccurrences(of: "...", with: ""))
+        phaseEndDate = Date().addingTimeInterval(TimeInterval(duration))
         withAnimation(.easeInOut(duration: 0.4)) {
             currentPhase    = phase
             circleColor     = phase.color
@@ -475,7 +482,13 @@ struct BreathingView: View {
         if !isRunning {
             startSession()
         } else {
-            if !isPaused { VoiceCueService.shared.stop() }
+            if isPaused {
+                // Resuming: shift the deadline forward by the time still left so
+                // the phase doesn't fast-forward through time spent paused.
+                phaseEndDate = Date().addingTimeInterval(TimeInterval(phaseSecondsLeft))
+            } else {
+                VoiceCueService.shared.stop()
+            }
             withAnimation(.easeInOut(duration: 0.2)) {
                 isPaused.toggle()
             }
@@ -488,6 +501,7 @@ struct BreathingView: View {
         round            = 1
         isPaused         = false
         showCompletion   = false
+        phaseEndDate     = Date().addingTimeInterval(TimeInterval(p.inhale))
 
         withAnimation(.easeInOut(duration: 0.4)) {
             isRunning        = true
