@@ -6,6 +6,7 @@ import UserNotifications
 struct NotificationsPage: View {
     let onComplete: () -> Void
     @State private var isRequesting = false
+    @AppStorage("notificationsEnabled") private var notificationsEnabled = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -49,7 +50,10 @@ struct NotificationsPage: View {
                 .disabled(isRequesting)
                 .padding(.horizontal, 28)
 
-                Button(action: onComplete) {
+                Button {
+                    notificationsEnabled = false
+                    onComplete()
+                } label: {
                     Text("Skip for Now")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -70,6 +74,12 @@ struct NotificationsPage: View {
                     hour: 8, weekdays: [2, 3, 4, 5, 6])
             }
             await MainActor.run {
+                // Keep the persisted flag in sync with what actually happened —
+                // otherwise a denial here leaves notificationsEnabled at its
+                // default true with nothing actually scheduled, and
+                // ProfileSettingsTab's Reminders section would show as "on"
+                // with no way to notice it's inert.
+                notificationsEnabled = granted
                 isRequesting = false
                 onComplete()
             }
