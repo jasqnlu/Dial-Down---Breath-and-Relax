@@ -153,7 +153,7 @@ Done — see ✅ Completed (v0.6) above. Needs the StoreKit Configuration scheme
 - [x] Invalid `Section("Title") { } footer: { }` calls (2×) in `ProfileSettingsTab.swift` — SwiftUI doesn't support a footer on the string-title initializer; switched to `Section { } header: { } footer: { }` — fixed
 - [x] ~~`AuthManager.signUp` hashes password with SHA-256 (fast hash)~~ — stale note, it already uses PBKDF2 (100k rounds, SHA-256 PRF, 16-byte random salt) via CommonCrypto
 - [ ] `BorrowRoutineView` uses placeholder Supabase URL — real fetch will fail until `.env`-equivalent credentials are configured
-- [ ] No unit tests — add XCTest for `GamificationService`, `AuthManager`, `AnnotationStore`
+- [~] Unit tests — **first batch landed** (Swift Testing, not XCTest — the test target was already scaffolded for `import Testing`): `GamificationServiceTests` (points/streak/badge math) + `SharePayloadTests` (`RoutineSharePayload`/`ChallengePayload` URL-safe-base64 round trips & malformed-input handling). 31 cases, all green via `xcodebuild test` on the iPhone 17 sim. Still uncovered: `AuthManager` (keychain-backed — needs a test seam to avoid touching the real keychain) and the body-map `AnnotationStore` (`@MainActor` UI state)
 
 ---
 
