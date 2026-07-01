@@ -11,10 +11,16 @@ struct PaywallView: View {
     @State private var isPurchasing = false
     @State private var errorMessage: String?
 
-    /// Shows "compare at" strikethrough pricing as a launch promo. Flip to
-    /// false once your launch window closes — the real charged price always
+    /// Shows "compare at" strikethrough pricing during the launch promo window
+    /// (first 90 days after App Store approval). The real charged price always
     /// comes live from StoreKit regardless of this flag.
-    private let isLaunchPeriod = true
+    private var isLaunchPeriod: Bool {
+        // App Store review approval date — update this to the actual date once
+        // the first version ships.
+        let launchDate = ISO8601DateFormatter().date(from: "2026-06-28T00:00:00Z") ?? Date()
+        let windowEnd = Calendar.current.date(byAdding: .day, value: 90, to: launchDate) ?? .distantFuture
+        return Date() < windowEnd
+    }
 
     enum PlanOption { case monthly, annual, lifetime }
 
