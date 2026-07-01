@@ -9,14 +9,17 @@ actor SupabaseService {
     // Replace these two values with your actual Supabase project URL and anon key.
     // Dashboard → Settings → API
     // Static lets on an actor are nonisolated — no @MainActor contamination.
-    private static let supabaseURL     = "https://supabase.com/dashboard/project/wmsutfittuxrvcwuywrk"
+    private static let supabaseURL     = "https://wmsutfittuxrvcwuywrk.supabase.co"
     private static let supabaseAnonKey = "sb_publishable_fpbIp20MIAf3OV1Two6DhQ_MpZvy2Dc"
 
     /// True once real credentials are filled in above. While false (placeholder
-    /// values), the app skips all remote calls and runs purely on the bundled
-    /// seed catalog — so everything works offline / before the backend exists.
+    /// values or a URL that isn't actually a Supabase API host), the app skips
+    /// all remote calls and runs purely on the bundled seed catalog — so
+    /// everything works offline / before the backend exists.
     nonisolated static var isConfigured: Bool {
-        !supabaseURL.contains("YOUR_PROJECT") && !supabaseAnonKey.contains("YOUR_ANON_KEY")
+        !supabaseURL.contains("YOUR_PROJECT")
+            && !supabaseAnonKey.contains("YOUR_ANON_KEY")
+            && URL(string: supabaseURL)?.host?.hasSuffix(".supabase.co") == true
     }
 
     // Bearer token set after sign-in
