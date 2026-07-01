@@ -93,6 +93,7 @@ struct BreathRelaxStretchApp: App {
             let mediaURL = raw["mediaURL"] as? String
             let caution  = raw["caution"] as? String
             let exercise = Exercise(
+                uuid: Exercise.stableSeedUUID(forName: name),
                 name: name, type: type, targetBodyParts: parts,
                 durationSeconds: duration, difficulty: difficulty,
                 instructions: instructions, mediaURL: mediaURL, caution: caution
