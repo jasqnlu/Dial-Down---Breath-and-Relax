@@ -5,6 +5,7 @@ struct BorrowRoutineView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query private var allRoutines: [Routine]
+    @Query private var allExercises: [Exercise]
     @EnvironmentObject private var auth: AuthManager
 
     @State private var borrowedIDs: Set<UUID> = []
@@ -38,6 +39,7 @@ struct BorrowRoutineView: View {
                             ForEach(publicRoutines, id: \.uuid) { routine in
                                 BorrowRoutineRow(
                                     routine: routine,
+                                    resolvedCount: resolvedCount(for: routine),
                                     isBorrowed: borrowedIDs.contains(routine.uuid)
                                 ) {
                                     showingConfirmation = routine
@@ -101,12 +103,21 @@ struct BorrowRoutineView: View {
         let borrowed = allRoutines.compactMap { $0.borrowedFromID }
         borrowedIDs = Set(borrowed)
     }
+
+    private func resolvedCount(for routine: Routine) -> Int {
+        let byID = Dictionary(uniqueKeysWithValues: allExercises.map { ($0.uuid, $0) })
+        return routine.exerciseIDs.filter { byID[$0] != nil }.count
+    }
 }
 
 // MARK: - Row
 
 private struct BorrowRoutineRow: View {
     let routine: Routine
+    /// Count of exerciseIDs that actually resolve against the local catalog —
+    /// borrowed routines can reference exercises that don't exist on this
+    /// install (seed exercise UUIDs weren't stable across installs).
+    let resolvedCount: Int
     let isBorrowed: Bool
     let onBorrow: () -> Void
 
@@ -121,7 +132,7 @@ private struct BorrowRoutineRow: View {
                     .font(.headline)
 
                 HStack(spacing: 10) {
-                    Label("\(routine.exerciseIDs.count) exercise\(routine.exerciseIDs.count == 1 ? "" : "s")",
+                    Label("\(resolvedCount) exercise\(resolvedCount == 1 ? "" : "s")",
                           systemImage: "list.number")
 
                     if let author = displayAuthor, !author.isEmpty {

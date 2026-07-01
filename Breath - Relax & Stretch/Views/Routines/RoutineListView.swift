@@ -10,6 +10,7 @@ struct RoutineListView: View {
     @State private var showingBrowser  = false
     @State private var routineToPlay: Routine?
     @State private var routineToEdit: Routine?
+    @State private var routinePendingDelete: Routine?
 
     var body: some View {
         NavigationStack {
@@ -24,12 +25,12 @@ struct RoutineListView: View {
                 }
 
                 ForEach(routines) { routine in
-                    RoutineRow(routine: routine) {
+                    RoutineRow(routine: routine, resolvedCount: resolvedExercises(for: routine).count) {
                         routineToPlay = routine
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button(role: .destructive) {
-                            modelContext.delete(routine)
+                            routinePendingDelete = routine
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
@@ -85,6 +86,22 @@ struct RoutineListView: View {
                 BorrowRoutineView()
                     .environmentObject(AuthManager.shared)
             }
+            .confirmationDialog(
+                "Delete this routine?",
+                isPresented: Binding(
+                    get: { routinePendingDelete != nil },
+                    set: { if !$0 { routinePendingDelete = nil } }
+                ),
+                presenting: routinePendingDelete
+            ) { routine in
+                Button("Delete", role: .destructive) {
+                    modelContext.delete(routine)
+                    routinePendingDelete = nil
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: { routine in
+                Text("\"\(routine.name)\" will be permanently deleted. This can't be undone.")
+            }
             .sheet(item: $routineToPlay) { routine in
                 let resolved = resolvedExercises(for: routine)
                 if resolved.isEmpty {
@@ -120,6 +137,11 @@ struct RoutineListView: View {
 
 struct RoutineRow: View {
     let routine: Routine
+    /// Count of exerciseIDs that actually resolve against the local catalog —
+    /// can be lower than exerciseIDs.count (e.g. borrowed routines referencing
+    /// exercises that don't exist on this install), so this is what actually
+    /// determines whether the routine can play, not the raw ID count.
+    let resolvedCount: Int
     let onPlay: () -> Void
 
     var body: some View {
@@ -136,7 +158,7 @@ struct RoutineRow: View {
                 }
 
                 HStack(spacing: 12) {
-                    Label("\(routine.exerciseIDs.count) exercise\(routine.exerciseIDs.count == 1 ? "" : "s")",
+                    Label("\(resolvedCount) exercise\(resolvedCount == 1 ? "" : "s")",
                           systemImage: "list.number")
                     if routine.isPublic {
                         Label("Public", systemImage: "globe")
@@ -156,10 +178,10 @@ struct RoutineRow: View {
             Button(action: onPlay) {
                 Image(systemName: "play.circle.fill")
                     .font(.system(size: 36))
-                    .foregroundStyle(routine.exerciseIDs.isEmpty ? Color.secondary : Color.accentColor)
+                    .foregroundStyle(resolvedCount == 0 ? Color.secondary : Color.accentColor)
             }
             .buttonStyle(.plain)
-            .disabled(routine.exerciseIDs.isEmpty)
+            .disabled(resolvedCount == 0)
             .accessibilityLabel("Play \(routine.name)")
         }
         .padding(.vertical, 4)

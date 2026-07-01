@@ -15,6 +15,7 @@ struct RoutineBuilderView: View {
     @State private var selectedIDs: [UUID] = []
     @State private var isPublic = false
     @State private var showingExercisePicker = false
+    @State private var indexPendingRemoval: Int?
 
     private let maxPublicRoutines = 3
 
@@ -55,7 +56,7 @@ struct RoutineBuilderView: View {
                                 }
                                 Spacer()
                                 Button(role: .destructive) {
-                                    selectedIDs.remove(at: index)
+                                    indexPendingRemoval = index
                                 } label: {
                                     Image(systemName: "minus.circle.fill")
                                 }
@@ -111,6 +112,26 @@ struct RoutineBuilderView: View {
             .sheet(isPresented: $showingExercisePicker) {
                 ExercisePickerView(allExercises: Array(exercises), selectedIDs: selectedIDs) { id in
                     if !selectedIDs.contains(id) { selectedIDs.append(id) }
+                }
+            }
+            .confirmationDialog(
+                "Remove this exercise?",
+                isPresented: Binding(
+                    get: { indexPendingRemoval != nil },
+                    set: { if !$0 { indexPendingRemoval = nil } }
+                ),
+                presenting: indexPendingRemoval
+            ) { index in
+                Button("Remove", role: .destructive) {
+                    selectedIDs.remove(at: index)
+                    indexPendingRemoval = nil
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: { index in
+                if let exercise = exercises.first(where: { $0.uuid == selectedIDs[index] }) {
+                    Text("\"\(exercise.name)\" will be removed from this routine.")
+                } else {
+                    Text("This exercise will be removed from this routine.")
                 }
             }
             .onAppear {
@@ -188,7 +209,7 @@ struct ExercisePickerView: View {
 
     @ViewBuilder
     private func exerciseRows(_ items: [Exercise]) -> some View {
-        ForEach(Array(items.enumerated()), id: \.offset) { _, ex in
+        ForEach(items, id: \.uuid) { ex in
             Button {
                 onSelect(ex.uuid)
                 dismiss()
