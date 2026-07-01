@@ -12,6 +12,12 @@ final class HealthKitService {
 
     var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
 
+    /// True once the user has granted write access to workouts.
+    var isWriteAuthorized: Bool {
+        guard isAvailable else { return false }
+        return store.authorizationStatus(for: HKObjectType.workoutType()) == .sharingAuthorized
+    }
+
     private var writeTypes: Set<HKSampleType> {
         var types: Set<HKSampleType> = [HKObjectType.workoutType()]
         if let energy  = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned) { types.insert(energy) }
