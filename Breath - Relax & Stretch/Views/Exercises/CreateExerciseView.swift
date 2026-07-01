@@ -222,6 +222,12 @@ struct CreateExerciseView: View {
                 .keyboardType(.URL)
                 .textContentType(.URL)
                 .submitLabel(.done)
+
+            if let detectedVideo {
+                VideoPreviewCard(source: detectedVideo, title: "Preview")
+                    .listRowInsets(EdgeInsets())
+                    .padding(.vertical, 8)
+            }
         } header: {
             Text("Video (optional)")
         } footer: {
