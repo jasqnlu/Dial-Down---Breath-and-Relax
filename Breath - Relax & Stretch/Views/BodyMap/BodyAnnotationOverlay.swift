@@ -120,16 +120,29 @@ final class AnnotationStore: ObservableObject {
     init() { load() }
 
     func save() {
-        if let data = try? JSONEncoder().encode(strokes) {
-            try? data.write(to: saveURL)
+        do {
+            let data = try JSONEncoder().encode(strokes)
+            try data.write(to: saveURL)
+        } catch {
+            #if DEBUG
+            print("⚠️ AnnotationStore save failed: \(error)")
+            #endif
         }
     }
 
     private func load() {
-        guard let data = try? Data(contentsOf: saveURL),
-              let decoded = try? JSONDecoder().decode([AnnotationStroke].self, from: data)
-        else { return }
-        strokes = decoded
+        do {
+            let data = try Data(contentsOf: saveURL)
+            strokes = try JSONDecoder().decode([AnnotationStroke].self, from: data)
+        } catch {
+            // Expected on first launch (no file yet) — only worth logging once
+            // there's actually something on disk that failed to parse.
+            #if DEBUG
+            if FileManager.default.fileExists(atPath: saveURL.path) {
+                print("⚠️ AnnotationStore load failed: \(error)")
+            }
+            #endif
+        }
     }
 
     func undo() {
