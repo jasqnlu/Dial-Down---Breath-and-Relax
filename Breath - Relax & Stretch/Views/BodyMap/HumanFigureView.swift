@@ -175,26 +175,44 @@ extension BodyLayer {
     /// Colour used to highlight a marked / selected region.
     var highlightColor: Color {
         switch self {
-        case .skin:     return .orange
-        case .muscle:   return .red
-        case .skeleton: return Color(.systemGray)
+        case .skin:     return Color(red: 0.95, green: 0.55, blue: 0.25)
+        case .muscle:   return Color(red: 0.82, green: 0.14, blue: 0.14)
+        case .skeleton: return Color(red: 0.52, green: 0.48, blue: 0.44)
         }
     }
 
-    /// Gradient fill for the silhouette body.
+    /// Accent colour used in the layer picker and region labels.
+    var accentColor: Color {
+        switch self {
+        case .skin:     return Color(red: 0.95, green: 0.55, blue: 0.25)
+        case .muscle:   return Color(red: 0.82, green: 0.14, blue: 0.14)
+        case .skeleton: return Color(red: 0.48, green: 0.44, blue: 0.38)
+        }
+    }
+
+    /// Gradient fill for the silhouette body — richer than plain tint.
     var silhouetteFill: AnyShapeStyle {
         switch self {
         case .skin:
             return AnyShapeStyle(LinearGradient(
-                colors: [Color(.systemOrange).opacity(0.20), Color(.systemYellow).opacity(0.12)],
+                colors: [
+                    Color(red: 0.97, green: 0.82, blue: 0.68).opacity(0.55),
+                    Color(red: 0.94, green: 0.74, blue: 0.58).opacity(0.30),
+                ],
                 startPoint: .top, endPoint: .bottom))
         case .muscle:
             return AnyShapeStyle(LinearGradient(
-                colors: [Color(.systemRed).opacity(0.24), Color(.systemPink).opacity(0.12)],
+                colors: [
+                    Color(red: 0.90, green: 0.24, blue: 0.20).opacity(0.26),
+                    Color(red: 0.75, green: 0.14, blue: 0.18).opacity(0.14),
+                ],
                 startPoint: .top, endPoint: .bottom))
         case .skeleton:
             return AnyShapeStyle(LinearGradient(
-                colors: [Color(.systemGray3).opacity(0.38), Color(.systemGray5).opacity(0.20)],
+                colors: [
+                    Color(red: 0.88, green: 0.86, blue: 0.80).opacity(0.50),
+                    Color(red: 0.78, green: 0.76, blue: 0.70).opacity(0.28),
+                ],
                 startPoint: .top, endPoint: .bottom))
         }
     }

@@ -39,6 +39,7 @@
     },
     {
       "name": "Neck Side Stretch",
+      "mediaURL": "https://www.youtube.com/watch?v=SiD7m2bmb0E",
       "type": "stretch",
       "targetBodyParts": [
         "Neck",
@@ -258,6 +259,7 @@
     },
     {
       "name": "Standing Hamstring Stretch",
+      "mediaURL": "https://www.youtube.com/watch?v=9ESpoUPqpFw",
       "type": "stretch",
       "targetBodyParts": [
         "Left Leg",
@@ -410,6 +412,7 @@
     },
     {
       "name": "Cat-Cow Flow",
+      "mediaURL": "https://www.youtube.com/watch?v=jGR2LTqGI2Y",
       "type": "both",
       "targetBodyParts": [
         "Upper Back",
@@ -781,6 +784,7 @@
     },
     {
       "name": "Child's Pose",
+      "mediaURL": "https://www.youtube.com/watch?v=EniGBCHAEVQ",
       "type": "stretch",
       "targetBodyParts": [
         "Lower Back",
@@ -1927,6 +1931,7 @@
     },
     {
       "name": "Calf Stretch at Wall",
+      "mediaURL": "https://www.youtube.com/watch?v=4fwN8uiF7z8",
       "type": "stretch",
       "targetBodyParts": [
         "Left Leg",
@@ -6018,6 +6023,907 @@
           },
           "holdSeconds": 2,
           "cue": "Exhale — Cat, round upper back"
+        }
+      ]
+    },
+    {
+      "name": "Downward-Facing Dog",
+      "mediaURL": "https://www.youtube.com/watch?v=EC7RGJ975iM",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg",
+        "Left Shoulder",
+        "Right Shoulder",
+        "Upper Back",
+        "Lower Back"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Start on hands and knees with wrists under shoulders and knees under hips.",
+        "Tuck your toes and lift your hips up and back to form an inverted V shape.",
+        "Press firmly into your palms and straighten your arms.",
+        "Pedal your heels alternately to warm up the hamstrings.",
+        "Hold with both heels pressing toward the floor for 30–45 seconds.",
+        "Return to hands and knees to release."
+      ],
+      "caution": "Avoid if you have wrist, shoulder, or high blood-pressure issues. Bend your knees slightly if hamstrings are tight.",
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.218],
+            "neck": [0.5, 0.262],
+            "leftShoulder": [0.378, 0.292],
+            "rightShoulder": [0.622, 0.292],
+            "leftElbow": [0.348, 0.422],
+            "rightElbow": [0.652, 0.422],
+            "leftWrist": [0.328, 0.558],
+            "rightWrist": [0.672, 0.558],
+            "hip": [0.5, 0.284],
+            "leftKnee": [0.428, 0.562],
+            "rightKnee": [0.572, 0.562],
+            "leftAnkle": [0.422, 0.712],
+            "rightAnkle": [0.578, 0.712],
+            "leftFoot": [0.422, 0.762],
+            "rightFoot": [0.578, 0.762]
+          },
+          "holdSeconds": 1.5,
+          "cue": "Start on hands and knees"
+        },
+        {
+          "joints": {
+            "head": [0.5, 0.462],
+            "neck": [0.5, 0.408],
+            "leftShoulder": [0.425, 0.358],
+            "rightShoulder": [0.575, 0.358],
+            "leftElbow": [0.395, 0.448],
+            "rightElbow": [0.605, 0.448],
+            "leftWrist": [0.368, 0.568],
+            "rightWrist": [0.632, 0.568],
+            "hip": [0.5, 0.248],
+            "leftKnee": [0.448, 0.548],
+            "rightKnee": [0.552, 0.548],
+            "leftAnkle": [0.440, 0.725],
+            "rightAnkle": [0.560, 0.725],
+            "leftFoot": [0.432, 0.775],
+            "rightFoot": [0.568, 0.775]
+          },
+          "holdSeconds": 30,
+          "cue": "Hips high — press heels toward floor"
+        }
+      ]
+    },
+    {
+      "name": "Pigeon Pose",
+      "mediaURL": "https://www.youtube.com/watch?v=4dpGBowDhS8",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg",
+        "Lower Back"
+      ],
+      "durationSeconds": 120,
+      "difficulty": 2,
+      "instructions": [
+        "Start in a high plank or Downward Dog.",
+        "Bring your right knee forward and place it behind your right wrist, shin angled across the mat.",
+        "Extend your left leg straight back, keeping the hips square.",
+        "Lower your torso down over your right shin — arms extended or rest on forearms.",
+        "Hold for 30–60 seconds, breathing deeply into the hip.",
+        "Come back to plank and repeat on the other side."
+      ],
+      "caution": "Skip if you have knee or hip injuries. Use a folded blanket under your hip for support if needed.",
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.06],
+            "neck": [0.5, 0.1],
+            "leftShoulder": [0.415, 0.148],
+            "rightShoulder": [0.585, 0.148],
+            "leftElbow": [0.39, 0.24],
+            "rightElbow": [0.61, 0.24],
+            "leftWrist": [0.375, 0.34],
+            "rightWrist": [0.625, 0.34],
+            "hip": [0.5, 0.408],
+            "leftKnee": [0.455, 0.58],
+            "rightKnee": [0.545, 0.58],
+            "leftAnkle": [0.45, 0.768],
+            "rightAnkle": [0.55, 0.768],
+            "leftFoot": [0.44, 0.828],
+            "rightFoot": [0.56, 0.828]
+          },
+          "holdSeconds": 2,
+          "cue": "Start in plank position"
+        },
+        {
+          "joints": {
+            "head": [0.5, 0.348],
+            "neck": [0.5, 0.308],
+            "leftShoulder": [0.44, 0.278],
+            "rightShoulder": [0.56, 0.278],
+            "leftElbow": [0.398, 0.228],
+            "rightElbow": [0.602, 0.228],
+            "leftWrist": [0.355, 0.188],
+            "rightWrist": [0.645, 0.188],
+            "hip": [0.5, 0.438],
+            "leftKnee": [0.408, 0.495],
+            "rightKnee": [0.595, 0.578],
+            "leftAnkle": [0.448, 0.428],
+            "rightAnkle": [0.628, 0.748],
+            "leftFoot": [0.418, 0.395],
+            "rightFoot": [0.648, 0.808]
+          },
+          "holdSeconds": 45,
+          "cue": "Fold forward — breathe into the hip"
+        }
+      ]
+    },
+    {
+      "name": "Butterfly Stretch",
+      "mediaURL": "https://www.youtube.com/watch?v=o72YJXO4Hqg",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg",
+        "Lower Back"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Sit on the floor and bring the soles of your feet together.",
+        "Hold your feet or ankles and let your knees drop toward the floor.",
+        "Sit tall and gently press your knees down with your elbows for a deeper stretch.",
+        "Hold for 30–45 seconds.",
+        "For a deeper stretch, hinge forward at the hips, keeping your back flat."
+      ],
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.078],
+            "neck": [0.5, 0.124],
+            "leftShoulder": [0.415, 0.168],
+            "rightShoulder": [0.585, 0.168],
+            "leftElbow": [0.362, 0.275],
+            "rightElbow": [0.638, 0.275],
+            "leftWrist": [0.348, 0.365],
+            "rightWrist": [0.652, 0.365],
+            "hip": [0.5, 0.435],
+            "leftKnee": [0.348, 0.525],
+            "rightKnee": [0.652, 0.525],
+            "leftAnkle": [0.448, 0.578],
+            "rightAnkle": [0.552, 0.578],
+            "leftFoot": [0.478, 0.598],
+            "rightFoot": [0.522, 0.598]
+          },
+          "holdSeconds": 30,
+          "cue": "Soles together — knees gently toward floor"
+        }
+      ]
+    },
+    {
+      "name": "Standing Quad Stretch",
+      "mediaURL": "https://www.youtube.com/watch?v=YinIRamH_4s",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Stand tall, holding a wall or chair for balance if needed.",
+        "Bend your right knee and bring your foot up toward your glutes.",
+        "Grasp your right ankle with your right hand.",
+        "Keep knees together and stand tall — don't lean forward.",
+        "Hold for 20–30 seconds, then switch sides."
+      ],
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.06],
+            "neck": [0.5, 0.1],
+            "leftShoulder": [0.415, 0.148],
+            "rightShoulder": [0.585, 0.148],
+            "leftElbow": [0.39, 0.24],
+            "rightElbow": [0.61, 0.24],
+            "leftWrist": [0.375, 0.34],
+            "rightWrist": [0.625, 0.34],
+            "hip": [0.5, 0.408],
+            "leftKnee": [0.455, 0.58],
+            "rightKnee": [0.545, 0.58],
+            "leftAnkle": [0.45, 0.768],
+            "rightAnkle": [0.55, 0.768],
+            "leftFoot": [0.44, 0.828],
+            "rightFoot": [0.56, 0.828]
+          },
+          "holdSeconds": 2,
+          "cue": "Stand tall"
+        },
+        {
+          "joints": {
+            "head": [0.5, 0.06],
+            "neck": [0.5, 0.1],
+            "leftShoulder": [0.415, 0.148],
+            "rightShoulder": [0.585, 0.148],
+            "leftElbow": [0.39, 0.24],
+            "rightElbow": [0.61, 0.24],
+            "leftWrist": [0.375, 0.34],
+            "rightWrist": [0.648, 0.51],
+            "hip": [0.5, 0.408],
+            "leftKnee": [0.455, 0.58],
+            "rightKnee": [0.548, 0.468],
+            "leftAnkle": [0.45, 0.768],
+            "rightAnkle": [0.562, 0.398],
+            "leftFoot": [0.44, 0.828],
+            "rightFoot": [0.568, 0.358]
+          },
+          "holdSeconds": 25,
+          "cue": "Heel to glute — knees together"
+        }
+      ]
+    },
+    {
+      "name": "Wall Calf Stretch",
+      "mediaURL": "https://www.youtube.com/watch?v=6RB57EsTPF0",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Stand facing a wall, arms extended with palms on the wall.",
+        "Step your right foot back about two feet, keeping it flat on the floor.",
+        "Bend your front knee and lean into the wall until you feel a stretch in the back calf.",
+        "Hold for 20–30 seconds.",
+        "Switch legs and repeat."
+      ],
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.06],
+            "neck": [0.5, 0.1],
+            "leftShoulder": [0.415, 0.148],
+            "rightShoulder": [0.585, 0.148],
+            "leftElbow": [0.36, 0.208],
+            "rightElbow": [0.64, 0.208],
+            "leftWrist": [0.315, 0.268],
+            "rightWrist": [0.685, 0.268],
+            "hip": [0.5, 0.428],
+            "leftKnee": [0.468, 0.548],
+            "rightKnee": [0.545, 0.618],
+            "leftAnkle": [0.468, 0.728],
+            "rightAnkle": [0.548, 0.838],
+            "leftFoot": [0.458, 0.788],
+            "rightFoot": [0.538, 0.898]
+          },
+          "holdSeconds": 25,
+          "cue": "Lean into wall — back heel down"
+        }
+      ]
+    },
+    {
+      "name": "Wrist & Forearm Stretch",
+      "mediaURL": "https://www.youtube.com/watch?v=lLtpUKQA3r8",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Shoulder",
+        "Right Shoulder"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Extend your right arm forward, palm facing down.",
+        "With your left hand, gently pull your right fingers back toward you.",
+        "Hold for 15–20 seconds, feeling the stretch along the forearm.",
+        "Now flip the hand — palm facing up — and gently press fingers downward.",
+        "Hold for 15–20 seconds, then switch arms."
+      ],
+      "caution": "Especially useful for desk workers and phone users. Stop if you feel sharp pain.",
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.078],
+            "neck": [0.5, 0.124],
+            "leftShoulder": [0.415, 0.168],
+            "rightShoulder": [0.585, 0.168],
+            "leftElbow": [0.358, 0.258],
+            "rightElbow": [0.695, 0.218],
+            "leftWrist": [0.318, 0.225],
+            "rightWrist": [0.778, 0.218],
+            "hip": [0.5, 0.435],
+            "leftKnee": [0.392, 0.518],
+            "rightKnee": [0.608, 0.518],
+            "leftAnkle": [0.358, 0.668],
+            "rightAnkle": [0.642, 0.668],
+            "leftFoot": [0.328, 0.728],
+            "rightFoot": [0.672, 0.728]
+          },
+          "holdSeconds": 18,
+          "cue": "Arm extended — pull fingers back"
+        }
+      ]
+    },
+    {
+      "name": "Prone Cobra",
+      "mediaURL": "https://www.youtube.com/watch?v=JLdQtLO0IfA",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Lower Back",
+        "Core",
+        "Chest"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Lie face down with your legs extended and the tops of your feet on the floor.",
+        "Place your palms flat on the floor under your shoulders.",
+        "Inhale and press through your hands to lift your chest off the floor.",
+        "Keep your elbows slightly bent and shoulders back and down.",
+        "Hold for 15–30 seconds, breathing steadily.",
+        "Lower back down with control."
+      ],
+      "caution": "Avoid if you have lower back pain or disc issues. Don't overextend — only lift as high as is comfortable.",
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.285],
+            "neck": [0.5, 0.318],
+            "leftShoulder": [0.42, 0.355],
+            "rightShoulder": [0.58, 0.355],
+            "leftElbow": [0.365, 0.445],
+            "rightElbow": [0.635, 0.445],
+            "leftWrist": [0.335, 0.558],
+            "rightWrist": [0.665, 0.558],
+            "hip": [0.5, 0.488],
+            "leftKnee": [0.458, 0.638],
+            "rightKnee": [0.542, 0.638],
+            "leftAnkle": [0.452, 0.808],
+            "rightAnkle": [0.548, 0.808],
+            "leftFoot": [0.448, 0.868],
+            "rightFoot": [0.552, 0.868]
+          },
+          "holdSeconds": 25,
+          "cue": "Chest lifted — shoulders back and down"
+        }
+      ]
+    },
+    {
+      "name": "Supine Figure-4 Stretch",
+      "mediaURL": "https://www.youtube.com/watch?v=4RfBJNrRLz0",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg",
+        "Lower Back"
+      ],
+      "durationSeconds": 90,
+      "difficulty": 1,
+      "instructions": [
+        "Lie on your back with knees bent and feet flat on the floor.",
+        "Cross your right ankle over your left knee, flexing the right foot.",
+        "Either hold here (passive) or draw both legs toward your chest by threading your hands behind your left thigh.",
+        "Keep your back and head on the floor.",
+        "Hold for 30–45 seconds, then switch sides."
+      ],
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.068],
+            "neck": [0.5, 0.108],
+            "leftShoulder": [0.418, 0.158],
+            "rightShoulder": [0.582, 0.158],
+            "leftElbow": [0.378, 0.248],
+            "rightElbow": [0.622, 0.248],
+            "leftWrist": [0.358, 0.358],
+            "rightWrist": [0.642, 0.358],
+            "hip": [0.5, 0.445],
+            "leftKnee": [0.462, 0.578],
+            "rightKnee": [0.538, 0.508],
+            "leftAnkle": [0.458, 0.728],
+            "rightAnkle": [0.538, 0.518],
+            "leftFoot": [0.448, 0.788],
+            "rightFoot": [0.498, 0.478]
+          },
+          "holdSeconds": 35,
+          "cue": "Ankle on knee — pull legs in gently"
+        }
+      ]
+    },
+    {
+      "name": "Wide-Legged Forward Fold",
+      "mediaURL": "https://www.youtube.com/watch?v=dkF5P8FDJF0",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg",
+        "Lower Back"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 2,
+      "instructions": [
+        "Stand with feet wider than hip-width apart, toes pointing slightly outward.",
+        "Place hands on hips and hinge forward from the hips with a flat back.",
+        "Bring your hands to the floor, blocks, or shins — wherever you can reach.",
+        "Let your head hang and breathe deeply into the inner thighs.",
+        "Hold for 30–45 seconds.",
+        "To come up, bring hands to hips and engage your core before rising."
+      ],
+      "caution": "Bend your knees if hamstrings are tight. Avoid if you have lower back disc issues.",
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.06],
+            "neck": [0.5, 0.1],
+            "leftShoulder": [0.415, 0.148],
+            "rightShoulder": [0.585, 0.148],
+            "leftElbow": [0.39, 0.24],
+            "rightElbow": [0.61, 0.24],
+            "leftWrist": [0.375, 0.34],
+            "rightWrist": [0.625, 0.34],
+            "hip": [0.5, 0.408],
+            "leftKnee": [0.388, 0.568],
+            "rightKnee": [0.612, 0.568],
+            "leftAnkle": [0.348, 0.748],
+            "rightAnkle": [0.652, 0.748],
+            "leftFoot": [0.318, 0.808],
+            "rightFoot": [0.682, 0.808]
+          },
+          "holdSeconds": 2,
+          "cue": "Feet wide — stand tall"
+        },
+        {
+          "joints": {
+            "head": [0.5, 0.548],
+            "neck": [0.5, 0.495],
+            "leftShoulder": [0.455, 0.455],
+            "rightShoulder": [0.545, 0.455],
+            "leftElbow": [0.448, 0.538],
+            "rightElbow": [0.552, 0.538],
+            "leftWrist": [0.448, 0.658],
+            "rightWrist": [0.552, 0.658],
+            "hip": [0.5, 0.368],
+            "leftKnee": [0.388, 0.568],
+            "rightKnee": [0.612, 0.568],
+            "leftAnkle": [0.348, 0.748],
+            "rightAnkle": [0.652, 0.748],
+            "leftFoot": [0.318, 0.808],
+            "rightFoot": [0.682, 0.808]
+          },
+          "holdSeconds": 35,
+          "cue": "Fold forward — head hangs heavy"
+        }
+      ]
+    },
+    {
+      "name": "Doorway Chest Stretch",
+      "mediaURL": "https://www.youtube.com/watch?v=sJk7Yr87A3Q",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Chest",
+        "Left Shoulder",
+        "Right Shoulder"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Stand in a doorway and place your forearms on the door frame at 90 degrees.",
+        "Step one foot forward and lean your body gently through the doorway.",
+        "Feel the stretch across your chest and the fronts of your shoulders.",
+        "Hold for 20–30 seconds, then step back.",
+        "Adjust forearm height (lower = lower chest/shoulder, higher = upper chest)."
+      ],
+      "caution": "Move slowly into the stretch. Avoid if you have a shoulder impingement or recent shoulder surgery.",
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.06],
+            "neck": [0.5, 0.1],
+            "leftShoulder": [0.368, 0.148],
+            "rightShoulder": [0.632, 0.148],
+            "leftElbow": [0.295, 0.188],
+            "rightElbow": [0.705, 0.188],
+            "leftWrist": [0.278, 0.285],
+            "rightWrist": [0.722, 0.285],
+            "hip": [0.5, 0.418],
+            "leftKnee": [0.468, 0.578],
+            "rightKnee": [0.538, 0.618],
+            "leftAnkle": [0.462, 0.758],
+            "rightAnkle": [0.548, 0.818],
+            "leftFoot": [0.452, 0.818],
+            "rightFoot": [0.538, 0.878]
+          },
+          "holdSeconds": 25,
+          "cue": "Chest forward through the frame"
+        }
+      ]
+    },
+    {
+      "name": "Thread the Needle",
+      "mediaURL": "https://www.youtube.com/watch?v=aUFi7gGPqPw",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Upper Back",
+        "Left Shoulder",
+        "Right Shoulder",
+        "Neck"
+      ],
+      "durationSeconds": 90,
+      "difficulty": 1,
+      "instructions": [
+        "Start on hands and knees with wrists under shoulders and knees under hips.",
+        "Inhale to prepare.",
+        "Exhale and slide your right arm under your body to the left, letting your right shoulder and ear rest on the mat.",
+        "Extend the left arm forward or place it on your lower back.",
+        "Hold for 20–30 seconds, breathing into the upper back.",
+        "Return to center and repeat on the other side."
+      ],
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.218],
+            "neck": [0.5, 0.262],
+            "leftShoulder": [0.378, 0.292],
+            "rightShoulder": [0.622, 0.292],
+            "leftElbow": [0.348, 0.422],
+            "rightElbow": [0.652, 0.422],
+            "leftWrist": [0.328, 0.558],
+            "rightWrist": [0.672, 0.558],
+            "hip": [0.5, 0.284],
+            "leftKnee": [0.428, 0.562],
+            "rightKnee": [0.572, 0.562],
+            "leftAnkle": [0.422, 0.712],
+            "rightAnkle": [0.578, 0.712],
+            "leftFoot": [0.422, 0.762],
+            "rightFoot": [0.578, 0.762]
+          },
+          "holdSeconds": 1.5,
+          "cue": "Start on hands and knees"
+        },
+        {
+          "joints": {
+            "head": [0.35, 0.358],
+            "neck": [0.388, 0.318],
+            "leftShoulder": [0.318, 0.298],
+            "rightShoulder": [0.588, 0.282],
+            "leftElbow": [0.218, 0.328],
+            "rightElbow": [0.638, 0.412],
+            "leftWrist": [0.155, 0.398],
+            "rightWrist": [0.648, 0.548],
+            "hip": [0.5, 0.275],
+            "leftKnee": [0.428, 0.548],
+            "rightKnee": [0.572, 0.548],
+            "leftAnkle": [0.422, 0.712],
+            "rightAnkle": [0.578, 0.712],
+            "leftFoot": [0.422, 0.762],
+            "rightFoot": [0.578, 0.762]
+          },
+          "holdSeconds": 25,
+          "cue": "Thread arm under — ear to mat"
+        }
+      ]
+    },
+    {
+      "name": "Low Lunge",
+      "mediaURL": "https://www.youtube.com/watch?v=kBge_YC4zSw",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg",
+        "Core",
+        "Lower Back"
+      ],
+      "durationSeconds": 90,
+      "difficulty": 2,
+      "instructions": [
+        "From standing, step your right foot forward into a lunge position.",
+        "Lower your left knee to the floor (use a folded mat for cushioning if needed).",
+        "Shift your hips forward until you feel a stretch in the front of the left hip.",
+        "Raise your arms overhead, palms facing each other, and lift your chest.",
+        "Hold for 30–45 seconds, then return and switch sides."
+      ],
+      "caution": "Avoid if you have knee pain. Don't let the front knee go past the toes.",
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.06],
+            "neck": [0.5, 0.1],
+            "leftShoulder": [0.415, 0.148],
+            "rightShoulder": [0.585, 0.148],
+            "leftElbow": [0.375, 0.065],
+            "rightElbow": [0.625, 0.065],
+            "leftWrist": [0.368, 0.018],
+            "rightWrist": [0.632, 0.018],
+            "hip": [0.5, 0.438],
+            "leftKnee": [0.448, 0.638],
+            "rightKnee": [0.555, 0.505],
+            "leftAnkle": [0.438, 0.828],
+            "rightAnkle": [0.558, 0.368],
+            "leftFoot": [0.428, 0.888],
+            "rightFoot": [0.548, 0.298]
+          },
+          "holdSeconds": 35,
+          "cue": "Front knee over ankle — hips forward"
+        }
+      ]
+    },
+    {
+      "name": "Standing Side Bend",
+      "mediaURL": "https://www.youtube.com/watch?v=lPxBP2TL4kw",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Upper Back",
+        "Core",
+        "Left Shoulder",
+        "Right Shoulder"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Stand tall with feet hip-width apart.",
+        "Raise your right arm overhead and place your left hand on your hip.",
+        "Lean to the left, creating a long curve along the right side of your body.",
+        "Don't twist — keep your chest facing forward.",
+        "Hold for 15–20 seconds, then switch sides."
+      ],
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.06],
+            "neck": [0.5, 0.1],
+            "leftShoulder": [0.415, 0.148],
+            "rightShoulder": [0.585, 0.148],
+            "leftElbow": [0.39, 0.24],
+            "rightElbow": [0.568, 0.065],
+            "leftWrist": [0.375, 0.34],
+            "rightWrist": [0.548, 0.018],
+            "hip": [0.5, 0.408],
+            "leftKnee": [0.455, 0.58],
+            "rightKnee": [0.545, 0.58],
+            "leftAnkle": [0.45, 0.768],
+            "rightAnkle": [0.55, 0.768],
+            "leftFoot": [0.44, 0.828],
+            "rightFoot": [0.56, 0.828]
+          },
+          "holdSeconds": 18,
+          "cue": "Reach arm up — long bend to the side"
+        }
+      ]
+    },
+    {
+      "name": "Seated Forward Fold",
+      "mediaURL": "https://www.youtube.com/watch?v=NgM3nWYS8Fg",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg",
+        "Lower Back",
+        "Upper Back"
+      ],
+      "durationSeconds": 90,
+      "difficulty": 1,
+      "instructions": [
+        "Sit on the floor with your legs extended straight in front of you.",
+        "Flex your feet so your toes point toward the ceiling.",
+        "Inhale and lift your arms overhead, lengthening your spine.",
+        "Exhale and hinge forward from your hips — not your waist — reaching for your feet.",
+        "Hold the stretch for 30–45 seconds, breathing deeply.",
+        "Slowly roll back up on an inhale."
+      ],
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.078],
+            "neck": [0.5, 0.124],
+            "leftShoulder": [0.415, 0.168],
+            "rightShoulder": [0.585, 0.168],
+            "leftElbow": [0.375, 0.065],
+            "rightElbow": [0.625, 0.065],
+            "leftWrist": [0.368, 0.018],
+            "rightWrist": [0.632, 0.018],
+            "hip": [0.5, 0.435],
+            "leftKnee": [0.458, 0.548],
+            "rightKnee": [0.542, 0.548],
+            "leftAnkle": [0.452, 0.748],
+            "rightAnkle": [0.548, 0.748],
+            "leftFoot": [0.445, 0.808],
+            "rightFoot": [0.555, 0.808]
+          },
+          "holdSeconds": 2,
+          "cue": "Sit tall — arms up to lengthen"
+        },
+        {
+          "joints": {
+            "head": [0.5, 0.505],
+            "neck": [0.5, 0.462],
+            "leftShoulder": [0.448, 0.418],
+            "rightShoulder": [0.552, 0.418],
+            "leftElbow": [0.425, 0.518],
+            "rightElbow": [0.575, 0.518],
+            "leftWrist": [0.438, 0.658],
+            "rightWrist": [0.562, 0.658],
+            "hip": [0.5, 0.368],
+            "leftKnee": [0.458, 0.548],
+            "rightKnee": [0.542, 0.548],
+            "leftAnkle": [0.452, 0.748],
+            "rightAnkle": [0.548, 0.748],
+            "leftFoot": [0.445, 0.808],
+            "rightFoot": [0.555, 0.808]
+          },
+          "holdSeconds": 40,
+          "cue": "Hinge from hips — reach for feet"
+        }
+      ]
+    },
+    {
+      "name": "Alternate Nostril Breathing",
+      "type": "breath",
+      "targetBodyParts": [
+        "Chest",
+        "Core"
+      ],
+      "durationSeconds": 300,
+      "difficulty": 2,
+      "instructions": [
+        "Sit comfortably with your spine tall and eyes closed.",
+        "Bring your right hand to your nose: use your thumb to close the right nostril and ring finger for the left.",
+        "Close the right nostril and inhale slowly through the left for 4 counts.",
+        "Close both nostrils and hold for 2 counts.",
+        "Open the right nostril and exhale for 4 counts.",
+        "Inhale through the right nostril for 4 counts.",
+        "Close both nostrils and hold for 2 counts.",
+        "Open the left nostril and exhale for 4 counts.",
+        "This completes one round. Repeat for 5–10 rounds."
+      ]
+    },
+    {
+      "name": "Coherent Breathing",
+      "type": "breath",
+      "targetBodyParts": [
+        "Chest",
+        "Core"
+      ],
+      "durationSeconds": 300,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or lie down comfortably.",
+        "Breathe in through your nose for 5 counts.",
+        "Breathe out through your nose for 5 counts — no hold.",
+        "Keep the breath smooth, continuous, and effortless.",
+        "Continue at this 5-5 rhythm for the full duration.",
+        "Let your mind settle and your nervous system slow down."
+      ]
+    },
+    {
+      "name": "Humming Bee Breath",
+      "type": "breath",
+      "targetBodyParts": [
+        "Chest",
+        "Core"
+      ],
+      "durationSeconds": 180,
+      "difficulty": 1,
+      "instructions": [
+        "Sit comfortably with your spine tall.",
+        "Gently close your eyes and relax your jaw.",
+        "Take a deep inhale through your nose.",
+        "As you exhale, keep your lips gently closed and make a steady humming sound.",
+        "Feel the vibration in your face and skull.",
+        "Repeat for 6–8 rounds."
+      ]
+    },
+    {
+      "name": "Pursed-Lip Breathing",
+      "type": "breath",
+      "targetBodyParts": [
+        "Chest",
+        "Core"
+      ],
+      "durationSeconds": 120,
+      "difficulty": 1,
+      "instructions": [
+        "Sit comfortably with your neck and shoulders relaxed.",
+        "Breathe in slowly through your nose for 2 counts.",
+        "Pucker your lips as if blowing out a candle.",
+        "Breathe out slowly through your pursed lips for 4 counts.",
+        "Repeat. Each exhale should be about twice as long as your inhale.",
+        "Use this during or after physical activity, or when short of breath."
+      ]
+    },
+    {
+      "name": "Sun Salutation Warm-Up",
+      "mediaURL": "https://www.youtube.com/watch?v=bzZcMnRBrQM",
+      "type": "both",
+      "targetBodyParts": [
+        "Upper Back",
+        "Lower Back",
+        "Core",
+        "Left Leg",
+        "Right Leg",
+        "Left Shoulder",
+        "Right Shoulder"
+      ],
+      "durationSeconds": 300,
+      "difficulty": 2,
+      "instructions": [
+        "Stand at the top of your mat with feet together (Mountain Pose).",
+        "Inhale: sweep arms overhead (Upward Salute).",
+        "Exhale: fold forward (Standing Forward Fold).",
+        "Inhale: step or jump back to a high plank.",
+        "Exhale: lower to Chaturanga (low push-up) or drop knees first.",
+        "Inhale: press up to Upward Dog or Cobra.",
+        "Exhale: push back to Downward Dog for 5 breaths.",
+        "Inhale: step or jump feet to hands.",
+        "Exhale: fold. Inhale: sweep arms up.",
+        "Exhale: return to Mountain Pose. Repeat 3–5 rounds."
+      ],
+      "caution": "Modify Chaturanga by keeping knees down if needed. Move at your own pace.",
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.06],
+            "neck": [0.5, 0.1],
+            "leftShoulder": [0.415, 0.148],
+            "rightShoulder": [0.585, 0.148],
+            "leftElbow": [0.375, 0.065],
+            "rightElbow": [0.625, 0.065],
+            "leftWrist": [0.368, 0.018],
+            "rightWrist": [0.632, 0.018],
+            "hip": [0.5, 0.408],
+            "leftKnee": [0.455, 0.58],
+            "rightKnee": [0.545, 0.58],
+            "leftAnkle": [0.45, 0.768],
+            "rightAnkle": [0.55, 0.768],
+            "leftFoot": [0.44, 0.828],
+            "rightFoot": [0.56, 0.828]
+          },
+          "holdSeconds": 2,
+          "cue": "Mountain Pose — arms sweep overhead"
+        }
+      ]
+    },
+    {
+      "name": "Seated Pigeon Pose",
+      "mediaURL": "https://www.youtube.com/watch?v=9rV1GjZNi8c",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Leg",
+        "Right Leg",
+        "Lower Back"
+      ],
+      "durationSeconds": 90,
+      "difficulty": 1,
+      "instructions": [
+        "Sit upright in a chair with both feet flat on the floor.",
+        "Cross your right ankle over your left knee, keeping the right foot flexed.",
+        "Gently press down on the right knee to deepen the stretch.",
+        "To intensify, lean forward slowly with a flat back.",
+        "Hold for 30–45 seconds, then switch sides.",
+        "Breathe steadily and let the hip release with each exhale."
+      ],
+      "poses": [
+        {
+          "joints": {
+            "head": [0.5, 0.078],
+            "neck": [0.5, 0.124],
+            "leftShoulder": [0.415, 0.168],
+            "rightShoulder": [0.585, 0.168],
+            "leftElbow": [0.375, 0.265],
+            "rightElbow": [0.625, 0.265],
+            "leftWrist": [0.38, 0.362],
+            "rightWrist": [0.62, 0.362],
+            "hip": [0.5, 0.435],
+            "leftKnee": [0.392, 0.518],
+            "rightKnee": [0.558, 0.458],
+            "leftAnkle": [0.358, 0.668],
+            "rightAnkle": [0.395, 0.468],
+            "leftFoot": [0.328, 0.728],
+            "rightFoot": [0.368, 0.428]
+          },
+          "holdSeconds": 35,
+          "cue": "Ankle on knee — sit tall and breathe"
         }
       ]
     }

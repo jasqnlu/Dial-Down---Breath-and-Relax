@@ -24,8 +24,8 @@ struct SkeletonAnatomyCanvas: View {
 
     // MARK: Palette
 
-    private let boneFill   = Color(red: 0.93, green: 0.90, blue: 0.82).opacity(0.92)
-    private let boneStroke = Color(red: 0.50, green: 0.47, blue: 0.41).opacity(0.85)
+    private let boneFill   = Color(red: 0.96, green: 0.93, blue: 0.84).opacity(0.96)
+    private let boneStroke = Color(red: 0.44, green: 0.40, blue: 0.34).opacity(0.88)
 
     // MARK: Drawing primitives
 

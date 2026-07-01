@@ -130,13 +130,13 @@ struct BodyFigureCanvas: View {
             ZStack {
                 FemaleSilhouetteShape().fill(layer.silhouetteFill)
                 anatomyOverlay.clipShape(FemaleSilhouetteShape())
-                FemaleSilhouetteShape().stroke(Color(.systemGray3), lineWidth: 1)
+                FemaleSilhouetteShape().stroke(layer.accentColor.opacity(0.30), lineWidth: 1.2)
             }
         } else {
             ZStack {
                 MaleSilhouetteShape().fill(layer.silhouetteFill)
                 anatomyOverlay.clipShape(MaleSilhouetteShape())
-                MaleSilhouetteShape().stroke(Color(.systemGray3), lineWidth: 1)
+                MaleSilhouetteShape().stroke(layer.accentColor.opacity(0.30), lineWidth: 1.2)
             }
         }
     }

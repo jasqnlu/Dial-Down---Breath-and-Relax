@@ -35,6 +35,8 @@ struct BreathRelaxStretchApp: App {
     }()
 
     @AppStorage("seedDataVersion") private var seedDataVersion: Int = 0
+    @AppStorage("notifiedSeedVersion") private var notifiedSeedVersion: Int = 0
+    @State private var showNewContentAlert = false
 
     var body: some Scene {
         WindowGroup {
@@ -46,6 +48,14 @@ struct BreathRelaxStretchApp: App {
             .onAppear {
                 seedIfNeeded()
                 migrateSeedIfNeeded()
+                if notifiedSeedVersion < seedDataVersion {
+                    showNewContentAlert = true
+                }
+            }
+            .alert("New Content Added", isPresented: $showNewContentAlert) {
+                Button("Got it") { notifiedSeedVersion = seedDataVersion }
+            } message: {
+                Text("Video tutorials and animated guides are now available for your exercises. Check them out in the Exercises tab.")
             }
             .task { await syncRemoteCatalog() }
             .onOpenURL { url in
