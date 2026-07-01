@@ -246,6 +246,8 @@ struct RootView: View {
     // MARK: - Create profile on first sign-in
 
     private func ensureUserProfile() {
+        UserProfile.dedupe(in: modelContext)
+
         let descriptor = FetchDescriptor<UserProfile>()
         guard let existing = try? modelContext.fetch(descriptor), existing.isEmpty else { return }
         let name = auth.displayName.isEmpty ? "User" : auth.displayName
