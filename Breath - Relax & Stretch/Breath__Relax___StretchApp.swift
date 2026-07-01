@@ -21,7 +21,16 @@ struct BreathRelaxStretchApp: App {
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            // iCloud schema conflicts after an upgrade can make the persistent store
+            // fail to open. Fall back to an in-memory container so the app at least
+            // launches; the user will lose synced data for this session but can
+            // reopen to get a fresh persistent store on the next cold start.
+            #if DEBUG
+            print("⚠️ ModelContainer failed to open persistent store, falling back to in-memory: \(error)")
+            #endif
+            let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            return (try? ModelContainer(for: schema, configurations: [fallback]))
+                ?? { fatalError("Could not create any ModelContainer: \(error)") }()
         }
     }()
 
@@ -93,10 +102,13 @@ struct BreathRelaxStretchApp: App {
         }
     }
 
-    // MARK: - Seed migration (adds pose data to exercises seeded before v2)
+    // MARK: - Seed migration
+    // Backfills data added to the bundled seed after a user first installed:
+    //   v2 — pose keyframes for the stick-figure animation
+    //   v3 — video tutorial links (mediaURL) for select exercises
 
     private func migrateSeedIfNeeded() {
-        guard seedDataVersion < 2 else { return }
+        guard seedDataVersion < 3 else { return }
 
         guard
             let url  = Bundle.main.url(forResource: "SeedData", withExtension: "json"),
@@ -105,15 +117,18 @@ struct BreathRelaxStretchApp: App {
             let rawExercises = json["exercises"] as? [[String: Any]]
         else { return }
 
-        // Build name → posesData map from bundle seed
+        // Build name → (posesData, mediaURL) maps from the bundle seed.
         var posesByName: [String: Data] = [:]
+        var mediaByName: [String: String] = [:]
         for raw in rawExercises {
-            guard
-                let name     = raw["name"] as? String,
-                let posesRaw = raw["poses"],
-                let poseData = try? JSONSerialization.data(withJSONObject: posesRaw)
-            else { continue }
-            posesByName[name] = poseData
+            guard let name = raw["name"] as? String else { continue }
+            if let posesRaw = raw["poses"],
+               let poseData = try? JSONSerialization.data(withJSONObject: posesRaw) {
+                posesByName[name] = poseData
+            }
+            if let media = raw["mediaURL"] as? String, !media.isEmpty {
+                mediaByName[name] = media
+            }
         }
 
         let context = sharedModelContainer.mainContext
@@ -124,12 +139,18 @@ struct BreathRelaxStretchApp: App {
                 exercise.posesData = poseData
                 changed = true
             }
+            // Only fill in a video when the exercise doesn't already have one,
+            // so we never clobber a link the user added themselves.
+            if (exercise.mediaURL ?? "").isEmpty, let media = mediaByName[exercise.name] {
+                exercise.mediaURL = media
+                changed = true
+            }
         }
 
         if changed {
             try? context.save()
         }
-        seedDataVersion = 2
+        seedDataVersion = 3
     }
 
     // MARK: - Remote catalog sync (best-effort, offline-first)
