@@ -11,6 +11,11 @@ struct WatchBreathingView: View {
     @State private var isRunning = false
     @State private var currentPhase: BreathPhase = .inhale
     @State private var phaseSecondsLeft = 0
+    /// Wall-clock deadline for the current phase. phaseSecondsLeft is derived
+    /// from this each tick instead of being decremented, matching the fix
+    /// applied to the iPhone app's BreathingView — a stalled timer under
+    /// wrist-down/backgrounding otherwise leaves the countdown out of sync.
+    @State private var phaseEndDate = Date()
     @State private var round = 0
     @State private var totalRounds = 5
     @State private var circleScale: CGFloat = 1.0
@@ -102,6 +107,7 @@ struct WatchBreathingView: View {
         round = 1
         currentPhase = .inhale
         phaseSecondsLeft = selectedPattern.phases.inhale
+        phaseEndDate = Date().addingTimeInterval(TimeInterval(selectedPattern.phases.inhale))
         circleScale = 1.0
         isRunning = true
         withAnimation(.easeInOut(duration: Double(selectedPattern.phases.inhale))) {
@@ -116,8 +122,9 @@ struct WatchBreathingView: View {
 
     private func tick() {
         guard isRunning else { return }
-        if phaseSecondsLeft > 1 {
-            phaseSecondsLeft -= 1
+        let remaining = Int(phaseEndDate.timeIntervalSinceNow.rounded(.up))
+        if remaining > 1 {
+            phaseSecondsLeft = remaining
         } else {
             advancePhase()
         }
@@ -153,6 +160,7 @@ struct WatchBreathingView: View {
     private func transition(to phase: BreathPhase, duration: Int) {
         currentPhase = phase
         phaseSecondsLeft = max(1, duration)
+        phaseEndDate = Date().addingTimeInterval(TimeInterval(max(1, duration)))
         withAnimation(.easeInOut(duration: Double(max(1, duration)))) {
             if phase == .inhale { circleScale = 1.4 }
             if phase == .exhale { circleScale = 1.0 }
