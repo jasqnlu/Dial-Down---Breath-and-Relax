@@ -17,6 +17,14 @@ struct GamificationService {
         return max(1, Int(durationMinutes * difficultyMultiplier * completionBonus * 10))
     }
 
+    /// Averages each exercise's individual completion into one session-wide
+    /// value, instead of a session's completionPercent reflecting only
+    /// whichever exercise happened to finish (or get skipped) last.
+    static func aggregateCompletion(_ perExerciseCompletions: [Double]) -> Double {
+        guard !perExerciseCompletions.isEmpty else { return 0 }
+        return perExerciseCompletions.reduce(0, +) / Double(perExerciseCompletions.count)
+    }
+
     // MARK: - Streak
 
     static func updateStreak(for profile: UserProfile) {

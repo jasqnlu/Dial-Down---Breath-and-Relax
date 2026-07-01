@@ -26,6 +26,9 @@ struct SessionPlayerView: View {
     @State private var totalPointsEarned = 0
     @State private var sessionStarted = Date()
     @State private var shouldRequestReview = false
+    /// Each exercise's own completion fraction, so the session's overall
+    /// completionPercent reflects everything done, not just the last exercise.
+    @State private var exerciseCompletions: [Double] = []
 
     // Haptics
     private let impactLight   = UIImpactFeedbackGenerator(style: .light)
@@ -201,6 +204,7 @@ struct SessionPlayerView: View {
 
     private func advanceToNext(completion: Double) {
         totalPointsEarned += GamificationService.points(for: currentExercise, completion: completion)
+        exerciseCompletions.append(completion)
 
         if currentIndex + 1 < exercises.count {
             impactMedium.impactOccurred()
@@ -212,21 +216,21 @@ struct SessionPlayerView: View {
             // Session complete
             notifySuccess.notificationOccurred(.success)
             AudioServicesPlaySystemSound(soundComplete)
-            saveSession(completion: completion)
+            saveSession()
             showingSummary = true
         }
     }
 
     // MARK: - Persistence
 
-    private func saveSession(completion: Double) {
+    private func saveSession() {
         let completedAt = Date()
         let bodyPartsCovered = Set(exercises.flatMap { $0.targetBodyParts })
 
         let session = Session(
             routineID: routineID,
             startedAt: sessionStarted,
-            completionPercent: completion,
+            completionPercent: GamificationService.aggregateCompletion(exerciseCompletions),
             pointsEarned: totalPointsEarned
         )
         session.completedAt = completedAt

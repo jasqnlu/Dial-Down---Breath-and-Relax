@@ -59,6 +59,20 @@ struct GamificationServiceTests {
         #expect(GamificationService.points(for: e, completion: 0.0)  == 7)
     }
 
+    // MARK: - Completion aggregation
+
+    @Test func aggregateCompletionAveragesAllExercises() {
+        #expect(GamificationService.aggregateCompletion([1.0, 0.5, 0.7]) == (1.0 + 0.5 + 0.7) / 3)
+    }
+
+    @Test func aggregateCompletionOfEmptySessionIsZero() {
+        #expect(GamificationService.aggregateCompletion([]) == 0)
+    }
+
+    @Test func aggregateCompletionSingleExerciseIsItself() {
+        #expect(GamificationService.aggregateCompletion([0.42]) == 0.42)
+    }
+
     @Test func unknownDifficultyFallsBackToBaseMultiplier() {
         // difficulty 5 isn't a known tier, so it uses the 1.0 default — same as difficulty 1.
         let base = GamificationService.points(for: makeExercise(duration: 60, difficulty: 1), completion: 1.0)
