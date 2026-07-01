@@ -26,6 +26,7 @@ struct SessionPlayerView: View {
     @State private var totalPointsEarned = 0
     @State private var sessionStarted = Date()
     @State private var shouldRequestReview = false
+    @State private var showingExitConfirmation = false
 
     // Haptics
     private let impactLight   = UIImpactFeedbackGenerator(style: .light)
@@ -101,6 +102,16 @@ struct SessionPlayerView: View {
         .sheet(isPresented: $shouldShowPaywall) {
             PaywallView()
         }
+        .confirmationDialog(
+            "End session?",
+            isPresented: $showingExitConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("End Session", role: .destructive) { dismiss() }
+            Button("Keep Going", role: .cancel) {}
+        } message: {
+            Text("Your progress on this session won't be saved.")
+        }
     }
 
     // MARK: - Player UI
@@ -111,7 +122,7 @@ struct SessionPlayerView: View {
 
             // Top bar
             HStack {
-                Button { dismiss() } label: {
+                Button { requestExit() } label: {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title2)
                         .foregroundStyle(.secondary)
@@ -190,6 +201,16 @@ struct SessionPlayerView: View {
     }
 
     // MARK: - Logic
+
+    /// Dismisses immediately if nothing has been done yet; otherwise confirms
+    /// first so an accidental tap mid-routine doesn't silently discard progress.
+    private func requestExit() {
+        if currentIndex > 0 {
+            showingExitConfirmation = true
+        } else {
+            dismiss()
+        }
+    }
 
     private func startExercise() {
         secondsRemaining = currentExercise?.durationSeconds ?? 60
