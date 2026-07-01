@@ -1,6 +1,6 @@
 # Breath: Relax & Stretch — TODO
 
-Updated 2026-06-16 (rev 2)
+Updated 2026-07-01 (rev 3)
 
 ---
 
@@ -152,8 +152,47 @@ Done — see ✅ Completed (v0.6) above. Needs the StoreKit Configuration scheme
 - [x] Missing `import Combine` in `StickFigureView.swift` (`Timer.publish().autoconnect()`) broke the build — fixed
 - [x] Invalid `Section("Title") { } footer: { }` calls (2×) in `ProfileSettingsTab.swift` — SwiftUI doesn't support a footer on the string-title initializer; switched to `Section { } header: { } footer: { }` — fixed
 - [x] ~~`AuthManager.signUp` hashes password with SHA-256 (fast hash)~~ — stale note, it already uses PBKDF2 (100k rounds, SHA-256 PRF, 16-byte random salt) via CommonCrypto
-- [ ] `BorrowRoutineView` uses placeholder Supabase URL — real fetch will fail until `.env`-equivalent credentials are configured
-- [~] Unit tests — **first batch landed** (Swift Testing, not XCTest — the test target was already scaffolded for `import Testing`): `GamificationServiceTests` (points/streak/badge math) + `SharePayloadTests` (`RoutineSharePayload`/`ChallengePayload` URL-safe-base64 round trips & malformed-input handling). 31 cases, all green via `xcodebuild test` on the iPhone 17 sim. Still uncovered: `AuthManager` (keychain-backed — needs a test seam to avoid touching the real keychain) and the body-map `AnnotationStore` (`@MainActor` UI state)
+- [x] Unit tests — first batch landed (Swift Testing): `GamificationServiceTests` + `SharePayloadTests`, 31 cases, all green. Expanded further in the 2026-07-01 audit below.
+
+### 2026-07-01 audit — Supabase/session/auth correctness pass
+
+All fixed on separate branches (one fix per branch, per this repo's convention), not yet merged into `main` — merge/review before closing these out:
+
+- [x] **[CRITICAL]** `SupabaseService.supabaseURL` was the browser dashboard URL, not the REST API host (`https://supabase.com/dashboard/project/...` instead of `https://<ref>.supabase.co`) — every real network call would 404/HTML instead of decoding JSON, and `isConfigured` only checked for the placeholder string so it wrongly reported `true`. Fixed the URL + `isConfigured` now validates the host actually ends in `.supabase.co`. *(branch `fix/supabase-api-url`, test coverage on `test/supabase-config-sanity`)*
+- [x] Skip button in `SessionPlayerView` always passed `completion: 0.5` regardless of actual elapsed time — spamming skip banked 0.7× full-duration points, a full streak update, and every eligible badge in seconds. Now scales completion by elapsed/duration (10% floor). *(branch `fix/skip-completion-scoring`)*
+- [x] No confirmation when exiting an active session (`SessionPlayerView`'s X button) — a single accidental tap silently discarded the whole session. Now confirms once `currentIndex > 0`. *(branch `fix/session-exit-confirmation`)*
+- [x] Email sign-in was case-sensitive (`AuthManager.signUp`/`signIn` used the raw email as the Keychain account key) — signing up with `Jason@x.com` and signing in with `jason@x.com` failed. Now normalizes (trim + lowercase). *(branch `fix/email-case-sensitivity`, round-trip tests on `test/authmanager-roundtrip`)*
+- [x] `AuthManager.signOut()` only cleared `kIsSignedIn` from `UserDefaults` — `kDisplayName`/`kEmail`/`kProvider` persisted indefinitely after sign-out, a data-hygiene issue on shared devices. *(branch `fix/signout-clears-userdefaults`)*
+- [x] `Session.completionPercent` only reflected the last exercise's completion, not the session as a whole — finishing 4/5 exercises and skipping the last logged the session as 50% complete. Now averages every exercise's completion. *(branch `fix/session-completion-aggregation`)*
+- [x] `SessionPlayerView` and `BreathingView` countdowns decremented a counter per timer tick instead of computing from a stored deadline — drift under backgrounding/device-lock. Same bug confirmed and fixed in the Watch target's `WatchBreathingView`. *(branches `fix/deadline-based-timers`, `fix/watch-deadline-based-timer` — the latter unverified by `xcodebuild` since the Watch target isn't added to the Xcode project yet)*
+- [x] `UserProfile` has no enforced uniqueness once CloudKit sync is configured (SwiftData can't do `.unique` alongside a CloudKit container) — several call sites fetch "the" profile via `.first`, which could non-deterministically split stats across two rows if sync ever raced. Added `UserProfile.dedupe(in:)`, called on every sign-in/launch. *(branch `fix/userprofile-dedupe`)*
+- [x] Bundled seed exercises got a fresh random UUID on every install (`SeedData.json` has no `id` field, and `seedIfNeeded()` never passed one) — `Session`/`Routine.exerciseIDs` and Supabase's `RemoteExercise.id` meant nothing across two installs. Added `Exercise.stableSeedUUID(forName:)` (SHA-256-derived). Only affects newly-seeded installs; existing users' random seed UUIDs aren't retroactively migrated. *(branch `fix/seed-exercise-stable-uuid`)*
+- [x] Apple Sign-In: `credential.email` is only returned on the very first sign-in ever; every sign-in after falls back to `userEmail`, which is empty after a reinstall. Now persists `credential.user` (Apple's stable id) → email in Keychain so it survives reinstalls. *(branch `fix/apple-signin-email-recovery`)*
+- [x] Confirmed `ContentPack`/`GuidedProgram` exercise names still resolve against `SeedData.json` (previously "manually verified once" per this file) — added a test that keeps it enforced automatically instead of relying on that staying true. *(same branch as above)*
+- [x] Confirmed 2FA (`TwoFactorView`) is real — device biometric re-auth via `LocalAuthentication`, not a fake code-accepting gate. No change needed.
+
+### 2026-07-01 audit — extended pass (Part 5: BodyMap, Auth, Onboarding, Routines, Monetization, Profile, Watch)
+
+Also all on separate unmerged branches:
+
+- [x] Body map "Clear all marks" (trash button) deleted every stroke and marked region immediately with no confirmation — the one destructive action in the app that skipped this repo's confirmationDialog convention. *(branch `fix/bodymap-clear-confirmation`)*
+- [x] `AnnotationStore.save()`/`load()` silently swallowed every encode/write/read/decode failure — a full disk or crash mid-write could silently drop a user's annotations with no diagnostic trail. Now logs failures in debug builds, matching the rest of the codebase's convention. *(branch `fix/annotationstore-error-logging`)*
+- [x] `AuthView`'s Apple/Google sign-in errors were separate `@State` vars (`appleError ?? googleError`) — a stale Apple error could mask a fresher Google failure. Consolidated into one `authError` slot. *(branch `fix/authview-stale-error`)*
+- [x] `RoutineListView`'s swipe-to-delete and `RoutineBuilderView`'s remove-exercise button both deleted immediately with no confirmation. `ExercisePickerView`'s exercise list was keyed `ForEach(..., id: \.offset)` over a list that changes as the user types into `.searchable` — switched to `id: \.uuid`. `RoutineRow`/`BorrowRoutineRow` showed the raw `exerciseIDs.count` instead of how many actually resolve against the local catalog (unlike `ImportRoutineView`, which already gets this right) — a borrowed routine with unresolvable exercise IDs could show an enabled Play button leading straight to "No Exercises Found." *(branch `fix/routines-delete-confirmations`)*
+- [x] `ForYouSection`'s quick-session duration used `max(1, totalSecs / 60)` — always truncated down, so e.g. a 90-second session displayed "1m" the same as a 15-second one. Now rounds instead. *(branch `fix/foryou-duration-display`)*
+- [x] `notificationsEnabled` (`@AppStorage`, defaults `true`) was never set `false` when onboarding's `NotificationsPage` permission request was denied or skipped — `ProfileSettingsTab`'s Reminders section could show "on" with nothing actually scheduled. Also wired up `NotificationService.authorizationStatus()` (previously defined, never called) to reconcile against the real OS permission on `ProfileSettingsTab` appear. *(branch `fix/notification-permission-staleness`)*
+- [x] Confirmed `HealthKit`/Calendar toggle gating (`ProfileSettingsTab`, `SessionPlayerView`, `BreathingView`) is consistent — no stale-authorized-state risk found.
+- [x] Confirmed the App Group `UserDefaults` placeholder (`group.REPLACE_WITH_YOUR_BUNDLE_ID`) is consistent across `WidgetDataService.swift`/`BreathWidget.swift`/`BreathWatchComplication.swift` — single deliberate manual-setup item, no drift.
+- [x] Confirmed `supabase_schema.sql`'s 4 tables match `SupabaseDTOs.swift`'s `CodingKeys` exactly (now actually relevant since the Supabase URL fix makes real backend calls reachable).
+
+### New findings — need a product decision, not a guess
+
+- [ ] **"Community routines" don't actually reach a community.** `SupabaseService.fetchPublicRoutines()`/`uploadRoutine()` are defined but never called from anywhere in the UI — `BorrowRoutineView`'s "Browse community routines, ranked by popularity" and `RoutineBuilderView`'s "Your routine will appear in the community library" both describe a cross-device feature that can't happen; `isPublic`/`borrowCount` are purely local `@Query` filters, and `borrowCount` can only ever reflect same-device forking. Either wire up the real Supabase calls (now that the URL bug is fixed) or rewrite the copy to describe what it actually does (multi-account-on-one-device sharing). **Jason's call.**
+- [ ] `AuthView`'s "By continuing you agree to our Terms of Service and Privacy Policy" is plain, non-interactive `Text` — no Terms of Service document exists anywhere in the app or repo, and the one Privacy Policy screen (Profile → Settings → Data) isn't linked from here either. **Jason's call**: write a real ToS, remove the mention, or link the existing Privacy Policy for both.
+- [ ] `GenderPickerPage` (onboarding) pre-selects "Male" via `@AppStorage("bodyMapSex") = "male"` with no explicit tap required to proceed — a user who doesn't intentionally choose a card still gets a real value persisted. Possibly intentional as a sane default; flagging since it's a silent choice-on-behalf-of-the-user. **Jason's call** on whether Next should be gated on an explicit tap.
+- [ ] Minor/low-priority, not fixed: `EmailAuthView`'s password-strength meter can show "Weak" for an 8-character password that `AuthManager` happily accepts (both use the same length threshold but different labels) — purely informational meter, not a security bypass, just a UX inconsistency worth a look if the meter is meant to mean something.
+- [ ] Minor/low-priority, not fixed: `BorrowRoutineView` filters public routines by `authorID != auth.userEmail` — if the same device is used with a second account, routines published under the first account's email now look like someone else's "community" routine (forkable). Edge case, only matters once multi-account-per-device is a real usage pattern.
+- [ ] Minor/low-priority, not fixed: `DeepLinkRouter` silently no-ops when a `breath://` share link fails to decode (corrupted/truncated link) — no error surfaced to the user, tapping a broken link just appears to do nothing.
 
 ---
 
