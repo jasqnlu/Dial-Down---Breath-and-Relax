@@ -54,7 +54,7 @@ struct LeaderboardView: View {
     }
 
     private func leaderboardRow(rank: Int, entry: RemoteProfile) -> some View {
-        let isMe = entry.id == auth.userEmail
+        let isMe = entry.id == auth.anonymousID
         return HStack(spacing: 12) {
             Text("\(rank)")
                 .font(.subheadline.weight(.semibold))
@@ -83,9 +83,11 @@ struct LeaderboardView: View {
         isLoading = true
         defer { isLoading = false }
 
-        if let local = localProfile, !auth.userEmail.isEmpty {
+        // Identified by the anonymous per-install UUID — the email never
+        // leaves the device (this table is publicly readable).
+        if let local = localProfile {
             let remote = RemoteProfile(
-                id: auth.userEmail,
+                id: auth.anonymousID,
                 displayName: local.displayName,
                 totalPoints: local.totalPoints,
                 streak: local.streak,
@@ -97,6 +99,8 @@ struct LeaderboardView: View {
         do {
             entries = try await SupabaseService.shared.fetchLeaderboard()
             loadError = nil
+        } catch SupabaseError.httpError(let code) {
+            loadError = "The leaderboard service isn't available right now (error \(code)). Try again later."
         } catch {
             loadError = "Check your connection and try again."
         }

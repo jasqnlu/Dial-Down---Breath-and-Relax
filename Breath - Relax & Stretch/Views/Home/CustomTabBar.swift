@@ -17,6 +17,7 @@ struct CustomTabBar: View {
     }
 
     private let tabs: [TabItem] = [
+        TabItem(icon: "sun.max",                activeIcon: "sun.max.fill",            label: "Today"),
         TabItem(icon: "figure.stand",          activeIcon: "figure.stand",           label: "Body"),
         TabItem(icon: "list.bullet",            activeIcon: "list.bullet",             label: "Exercises"),
         TabItem(icon: "wind",                   activeIcon: "wind",                    label: "Breathe"),
@@ -53,28 +54,30 @@ struct CustomTabBar: View {
                 selectedTab = index
             }
         } label: {
-            ZStack {
+            HStack(spacing: isActive ? 5 : 0) {
+                Image(systemName: isActive ? tab.activeIcon : tab.icon)
+                    .font(.system(size: 17, weight: isActive ? .semibold : .regular))
+
+                if isActive {
+                    Text(tab.label)
+                        .font(.system(size: 12, weight: .semibold))
+                        .lineLimit(1)
+                        .fixedSize()
+                        .transition(.scale(scale: 0.7).combined(with: .opacity))
+                }
+            }
+            .foregroundStyle(isActive ? Color.accentColor : Color(.systemGray))
+            .padding(.vertical, 10)
+            .padding(.horizontal, isActive ? 14 : 0)
+            // The pill lives in .background so it is sized by the label —
+            // a bare Capsule() as a ZStack sibling is a greedy Shape and
+            // inflates the whole bar when the parent proposes full-screen.
+            .background {
                 if isActive {
                     Capsule()
                         .fill(Color.accentColor.opacity(0.12))
                         .matchedGeometryEffect(id: "activePill", in: ns)
                 }
-
-                HStack(spacing: isActive ? 5 : 0) {
-                    Image(systemName: isActive ? tab.activeIcon : tab.icon)
-                        .font(.system(size: 17, weight: isActive ? .semibold : .regular))
-
-                    if isActive {
-                        Text(tab.label)
-                            .font(.system(size: 12, weight: .semibold))
-                            .lineLimit(1)
-                            .fixedSize()
-                            .transition(.scale(scale: 0.7).combined(with: .opacity))
-                    }
-                }
-                .foregroundStyle(isActive ? Color.accentColor : Color(.systemGray))
-                .padding(.vertical, 10)
-                .padding(.horizontal, isActive ? 14 : 0)
             }
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())

@@ -58,7 +58,8 @@ struct SharePayloadTests {
     @Test func routineRoundTripsAcrossVaryingLengths() throws {
         // Different payload sizes land on different base64 padding counts (0, 1,
         // 2), exercising every branch of the `while count % 4` re-padding.
-        for count in 0...6 {
+        // Names start at length 1 — decode (correctly) rejects nameless routines.
+        for count in 1...7 {
             let names = (0..<count).map { "Exercise number \($0)" }
             let original = RoutineSharePayload(name: String(repeating: "n", count: count),
                                                exerciseNames: names)
@@ -66,6 +67,58 @@ struct SharePayloadTests {
             let decoded = try #require(RoutineSharePayload.decode(from: token))
             #expect(decoded.exerciseNames == original.exerciseNames)
         }
+    }
+
+    // MARK: - Untrusted-input limits
+    // breath:// links can be crafted by anyone, so decode enforces size caps
+    // and returns nil instead of importing absurd content.
+
+    @Test func routineDecodeRejectsEmptyName() throws {
+        let payload = RoutineSharePayload(name: "", exerciseNames: ["A"])
+        let token = try #require(dataParam(of: payload.shareURL))
+        #expect(RoutineSharePayload.decode(from: token) == nil)
+    }
+
+    @Test func routineDecodeRejectsOversizedName() throws {
+        let payload = RoutineSharePayload(name: String(repeating: "n", count: 81),
+                                          exerciseNames: ["A"])
+        let token = try #require(dataParam(of: payload.shareURL))
+        #expect(RoutineSharePayload.decode(from: token) == nil)
+    }
+
+    @Test func routineDecodeRejectsTooManyExercises() throws {
+        let payload = RoutineSharePayload(name: "Flood",
+                                          exerciseNames: (0..<51).map { "Exercise \($0)" })
+        let token = try #require(dataParam(of: payload.shareURL))
+        #expect(RoutineSharePayload.decode(from: token) == nil)
+    }
+
+    @Test func routineDecodeAcceptsMaximumSizes() throws {
+        // The caps are inclusive: exactly 80-char names and 50 exercises pass.
+        let payload = RoutineSharePayload(name: String(repeating: "n", count: 80),
+                                          exerciseNames: (0..<50).map { "Exercise \($0)" })
+        let token = try #require(dataParam(of: payload.shareURL))
+        let decoded = try #require(RoutineSharePayload.decode(from: token))
+        #expect(decoded.exerciseNames.count == 50)
+    }
+
+    @Test func challengeDecodeRejectsAbsurdStats() throws {
+        // Fake streak brags: a crafted link with a negative or million-day
+        // streak must not decode.
+        let negative = ChallengePayload(fromName: "X", streak: -1, totalPoints: 10)
+        let token1 = try #require(dataParam(of: negative.shareURL))
+        #expect(ChallengePayload.decode(from: token1) == nil)
+
+        let absurd = ChallengePayload(fromName: "X", streak: 1_000_001, totalPoints: 10)
+        let token2 = try #require(dataParam(of: absurd.shareURL))
+        #expect(ChallengePayload.decode(from: token2) == nil)
+    }
+
+    @Test func challengeDecodeRejectsOversizedName() throws {
+        let payload = ChallengePayload(fromName: String(repeating: "n", count: 81),
+                                       streak: 3, totalPoints: 100)
+        let token = try #require(dataParam(of: payload.shareURL))
+        #expect(ChallengePayload.decode(from: token) == nil)
     }
 
     @Test func routineDecodeRejectsGarbage() {

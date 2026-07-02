@@ -46,9 +46,13 @@ struct BreathRelaxStretchApp: App {
             .environmentObject(auth)
             .environmentObject(deepLinkRouter)
             .onAppear {
-                seedIfNeeded()
+                let freshInstall = seedIfNeeded()
                 migrateSeedIfNeeded()
-                if notifiedSeedVersion < seedDataVersion {
+                if freshInstall {
+                    // A first-ever launch already has all the content — don't
+                    // greet new users with a "New Content Added" alert.
+                    notifiedSeedVersion = seedDataVersion
+                } else if notifiedSeedVersion < seedDataVersion {
                     showNewContentAlert = true
                 }
             }
@@ -67,17 +71,19 @@ struct BreathRelaxStretchApp: App {
 
     // MARK: - Seed exercises
 
-    private func seedIfNeeded() {
+    /// Returns true when this was a fresh install (no exercises existed yet).
+    @discardableResult
+    private func seedIfNeeded() -> Bool {
         let context = sharedModelContainer.mainContext
         let descriptor = FetchDescriptor<Exercise>()
-        guard (try? context.fetchCount(descriptor)) == 0 else { return }
+        guard (try? context.fetchCount(descriptor)) == 0 else { return false }
 
         guard
             let url  = Bundle.main.url(forResource: "SeedData", withExtension: "json"),
             let data = try? Data(contentsOf: url),
             let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
             let exercises = json["exercises"] as? [[String: Any]]
-        else { return }
+        else { return true } // still a fresh install, even if the seed failed to load
 
         for raw in exercises {
             guard
@@ -110,6 +116,7 @@ struct BreathRelaxStretchApp: App {
             print("⚠️ SwiftData seed save failed: \(error)")
             #endif
         }
+        return true
     }
 
     // MARK: - Seed migration
@@ -227,14 +234,14 @@ struct RootView: View {
         Group {
             if !auth.isSignedIn {
                 AuthView()
-            } else if auth.needsTwoFactor {
-                TwoFactorView()
+            } else if auth.needsUnlock {
+                AppLockView()
             } else {
                 HomeView()
             }
         }
         .animation(.easeInOut(duration: 0.35), value: auth.isSignedIn)
-        .animation(.easeInOut(duration: 0.35), value: auth.needsTwoFactor)
+        .animation(.easeInOut(duration: 0.35), value: auth.needsUnlock)
         .onChange(of: auth.isSignedIn) { _, signedIn in
             if signedIn { ensureUserProfile() }
         }
@@ -249,7 +256,9 @@ struct RootView: View {
         let descriptor = FetchDescriptor<UserProfile>()
         guard let existing = try? modelContext.fetch(descriptor), existing.isEmpty else { return }
         let name = auth.displayName.isEmpty ? "User" : auth.displayName
-        let profile = UserProfile(profileID: auth.userEmail, displayName: name)
+        // Keyed by the anonymous UUID so guest and signed-in users work the
+        // same way, and the email never doubles as an identifier.
+        let profile = UserProfile(profileID: auth.anonymousID, displayName: name)
         modelContext.insert(profile)
         do {
             try modelContext.save()

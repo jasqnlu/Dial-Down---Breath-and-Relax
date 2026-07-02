@@ -1,15 +1,22 @@
 import SwiftUI
 import AuthenticationServices
 
+// MARK: - AuthView
+// Guest-first welcome screen. The primary action starts using the app with no
+// account (continueAsGuest); Apple / Google / Email sign-in are offered as the
+// quieter secondary path for people who want their name on their profile.
+
 struct AuthView: View {
     @EnvironmentObject private var auth: AuthManager
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dismiss) private var dismiss
     @State private var showEmailAuth = false
     @State private var appleError: String?
     @State private var googleError: String?
+    @State private var isBreathingIn = false
 
     var body: some View {
         ZStack {
-            // Background gradient
             LinearGradient(
                 colors: [Color(.systemTeal).opacity(0.35), Color(.systemIndigo).opacity(0.55)],
                 startPoint: .topLeading,
@@ -20,12 +27,9 @@ struct AuthView: View {
             VStack(spacing: 0) {
                 Spacer()
 
-                // MARK: Hero
-                VStack(spacing: 16) {
-                    Image(systemName: "figure.mind.and.body")
-                        .font(.system(size: 72, weight: .thin))
-                        .foregroundStyle(.white)
-                        .shadow(color: Color.primary.opacity(0.15), radius: 8, y: 4)
+                // MARK: Hero — a circle that breathes
+                VStack(spacing: 20) {
+                    breathingHalo
 
                     Text("Breath")
                         .font(.system(size: 42, weight: .bold, design: .rounded))
@@ -38,10 +42,36 @@ struct AuthView: View {
 
                 Spacer()
 
-                // MARK: Sign-in buttons
                 VStack(spacing: 14) {
+                    // MARK: Primary — use the app right now, no account.
+                    // Hidden when a guest re-opens this screen to add an
+                    // account (they're already "in").
+                    if !auth.isGuest {
+                        Button {
+                            auth.continueAsGuest()
+                        } label: {
+                            Text("Start breathing")
+                                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                                .foregroundStyle(Color(.systemIndigo))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(.white)
+                                .cornerRadius(16)
+                        }
 
-                    // Sign in with Apple
+                        // MARK: Divider
+                        HStack(spacing: 12) {
+                            line
+                            Text("or save your progress")
+                                .font(.caption)
+                                .foregroundStyle(.white.opacity(0.7))
+                                .fixedSize()
+                            line
+                        }
+                        .padding(.vertical, 2)
+                    }
+
+                    // MARK: Secondary — account options
                     SignInWithAppleButton(.signIn) { request in
                         request.requestedScopes = [.fullName, .email]
                     } onCompletion: { result in
@@ -57,57 +87,21 @@ struct AuthView: View {
                         }
                     }
                     .signInWithAppleButtonStyle(.white)
-                    .frame(height: 54)
+                    .frame(height: 48)
                     .cornerRadius(14)
 
-                    // Sign in with Google
-                    Button {
-                        Task { await signInWithGoogle() }
-                    } label: {
-                        HStack(spacing: 10) {
-                            Image(systemName: "g.circle.fill")
-                                .font(.title2)
-                                .foregroundStyle(Color(red: 0.92, green: 0.26, blue: 0.21).opacity(GoogleAuthService.isConfigured ? 1 : 0.4))
-                            Text("Continue with Google")
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(.primary.opacity(GoogleAuthService.isConfigured ? 1 : 0.4))
-                            Spacer()
-                            if !GoogleAuthService.isConfigured {
-                                Text("Coming Soon")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(.secondary)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color(.systemFill), in: Capsule())
-                            }
+                    HStack(spacing: 12) {
+                        secondaryButton(
+                            icon: "g.circle.fill",
+                            title: GoogleAuthService.isConfigured ? "Google" : "Google (soon)",
+                            enabled: GoogleAuthService.isConfigured
+                        ) {
+                            Task { await signInWithGoogle() }
                         }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .padding(.horizontal, 16)
-                        .background(Color(.systemBackground).opacity(0.7))
-                        .cornerRadius(14)
-                    }
-                    .disabled(!GoogleAuthService.isConfigured)
 
-                    // Email / Password
-                    Button {
-                        showEmailAuth = true
-                    } label: {
-                        HStack(spacing: 10) {
-                            Image(systemName: "envelope.fill")
-                                .font(.title3)
-                            Text("Continue with Email")
-                                .font(.system(size: 17, weight: .semibold))
+                        secondaryButton(icon: "envelope.fill", title: "Email", enabled: true) {
+                            showEmailAuth = true
                         }
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .background(.white.opacity(0.2))
-                        .cornerRadius(14)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14)
-                                .stroke(.white.opacity(0.45), lineWidth: 1)
-                        )
                     }
 
                     if let err = appleError ?? googleError {
@@ -125,14 +119,77 @@ struct AuthView: View {
                     .foregroundStyle(.white.opacity(0.55))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
-                    .padding(.top, 20)
-                    .padding(.bottom, 44)
+                    .padding(.top, 18)
+                    .padding(.bottom, 40)
             }
         }
         .sheet(isPresented: $showEmailAuth) {
             EmailAuthView()
                 .environmentObject(auth)
         }
+        // When shown as a sheet over a guest session, close once the guest
+        // upgrades to a real provider. (At the root this view is swapped out
+        // by RootView instead, so dismiss() is a harmless no-op there.)
+        .onChange(of: auth.provider) { _, newProvider in
+            if newProvider != .guest { dismiss() }
+        }
+        .onAppear {
+            guard !reduceMotion else { return }
+            isBreathingIn = true
+        }
+    }
+
+    // MARK: - Pieces
+
+    /// Concentric circles that swell and settle at a calm breath cadence.
+    /// The animation is scoped via .animation(value:) — a global
+    /// withAnimation(.repeatForever) would leak into every concurrent
+    /// layout change on screen, forever.
+    private var breathingHalo: some View {
+        ZStack {
+            Circle()
+                .fill(.white.opacity(0.12))
+                .frame(width: 150, height: 150)
+                .scaleEffect(isBreathingIn ? 1.18 : 0.92)
+            Circle()
+                .fill(.white.opacity(0.18))
+                .frame(width: 112, height: 112)
+                .scaleEffect(isBreathingIn ? 1.1 : 0.94)
+            Image(systemName: "figure.mind.and.body")
+                .font(.system(size: 52, weight: .thin))
+                .foregroundStyle(.white)
+        }
+        .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: isBreathingIn)
+        .frame(width: 180, height: 180)
+        .accessibilityHidden(true)
+    }
+
+    private var line: some View {
+        Rectangle()
+            .fill(.white.opacity(0.3))
+            .frame(height: 1)
+    }
+
+    private func secondaryButton(icon: String, title: String, enabled: Bool,
+                                 action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.body)
+                Text(title)
+                    .font(.system(size: 16, weight: .semibold))
+            }
+            .foregroundStyle(.white.opacity(enabled ? 1 : 0.45))
+            .frame(maxWidth: .infinity)
+            .frame(height: 48)
+            .background(.white.opacity(0.16))
+            .cornerRadius(14)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(.white.opacity(0.35), lineWidth: 1)
+            )
+        }
+        .disabled(!enabled)
     }
 
     private func signInWithGoogle() async {

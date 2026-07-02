@@ -29,7 +29,7 @@ struct RoutineBuilderView: View {
     }
 
     private var myPublicCount: Int {
-        allRoutines.filter { $0.isPublic && $0.authorID == auth.userEmail && $0.uuid != routineToEdit?.uuid }.count
+        allRoutines.filter { $0.isPublic && $0.authorID == auth.anonymousID && $0.uuid != routineToEdit?.uuid }.count
     }
 
     private var publishLimitReached: Bool {
@@ -133,7 +133,7 @@ struct RoutineBuilderView: View {
             let routine = Routine(
                 name: routineName,
                 exerciseIDs: selectedIDs,
-                authorID: auth.userEmail,
+                authorID: auth.anonymousID,
                 authorName: isPublic ? auth.displayName : nil,
                 isPublic: isPublic
             )

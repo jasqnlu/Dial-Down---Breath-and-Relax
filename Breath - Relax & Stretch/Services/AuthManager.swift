@@ -11,6 +11,7 @@ enum AuthProvider: String, Codable {
     case apple  = "apple"
     case google = "google"
     case email  = "email"
+    case guest  = "guest"
 }
 
 // MARK: - AuthManager
@@ -22,17 +23,33 @@ final class AuthManager: ObservableObject {
 
     // MARK: Published state
     @Published private(set) var isSignedIn: Bool    = false
-    @Published private(set) var needsTwoFactor: Bool = false
+    @Published private(set) var needsUnlock: Bool   = false
     @Published private(set) var displayName: String = ""
     @Published private(set) var userEmail: String   = ""
     @Published private(set) var provider: AuthProvider = .email
+
+    var isGuest: Bool { isSignedIn && provider == .guest }
 
     // MARK: UserDefaults keys
     private let kIsSignedIn   = "auth.isSignedIn"
     private let kDisplayName  = "auth.displayName"
     private let kEmail        = "auth.email"
     private let kProvider     = "auth.provider"
-    private let kTwoFAEnabled = "auth.twoFAEnabled"
+    private let kTwoFAEnabled = "auth.twoFAEnabled" // legacy key name; now drives App Lock
+    private let kAnonymousID  = "auth.anonymousID"
+
+    // MARK: - Anonymous identity
+    // Backend-facing identity. A random UUID minted once per install and used
+    // as profiles.id / routines.author_id / sessions.user_id — never the email,
+    // because those tables are publicly readable. Survives sign-in/sign-out so
+    // a guest who later creates an account keeps their leaderboard row.
+    var anonymousID: String {
+        let d = UserDefaults.standard
+        if let existing = d.string(forKey: kAnonymousID) { return existing }
+        let fresh = UUID().uuidString
+        d.set(fresh, forKey: kAnonymousID)
+        return fresh
+    }
 
     private init() { loadPersistedState() }
 
@@ -46,8 +63,8 @@ final class AuthManager: ObservableObject {
         if let raw = d.string(forKey: kProvider), let p = AuthProvider(rawValue: raw) {
             provider = p
         }
-        if isSignedIn && twoFAEnabled {
-            needsTwoFactor = true
+        if isSignedIn && appLockEnabled {
+            needsUnlock = true
         }
     }
 
@@ -61,18 +78,31 @@ final class AuthManager: ObservableObject {
         userEmail      = email
         provider       = providerVal
         isSignedIn     = true
-        if twoFAEnabled { needsTwoFactor = true }
+        // Note: App Lock is deliberately NOT triggered here — the user just
+        // completed an interactive sign-in. The lock gates cold launches only
+        // (see loadPersistedState).
     }
 
-    // MARK: - Two-Factor Auth
+    // MARK: - Guest mode
 
-    var twoFAEnabled: Bool {
+    /// Use the app without an account. Everything stays on-device; the
+    /// anonymous UUID is the only identity. Fully upgradeable later via the
+    /// regular sign-in paths (which simply overwrite name/email/provider).
+    func continueAsGuest() {
+        persist(name: displayName.isEmpty ? "Guest" : displayName,
+                email: "",
+                providerVal: .guest)
+    }
+
+    // MARK: - App Lock (biometric gate on launch — not a second auth factor)
+
+    var appLockEnabled: Bool {
         get { UserDefaults.standard.bool(forKey: kTwoFAEnabled) }
         set { UserDefaults.standard.set(newValue, forKey: kTwoFAEnabled) }
     }
 
-    func completeTwoFactor() {
-        needsTwoFactor = false
+    func completeUnlock() {
+        needsUnlock = false
     }
 
     // MARK: - Sign in with Apple
@@ -132,10 +162,31 @@ final class AuthManager: ObservableObject {
 
     func signOut() {
         UserDefaults.standard.set(false, forKey: kIsSignedIn)
-        isSignedIn     = false
-        needsTwoFactor = false
-        displayName    = ""
-        userEmail      = ""
+        isSignedIn  = false
+        needsUnlock = false
+        displayName = ""
+        userEmail   = ""
+    }
+
+    // MARK: - Delete account
+    // App Store Guideline 5.1.1(v): apps offering account creation must offer
+    // in-app account deletion. Removes the stored credential + name from the
+    // keychain, resets all auth state, and rotates the anonymous backend ID so
+    // no future upload can be linked to the deleted identity. Local session
+    // history (SwiftData) is untouched — it belongs to the device, not the account.
+
+    func deleteAccount() {
+        if provider == .email, !userEmail.isEmpty {
+            keychainDelete(account: userEmail)
+            keychainDelete(account: "name:\(userEmail)")
+        }
+        let d = UserDefaults.standard
+        d.removeObject(forKey: kDisplayName)
+        d.removeObject(forKey: kEmail)
+        d.removeObject(forKey: kProvider)
+        d.removeObject(forKey: kTwoFAEnabled)
+        d.removeObject(forKey: kAnonymousID)
+        signOut()
     }
 
     // MARK: - Biometrics
@@ -168,6 +219,15 @@ final class AuthManager: ObservableObject {
         ]
         SecItemDelete(query as CFDictionary)
         SecItemAdd(query as CFDictionary, nil)
+    }
+
+    private func keychainDelete(account: String) {
+        let query: [CFString: Any] = [
+            kSecClass:       kSecClassGenericPassword,
+            kSecAttrService: keychainService,
+            kSecAttrAccount: account
+        ]
+        SecItemDelete(query as CFDictionary)
     }
 
     private func keychainLoadCredential(account: String) -> String? {

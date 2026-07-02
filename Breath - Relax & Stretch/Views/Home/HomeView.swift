@@ -7,6 +7,11 @@ struct HomeView: View {
     @Query private var exercises: [Exercise]
     @AppStorage("onboardingGoals") private var goalsStr = ""
     @State private var selectedTab: Int = 0
+    // Tabs are created on first visit and kept alive after, so nav/scroll
+    // state survives switching (what TabView used to give us) without
+    // TabView's 5-item UIKit limit — a 6th child spills into a "More"
+    // controller even when the tab bar chrome is hidden.
+    @State private var visitedTabs: Set<Int> = [0]
 
     private var pendingActionBinding: Binding<DeepLinkAction?> {
         Binding(get: { router.pendingAction }, set: { router.pendingAction = $0 })
@@ -14,16 +19,14 @@ struct HomeView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            // TabView handles lazy loading + nav-state preservation per tab.
-            // The default tab bar chrome is hidden; CustomTabBar floats on top.
-            TabView(selection: $selectedTab) {
-                BodyMapView().tag(0)
-                ExerciseListView().tag(1)
-                BreathingView().tag(2)
-                RoutineListView().tag(3)
-                ProfileView().tag(4)
+            ZStack {
+                ForEach(visitedTabs.sorted(), id: \.self) { index in
+                    tabContent(index)
+                        .opacity(selectedTab == index ? 1 : 0)
+                        .allowsHitTesting(selectedTab == index)
+                        .accessibilityHidden(selectedTab != index)
+                }
             }
-            .toolbar(.hidden, for: .tabBar)
             // Add extra bottom inset so scrollable content clears the floating bar.
             .safeAreaInset(edge: .bottom) {
                 Color.clear.frame(height: 80)
@@ -31,6 +34,9 @@ struct HomeView: View {
 
             CustomTabBar(selectedTab: $selectedTab)
                 .padding(.bottom, 10)
+        }
+        .onChange(of: selectedTab) { _, tab in
+            visitedTabs.insert(tab)
         }
         .ignoresSafeArea(.keyboard)
         .sheet(item: pendingActionBinding) { action in
@@ -48,6 +54,18 @@ struct HomeView: View {
                     onDismiss: { router.pendingAction = nil }
                 )
             }
+        }
+    }
+
+    @ViewBuilder
+    private func tabContent(_ index: Int) -> some View {
+        switch index {
+        case 0:  TodayView()
+        case 1:  BodyMapView()
+        case 2:  ExerciseListView()
+        case 3:  BreathingView()
+        case 4:  RoutineListView()
+        default: ProfileView()
         }
     }
 

@@ -8,8 +8,10 @@ struct ProfileAccountTab: View {
     @EnvironmentObject private var auth: AuthManager
     @Binding var showSignOutConfirm: Bool
     @ObservedObject private var store = StoreManager.shared
-    @State private var twoFAOn = false
+    @State private var appLockOn = false
     @State private var showingPaywall = false
+    @State private var showingSignIn = false
+    @State private var showDeleteConfirm = false
 
     var body: some View {
         Group {
@@ -48,8 +50,12 @@ struct ProfileAccountTab: View {
                 }
 
                 Section("Community") {
-                    NavigationLink(destination: LeaderboardView()) {
-                        Label("Leaderboard", systemImage: "list.number")
+                    // The leaderboard needs the backend; keep the entry point
+                    // hidden rather than showing a screen that can't load.
+                    if SupabaseService.isConfigured {
+                        NavigationLink(destination: LeaderboardView()) {
+                            Label("Leaderboard", systemImage: "list.number")
+                        }
                     }
                     if let url = challengeURL(for: profile) {
                         ShareLink(item: url) {
@@ -59,35 +65,66 @@ struct ProfileAccountTab: View {
                 }
             }
 
-            // Auth
-            Section("Authentication") {
-                Toggle(isOn: $twoFAOn) {
-                    Label("Two-Factor Authentication", systemImage: "faceid")
+            // Security
+            Section {
+                Toggle(isOn: $appLockOn) {
+                    Label("App Lock", systemImage: "faceid")
                 }
-                .onChange(of: twoFAOn) { _, val in auth.twoFAEnabled = val }
-
-                LabeledContent("Signed in with") {
-                    Text(auth.provider.rawValue.capitalized).foregroundStyle(.secondary)
-                }
+                .onChange(of: appLockOn) { _, val in auth.appLockEnabled = val }
+            } header: {
+                Text("Security")
+            } footer: {
+                Text("Require Face ID, Touch ID, or your passcode to open the app.")
             }
 
-            // Sign out
-            Section {
+            // Account
+            Section("Account") {
+                if auth.isGuest {
+                    Button {
+                        showingSignIn = true
+                    } label: {
+                        Label("Sign In or Create Account", systemImage: "person.crop.circle.badge.plus")
+                    }
+                } else {
+                    LabeledContent("Signed in with") {
+                        Text(auth.provider.rawValue.capitalized).foregroundStyle(.secondary)
+                    }
+                }
+
                 if auth.isSignedIn {
                     Button(role: .destructive) {
                         showSignOutConfirm = true
                     } label: {
                         Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
                     }
-                } else {
-                    Label("Not signed in", systemImage: "person.slash")
-                        .foregroundStyle(.secondary)
+                }
+
+                if auth.isSignedIn && !auth.isGuest {
+                    Button(role: .destructive) {
+                        showDeleteConfirm = true
+                    } label: {
+                        Label("Delete Account", systemImage: "trash")
+                    }
                 }
             }
         }
-        .onAppear { twoFAOn = auth.twoFAEnabled }
+        .onAppear { appLockOn = auth.appLockEnabled }
         .sheet(isPresented: $showingPaywall) {
             PaywallView()
+        }
+        .sheet(isPresented: $showingSignIn) {
+            AuthView()
+                .environmentObject(auth)
+        }
+        .confirmationDialog(
+            "Delete your account?",
+            isPresented: $showDeleteConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Delete Account", role: .destructive) { auth.deleteAccount() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Removes your sign-in credentials from this device. Your session history stays on this device and can be cleared separately in Settings.")
         }
     }
 

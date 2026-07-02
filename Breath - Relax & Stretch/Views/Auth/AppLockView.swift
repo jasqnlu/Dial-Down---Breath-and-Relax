@@ -1,7 +1,13 @@
 import SwiftUI
 import LocalAuthentication
 
-struct TwoFactorView: View {
+// MARK: - AppLockView
+// Biometric gate shown on cold launch when App Lock is enabled. This is a
+// local privacy screen (Face ID / Touch ID / passcode) — deliberately NOT
+// branded as "two-factor authentication", because there is no second factor:
+// it locks the app, it doesn't verify an account.
+
+struct AppLockView: View {
     @EnvironmentObject private var auth: AuthManager
     @State private var failed = false
     @State private var isAuthenticating = false
@@ -47,9 +53,9 @@ struct TwoFactorView: View {
 
                 // Text
                 VStack(spacing: 10) {
-                    Text("Two-Factor Verification")
+                    Text("App Locked")
                         .font(.title2.bold())
-                    Text("Use \(biometricLabel) to verify your identity and open the app.")
+                    Text("Use \(biometricLabel) to unlock the app.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -57,21 +63,21 @@ struct TwoFactorView: View {
                 }
 
                 if failed {
-                    Text("Verification failed. Try again.")
+                    Text("Couldn't unlock. Try again.")
                         .font(.footnote)
                         .foregroundStyle(.red)
                 }
 
-                // Verify button
+                // Unlock button
                 Button {
-                    verify()
+                    unlock()
                 } label: {
                     HStack(spacing: 8) {
                         if isAuthenticating {
                             ProgressView().tint(.white)
                         } else {
                             Image(systemName: biometricIcon)
-                            Text("Verify with \(biometricLabel)")
+                            Text("Unlock with \(biometricLabel)")
                                 .fontWeight(.semibold)
                         }
                     }
@@ -92,10 +98,10 @@ struct TwoFactorView: View {
                 Spacer()
             }
         }
-        .onAppear { verify() }
+        .onAppear { unlock() }
     }
 
-    private func verify() {
+    private func unlock() {
         isAuthenticating = true
         failed = false
         Task {
@@ -103,7 +109,7 @@ struct TwoFactorView: View {
             await MainActor.run {
                 isAuthenticating = false
                 if ok {
-                    auth.completeTwoFactor()
+                    auth.completeUnlock()
                 } else {
                     failed = true
                 }
@@ -113,6 +119,6 @@ struct TwoFactorView: View {
 }
 
 #Preview {
-    TwoFactorView()
+    AppLockView()
         .environmentObject(AuthManager.shared)
 }

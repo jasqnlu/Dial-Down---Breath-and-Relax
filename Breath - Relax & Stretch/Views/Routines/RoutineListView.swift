@@ -58,9 +58,13 @@ struct RoutineListView: View {
                         Image(systemName: "plus")
                     }
                 }
-                ToolbarItem(placement: .topBarLeading) {
-                    Button { showingBrowser = true } label: {
-                        Label("Browse", systemImage: "globe")
+                // Community browsing needs the backend; hide the entry point
+                // rather than showing a screen that can't load.
+                if SupabaseService.isConfigured {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button { showingBrowser = true } label: {
+                            Label("Browse", systemImage: "globe")
+                        }
                     }
                 }
             }
@@ -69,7 +73,9 @@ struct RoutineListView: View {
                     ContentUnavailableView(
                         "No Routines Yet",
                         systemImage: "rectangle.stack.badge.plus",
-                        description: Text("Create your own or borrow one from the library.")
+                        description: Text(SupabaseService.isConfigured
+                            ? "Create your own or borrow one from the library."
+                            : "Create your own routine from your favorite exercises.")
                     )
                 }
             }

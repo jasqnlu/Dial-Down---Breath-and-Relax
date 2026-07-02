@@ -39,8 +39,8 @@ private func sampleRoutine() -> Routine {
         .environmentObject(AuthManager.shared)
 }
 
-#Preview("Auth – Two-Factor") {
-    TwoFactorView()
+#Preview("Auth – App Lock") {
+    AppLockView()
         .environmentObject(AuthManager.shared)
 }
 

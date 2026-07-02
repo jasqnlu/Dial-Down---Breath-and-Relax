@@ -6,17 +6,21 @@ actor SupabaseService {
     static let shared = SupabaseService()
     private init() {}
 
-    // Replace these two values with your actual Supabase project URL and anon key.
-    // Dashboard → Settings → API
+    // The API base URL (https://<project-ref>.supabase.co) — NOT the dashboard
+    // page URL. Dashboard → Settings → API → Project URL.
     // Static lets on an actor are nonisolated — no @MainActor contamination.
-    private static let supabaseURL     = "https://supabase.com/dashboard/project/wmsutfittuxrvcwuywrk"
+    private static let supabaseURL     = "https://wmsutfittuxrvcwuywrk.supabase.co"
     private static let supabaseAnonKey = "sb_publishable_fpbIp20MIAf3OV1Two6DhQ_MpZvy2Dc"
 
-    /// True once real credentials are filled in above. While false (placeholder
-    /// values), the app skips all remote calls and runs purely on the bundled
-    /// seed catalog — so everything works offline / before the backend exists.
+    /// True once real credentials are filled in above. While false, the app
+    /// skips all remote calls and runs purely on the bundled seed catalog —
+    /// so everything works offline / before the backend exists. Validates the
+    /// URL is an actual *.supabase.co API host so a pasted dashboard link
+    /// can't silently pass as "configured" and 404 every request.
     nonisolated static var isConfigured: Bool {
-        !supabaseURL.contains("YOUR_PROJECT") && !supabaseAnonKey.contains("YOUR_ANON_KEY")
+        guard !supabaseAnonKey.isEmpty, !supabaseAnonKey.contains("YOUR_ANON_KEY"),
+              let host = URL(string: supabaseURL)?.host else { return false }
+        return host.hasSuffix(".supabase.co")
     }
 
     // Bearer token set after sign-in
@@ -54,13 +58,15 @@ actor SupabaseService {
         return try JSONDecoder().decode([RemoteRoutine].self, from: data)
     }
 
-    /// Upserts a routine to the remote database.
-    func uploadRoutine(_ routine: Routine, authorEmail: String) async throws {
+    /// Upserts a routine to the remote database. `authorID` must be the
+    /// anonymous UUID (AuthManager.anonymousID) — never an email; the table
+    /// is publicly readable.
+    func uploadRoutine(_ routine: Routine, authorID: String) async throws {
         let body = RemoteRoutine(
             id:             routine.uuid.uuidString,
             name:           routine.name,
             exerciseIDs:    routine.exerciseIDs.map { $0.uuidString },
-            authorID:       authorEmail,
+            authorID:       authorID,
             authorName:     routine.authorName,
             borrowedFromID: routine.borrowedFromID?.uuidString,
             isPublic:       routine.isPublic,
@@ -75,11 +81,12 @@ actor SupabaseService {
     // MARK: - Community (leaderboard / public profile)
 
     /// Upserts the local profile to a public-readable table so it can appear
-    /// on the leaderboard. Only points/streak/minutes are shared — no email,
-    /// just the display name and the stable id used to dedupe rows.
+    /// on the leaderboard. Only points/streak/minutes are shared — no email;
+    /// `id` is the anonymous per-install UUID (AuthManager.anonymousID) used
+    /// to dedupe rows.
     ///
     /// Expected Supabase table `profiles`:
-    ///   id            text  primary key
+    ///   id            text  primary key  (anonymous UUID, never an email)
     ///   display_name  text  not null
     ///   total_points  int4  not null
     ///   streak        int4  not null
@@ -100,11 +107,12 @@ actor SupabaseService {
 
     // MARK: - Sessions
 
-    /// Inserts a completed session to the remote database.
-    func uploadSession(_ session: Session, userEmail: String) async throws {
+    /// Inserts a completed session to the remote database. `userID` must be
+    /// the anonymous UUID (AuthManager.anonymousID) — never an email.
+    func uploadSession(_ session: Session, userID: String) async throws {
         let body = RemoteSession(
             id:                session.uuid.uuidString,
-            userID:            userEmail,
+            userID:            userID,
             routineID:         session.routineID.uuidString,
             startedAt:         ISO8601DateFormatter().string(from: session.startedAt),
             completedAt:       session.completedAt.map { ISO8601DateFormatter().string(from: $0) },
