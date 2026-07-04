@@ -125,17 +125,8 @@ struct ExerciseRow: View {
         }
     }
 
-    private var videoSource: VideoSource? {
-        VideoSource(urlString: exercise.mediaURL)
-    }
-
-    private var videoBadgeTint: Color {
-        switch videoSource {
-        case .youTube:            return .red
-        case .vimeo:              return Color(red: 0.10, green: 0.66, blue: 0.93)
-        case .directFile, .web:   return .accentColor
-        case nil:                 return .clear
-        }
+    private var hasVideo: Bool {
+        exercise.localVideoURL != nil
     }
 
     var body: some View {
@@ -143,10 +134,10 @@ struct ExerciseRow: View {
             HStack(spacing: 6) {
                 Text(exercise.name)
                     .font(.headline)
-                if let source = videoSource {
-                    Image(systemName: source.symbolName)
+                if hasVideo {
+                    Image(systemName: "film.fill")
                         .font(.caption)
-                        .foregroundStyle(videoBadgeTint)
+                        .foregroundStyle(Color.accentColor)
                         .accessibilityHidden(true)
                 }
             }
@@ -160,7 +151,7 @@ struct ExerciseRow: View {
         }
         .padding(.vertical, 4)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(exercise.name), \(exercise.type.rawValue), \(exercise.durationFormatted), \(difficultyLabel)\(videoSource != nil ? ", has video" : "")")
+        .accessibilityLabel("\(exercise.name), \(exercise.type.rawValue), \(exercise.durationFormatted), \(difficultyLabel)\(hasVideo ? ", has video" : "")")
     }
 }
 

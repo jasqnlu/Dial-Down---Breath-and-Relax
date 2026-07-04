@@ -27,6 +27,18 @@ final class Exercise {
         set { posesData = (try? JSONEncoder().encode(newValue)) ?? Data() }
     }
 
+    /// Bundle-relative file name of Jason's self-filmed demo clip.
+    var localVideoName: String? = nil
+
+    /// Resolved bundle URL — nil when unset OR the file isn't bundled,
+    /// so the UI can always fall back to the placeholder card.
+    var localVideoURL: URL? {
+        guard let name = localVideoName, !name.isEmpty else { return nil }
+        let ns = name as NSString
+        return Bundle.main.url(forResource: ns.deletingPathExtension,
+                               withExtension: ns.pathExtension.isEmpty ? "mp4" : ns.pathExtension)
+    }
+
     /// Human-readable duration: "30s", "2m", "1m 30s"
     var durationFormatted: String {
         let m = durationSeconds / 60

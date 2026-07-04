@@ -19,14 +19,6 @@ struct CreateExerciseView: View {
     // MARK: - Instructions
     @State private var steps: [String] = [""]
 
-    // MARK: - Video link
-    @State private var videoURL: String = ""
-
-    /// Parsed video link, used for the live "detected platform" hint.
-    private var detectedVideo: VideoSource? {
-        VideoSource(urlString: videoURL)
-    }
-
     // MARK: - Safety caution
     @State private var caution: String = ""
 
@@ -73,7 +65,6 @@ struct CreateExerciseView: View {
                 durationDifficultySection
                 targetBodyPartsSection
                 instructionsSection
-                videoSection
                 cautionSection
             }
             .navigationTitle("New Exercise")
@@ -214,36 +205,6 @@ struct CreateExerciseView: View {
         }
     }
 
-    private var videoSection: some View {
-        Section {
-            TextField("https://youtube.com/watch?v=…", text: $videoURL)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .keyboardType(.URL)
-                .textContentType(.URL)
-                .submitLabel(.done)
-
-            if let detectedVideo {
-                VideoPreviewCard(source: detectedVideo, title: "Preview")
-                    .listRowInsets(EdgeInsets())
-                    .padding(.vertical, 8)
-            }
-        } header: {
-            Text("Video (optional)")
-        } footer: {
-            let trimmed = videoURL.trimmingCharacters(in: .whitespacesAndNewlines)
-            if trimmed.isEmpty {
-                Text("Paste a YouTube, Vimeo, or other video link to show a demo of this exercise.")
-            } else if let detectedVideo {
-                Label("\(detectedVideo.platformName) link detected", systemImage: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-            } else {
-                Label("That doesn't look like a valid video link.", systemImage: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.orange)
-            }
-        }
-    }
-
     private var cautionSection: some View {
         Section {
             TextField("e.g. Avoid if you have lower-back pain.", text: $caution, axis: .vertical)
@@ -265,8 +226,6 @@ struct CreateExerciseView: View {
             .filter { !$0.isEmpty }
         let trimmedCaution = caution.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        let trimmedVideo = videoURL.trimmingCharacters(in: .whitespacesAndNewlines)
-
         let exercise = Exercise(
             name: trimmedName,
             type: exerciseType,
@@ -274,7 +233,6 @@ struct CreateExerciseView: View {
             durationSeconds: durationSeconds,
             difficulty: difficulty,
             instructions: trimmedSteps,
-            mediaURL: trimmedVideo.isEmpty ? nil : trimmedVideo,
             caution: trimmedCaution.isEmpty ? nil : trimmedCaution
         )
 

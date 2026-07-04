@@ -120,22 +120,13 @@ struct ForYouCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Group {
-                if !exercise.poses.isEmpty {
-                    StickFigureView(
-                        poses: exercise.poses,
-                        activeBodyParts: Set(exercise.targetBodyParts)
-                    )
-                } else {
-                    Image(systemName: exercise.type == .breath ? "wind" : "figure.mind.and.body")
-                        .font(.system(size: 40))
-                        .foregroundStyle(Color.accentColor.opacity(0.55))
-                        .frame(maxWidth: .infinity)
-                }
-            }
-            .frame(height: 110)
-            .background(Color(.secondarySystemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            Image(systemName: exercise.type == .breath ? "wind" : "figure.mind.and.body")
+                .font(.system(size: 40))
+                .foregroundStyle(Color.accentColor.opacity(0.55))
+                .frame(maxWidth: .infinity)
+                .frame(height: 110)
+                .background(Color(.secondarySystemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
 
             Text(exercise.name)
                 .font(.caption.weight(.semibold))

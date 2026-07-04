@@ -1,16 +1,8 @@
 import SwiftUI
 
-// MARK: - VideoSource / VideoPreviewCard live in their own files
-// (VideoSource.swift, VideoPreviewCard.swift) — shared with CreateExerciseView.
-
 struct ExerciseDetailView: View {
     let exercise: Exercise
     @State private var showingPlayer = false
-
-    /// Resolved video link (YouTube / Vimeo / file / web), if the exercise has one.
-    private var videoSource: VideoSource? {
-        VideoSource(urlString: exercise.mediaURL)
-    }
 
     var body: some View {
         ScrollView {
@@ -30,29 +22,10 @@ struct ExerciseDetailView: View {
                         .padding(.horizontal)
                 }
 
-                // ── Stick figure animation ─────────────────────────────────
-                if !exercise.poses.isEmpty {
-                    StickFigureView(
-                        poses: exercise.poses,
-                        activeBodyParts: Set(exercise.targetBodyParts)
-                    )
-                    .frame(maxWidth: 260)
-                    .padding(.vertical, 8)
-                    .frame(maxWidth: .infinity)
-                    .background(Color(.secondarySystemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .padding(.horizontal)
-                }
+                // ── Media: local demo video, or placeholder ──────────────────
+                ExerciseMediaCard(exercise: exercise)
 
                 Divider()
-
-                // ── Video / media preview ───────────────────────────────────
-                // Plays YouTube, Vimeo, other platforms (web view) or a raw
-                // video file (AVPlayer), depending on the exercise's link.
-                if let videoSource {
-                    VideoPreviewCard(source: videoSource)
-                    Divider()
-                }
 
                 // ── Target body parts ────────────────────────────────────────
                 VStack(alignment: .leading, spacing: 10) {

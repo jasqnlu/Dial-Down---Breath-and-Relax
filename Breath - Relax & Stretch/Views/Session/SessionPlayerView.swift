@@ -141,14 +141,8 @@ struct SessionPlayerView: View {
 
             Spacer()
 
-            if exercise.type != .breath, !exercise.poses.isEmpty {
-                StickFigureView(
-                    poses: exercise.poses,
-                    activeBodyParts: Set(exercise.targetBodyParts),
-                    isPaused: isPaused
-                )
-                .frame(maxWidth: 220)
-                .padding(.horizontal)
+            if exercise.type != .breath {
+                ExerciseMediaCard(exercise: exercise)
             } else {
                 BreathingCircle(isPaused: isPaused)
                     .padding()
