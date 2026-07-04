@@ -85,7 +85,8 @@ position heuristic disabled); the named export switches full accuracy on with no
   `GoalPickerPage`).
 - Fact cards: full-screen, one stat + one-line source citation, consistent visual treatment.
   5–6 facts written into a static array; no network.
-- Answers persist to `UserProfile`; problem areas pre-mark body-map muscle groups; preferred
+- Answers persist to `@AppStorage` keys (device-level; `UserProfile` stays a gamification
+  record); problem areas pre-mark body-map muscle groups; preferred
   time pre-fills the notification-permission page's suggested reminder.
 
 ## 3. Exercise library expansion (`feature/exercise-library`)
