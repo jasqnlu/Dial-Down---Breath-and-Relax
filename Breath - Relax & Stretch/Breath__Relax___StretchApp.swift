@@ -59,7 +59,7 @@ struct BreathRelaxStretchApp: App {
             .alert("New Content Added", isPresented: $showNewContentAlert) {
                 Button("Got it") { notifiedSeedVersion = seedDataVersion }
             } message: {
-                Text("Video tutorials and animated guides are now available for your exercises. Check them out in the Exercises tab.")
+                Text("New stretches were added covering every muscle group — find them in the Exercises tab.")
             }
             .task { await syncRemoteCatalog() }
             .onOpenURL { url in
@@ -103,6 +103,7 @@ struct BreathRelaxStretchApp: App {
                 durationSeconds: duration, difficulty: difficulty,
                 instructions: instructions, mediaURL: mediaURL, caution: caution
             )
+            exercise.localVideoName = raw["localVideoName"] as? String
             if let posesRaw = raw["poses"],
                let posesData = try? JSONSerialization.data(withJSONObject: posesRaw) {
                 exercise.posesData = posesData
@@ -123,8 +124,14 @@ struct BreathRelaxStretchApp: App {
     // Backfills data added to the bundled seed after a user first installed:
     //   v2 — pose keyframes for the stick-figure animation
     //   v3 — video tutorial links (mediaURL) for select exercises
+    //   v4 — full muscle-group vocabulary (MuscleGroup) + full coverage seed
 
     private func migrateSeedIfNeeded() {
+        migrateSeedToV3IfNeeded()
+        migrateSeedToV4IfNeeded()
+    }
+
+    private func migrateSeedToV3IfNeeded() {
         guard seedDataVersion < 3 else { return }
 
         guard
@@ -132,9 +139,15 @@ struct BreathRelaxStretchApp: App {
             let data = try? Data(contentsOf: url),
             let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
             let rawExercises = json["exercises"] as? [[String: Any]]
-        else { return }
+        else {
+            seedDataVersion = 3
+            return
+        }
 
-        // Build name → (posesData, mediaURL) maps from the bundle seed.
+        // Build name → (posesData, mediaURL) maps from the bundle seed. The
+        // v4 seed no longer ships poses/mediaURL, so this is a no-op for
+        // fresh-enough installs and only matters for very old (pre-v2/v3)
+        // installs upgrading through this step on their way to v4.
         var posesByName: [String: Data] = [:]
         var mediaByName: [String: String] = [:]
         for raw in rawExercises {
@@ -168,6 +181,95 @@ struct BreathRelaxStretchApp: App {
             try? context.save()
         }
         seedDataVersion = 3
+    }
+
+    /// v4 — migrates the exercise vocabulary from the old coarse body-map
+    /// regions (e.g. "Left Leg", "Upper Back") to the full `MuscleGroup` set
+    /// (e.g. "Left Quadriceps", "Left Trapezius"/"Right Trapezius"), and adds
+    /// the new stretches needed for full muscle-group coverage.
+    private func migrateSeedToV4IfNeeded() {
+        guard seedDataVersion < 4 else { return }
+
+        guard
+            let url  = Bundle.main.url(forResource: "SeedData", withExtension: "json"),
+            let data = try? Data(contentsOf: url),
+            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let rawExercises = json["exercises"] as? [[String: Any]]
+        else {
+            seedDataVersion = 4
+            return
+        }
+
+        let context = sharedModelContainer.mainContext
+        let existing = (try? context.fetch(FetchDescriptor<Exercise>())) ?? []
+        var existingByName: [String: Exercise] = [:]
+        for exercise in existing { existingByName[exercise.name] = exercise }
+
+        var changed = false
+
+        for raw in rawExercises {
+            guard
+                let name         = raw["name"] as? String,
+                let typeStr      = raw["type"] as? String,
+                let type         = ExerciseType(rawValue: typeStr.capitalized),
+                let parts        = raw["targetBodyParts"] as? [String],
+                let duration     = raw["durationSeconds"] as? Int,
+                let difficulty   = raw["difficulty"] as? Int,
+                let instructions = raw["instructions"] as? [String]
+            else { continue }
+
+            if let exercise = existingByName[name] {
+                // Already-seeded exercise the user has — remap its saved
+                // targetBodyParts through the legacy→new vocabulary rather
+                // than overwriting with the bundle's (possibly re-authored)
+                // targets, so any user edits to this exercise are preserved.
+                let migrated = MuscleGroup.migrate(exercise.targetBodyParts)
+                if migrated != exercise.targetBodyParts {
+                    exercise.targetBodyParts = migrated
+                    changed = true
+                }
+            } else {
+                // Brand-new in v4 — insert it as-is.
+                let exercise = Exercise(
+                    name: name, type: type, targetBodyParts: parts,
+                    durationSeconds: duration, difficulty: difficulty,
+                    instructions: instructions,
+                    mediaURL: raw["mediaURL"] as? String,
+                    caution: raw["caution"] as? String
+                )
+                exercise.localVideoName = raw["localVideoName"] as? String
+                context.insert(exercise)
+                existingByName[name] = exercise
+                changed = true
+            }
+        }
+
+        // User-created exercises (anything not named in the bundle seed)
+        // keep their own content but still need old region names mapped
+        // forward; unrecognized/custom names pass through unchanged.
+        let seedNames = Set(rawExercises.compactMap { $0["name"] as? String })
+        for exercise in existing where !seedNames.contains(exercise.name) {
+            let migrated = MuscleGroup.migrate(exercise.targetBodyParts)
+            if migrated != exercise.targetBodyParts {
+                exercise.targetBodyParts = migrated
+                changed = true
+            }
+        }
+
+        // Body-map marks saved from the old region set need the same
+        // one-time vocabulary migration.
+        let defaults = UserDefaults.standard
+        if let markedRegions = defaults.stringArray(forKey: "bodymap.markedRegions") {
+            let migratedRegions = MuscleGroup.migrate(markedRegions)
+            if migratedRegions != markedRegions {
+                defaults.set(migratedRegions, forKey: "bodymap.markedRegions")
+            }
+        }
+
+        if changed {
+            try? context.save()
+        }
+        seedDataVersion = 4
     }
 
     // MARK: - Remote catalog sync (best-effort, offline-first)
