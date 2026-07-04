@@ -6,6 +6,7 @@ import AVKit
 struct ExerciseMediaCard: View {
     let exercise: Exercise
     @State private var player: AVPlayer?
+    @State private var loopObserver: NSObjectProtocol?
 
     var body: some View {
         Group {
@@ -13,18 +14,27 @@ struct ExerciseMediaCard: View {
                 VideoPlayer(player: player)
                     .aspectRatio(16/9, contentMode: .fit)
                     .onAppear {
+                        guard player == nil else { return }
                         let p = AVPlayer(url: url)
                         p.isMuted = true
                         p.actionAtItemEnd = .none
-                        NotificationCenter.default.addObserver(
+                        let token = NotificationCenter.default.addObserver(
                             forName: .AVPlayerItemDidPlayToEndTime,
                             object: p.currentItem, queue: .main) { _ in
                                 p.seek(to: .zero); p.play()
                             }
+                        loopObserver = token
                         p.play()
                         player = p
                     }
-                    .onDisappear { player?.pause(); player = nil }
+                    .onDisappear {
+                        player?.pause()
+                        if let token = loopObserver {
+                            NotificationCenter.default.removeObserver(token)
+                        }
+                        player = nil
+                        loopObserver = nil
+                    }
             } else {
                 VStack(spacing: 10) {
                     Image(systemName: "video.badge.waveform")
