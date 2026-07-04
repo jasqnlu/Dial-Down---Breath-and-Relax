@@ -59,6 +59,7 @@ struct BadgesView: View {
             .opacity(earned ? 1.0 : 0.5)
         }
         .navigationTitle("Badges")
+        .floatingTabBarClearance()
     }
 }
 

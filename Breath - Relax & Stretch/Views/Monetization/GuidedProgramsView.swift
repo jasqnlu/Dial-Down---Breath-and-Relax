@@ -19,6 +19,7 @@ struct GuidedProgramsView: View {
         }
         .navigationTitle("Programs")
         .navigationBarTitleDisplayMode(.inline)
+        .floatingTabBarClearance()
     }
 
     private func programRow(_ program: GuidedProgram) -> some View {

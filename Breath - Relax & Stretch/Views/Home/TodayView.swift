@@ -53,6 +53,7 @@ struct TodayView: View {
             .background(Color(.systemGroupedBackground))
             .scrollIndicators(.hidden)
             .toolbar(.hidden, for: .navigationBar)
+            .floatingTabBarClearance()
         }
         .sheet(isPresented: $showingSession) {
             SessionPlayerView(exercises: sessionExercises)

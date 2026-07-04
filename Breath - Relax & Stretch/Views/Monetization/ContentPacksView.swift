@@ -22,6 +22,7 @@ struct ContentPacksView: View {
         }
         .navigationTitle("Content Packs")
         .navigationBarTitleDisplayMode(.inline)
+        .floatingTabBarClearance()
         .task { await store.loadProducts() }
     }
 

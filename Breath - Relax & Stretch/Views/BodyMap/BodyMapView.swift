@@ -6,8 +6,15 @@ import SwiftData
 struct BodyMapView: View {
     @AppStorage("bodyMapSex") private var bodyMapSex = "male"
 
-    @State private var currentLayer: BodyLayer = .skin
+    @State private var currentLayer: BodyLayer
     @State private var facing: BodyFacing = .front
+
+    init() {
+        // Overridable per-launch (-debugBodyLayer Muscle|Skeleton) so UI
+        // verification can land on any layer directly — no synthetic taps.
+        let raw = UserDefaults.standard.string(forKey: "debugBodyLayer") ?? ""
+        _currentLayer = State(initialValue: BodyLayer(rawValue: raw) ?? .skin)
+    }
 
     // Regions the user has marked (by drawing on them or tapping them).
     // This is the single source of truth for "areas to train on".
@@ -15,7 +22,7 @@ struct BodyMapView: View {
     @State private var showMarkedExercises = false
 
     // Annotation state
-    @State private var annotationMode = false
+    @State private var annotationMode = UserDefaults.standard.bool(forKey: "debugMarkMode")
     @StateObject private var annotationStore = AnnotationStore()
     @State private var selectedTool: DrawingTool       = .pen
     @State private var selectedSensation: SensationColor = sensationColors[0]
@@ -55,26 +62,25 @@ struct BodyMapView: View {
                 }
 
                 // ── The body figure ───────────────────────────────────────────
-                // Skin free-explore is a freely-rotatable 3D model with its
-                // own drag/pinch gestures. Muscle/Skeleton — and Skin while
-                // marking — share the 2D zoomable canvas: tap regions need a
-                // fixed front/back projection, so marking on Skin locks the
-                // model's rotation and overlays the same invisible region
-                // grid the 2D layers use, calibrated to the same footprint.
+                // All three layers (skin, muscle, skeleton) are freely-rotatable
+                // 3D models with their own drag/pinch gestures. Marking needs a
+                // fixed front/back projection, so entering Mark mode locks the
+                // model's rotation and overlays the same invisible region grid,
+                // calibrated to the same footprint regardless of layer.
                 Group {
-                    if currentLayer == .skin && !annotationMode {
-                        BodySceneView(facing: facing)
+                    if !annotationMode {
+                        BodySceneView(facing: facing, style: currentLayer.modelStyle)
                     } else {
                         GeometryReader { geo in
                             ZStack {
-                                if currentLayer == .skin {
-                                    // Matches BodyFigureCanvas's own internal
-                                    // figure padding so the 3D render and the
-                                    // region grid it carries land in the same box.
-                                    BodySceneView(facing: facing, interactive: false)
-                                        .padding(.horizontal, 28)
-                                        .padding(.vertical, 6)
-                                }
+                                // Matches BodyFigureCanvas's own internal figure
+                                // padding so the 3D render and the region grid it
+                                // carries land in the same box.
+                                BodySceneView(facing: facing,
+                                              style: currentLayer.modelStyle,
+                                              interactive: false)
+                                    .padding(.horizontal, 28)
+                                    .padding(.vertical, 6)
                                 BodyFigureCanvas(layer: currentLayer,
                                                  facing: facing,
                                                  detail: detailLevel,
@@ -82,7 +88,7 @@ struct BodyMapView: View {
                                                  selectedTool: selectedTool,
                                                  selectedSensation: selectedSensation,
                                                  sex: bodyMapSex,
-                                                 showSilhouette: currentLayer != .skin,
+                                                 showSilhouette: false,
                                                  store: annotationStore,
                                                  markedRegions: $markedRegions)
                             }
@@ -129,6 +135,7 @@ struct BodyMapView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
+            .floatingTabBarClearance()
             .navigationTitle(annotationMode ? "Mark Your Body" : "Body Map")
             .navigationBarTitleDisplayMode(.inline)
             .animation(.easeInOut(duration: 0.25), value: currentLayer)

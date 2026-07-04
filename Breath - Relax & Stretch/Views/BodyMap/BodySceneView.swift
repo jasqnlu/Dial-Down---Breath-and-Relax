@@ -17,10 +17,59 @@ import SceneKit
 // Confirmed empirically from the source OBJ (see decimation notes): Y is up,
 // the figure's face points toward +Z. Rotation 0 == front, π == back.
 
+/// Which anatomy model a rig renders. Each layer is a separate mesh exported
+/// from the Z-Anatomy Blender files (skin from the ZBrush OBJ, muscle/skeleton
+/// decimated from the .blend systems), normalised to the same height so all
+/// three share a footprint and the tap-region overlay lines up while marking.
+extension BodyLayer {
+    /// The 3D model style that renders this anatomy layer.
+    var modelStyle: BodyModelStyle {
+        switch self {
+        case .skin:     return .skin
+        case .muscle:   return .muscle
+        case .skeleton: return .skeleton
+        }
+    }
+}
+
+enum BodyModelStyle {
+    case skin, muscle, skeleton
+
+    var resourceName: String {
+        switch self {
+        case .skin:     return "BodyMale"
+        case .muscle:   return "BodyMuscle"
+        case .skeleton: return "BodySkeleton"
+        }
+    }
+
+    /// Programmatic PBR material — the meshes ship without textures, so colour
+    /// is applied in code (skin tone / anatomical red / bone off-white).
+    func makeMaterial() -> SCNMaterial {
+        let m = SCNMaterial()
+        m.lightingModel = .physicallyBased
+        m.isDoubleSided = true
+        m.metalness.contents = 0.0
+        switch self {
+        case .skin:
+            m.diffuse.contents = UIColor(red: 0.89, green: 0.72, blue: 0.62, alpha: 1)
+            m.roughness.contents = 0.7
+        case .muscle:
+            m.diffuse.contents = UIColor(red: 0.74, green: 0.17, blue: 0.15, alpha: 1)
+            m.roughness.contents = 0.55
+        case .skeleton:
+            m.diffuse.contents = UIColor(red: 0.90, green: 0.87, blue: 0.79, alpha: 1)
+            m.roughness.contents = 0.8
+        }
+        return m
+    }
+}
+
 final class BodyRig {
     let scene = SCNScene()
     let cameraNode = SCNNode()
     let rigNode = SCNNode()
+    let style: BodyModelStyle
 
     private(set) var loadFailed = false
 
@@ -29,7 +78,8 @@ final class BodyRig {
     /// can be applied relative to the last committed value.
     var committedRotationY: CGFloat = 0
 
-    init() {
+    init(style: BodyModelStyle = .skin) {
+        self.style = style
         setUpCamera()
         setUpLights()
         scene.rootNode.addChildNode(rigNode)
@@ -40,7 +90,15 @@ final class BodyRig {
     /// the vertical frame — matching SilhouetteShape's own near-edge-to-edge
     /// fill, so BodyRegion's normalised rects (tuned for the 2D silhouette)
     /// land in roughly the right place when overlaid on this 3D render.
+    /// **Load-bearing** for tap-region alignment: only used while marking
+    /// (rotation locked, overlay shown). Free-rotate uses the larger distance
+    /// below so the figure sits a little smaller in the frame.
     static let defaultCameraDistance: CGFloat = 2.28
+
+    /// Default framing when freely rotating (no tap-region overlay). Pulled
+    /// ~18% further back than the aligned distance so the model doesn't crowd
+    /// the frame / floating tab bar. Safe to change — no overlay depends on it.
+    static let freeExploreCameraDistance: CGFloat = defaultCameraDistance * 1.18
 
     private func setUpCamera() {
         let camera = SCNCamera()
@@ -92,17 +150,25 @@ final class BodyRig {
         scene.rootNode.addChildNode(ambientNode)
     }
 
-    /// The processed body mesh, built exactly ONCE per process. SwiftUI
-    /// reconstructs `BodyRig` on every `BodySceneView` re-init (facing flips,
-    /// entering/leaving Mark mode, every frame of a pinch while marking), and
-    /// the OBJ read + triangulation is by far the most expensive thing here.
-    /// Caching the finished node and cloning it per rig — clones share the
-    /// underlying geometry copy-on-write — keeps that parse off the main thread
-    /// on every re-init instead of re-reading the ~950KB mesh each time.
-    private static let templateBodyNode: SCNNode? = makeTemplateBodyNode()
+    /// Each layer's processed mesh, built exactly ONCE per process and cached
+    /// by resource name. SwiftUI reconstructs `BodyRig` on every
+    /// `BodySceneView` re-init (layer switches, facing flips, entering/leaving
+    /// Mark mode, every frame of a pinch while marking), and the OBJ read +
+    /// triangulation is by far the most expensive thing here. Caching the
+    /// finished node and cloning it per rig — clones share the underlying
+    /// geometry copy-on-write — keeps that parse off the main thread on re-init
+    /// instead of re-reading the multi-MB mesh each time.
+    private static var templateCache: [String: SCNNode] = [:]
 
-    private static func makeTemplateBodyNode() -> SCNNode? {
-        guard let url = Bundle.main.url(forResource: "BodyMale", withExtension: "obj"),
+    private static func template(for style: BodyModelStyle) -> SCNNode? {
+        if let cached = templateCache[style.resourceName] { return cached }
+        guard let node = makeTemplateBodyNode(for: style) else { return nil }
+        templateCache[style.resourceName] = node
+        return node
+    }
+
+    private static func makeTemplateBodyNode(for style: BodyModelStyle) -> SCNNode? {
+        guard let url = Bundle.main.url(forResource: style.resourceName, withExtension: "obj"),
               let source = try? SCNScene(url: url, options: [.checkConsistency: true])
         else {
             return nil
@@ -125,12 +191,12 @@ final class BodyRig {
         bodyNode.pivot = SCNMatrix4MakeTranslation(center.x, center.y, center.z)
         bodyNode.scale = SCNVector3(scale, scale, scale)
 
-        applySkinMaterial(to: bodyNode)
+        applyMaterial(style.makeMaterial(), to: bodyNode)
         return bodyNode
     }
 
     private func loadBody() {
-        guard let template = BodyRig.templateBodyNode else {
+        guard let template = BodyRig.template(for: style) else {
             loadFailed = true
             return
         }
@@ -139,19 +205,12 @@ final class BodyRig {
         rigNode.addChildNode(template.clone())
     }
 
-    private static func applySkinMaterial(to node: SCNNode) {
-        let material = SCNMaterial()
-        material.lightingModel = .physicallyBased
-        material.diffuse.contents  = UIColor(red: 0.89, green: 0.72, blue: 0.62, alpha: 1)
-        material.roughness.contents = 0.7
-        material.metalness.contents = 0.0
-        material.isDoubleSided = true
-
+    private static func applyMaterial(_ material: SCNMaterial, to node: SCNNode) {
         if let geometry = node.geometry {
             geometry.materials = [material]
         }
         for child in node.childNodes {
-            applySkinMaterial(to: child)
+            applyMaterial(material, to: child)
         }
     }
 
@@ -195,18 +254,34 @@ final class BodyRig {
 struct BodySceneView: View {
     let facing: BodyFacing
 
-    /// False while marking on the Skin layer: rotation locks to the current
-    /// facing (front/back) so the overlaid tap-region grid stays aligned,
-    /// and the outer 2D pinch/pan system takes over zoom instead.
+    /// Which anatomy layer to render. Skin, muscle, and skeleton are all real
+    /// rotatable 3D models now; only the loaded mesh + material differ.
+    var style: BodyModelStyle = .skin
+
+    /// False while marking: rotation locks to the current facing (front/back)
+    /// so the overlaid tap-region grid stays aligned, and the outer 2D
+    /// pinch/pan system takes over zoom instead.
     var interactive: Bool = true
 
-    @State private var rig = BodyRig()
+    @State private var rig: BodyRig
     @State private var dragActive = false
-    @State private var cameraZ: CGFloat = BodyRig.defaultCameraDistance
-    @State private var committedCameraZ: CGFloat = BodyRig.defaultCameraDistance
+    @State private var cameraZ: CGFloat
+    @State private var committedCameraZ: CGFloat
 
-    private let minCameraZ: CGFloat = BodyRig.defaultCameraDistance * 0.62   // closer  = zoomed in
-    private let maxCameraZ: CGFloat = BodyRig.defaultCameraDistance * 1.4    // farther = zoomed out
+    private let minCameraZ: CGFloat = BodyRig.defaultCameraDistance * 0.62         // closer  = zoomed in
+    private let maxCameraZ: CGFloat = BodyRig.freeExploreCameraDistance * 1.25      // farther = zoomed out
+
+    init(facing: BodyFacing, style: BodyModelStyle = .skin, interactive: Bool = true) {
+        self.facing = facing
+        self.style = style
+        self.interactive = interactive
+        _rig = State(initialValue: BodyRig(style: style))
+        // Marking starts at the alignment-calibrated distance; free-rotate
+        // starts pulled back so the figure sits a touch smaller in frame.
+        let start = interactive ? BodyRig.freeExploreCameraDistance : BodyRig.defaultCameraDistance
+        _cameraZ = State(initialValue: start)
+        _committedCameraZ = State(initialValue: start)
+    }
 
     var body: some View {
         ZStack {
@@ -235,7 +310,13 @@ struct BodySceneView: View {
         }
         .onAppear {
             rig.snap(to: facing == .front ? 0 : .pi)
-            if !interactive { resetCamera() }
+            // Push the starting distance onto the camera node: the rig builds
+            // its camera at the aligned distance, so free-rotate must move it.
+            if interactive {
+                rig.cameraNode.position.z = Float(cameraZ)
+            } else {
+                resetCamera()
+            }
         }
         .onChange(of: facing) { _, newFacing in
             rig.snap(to: newFacing == .front ? 0 : .pi)
@@ -287,7 +368,17 @@ struct BodySceneView: View {
 
 // MARK: - Preview
 
-#Preview {
-    BodySceneView(facing: .front)
+#Preview("Skin") {
+    BodySceneView(facing: .front, style: .skin)
+        .frame(height: 520)
+}
+
+#Preview("Muscle") {
+    BodySceneView(facing: .front, style: .muscle)
+        .frame(height: 520)
+}
+
+#Preview("Skeleton") {
+    BodySceneView(facing: .front, style: .skeleton)
         .frame(height: 520)
 }

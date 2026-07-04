@@ -28,6 +28,7 @@ struct DataExportView: View {
         .listStyle(.insetGrouped)
         .navigationTitle("Export My Data")
         .navigationBarTitleDisplayMode(.inline)
+        .floatingTabBarClearance()
         .onChange(of: exportFormat) { _, _ in exportURL = nil }
     }
 

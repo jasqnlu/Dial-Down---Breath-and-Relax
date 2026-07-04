@@ -6,12 +6,20 @@ struct HomeView: View {
     @EnvironmentObject private var router: DeepLinkRouter
     @Query private var exercises: [Exercise]
     @AppStorage("onboardingGoals") private var goalsStr = ""
-    @State private var selectedTab: Int = 0
+    @State private var selectedTab: Int
     // Tabs are created on first visit and kept alive after, so nav/scroll
     // state survives switching (what TabView used to give us) without
     // TabView's 5-item UIKit limit — a 6th child spills into a "More"
     // controller even when the tab bar chrome is hidden.
-    @State private var visitedTabs: Set<Int> = [0]
+    @State private var visitedTabs: Set<Int>
+
+    init() {
+        // Overridable per-launch (-debugInitialTab N) so UI verification can
+        // land on any tab directly — the simulator harness can't send taps.
+        let initial = UserDefaults.standard.integer(forKey: "debugInitialTab")
+        _selectedTab = State(initialValue: initial)
+        _visitedTabs = State(initialValue: [initial])
+    }
 
     private var pendingActionBinding: Binding<DeepLinkAction?> {
         Binding(get: { router.pendingAction }, set: { router.pendingAction = $0 })
@@ -27,10 +35,10 @@ struct HomeView: View {
                         .accessibilityHidden(selectedTab != index)
                 }
             }
-            // Add extra bottom inset so scrollable content clears the floating bar.
-            .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: 80)
-            }
+            // NOTE: page clearance for the floating bar is applied INSIDE each
+            // tab page (.floatingTabBarClearance()) — a safe-area inset added
+            // here, outside the pages' NavigationStacks, never reaches their
+            // content (the UINavigationController bridge owns those insets).
 
             CustomTabBar(selectedTab: $selectedTab)
                 .padding(.bottom, 10)

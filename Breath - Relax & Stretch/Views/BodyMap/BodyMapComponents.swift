@@ -143,6 +143,7 @@ struct BodyPartExercisesView: View {
         }
         .navigationTitle(navTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .floatingTabBarClearance()
     }
 
     private var emptyDescription: String {

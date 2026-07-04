@@ -29,6 +29,7 @@ struct GuidedProgramDetailView: View {
         }
         .navigationTitle(program.title)
         .navigationBarTitleDisplayMode(.inline)
+        .floatingTabBarClearance()
         .sheet(item: $dayToPlay) { day in
             let resolved = resolvedExercises(for: day)
             if resolved.isEmpty {

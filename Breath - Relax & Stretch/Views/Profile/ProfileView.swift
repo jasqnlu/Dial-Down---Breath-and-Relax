@@ -80,6 +80,7 @@ struct ProfileView: View {
             }
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.inline)
+            .floatingTabBarClearance()
             .onAppear { profileImage = loadProfilePhoto() }
             .onChange(of: photoPickerItem) { _, item in
                 Task {

@@ -22,47 +22,49 @@ struct ProgressChartsView: View {
 
     // MARK: - Body
 
+    // No NavigationStack here: this view is pushed onto the Profile tab's
+    // stack, so wrapping another stack would nest navigation bars. The title
+    // and toolbar attach to the outer stack's bar.
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    weeklyBarChartSection
-                    allTimeStatsSection
-                    streakCalendarSection
-                    yearHeatmapSection
-                    pointsHistorySection
+        ScrollView {
+            VStack(spacing: 24) {
+                weeklyBarChartSection
+                allTimeStatsSection
+                streakCalendarSection
+                yearHeatmapSection
+                pointsHistorySection
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 20)
+        }
+        .background(Color(.systemGroupedBackground))
+        .navigationTitle("Progress")
+        .navigationBarTitleDisplayMode(.large)
+        .floatingTabBarClearance()
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showingStreakShare = true
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 20)
+                .accessibilityLabel("Share streak card")
             }
-            .background(Color(.systemGroupedBackground))
-            .navigationTitle("Progress")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showingStreakShare = true
-                    } label: {
-                        Image(systemName: "square.and.arrow.up")
-                    }
-                    .accessibilityLabel("Share streak card")
-                }
-            }
-            .sheet(item: $selectedDay) { selection in
-                SessionDayDetailView(
-                    date: selection.date,
-                    sessions: sessionsOnDay(selection.date),
-                    exercises: exercises
-                )
-            }
-            .sheet(isPresented: $showingStreakShare) {
-                StreakCardShareSheet(
-                    streak: profile?.streak ?? longestStreak,
-                    totalPoints: profile?.totalPoints ?? sessions.reduce(0) { $0 + $1.pointsEarned },
-                    totalMinutes: totalMinutes,
-                    displayName: profile?.displayName ?? ""
-                )
-            }
+        }
+        .sheet(item: $selectedDay) { selection in
+            SessionDayDetailView(
+                date: selection.date,
+                sessions: sessionsOnDay(selection.date),
+                exercises: exercises
+            )
+        }
+        .sheet(isPresented: $showingStreakShare) {
+            StreakCardShareSheet(
+                streak: profile?.streak ?? longestStreak,
+                totalPoints: profile?.totalPoints ?? sessions.reduce(0) { $0 + $1.pointsEarned },
+                totalMinutes: totalMinutes,
+                displayName: profile?.displayName ?? ""
+            )
         }
     }
 
@@ -527,6 +529,6 @@ private extension Date {
     profile.totalPoints = 340
     ctx.insert(profile)
 
-    return ProgressChartsView()
+    return NavigationStack { ProgressChartsView() }
         .modelContainer(container)
 }

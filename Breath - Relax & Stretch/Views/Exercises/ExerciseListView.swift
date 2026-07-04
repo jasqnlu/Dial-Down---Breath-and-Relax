@@ -60,6 +60,7 @@ struct ExerciseListView: View {
             }
             .searchable(text: $searchText, prompt: "Search exercises")
             .navigationTitle("Exercises")
+            .floatingTabBarClearance()
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Menu {

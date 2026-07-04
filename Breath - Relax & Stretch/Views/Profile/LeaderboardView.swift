@@ -50,6 +50,7 @@ struct LeaderboardView: View {
         }
         .navigationTitle("Leaderboard")
         .navigationBarTitleDisplayMode(.inline)
+        .floatingTabBarClearance()
         .task { await load() }
     }
 

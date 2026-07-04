@@ -10,6 +10,11 @@ struct CustomTabBar: View {
     @Binding var selectedTab: Int
     @Namespace private var ns
 
+    /// Vertical space a page must keep clear at the bottom so its content
+    /// isn't covered by the floating bar (bar ≈ 52pt tall + 10pt bottom
+    /// padding above the safe area, plus breathing room).
+    static let contentClearance: CGFloat = 80
+
     private struct TabItem {
         let icon: String
         let activeIcon: String
@@ -86,6 +91,24 @@ struct CustomTabBar: View {
         .animation(.spring(response: 0.32, dampingFraction: 0.74), value: selectedTab)
         .accessibilityLabel(tab.label)
         .accessibilityAddTraits(isActive ? .isSelected : [])
+    }
+}
+
+// MARK: - Page clearance
+
+extension View {
+    /// Reserves bottom safe-area space so page content clears the floating
+    /// tab bar. Must be applied INSIDE each tab page's NavigationStack (and
+    /// inside any view pushed onto it): a safe-area inset added outside a
+    /// NavigationStack is not forwarded to the stack's content, so HomeView
+    /// cannot apply this once for all pages.
+    func floatingTabBarClearance() -> some View {
+        safeAreaInset(edge: .bottom) {
+            Color.clear
+                .frame(height: CustomTabBar.contentClearance)
+                // Never swallow taps on content scrolled under the bar area.
+                .allowsHitTesting(false)
+        }
     }
 }
 

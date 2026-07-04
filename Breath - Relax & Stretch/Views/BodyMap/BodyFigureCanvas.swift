@@ -40,8 +40,10 @@ struct BodyFigureCanvas: View {
     private let impact = UIImpactFeedbackGenerator(style: .light)
     private let figureSpace = "figure"
 
-    // TEMP: set true to visualise every region box for alignment tuning.
-    private let debugRegions = false
+    // Debug-only: launch with `-debugRegions YES` to visualise every tap
+    // region as a blue box for alignment tuning against the 3D model. Off in
+    // normal use (no launch arg → false).
+    private let debugRegions = UserDefaults.standard.bool(forKey: "debugRegions")
 
     var body: some View {
         GeometryReader { geo in

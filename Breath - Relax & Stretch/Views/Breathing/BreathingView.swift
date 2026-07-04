@@ -64,6 +64,7 @@ struct BreathingView: View {
             .navigationTitle("Breathing")
             .navigationBarTitleDisplayMode(.large)
             .animation(.easeInOut(duration: 0.35), value: showCompletion)
+            .floatingTabBarClearance()
         }
         .task {
             for await _ in Timer.publish(every: 1, on: .main, in: .common).autoconnect().values {

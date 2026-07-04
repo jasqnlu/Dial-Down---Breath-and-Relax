@@ -123,6 +123,9 @@ struct ExerciseDetailView: View {
             }
             .background(.regularMaterial)
         }
+        // After the CTA inset so the clearance band sits below it: the
+        // docked button then rests above the floating tab bar, not behind it.
+        .floatingTabBarClearance()
         .sheet(isPresented: $showingPlayer) {
             SessionPlayerView(exercises: [exercise])
         }

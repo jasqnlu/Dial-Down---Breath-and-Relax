@@ -52,6 +52,7 @@ struct RoutineListView: View {
             }
             .listStyle(.plain)
             .navigationTitle("Routines")
+            .floatingTabBarClearance()
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button { showingBuilder = true } label: {
