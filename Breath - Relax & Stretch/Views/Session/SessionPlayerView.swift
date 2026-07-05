@@ -258,11 +258,9 @@ struct SessionPlayerView: View {
             }
         }
 
-        // HealthKit — log as Flexibility workout; request auth only if not yet granted
+        // HealthKit — log as Flexibility workout (no-op unless the user
+        // connected Apple Health in Settings; never prompts here)
         Task {
-            if !HealthKitService.shared.isWriteAuthorized {
-                await HealthKitService.shared.requestAuthorization()
-            }
             await HealthKitService.shared.logStretchSession(
                 startedAt: sessionStarted, completedAt: completedAt)
         }

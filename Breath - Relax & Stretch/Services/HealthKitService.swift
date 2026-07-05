@@ -18,6 +18,14 @@ final class HealthKitService {
         return store.authorizationStatus(for: HKObjectType.workoutType()) == .sharingAuthorized
     }
 
+    /// True once the user has granted write access to mindful sessions.
+    var isMindfulWriteAuthorized: Bool {
+        guard isAvailable,
+              let mindfulType = HKObjectType.categoryType(forIdentifier: .mindfulSession)
+        else { return false }
+        return store.authorizationStatus(for: mindfulType) == .sharingAuthorized
+    }
+
     private var writeTypes: Set<HKSampleType> {
         var types: Set<HKSampleType> = [HKObjectType.workoutType()]
         if let energy  = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned) { types.insert(energy) }
@@ -48,8 +56,10 @@ final class HealthKitService {
 
     /// Logs a stretch/exercise session as a Flexibility workout.
     /// Estimates ~3.5 kcal/min (light flexibility work).
+    /// No-op until the user has connected Apple Health in Settings; never
+    /// triggers a permission prompt itself.
     func logStretchSession(startedAt: Date, completedAt: Date) async {
-        guard isAvailable else { return }
+        guard isWriteAuthorized else { return }
         let config = HKWorkoutConfiguration()
         config.activityType = .flexibility
         let builder = HKWorkoutBuilder(healthStore: store, configuration: config, device: .local())
@@ -78,8 +88,10 @@ final class HealthKitService {
     }
 
     /// Logs a breathing session as a Mindful Session (visible in Health → Mindfulness).
+    /// No-op until the user has connected Apple Health in Settings; never
+    /// triggers a permission prompt itself.
     func logBreathingSession(startedAt: Date, completedAt: Date) async {
-        guard isAvailable,
+        guard isMindfulWriteAuthorized,
               let mindfulType = HKObjectType.categoryType(forIdentifier: .mindfulSession)
         else { return }
         let sample = HKCategorySample(

@@ -590,9 +590,9 @@ struct BreathingView: View {
             }
         }
 
-        // HealthKit — log as Mindful Session (shows in Health → Mindfulness)
+        // HealthKit — log as Mindful Session (no-op unless the user connected
+        // Apple Health in Settings; never prompts here)
         Task {
-            await HealthKitService.shared.requestAuthorization()
             await HealthKitService.shared.logBreathingSession(
                 startedAt: sessionStarted, completedAt: completedAt)
         }

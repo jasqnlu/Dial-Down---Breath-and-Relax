@@ -14,10 +14,12 @@ struct BreathRelaxStretchApp: App {
             Session.self,
             UserProfile.self,
         ])
-        // .automatic = sync via iCloud when the user is signed in; falls back to
-        // local-only storage if iCloud is unavailable. Requires iCloud + CloudKit
-        // capabilities in Xcode → Signing & Capabilities.
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false, cloudKitDatabase: .automatic)
+        // Local-only storage. iCloud sync requires the iCloud + CloudKit
+        // capabilities (not yet added to the project) — with .automatic and no
+        // entitlement the store can fail to open and silently dump users into
+        // the in-memory fallback below. Flip to .automatic only alongside the
+        // entitlement and visible error UI.
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false, cloudKitDatabase: .none)
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {

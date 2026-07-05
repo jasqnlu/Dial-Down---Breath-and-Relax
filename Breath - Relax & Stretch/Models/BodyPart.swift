@@ -9,12 +9,14 @@ enum BodyLayer: String, Codable, CaseIterable {
 
 @Model
 final class BodyPart {
-    var uuid: UUID
-    var name: String            // e.g. "Hamstring", "Quadricep"
-    var layer: BodyLayer        // .skin, .muscle, .skeleton
-    var group: String           // e.g. "Leg", "Back", "Arm"
-    var svgPathID: String       // matches the SVG element ID for highlighting
-    var connectedParts: [String]
+    // Inline defaults on every stored property keep the model CloudKit-compatible
+    // (CloudKit requires all attributes optional or defaulted).
+    var uuid: UUID = UUID()
+    var name: String = ""            // e.g. "Hamstring", "Quadricep"
+    var layer: BodyLayer = BodyLayer.skin
+    var group: String = ""           // e.g. "Leg", "Back", "Arm"
+    var svgPathID: String = ""       // matches the SVG element ID for highlighting
+    var connectedParts: [String] = []
 
     init(
         uuid: UUID = UUID(),
