@@ -24,7 +24,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		8506FCE02FCBA3210029F3D0 /* Breath - Relax & Stretch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "Breath - Relax & Stretch.app"; path = BreathRelaxStretch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8506FCE02FCBA3210029F3D0 /* BreathRelaxStretch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BreathRelaxStretch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8506FCEF2FCBA3220029F3D0 /* Breath - Relax & StretchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Breath - Relax & StretchTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8506FCF92FCBA3220029F3D0 /* Breath - Relax & StretchUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Breath - Relax & StretchUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -85,7 +85,7 @@
 		8506FCE12FCBA3210029F3D0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8506FCE02FCBA3210029F3D0 /* Breath - Relax & Stretch.app */,
+				8506FCE02FCBA3210029F3D0 /* BreathRelaxStretch.app */,
 				8506FCEF2FCBA3220029F3D0 /* Breath - Relax & StretchTests.xctest */,
 				8506FCF92FCBA3220029F3D0 /* Breath - Relax & StretchUITests.xctest */,
 			);
@@ -114,7 +114,7 @@
 			packageProductDependencies = (
 			);
 			productName = BreathRelaxStretch;
-			productReference = 8506FCE02FCBA3210029F3D0 /* Breath - Relax & Stretch.app */;
+			productReference = 8506FCE02FCBA3210029F3D0 /* BreathRelaxStretch.app */;
 			productType = "com.apple.product-type.application";
 		};
 		8506FCEE2FCBA3220029F3D0 /* Breath - Relax & StretchTests */ = {
@@ -171,7 +171,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2650;
-				LastUpgradeCheck = 2650;
+				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					8506FCDF2FCBA3210029F3D0 = {
 						CreatedOnToolsVersion = 26.5;
@@ -277,6 +277,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -306,6 +307,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 7ZT4KUSC4W;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -329,6 +331,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -339,6 +342,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -368,6 +372,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 7ZT4KUSC4W;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -384,6 +389,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -396,6 +402,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Breath - Relax & Stretch/Breath - Relax & Stretch.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 7ZT4KUSC4W;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -442,6 +449,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Breath - Relax & Stretch/Breath - Relax & Stretch.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 7ZT4KUSC4W;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -487,6 +495,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Breath - Relax & Stretch/Breath - Relax & Stretch.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 7ZT4KUSC4W;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
@@ -514,6 +523,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Breath - Relax & Stretch/Breath - Relax & Stretch.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 7ZT4KUSC4W;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
@@ -540,6 +550,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Breath - Relax & Stretch/Breath - Relax & Stretch.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 7ZT4KUSC4W;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
@@ -566,6 +577,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Breath - Relax & Stretch/Breath - Relax & Stretch.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 7ZT4KUSC4W;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
