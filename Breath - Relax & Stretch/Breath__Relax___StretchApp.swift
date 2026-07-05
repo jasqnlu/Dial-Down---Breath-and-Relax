@@ -219,13 +219,13 @@ struct BreathRelaxStretchApp: App {
             else { continue }
 
             if let exercise = existingByName[name] {
-                // Already-seeded exercise the user has — remap its saved
-                // targetBodyParts through the legacy→new vocabulary rather
-                // than overwriting with the bundle's (possibly re-authored)
-                // targets, so any user edits to this exercise are preserved.
-                let migrated = MuscleGroup.migrate(exercise.targetBodyParts)
-                if migrated != exercise.targetBodyParts {
-                    exercise.targetBodyParts = migrated
+                // Already-seeded exercise the user has — adopt the bundle's
+                // re-authored targets verbatim so upgrading users get the
+                // same anatomically-correct groups as fresh installs (a
+                // plain MuscleGroup.migrate of e.g. "Left Leg" would land
+                // hamstring stretches on Quadriceps).
+                if exercise.targetBodyParts != parts {
+                    exercise.targetBodyParts = parts
                     changed = true
                 }
             } else {
