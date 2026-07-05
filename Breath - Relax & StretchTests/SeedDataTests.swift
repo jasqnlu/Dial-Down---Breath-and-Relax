@@ -35,6 +35,11 @@ struct SeedDataTests {
         }
     }
 
+    @Test func exerciseNamesAreUnique() throws {
+        let names = try Self.loadExercises().compactMap { $0["name"] as? String }
+        #expect(names.count == Set(names).count)
+    }
+
     @Test func everyExerciseIsComplete() throws {
         for raw in try Self.loadExercises() {
             #expect((raw["instructions"] as? [String] ?? []).count >= 3)

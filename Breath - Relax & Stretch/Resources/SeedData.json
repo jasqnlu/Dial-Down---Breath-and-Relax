@@ -773,8 +773,8 @@
       "difficulty": 1,
       "instructions": [
         "Lie on your back with knees bent and feet flat, arms out in a T-shape.",
-        "Keeping your shoulders grounded, let both knees fall gently to the left toward the floor.",
-        "Turn your head to look toward your right hand for a deeper spinal stretch.",
+        "Keeping your shoulders grounded, let both knees fall gently to the right toward the floor.",
+        "Turn your head to look toward your left hand for a deeper spinal stretch.",
         "Hold for 20-30 seconds, breathing into the low back and side body.",
         "Bring your knees back to center to release."
       ]
@@ -791,8 +791,8 @@
       "difficulty": 1,
       "instructions": [
         "Lie on your back with knees bent and feet flat, arms out in a T-shape.",
-        "Keeping your shoulders grounded, let both knees fall gently to the right toward the floor.",
-        "Turn your head to look toward your left hand for a deeper spinal stretch.",
+        "Keeping your shoulders grounded, let both knees fall gently to the left toward the floor.",
+        "Turn your head to look toward your right hand for a deeper spinal stretch.",
         "Hold for 20-30 seconds, breathing into the low back and side body.",
         "Bring your knees back to center to release."
       ]
@@ -841,10 +841,10 @@
       "durationSeconds": 45,
       "difficulty": 1,
       "instructions": [
-        "Stand with feet shoulder-width apart, right hand resting on your right hip.",
-        "Slide your left hand down the outside of your left leg as you bend sideways to the left.",
+        "Stand with feet shoulder-width apart, left hand resting on your left hip.",
+        "Slide your right hand down the outside of your right leg as you bend sideways to the right.",
         "Keep your hips facing forward and avoid twisting.",
-        "Hold for 15-20 seconds, feeling the stretch along your right side.",
+        "Hold for 15-20 seconds, feeling the stretch along your left side.",
         "Return to upright slowly and repeat."
       ]
     },
@@ -858,10 +858,10 @@
       "durationSeconds": 45,
       "difficulty": 1,
       "instructions": [
-        "Stand with feet shoulder-width apart, left hand resting on your left hip.",
-        "Slide your right hand down the outside of your right leg as you bend sideways to the right.",
+        "Stand with feet shoulder-width apart, right hand resting on your right hip.",
+        "Slide your left hand down the outside of your left leg as you bend sideways to the left.",
         "Keep your hips facing forward and avoid twisting.",
-        "Hold for 15-20 seconds, feeling the stretch along your left side.",
+        "Hold for 15-20 seconds, feeling the stretch along your right side.",
         "Return to upright slowly and repeat."
       ]
     },
@@ -1468,9 +1468,9 @@
       "difficulty": 2,
       "instructions": [
         "Stand with feet wide apart, toes pointing forward.",
-        "Shift your weight to the left, bending your left knee while keeping your right leg straight.",
-        "Keep your right foot flat and your chest lifted.",
-        "Hold for 20-30 seconds, feeling the stretch along your right inner thigh.",
+        "Shift your weight to the right, bending your right knee while keeping your left leg straight.",
+        "Keep your left foot flat and your chest lifted.",
+        "Hold for 20-30 seconds, feeling the stretch along your left inner thigh.",
         "Push back to center and switch sides."
       ]
     },
@@ -1484,9 +1484,9 @@
       "difficulty": 2,
       "instructions": [
         "Stand with feet wide apart, toes pointing forward.",
-        "Shift your weight to the right, bending your right knee while keeping your left leg straight.",
-        "Keep your left foot flat and your chest lifted.",
-        "Hold for 20-30 seconds, feeling the stretch along your left inner thigh.",
+        "Shift your weight to the left, bending your left knee while keeping your right leg straight.",
+        "Keep your right foot flat and your chest lifted.",
+        "Hold for 20-30 seconds, feeling the stretch along your right inner thigh.",
         "Push back to center and switch sides."
       ]
     },
@@ -1995,9 +1995,9 @@
       "durationSeconds": 30,
       "difficulty": 1,
       "instructions": [
-        "Sit tall and turn your chin diagonally down toward your left armpit, as if nodding 'yes' to your pocket.",
-        "Rest your left hand gently on top of your head for light overpressure.",
-        "Hold for 15-20 seconds, feeling the stretch along the back-right of your neck.",
+        "Sit tall and turn your chin diagonally down toward your right armpit, as if nodding 'yes' to your pocket.",
+        "Rest your right hand gently on top of your head for light overpressure.",
+        "Hold for 15-20 seconds, feeling the stretch along the back-left of your neck.",
         "Release slowly and return to neutral."
       ],
       "caution": "Keep the pull light; skip if you have a neck injury or disc issue."
@@ -2012,9 +2012,9 @@
       "durationSeconds": 30,
       "difficulty": 1,
       "instructions": [
-        "Sit tall and turn your chin diagonally down toward your right armpit, as if nodding 'yes' to your pocket.",
-        "Rest your right hand gently on top of your head for light overpressure.",
-        "Hold for 15-20 seconds, feeling the stretch along the back-left of your neck.",
+        "Sit tall and turn your chin diagonally down toward your left armpit, as if nodding 'yes' to your pocket.",
+        "Rest your left hand gently on top of your head for light overpressure.",
+        "Hold for 15-20 seconds, feeling the stretch along the back-right of your neck.",
         "Release slowly and return to neutral."
       ],
       "caution": "Keep the pull light; skip if you have a neck injury or disc issue."
