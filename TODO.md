@@ -114,6 +114,7 @@ None of this can be done from the command line — these features are fully code
 - [ ] **StoreKit Configuration** — Product → Scheme → Edit Scheme → Run → Options tab → StoreKit Configuration → select `Configuration.storekit`. Without this, `StoreManager.loadProducts()` returns an empty list and the paywall shows blank prices
 - [ ] **Google Sign-In** — when ready (parked for now): Google Cloud Console → Credentials → Create OAuth client ID → iOS → enter Bundle ID → copy the Client ID into `GoogleAuthService.clientID`. No SPM package, no Info.plist entry needed — that's it
 - [ ] **Supabase credentials** — run [supabase_schema.sql](supabase_schema.sql) in the Supabase SQL editor, then copy Project URL + anon key into `SupabaseService.swift`
+- [ ] **Supabase Auth (Apple provider)** — new since the auth wiring (2026-07-06): Supabase Dashboard → Authentication → Providers → enable **Apple**, set the app's Bundle ID as the client ID; then **re-run [supabase_schema.sql](supabase_schema.sql)** to apply the tightened `auth.uid()` RLS policies (safe to re-run — it drops the old anon-writable ones first). Until both are done, Sign in with Apple still works locally; only the backend token exchange 4xx's (logged, non-fatal) and community uploads stay rejected
 
 ---
 
@@ -129,7 +130,7 @@ None of this can be done from the command line — these features are fully code
 
 ## 🔴 High Priority — engineering queue (model recommendations noted)
 
-- [ ] **Wire Supabase Auth end-to-end** — `signInWithApple(identityToken:)` is written but unused; every request uses the anon key, so all write policies are anon-writable (leaderboard spoofable, public routines editable by anyone — documented in `supabase_schema.sql`). Wire the Apple identity token through `AuthManager`, persist/refresh the access token (currently in-memory only, expires ~1h), then tighten RLS to `auth.uid()`. Blocks shipping community features publicly. → **Opus 4.8 or Fable** (security-critical, cross-cutting: AuthManager + SupabaseService + schema)
+- [x] **Wire Supabase Auth end-to-end** — done (Fable 5, 2026-07-06): `AuthManager.prepareAppleSignInRequest` adds a SHA-256 nonce; `handleAppleCredential` exchanges the Apple identity token for a Supabase session (`SupabaseService.signInWithApple`), persisted in the keychain as `SupabaseSession` and auto-refreshed ~2 min before expiry. New `AuthManager.backendID` (auth.uid() when Apple-signed-in, anonymous UUID otherwise) keys all community rows; RLS in `supabase_schema.sql` tightened to `auth.uid()` with `drop policy if exists` migration. Trade-off (by design): guests/email users read community data but their uploads are rejected — LeaderboardView says so. **Manual steps required** — see ⚙️ section (Apple provider + re-run schema). Design doc: [docs/superpowers/specs/2026-07-06-supabase-auth-and-flexibility-checkins-design.md](docs/superpowers/specs/2026-07-06-supabase-auth-and-flexibility-checkins-design.md)
 - [x] **Background-resilient session timers** — `SessionPlayerView`/`BreathingView` now anchor to a wall-clock `phaseEndDate` instead of decrementing a tick counter, so a backgrounded app (call, app-switch) no longer freezes the countdown while real time keeps passing. Pause/resume banks the remaining interval; a `scenePhase == .active` handler catches up (advancing through however many exercises/phases elapsed) on return to the foreground.
 - [x] **Extract a shared `SessionRecorder`** — new `Services/SessionRecorder.swift` consolidates the ~60 duplicated lines (Session insert, profile/streak/badges, HealthKit, Calendar, Widget write) that `SessionPlayerView` and `BreathingView` each drove independently; both views now call `SessionRecorder.record(...)`. Covered by `SessionRecorderTests.swift` (in-memory `ModelContainer`).
 - [ ] **Decide: wire or delete `uploadSession`/`uploadRoutine`** — written, never called; sessions/routines tables exist but receive nothing. If cross-device sync is the plan, wire them behind Supabase Auth; otherwise delete the dead paths. → **Sonnet 5** (after the auth task lands)
@@ -137,9 +138,9 @@ None of this can be done from the command line — these features are fully code
 
 ## 🟡 Cleanups (cheap, batchable)
 
-- [ ] Replace `#if DEBUG print(...)` blocks with `os.Logger` categories → **Haiku 4.5**
-- [ ] Reuse one `ISO8601DateFormatter` in `SupabaseService.uploadSession` (creates two per call) → **Haiku 4.5**
-- [ ] `Session.completionPercent` semantics: app writes 0–1, schema check allows 0–100 — pick one and document → **Haiku 4.5**
+- [x] Replace `#if DEBUG print(...)` blocks with `os.Logger` categories → **Haiku 4.5**
+- [x] Reuse one `ISO8601DateFormatter` in `SupabaseService.uploadSession` (creates two per call) → **Haiku 4.5**
+- [x] `Session.completionPercent` semantics: app writes 0–1, schema check allows 0–100 — pick one and document → **Haiku 4.5**
 
 ---
 
@@ -153,7 +154,7 @@ Features the Bend stretching app has that we don't; ordered by value-for-effort:
 - [ ] **Time-aware daily routine on Today tab** — Bend leads with one tappable "Your daily stretch" (Wake Up in the morning, Unwind at night). We have `ForYouSection` + `GoalMeta` pools; add a time-of-day pick and make it the Today tab hero. → **Sonnet 5**
 - [ ] **Streak freeze / repair** — Bend (like Duolingo) lets a missed day be repaired; softens the harshest churn moment. One earned "freeze" token per N sessions, consumed automatically in `GamificationService.updateStreak`. → **Sonnet 5** (pure logic + tests)
 - [ ] **Live Activity / Dynamic Island for active sessions** — remaining hold time on the lock screen; pairs perfectly with the backgrounding fix above. Needs a widget-extension target first (see Manual Xcode setup). → **Opus 4.8 + Jason** (ActivityKit code + target/entitlement in Xcode)
-- [ ] **Flexibility check-ins** — Bend's periodic "how far can you reach?" self-test with progress over time; big differentiator but a real feature (new model + views + charts). → **Fable/Opus 4.8, plan first**
+- [x] **Flexibility check-ins** — done (Fable 5, 2026-07-06, design doc first per plan): 4 standard self-tests (Toe Touch / Shoulder Reach / Neck Rotation / Butterfly) × 5 ordinal levels; `FlexibilityCheckIn` @Model + `FlexibilityStats`; `FlexibilityCheckInView` sheet flow (skip any test, saves only on Finish); Progress screen "Flexibility" card with latest level + delta per test, 14-day re-check nudge, and a step-line chart once a test has ≥2 points. 13 unit tests + an end-to-end XCUITest (which also surfaced & fixed the broken UITests target: stale `TEST_TARGET_NAME`). No gamification points for v1 — revisit deliberately.
 
 ---
 
