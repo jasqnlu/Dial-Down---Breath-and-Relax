@@ -18,6 +18,7 @@ struct SessionPlayerView: View {
     @AppStorage("totalSessionsCompleted") private var totalSessionsCompleted = 0
     @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
     @AppStorage("hasSeenInitialPaywall") private var hasSeenInitialPaywall = false
+    @AppStorage("sessionDurationMultiplier") private var durationMultiplier: Double = 1.0
     @State private var shouldShowPaywall = false
 
     @State private var currentIndex = 0
@@ -134,6 +135,15 @@ struct SessionPlayerView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
+                Picker("Speed", selection: $durationMultiplier) {
+                    Text("0.5x").tag(0.5)
+                    Text("1x").tag(1.0)
+                    Text("2x").tag(2.0)
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 160)
+                .accessibilityLabel("Exercise duration speed")
+                Spacer()
                 Text("\(currentIndex + 1) / \(exercises.count)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -208,8 +218,13 @@ struct SessionPlayerView: View {
 
     // MARK: - Logic
 
+    static func scaledDuration(base: Int, multiplier: Double) -> Int {
+        max(1, Int(Double(base) * multiplier))
+    }
+
     private func startExercise() {
-        let duration = currentExercise?.durationSeconds ?? 60
+        let baseDuration = currentExercise?.durationSeconds ?? 60
+        let duration = Self.scaledDuration(base: baseDuration, multiplier: durationMultiplier)
         secondsRemaining = duration
         phaseEndDate = Date().addingTimeInterval(TimeInterval(duration))
         pausedRemaining = nil
