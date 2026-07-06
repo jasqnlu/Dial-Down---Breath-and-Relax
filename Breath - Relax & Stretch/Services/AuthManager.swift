@@ -14,7 +14,59 @@ enum AuthProvider: String, Codable {
     case guest  = "guest"
 }
 
+// MARK: - Keychain seam
+// Abstraction over Security.framework's SecItem calls so tests can swap in an
+// in-memory store — the real keychain is unreliable/unavailable in the test
+// runner's sandbox.
+
+protocol KeychainStore {
+    func save(account: String, value: String)
+    func delete(account: String)
+    func loadCredential(account: String) -> String?
+}
+
+struct SecItemKeychainStore: KeychainStore {
+    let service: String
+
+    func save(account: String, value: String) {
+        let data = Data(value.utf8)
+        let query: [CFString: Any] = [
+            kSecClass:       kSecClassGenericPassword,
+            kSecAttrService: service,
+            kSecAttrAccount: account,
+            kSecValueData:   data
+        ]
+        SecItemDelete(query as CFDictionary)
+        SecItemAdd(query as CFDictionary, nil)
+    }
+
+    func delete(account: String) {
+        let query: [CFString: Any] = [
+            kSecClass:       kSecClassGenericPassword,
+            kSecAttrService: service,
+            kSecAttrAccount: account
+        ]
+        SecItemDelete(query as CFDictionary)
+    }
+
+    func loadCredential(account: String) -> String? {
+        let query: [CFString: Any] = [
+            kSecClass:       kSecClassGenericPassword,
+            kSecAttrService: service,
+            kSecAttrAccount: account,
+            kSecReturnData:  true,
+            kSecMatchLimit:  kSecMatchLimitOne
+        ]
+        var item: AnyObject?
+        guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess,
+              let data = item as? Data else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+}
+
 // MARK: - AuthManager
+
+typealias PasswordHasher = (_ password: String, _ salt: Data) -> String
 
 @MainActor
 final class AuthManager: ObservableObject {
@@ -51,7 +103,20 @@ final class AuthManager: ObservableObject {
         return fresh
     }
 
-    private init() { loadPersistedState() }
+    private let keychain: KeychainStore
+    private let hashPassword: PasswordHasher
+
+    /// `internal` (not `private`) so `@testable import` can construct
+    /// instances with a fake keychain/hasher; production code should still
+    /// go through `.shared`.
+    init(
+        keychain: KeychainStore = SecItemKeychainStore(service: "com.breathapp.auth"),
+        hasher: @escaping PasswordHasher = AuthManager.pbkdf2
+    ) {
+        self.keychain = keychain
+        self.hashPassword = hasher
+        loadPersistedState()
+    }
 
     // MARK: - Persistence
 
@@ -131,29 +196,33 @@ final class AuthManager: ObservableObject {
         guard !name.isEmpty        else { return "Name is required." }
         guard email.contains("@") else { return "Enter a valid email address." }
         guard password.count >= 8 else { return "Password must be at least 8 characters." }
-        if keychainLoadCredential(account: email) != nil {
+        if keychain.loadCredential(account: email) != nil {
             return "An account with that email already exists."
         }
         let salt = generateSalt()
-        let hash = pbkdf2(password, salt: salt)
-        keychainSave(account: email, value: "\(salt.hexString):\(hash)")
-        keychainSave(account: "name:\(email)", value: name)
+        let hash = hashPassword(password, salt)
+        // pbkdf2 returns "" if CommonCrypto fails; storing "salt:" would let
+        // any future password match the empty hash. Refuse instead.
+        guard !hash.isEmpty else { return "Could not secure your password. Please try again." }
+        keychain.save(account: email, value: "\(salt.hexString):\(hash)")
+        keychain.save(account: "name:\(email)", value: name)
         persist(name: name, email: email, providerVal: .email)
         return nil
     }
 
     func signIn(email: String, password: String) -> String? {
-        guard let stored = keychainLoadCredential(account: email) else {
+        guard let stored = keychain.loadCredential(account: email) else {
             return "No account found for this email."
         }
         let parts = stored.split(separator: ":", maxSplits: 1).map(String.init)
         guard parts.count == 2, let saltData = Data(hexString: parts[0]) else {
             return "Account data is corrupted. Please create a new account."
         }
-        guard pbkdf2(password, salt: saltData) == parts[1] else {
+        let computed = hashPassword(password, saltData)
+        guard !computed.isEmpty, computed == parts[1] else {
             return "Incorrect password."
         }
-        let name = keychainLoadCredential(account: "name:\(email)") ?? "User"
+        let name = keychain.loadCredential(account: "name:\(email)") ?? "User"
         persist(name: name, email: email, providerVal: .email)
         return nil
     }
@@ -177,8 +246,16 @@ final class AuthManager: ObservableObject {
 
     func deleteAccount() {
         if provider == .email, !userEmail.isEmpty {
-            keychainDelete(account: userEmail)
-            keychainDelete(account: "name:\(userEmail)")
+            keychain.delete(account: userEmail)
+            keychain.delete(account: "name:\(userEmail)")
+        }
+        // Best-effort: remove the public leaderboard row before rotating the
+        // anonymous ID — once rotated, nothing can ever address that row again.
+        if SupabaseService.isConfigured {
+            let departingID = anonymousID
+            Task.detached {
+                try? await SupabaseService.shared.deleteProfile(id: departingID)
+            }
         }
         let d = UserDefaults.standard
         d.removeObject(forKey: kDisplayName)
@@ -205,45 +282,6 @@ final class AuthManager: ObservableObject {
         }
     }
 
-    // MARK: - Keychain
-
-    private let keychainService = "com.breathapp.auth"
-
-    private func keychainSave(account: String, value: String) {
-        let data = Data(value.utf8)
-        let query: [CFString: Any] = [
-            kSecClass:       kSecClassGenericPassword,
-            kSecAttrService: keychainService,
-            kSecAttrAccount: account,
-            kSecValueData:   data
-        ]
-        SecItemDelete(query as CFDictionary)
-        SecItemAdd(query as CFDictionary, nil)
-    }
-
-    private func keychainDelete(account: String) {
-        let query: [CFString: Any] = [
-            kSecClass:       kSecClassGenericPassword,
-            kSecAttrService: keychainService,
-            kSecAttrAccount: account
-        ]
-        SecItemDelete(query as CFDictionary)
-    }
-
-    private func keychainLoadCredential(account: String) -> String? {
-        let query: [CFString: Any] = [
-            kSecClass:       kSecClassGenericPassword,
-            kSecAttrService: keychainService,
-            kSecAttrAccount: account,
-            kSecReturnData:  true,
-            kSecMatchLimit:  kSecMatchLimitOne
-        ]
-        var item: AnyObject?
-        guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess,
-              let data = item as? Data else { return nil }
-        return String(data: data, encoding: .utf8)
-    }
-
     // MARK: - PBKDF2 (100k rounds, SHA-256, 16-byte random salt)
 
     private func generateSalt() -> Data {
@@ -254,11 +292,15 @@ final class AuthManager: ObservableObject {
         return salt
     }
 
-    private func pbkdf2(_ password: String, salt: Data) -> String {
+    /// The production `PasswordHasher`. `static` (no `self`) so it can be
+    /// referenced as a default argument in `init`; `nonisolated` because it
+    /// touches no actor-isolated state, matching `PasswordHasher`'s plain
+    /// (non-`@MainActor`) function type.
+    nonisolated static func pbkdf2(_ password: String, salt: Data) -> String {
         let passwordData = Data(password.utf8)
         var derivedKey = Data(repeating: 0, count: 32)
         var status = Int32(kCCSuccess)
-        _ = derivedKey.withUnsafeMutableBytes { derivedPtr in
+        derivedKey.withUnsafeMutableBytes { derivedPtr in
             passwordData.withUnsafeBytes { passwordPtr in
                 salt.withUnsafeBytes { saltPtr in
                     status = CCKeyDerivationPBKDF(

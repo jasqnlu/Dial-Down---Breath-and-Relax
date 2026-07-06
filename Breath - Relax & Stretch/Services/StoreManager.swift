@@ -1,5 +1,6 @@
 import StoreKit
 import Combine
+import os
 
 // MARK: - StoreManager
 // StoreKit 2 entitlement + purchase manager. Products are defined in
@@ -62,9 +63,7 @@ final class StoreManager: ObservableObject {
         do {
             products = try await Product.products(for: ProductID.all)
         } catch {
-            #if DEBUG
-            print("⚠️ StoreKit product load failed: \(error)")
-            #endif
+            Logger(subsystem: "com.jasonlu.breath", category: "storeKit").warning("Product load failed: \(error)")
         }
     }
 

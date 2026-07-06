@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 
 // MARK: - ImportRoutineView
 // Confirmation sheet shown when the app is opened via a shared `breath://routine`
@@ -78,9 +79,7 @@ struct ImportRoutineView: View {
         do {
             try modelContext.save()
         } catch {
-            #if DEBUG
-            print("⚠️ SwiftData save failed in ImportRoutineView: \(error)")
-            #endif
+            Logger(subsystem: "com.jasonlu.breath", category: "importRoutine").warning("Save failed: \(error)")
         }
         onDismiss()
     }

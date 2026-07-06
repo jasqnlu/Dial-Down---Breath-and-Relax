@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 
 struct BorrowRoutineView: View {
     @Environment(\.modelContext) private var modelContext
@@ -89,9 +90,7 @@ struct BorrowRoutineView: View {
         do {
             try modelContext.save()
         } catch {
-            #if DEBUG
-            print("⚠️ SwiftData save failed in BorrowRoutineView: \(error)")
-            #endif
+            Logger(subsystem: "com.jasonlu.breath", category: "borrowRoutine").warning("Save failed: \(error)")
         }
         borrowedIDs.insert(routine.uuid)
         showingConfirmation = nil

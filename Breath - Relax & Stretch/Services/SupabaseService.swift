@@ -99,6 +99,14 @@ actor SupabaseService {
         try await post(path: "/rest/v1/profiles", body: data, upsert: true)
     }
 
+    /// Deletes the leaderboard row for an anonymous ID. Called on account
+    /// deletion so the display name/points don't stay public forever after
+    /// the local identity is rotated. Requires the profiles delete policy in
+    /// supabase_schema.sql.
+    func deleteProfile(id: String) async throws {
+        try await delete(path: "/rest/v1/profiles?id=eq.\(id)")
+    }
+
     /// Fetches the top profiles by points for the leaderboard.
     func fetchLeaderboard(limit: Int = 50) async throws -> [RemoteProfile] {
         let data = try await get(path: "/rest/v1/profiles?select=*&order=total_points.desc&limit=\(limit)")
@@ -110,13 +118,14 @@ actor SupabaseService {
     /// Inserts a completed session to the remote database. `userID` must be
     /// the anonymous UUID (AuthManager.anonymousID) — never an email.
     func uploadSession(_ session: Session, userID: String) async throws {
+        let formatter = ISO8601DateFormatter()
         let body = RemoteSession(
             id:                session.uuid.uuidString,
             userID:            userID,
             routineID:         session.routineID.uuidString,
-            startedAt:         ISO8601DateFormatter().string(from: session.startedAt),
-            completedAt:       session.completedAt.map { ISO8601DateFormatter().string(from: $0) },
-            completionPercent: session.completionPercent,
+            startedAt:         formatter.string(from: session.startedAt),
+            completedAt:       session.completedAt.map { formatter.string(from: $0) },
+            completionPercent: session.completionPercent * 100,
             pointsEarned:      session.pointsEarned
         )
         // Same @MainActor isolation reason as uploadRoutine above.
@@ -147,6 +156,12 @@ actor SupabaseService {
         let (data, response) = try await URLSession.shared.data(for: request)
         try validate(response)
         return data
+    }
+
+    private func delete(path: String) async throws {
+        let request = makeRequest(path: path, method: "DELETE")
+        let (_, response) = try await URLSession.shared.data(for: request)
+        try validate(response)
     }
 
     private func get(path: String) async throws -> Data {

@@ -27,6 +27,14 @@ struct BreathingView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.requestReview) private var requestReview
+    @Environment(\.scenePhase) private var scenePhase
+
+    // Wall-clock end of the current phase (inhale/hold/exhale/hold2).
+    // `phaseSecondsLeft` is a display value derived from this each tick, so
+    // backgrounding the app doesn't stall the countdown — `scenePhase`
+    // catches us up on return.
+    @State private var phaseEndDate = Date()
+    @State private var pausedRemaining: TimeInterval? = nil
 
     @AppStorage("totalSessionsCompleted") private var totalSessionsCompleted = 0
     @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
@@ -71,6 +79,14 @@ struct BreathingView: View {
                 tickTimer()
             }
         }
+        // Keep the screen awake only while a session runs — this view is a
+        // persistent tab, so appear/disappear would pin the idle timer forever.
+        .onChange(of: isRunning) { _, running in
+            UIApplication.shared.isIdleTimerDisabled = running
+        }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
+        }
         .onChange(of: showCompletion) { _, showing in
             guard showing, shouldRequestReview else { return }
             Task { @MainActor in
@@ -78,6 +94,10 @@ struct BreathingView: View {
                 requestReview()
                 shouldRequestReview = false
             }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active, isRunning, !isPaused, !showCompletion else { return }
+            catchUpAfterBackground()
         }
         .sheet(isPresented: $shouldShowPaywall) {
             PaywallView()
@@ -402,9 +422,26 @@ struct BreathingView: View {
     private func tickTimer() {
         guard isRunning, !isPaused, !showCompletion else { return }
 
-        if phaseSecondsLeft > 1 {
-            phaseSecondsLeft -= 1
+        let remaining = Int(phaseEndDate.timeIntervalSinceNow.rounded(.up))
+        if remaining > 0 {
+            phaseSecondsLeft = remaining
         } else {
+            advancePhase()
+        }
+    }
+
+    /// Called when the app returns to the foreground. `tickTimer()` isn't
+    /// driven while backgrounded, so real elapsed time may have already
+    /// blown past the current phase (or several) — walk forward through
+    /// phases (each picking up a fresh full duration) until we land on one
+    /// still in progress, or the session completes.
+    private func catchUpAfterBackground() {
+        while isRunning, !showCompletion {
+            let remaining = phaseEndDate.timeIntervalSinceNow
+            if remaining > 0 {
+                phaseSecondsLeft = Int(remaining.rounded(.up))
+                break
+            }
             advancePhase()
         }
     }
@@ -448,6 +485,7 @@ struct BreathingView: View {
 
     private func transition(to phase: BreathPhase, duration: Int) {
         VoiceCueService.shared.speak(phase.displayLabel.replacingOccurrences(of: "...", with: ""))
+        phaseEndDate = Date().addingTimeInterval(TimeInterval(duration))
         withAnimation(.easeInOut(duration: 0.4)) {
             currentPhase    = phase
             circleColor     = phase.color
@@ -476,7 +514,13 @@ struct BreathingView: View {
         if !isRunning {
             startSession()
         } else {
-            if !isPaused { VoiceCueService.shared.stop() }
+            if !isPaused {
+                VoiceCueService.shared.stop()
+                pausedRemaining = max(0, phaseEndDate.timeIntervalSinceNow)
+            } else {
+                phaseEndDate = Date().addingTimeInterval(pausedRemaining ?? 0)
+                pausedRemaining = nil
+            }
             withAnimation(.easeInOut(duration: 0.2)) {
                 isPaused.toggle()
             }
@@ -489,6 +533,8 @@ struct BreathingView: View {
         round            = 1
         isPaused         = false
         showCompletion   = false
+        pausedRemaining  = nil
+        phaseEndDate     = Date().addingTimeInterval(TimeInterval(p.inhale))
 
         withAnimation(.easeInOut(duration: 0.4)) {
             isRunning        = true
@@ -514,6 +560,7 @@ struct BreathingView: View {
         round            = 0
         phaseSecondsLeft = 0
         currentPhase     = .inhale
+        pausedRemaining  = nil
     }
 
     private func completeSession() {
@@ -547,39 +594,27 @@ struct BreathingView: View {
     // MARK: - Persistence
 
     private func saveSession() {
-        let completedAt    = Date()
-        let pointsEarned   = totalRounds * 5
-
-        let session        = Session(
-            routineID:         breathingRoutineID,
-            startedAt:         sessionStarted,
-            completionPercent: 1.0,
-            pointsEarned:      pointsEarned
-        )
-        session.completedAt     = completedAt
-        session.sessionLabel    = selectedPattern.rawValue
-        session.roundsCompleted = totalRounds
-        modelContext.insert(session)
-
-        // Update UserProfile if present
-        let descriptor = FetchDescriptor<UserProfile>()
-        if let profile = try? modelContext.fetch(descriptor).first {
-            profile.totalPoints  += pointsEarned
-            profile.totalMinutes += max(1, Int(completedAt.timeIntervalSince(sessionStarted) / 60))
-            GamificationService.updateStreak(for: profile)
-            let newBadges = GamificationService.newBadges(for: profile)
-            GamificationService.applyBadges(newBadges, to: profile)
-        }
-
-        do {
-            try modelContext.save()
-        } catch {
-            #if DEBUG
-            print("⚠️ SwiftData save failed in BreathingView: \(error)")
-            #endif
-        }
+        let completedAt  = Date()
+        let pointsEarned = totalRounds * 5
 
         totalSessionsCompleted += 1
+        SessionRecorder.record(
+            SessionRecorder.Input(
+                routineID: breathingRoutineID,
+                startedAt: sessionStarted,
+                completedAt: completedAt,
+                completionPercent: 1.0,
+                pointsEarned: pointsEarned,
+                sessionLabel: selectedPattern.rawValue,
+                roundsCompleted: totalRounds,
+                calendarTitle: "\(selectedPattern.rawValue) (\(totalRounds) rounds)",
+                healthKitKind: .breathing
+            ),
+            modelContext: modelContext,
+            calendarSyncEnabled: calendarSyncEnabled,
+            totalSessionsCompleted: totalSessionsCompleted
+        )
+
         if totalSessionsCompleted == 3 && !hasSeenInitialPaywall {
             hasSeenInitialPaywall = true
             shouldShowPaywall = true
@@ -589,28 +624,6 @@ struct BreathingView: View {
                 shouldRequestReview = true
             }
         }
-
-        // HealthKit — log as Mindful Session (no-op unless the user connected
-        // Apple Health in Settings; never prompts here)
-        Task {
-            await HealthKitService.shared.logBreathingSession(
-                startedAt: sessionStarted, completedAt: completedAt)
-        }
-
-        // Calendar — opt-in, mirrors the session as an event
-        if calendarSyncEnabled {
-            CalendarService.shared.logCompletedSession(
-                title: "\(selectedPattern.rawValue) (\(totalRounds) rounds)",
-                start: sessionStarted, end: completedAt)
-        }
-
-        // Widget — update shared data so home screen widgets refresh
-        let streak = (try? modelContext.fetch(FetchDescriptor<UserProfile>()).first?.streak) ?? 0
-        WidgetDataService.write(
-            streak: streak,
-            totalSessions: totalSessionsCompleted,
-            lastSessionDate: completedAt
-        )
     }
 }
 

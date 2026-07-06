@@ -128,3 +128,12 @@ create policy "anyone can upsert their profile"
 create policy "anyone can update profiles"
   on profiles for update
   using (true);
+
+-- ⚠️ anon-deletable, same caveat as the write policies above. Needed so the
+-- app's Delete Account flow (AuthManager.deleteAccount →
+-- SupabaseService.deleteProfile) can remove the public leaderboard row before
+-- the anonymous ID is rotated; deletion requires knowing the full UUID.
+-- Tighten to auth.uid() alongside the other policies when Supabase Auth lands.
+create policy "anyone can delete a profile by id"
+  on profiles for delete
+  using (true);

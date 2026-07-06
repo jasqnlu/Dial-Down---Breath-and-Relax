@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 
 struct RoutineBuilderView: View {
     @Environment(\.dismiss) private var dismiss
@@ -147,9 +148,7 @@ struct RoutineBuilderView: View {
         do {
             try modelContext.save()
         } catch {
-            #if DEBUG
-            print("⚠️ SwiftData save failed in RoutineBuilderView: \(error)")
-            #endif
+            Logger(subsystem: "com.jasonlu.breath", category: "routineBuilder").warning("Save failed: \(error)")
         }
 
         dismiss()

@@ -1,4 +1,5 @@
 import HealthKit
+import os
 
 // MARK: - HealthKitService
 // Writes completed sessions to Apple Health.
@@ -81,9 +82,7 @@ final class HealthKitService {
             try await builder.endCollection(at: completedAt)
             try await builder.finishWorkout()
         } catch {
-            #if DEBUG
-            print("⚠️ HealthKit stretch log failed: \(error)")
-            #endif
+            Logger(subsystem: "com.jasonlu.breath", category: "healthKit").warning("Stretch log failed: \(error)")
         }
     }
 
@@ -103,9 +102,7 @@ final class HealthKitService {
         do {
             try await store.save(sample)
         } catch {
-            #if DEBUG
-            print("⚠️ HealthKit breathing log failed: \(error)")
-            #endif
+            Logger(subsystem: "com.jasonlu.breath", category: "healthKit").warning("Breathing log failed: \(error)")
         }
     }
 

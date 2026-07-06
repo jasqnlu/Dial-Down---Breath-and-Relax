@@ -13,6 +13,7 @@ struct SessionPlayerView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.requestReview) private var requestReview
+    @Environment(\.scenePhase) private var scenePhase
 
     @AppStorage("totalSessionsCompleted") private var totalSessionsCompleted = 0
     @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
@@ -26,6 +27,13 @@ struct SessionPlayerView: View {
     @State private var totalPointsEarned = 0
     @State private var sessionStarted = Date()
     @State private var shouldRequestReview = false
+
+    // Wall-clock end of the current exercise's countdown. `secondsRemaining` is
+    // a display value derived from this each tick, so backgrounding the app
+    // (a call, app-switch) doesn't stall the countdown — real elapsed time
+    // still counts down, and `scenePhase` catches us up on return.
+    @State private var phaseEndDate = Date()
+    @State private var pausedRemaining: TimeInterval? = nil
 
     // Haptics
     private let impactLight   = UIImpactFeedbackGenerator(style: .light)
@@ -74,21 +82,30 @@ struct SessionPlayerView: View {
             impactLight.prepare()
             impactMedium.prepare()
             notifySuccess.prepare()
+            // Keep the screen awake — the user is mid-stretch and not touching
+            // the screen; auto-lock would freeze the main-runloop timer.
+            UIApplication.shared.isIdleTimerDisabled = true
         }
         .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
             VoiceCueService.shared.stop()
         }
         .task {
             for await _ in Timer.publish(every: 1, on: .main, in: .common).autoconnect().values {
                 guard !isPaused, !showingSummary else { continue }
-                if secondsRemaining > 0 {
-                    secondsRemaining -= 1
+                let remaining = Int(phaseEndDate.timeIntervalSinceNow.rounded(.up))
+                if remaining > 0 {
+                    secondsRemaining = remaining
                     breathTick += 1
                     if breathTick % 4 == 0 { AudioServicesPlaySystemSound(soundTick) }
                 } else {
                     advanceToNext(completion: 1.0)
                 }
             }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active, !isPaused, !showingSummary else { return }
+            catchUpAfterBackground()
         }
         .onChange(of: showingSummary) { _, showing in
             guard showing, shouldRequestReview else { return }
@@ -167,6 +184,12 @@ struct SessionPlayerView: View {
 
                 Button {
                     impactLight.impactOccurred()
+                    if isPaused {
+                        phaseEndDate = Date().addingTimeInterval(pausedRemaining ?? 0)
+                        pausedRemaining = nil
+                    } else {
+                        pausedRemaining = max(0, phaseEndDate.timeIntervalSinceNow)
+                    }
                     isPaused.toggle()
                 } label: {
                     Image(systemName: isPaused ? "play.circle.fill" : "pause.circle.fill")
@@ -186,10 +209,29 @@ struct SessionPlayerView: View {
     // MARK: - Logic
 
     private func startExercise() {
-        secondsRemaining = currentExercise?.durationSeconds ?? 60
+        let duration = currentExercise?.durationSeconds ?? 60
+        secondsRemaining = duration
+        phaseEndDate = Date().addingTimeInterval(TimeInterval(duration))
+        pausedRemaining = nil
         isPaused = false
         if let exercise = currentExercise {
             VoiceCueService.shared.speak(exercise.name)
+        }
+    }
+
+    /// Called when the app returns to the foreground. `Timer.publish` doesn't
+    /// fire while backgrounded, so real elapsed time may have already blown
+    /// past one or more exercises' durations — walk forward through them
+    /// (each picking up a fresh full duration) until we land on one that's
+    /// still in progress, or the session completes.
+    private func catchUpAfterBackground() {
+        while !showingSummary {
+            let remaining = phaseEndDate.timeIntervalSinceNow
+            if remaining > 0 {
+                secondsRemaining = Int(remaining.rounded(.up))
+                break
+            }
+            advanceToNext(completion: 1.0)
         }
     }
 
@@ -216,38 +258,27 @@ struct SessionPlayerView: View {
     private func saveSession(completion: Double) {
         let completedAt = Date()
         let bodyPartsCovered = Set(exercises.flatMap { $0.targetBodyParts })
-
-        let session = Session(
-            routineID: routineID,
-            startedAt: sessionStarted,
-            completionPercent: completion,
-            pointsEarned: totalPointsEarned
-        )
-        session.completedAt = completedAt
-        session.exerciseIDs = exercises.map { $0.uuid }
-        modelContext.insert(session)
-
-        let descriptor = FetchDescriptor<UserProfile>()
-        if let profile = try? modelContext.fetch(descriptor).first {
-            profile.totalPoints   += totalPointsEarned
-            profile.totalMinutes  += max(1, Int(completedAt.timeIntervalSince(sessionStarted) / 60))
-            GamificationService.updateStreak(for: profile)
-            let newBadges = GamificationService.newBadges(for: profile, bodyPartsCovered: bodyPartsCovered)
-            GamificationService.applyBadges(newBadges, to: profile)
-            if isBorrowedRoutine {
-                GamificationService.awardBadge("Borrowed & Built", to: profile)
-            }
-        }
-
-        do {
-            try modelContext.save()
-        } catch {
-            #if DEBUG
-            print("⚠️ SwiftData save failed in SessionPlayerView: \(error)")
-            #endif
-        }
+        let exerciseNames = exercises.map { $0.name }.joined(separator: ", ")
 
         totalSessionsCompleted += 1
+        SessionRecorder.record(
+            SessionRecorder.Input(
+                routineID: routineID,
+                startedAt: sessionStarted,
+                completedAt: completedAt,
+                completionPercent: completion,
+                pointsEarned: totalPointsEarned,
+                exerciseIDs: exercises.map { $0.uuid },
+                bodyPartsCovered: bodyPartsCovered,
+                isBorrowedRoutine: isBorrowedRoutine,
+                calendarTitle: "Stretch Session: \(exerciseNames)",
+                healthKitKind: .stretch
+            ),
+            modelContext: modelContext,
+            calendarSyncEnabled: calendarSyncEnabled,
+            totalSessionsCompleted: totalSessionsCompleted
+        )
+
         if totalSessionsCompleted == 3 && !hasSeenInitialPaywall {
             hasSeenInitialPaywall = true
             shouldShowPaywall = true
@@ -257,29 +288,6 @@ struct SessionPlayerView: View {
                 shouldRequestReview = true
             }
         }
-
-        // HealthKit — log as Flexibility workout (no-op unless the user
-        // connected Apple Health in Settings; never prompts here)
-        Task {
-            await HealthKitService.shared.logStretchSession(
-                startedAt: sessionStarted, completedAt: completedAt)
-        }
-
-        // Calendar — opt-in, mirrors the session as an event
-        if calendarSyncEnabled {
-            let exerciseNames = exercises.map { $0.name }.joined(separator: ", ")
-            CalendarService.shared.logCompletedSession(
-                title: "Stretch Session: \(exerciseNames)",
-                start: sessionStarted, end: completedAt)
-        }
-
-        // Widget — update shared data so home screen widgets refresh
-        let streak = (try? modelContext.fetch(FetchDescriptor<UserProfile>()).first?.streak) ?? 0
-        WidgetDataService.write(
-            streak: streak,
-            totalSessions: totalSessionsCompleted,
-            lastSessionDate: completedAt
-        )
     }
 
     private func timeString(_ seconds: Int) -> String {

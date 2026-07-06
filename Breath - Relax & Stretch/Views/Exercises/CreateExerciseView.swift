@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 
 struct CreateExerciseView: View {
     @Environment(\.modelContext) private var modelContext
@@ -240,9 +241,7 @@ struct CreateExerciseView: View {
         do {
             try modelContext.save()
         } catch {
-            #if DEBUG
-            print("⚠️ SwiftData save failed in CreateExerciseView: \(error)")
-            #endif
+            Logger(subsystem: "com.jasonlu.breath", category: "createExercise").warning("Save failed: \(error)")
         }
         dismiss()
     }

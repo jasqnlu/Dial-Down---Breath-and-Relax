@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 
 @main
 struct BreathRelaxStretchApp: App {
@@ -27,9 +28,7 @@ struct BreathRelaxStretchApp: App {
             // fail to open. Fall back to an in-memory container so the app at least
             // launches; the user will lose synced data for this session but can
             // reopen to get a fresh persistent store on the next cold start.
-            #if DEBUG
-            print("⚠️ ModelContainer failed to open persistent store, falling back to in-memory: \(error)")
-            #endif
+            Logger(subsystem: "com.jasonlu.breath", category: "modelContainer").warning("Failed to open persistent store, falling back to in-memory: \(error)")
             let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
             return (try? ModelContainer(for: schema, configurations: [fallback]))
                 ?? { fatalError("Could not create any ModelContainer: \(error)") }()
@@ -115,9 +114,7 @@ struct BreathRelaxStretchApp: App {
         do {
             try context.save()
         } catch {
-            #if DEBUG
-            print("⚠️ SwiftData seed save failed: \(error)")
-            #endif
+            Logger(subsystem: "com.jasonlu.breath", category: "seedData").warning("Seed save failed: \(error)")
         }
         return true
     }
@@ -321,9 +318,7 @@ struct BreathRelaxStretchApp: App {
         do {
             try context.save()
         } catch {
-            #if DEBUG
-            print("⚠️ SwiftData upsert save failed: \(error)")
-            #endif
+            Logger(subsystem: "com.jasonlu.breath", category: "exerciseSync").warning("Upsert save failed: \(error)")
         }
     }
 }
@@ -367,9 +362,7 @@ struct RootView: View {
         do {
             try modelContext.save()
         } catch {
-            #if DEBUG
-            print("⚠️ SwiftData profile save failed: \(error)")
-            #endif
+            Logger(subsystem: "com.jasonlu.breath", category: "profile").warning("Profile save failed: \(error)")
         }
     }
 }

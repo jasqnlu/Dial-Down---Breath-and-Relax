@@ -1,6 +1,6 @@
 # Breath: Relax & Stretch — TODO
 
-Updated 2026-06-16 (rev 2)
+Updated 2026-07-06 (rev 3 — infrastructure sweep)
 
 ---
 
@@ -117,9 +117,54 @@ None of this can be done from the command line — these features are fully code
 
 ---
 
-## 🔴 High Priority
+## ✅ Completed (v0.7 — infrastructure sweep, 2026-07-06)
 
-All caught up — see ✅ Completed (v0.5) above and ⚙️ Manual Xcode setup for what's left to flip on.
+- [x] **Screen keep-awake during sessions** — `isIdleTimerDisabled` now set while `SessionPlayerView` is up and while a `BreathingView` session is running; previously the phone auto-locked mid-stretch and froze the main-runloop timer
+- [x] **Face ID usage string** — `NSFaceIDUsageDescription` added to build settings; App Lock's biometric prompt failed silently on Face ID devices without it (the C1 crash-path commit added Calendar/Health strings but missed this one)
+- [x] **PBKDF2 failure hardening** — `pbkdf2()` returns `""` if CommonCrypto errors; `signUp` now refuses to store an empty hash (which any password would have matched) and `signIn` rejects empty computed hashes
+- [x] **Account deletion removes the public leaderboard row** — `SupabaseService.deleteProfile(id:)` + best-effort call in `AuthManager.deleteAccount()` *before* the anonymous ID rotates (after rotation the row was unreachable forever); matching delete policy added to `supabase_schema.sql` — **re-run that file (or just the new policy) in the Supabase SQL editor**
+- [x] **Removed empty `Views 2` / `Resources 2` folders** — Xcode duplicate-folder accidents; with filesystem-synced groups they'd ship as empty noise
+
+---
+
+## 🔴 High Priority — engineering queue (model recommendations noted)
+
+- [ ] **Wire Supabase Auth end-to-end** — `signInWithApple(identityToken:)` is written but unused; every request uses the anon key, so all write policies are anon-writable (leaderboard spoofable, public routines editable by anyone — documented in `supabase_schema.sql`). Wire the Apple identity token through `AuthManager`, persist/refresh the access token (currently in-memory only, expires ~1h), then tighten RLS to `auth.uid()`. Blocks shipping community features publicly. → **Opus 4.8 or Fable** (security-critical, cross-cutting: AuthManager + SupabaseService + schema)
+- [x] **Background-resilient session timers** — `SessionPlayerView`/`BreathingView` now anchor to a wall-clock `phaseEndDate` instead of decrementing a tick counter, so a backgrounded app (call, app-switch) no longer freezes the countdown while real time keeps passing. Pause/resume banks the remaining interval; a `scenePhase == .active` handler catches up (advancing through however many exercises/phases elapsed) on return to the foreground.
+- [x] **Extract a shared `SessionRecorder`** — new `Services/SessionRecorder.swift` consolidates the ~60 duplicated lines (Session insert, profile/streak/badges, HealthKit, Calendar, Widget write) that `SessionPlayerView` and `BreathingView` each drove independently; both views now call `SessionRecorder.record(...)`. Covered by `SessionRecorderTests.swift` (in-memory `ModelContainer`).
+- [ ] **Decide: wire or delete `uploadSession`/`uploadRoutine`** — written, never called; sessions/routines tables exist but receive nothing. If cross-device sync is the plan, wire them behind Supabase Auth; otherwise delete the dead paths. → **Sonnet 5** (after the auth task lands)
+- [x] **AuthManager unit tests** — extracted a `KeychainStore` protocol seam (`SecItemKeychainStore` for production, `FakeKeychainStore` in tests) and made the PBKDF2 hasher injectable (`PasswordHasher` typealias) so failures can be simulated deterministically. `AuthManagerTests.swift` covers signUp/signIn validation, duplicate accounts, corrupted stored credentials (missing separator / invalid hex salt), and empty-hash paths on both the signUp and signIn side. Suite is `.serialized` since `AuthManager` persists to the process-global `UserDefaults.standard`.
+
+## 🟡 Cleanups (cheap, batchable)
+
+- [ ] Replace `#if DEBUG print(...)` blocks with `os.Logger` categories → **Haiku 4.5**
+- [ ] Reuse one `ISO8601DateFormatter` in `SupabaseService.uploadSession` (creates two per call) → **Haiku 4.5**
+- [ ] `Session.completionPercent` semantics: app writes 0–1, schema check allows 0–100 — pick one and document → **Haiku 4.5**
+
+---
+
+## 🌿 Bend-inspired features (competitive parity)
+
+Features the Bend stretching app has that we don't; ordered by value-for-effort:
+
+- [ ] **Side-switch cues for unilateral stretches** — Bend splits e.g. "Neck Tilt" into left/right halves with a spoken "switch sides" cue mid-exercise. We already have mirrored L/R seed exercises; add an `isBilateral` flag so the player runs half the duration per side with a haptic + `VoiceCueService` cue. → **Opus 4.8** (touches seed data model + player)
+- [ ] **Duration multiplier (0.5×/1×/2×)** — Bend's single best-loved control: one segmented control before starting a routine scales every hold time. Trivial to pipe through `SessionPlayerView` as a multiplier on `durationSeconds`. → **Sonnet 5**
+- [ ] **Get-ready countdown between exercises** — Bend gives a 3-2-1 interstitial with the next exercise's name/preview instead of hard-cutting. Slot into `advanceToNext()` as a short `.transition` phase. → **Sonnet 5**
+- [ ] **Time-aware daily routine on Today tab** — Bend leads with one tappable "Your daily stretch" (Wake Up in the morning, Unwind at night). We have `ForYouSection` + `GoalMeta` pools; add a time-of-day pick and make it the Today tab hero. → **Sonnet 5**
+- [ ] **Streak freeze / repair** — Bend (like Duolingo) lets a missed day be repaired; softens the harshest churn moment. One earned "freeze" token per N sessions, consumed automatically in `GamificationService.updateStreak`. → **Sonnet 5** (pure logic + tests)
+- [ ] **Live Activity / Dynamic Island for active sessions** — remaining hold time on the lock screen; pairs perfectly with the backgrounding fix above. Needs a widget-extension target first (see Manual Xcode setup). → **Opus 4.8 + Jason** (ActivityKit code + target/entitlement in Xcode)
+- [ ] **Flexibility check-ins** — Bend's periodic "how far can you reach?" self-test with progress over time; big differentiator but a real feature (new model + views + charts). → **Fable/Opus 4.8, plan first**
+
+---
+
+## 🎨 UI queue — assigned to Jason (with tips)
+
+- [ ] **Session progress bar is exercise-granular** — `ProgressView(value: Double(currentIndex), total: Double(exercises.count))` jumps in whole-exercise steps. Tip: feed it `completedSeconds / totalSeconds` and wrap updates in `withAnimation(.linear(duration: 1))` so it glides once per tick.
+- [ ] **`BreathingCircle` in the session player pulses at a fixed 4s** regardless of the exercise's actual breathing pattern. Tip: either drive it from the same phase durations `BreathingView` uses, or swap in the phase-labeled circle so "Inhale/Exhale" text matches the motion — mismatched breathing pacing is the kind of thing wellness-app reviews call out.
+- [ ] **Completion overlay vs floating tab bar** — `BreathingView`'s completion overlay renders inside the tab's ZStack, so the floating `CustomTabBar` stays visible above it. Tip: present completion as `.fullScreenCover` (or raise its `zIndex` above the bar) so the moment feels like a reward screen, not a banner behind chrome. (Remember the per-page `.floatingTabBarClearance()` convention.)
+- [ ] **Paywall stacks directly onto the session-3 summary** — sheet-over-summary right after a win feels punitive. Tip: set a `pendingPaywall` flag and present it on the *next* app foreground or Home visit instead; conversion literature consistently favors "next natural pause" over "interrupt the reward".
+- [ ] **"No Exercises" empty state is a dead end** — the `ContentUnavailableView` in the player has only an X. Tip: `ContentUnavailableView` takes an `actions:` builder — add a "Browse Exercises" button that dismisses and switches to the Exercises tab.
+- [ ] **General polish pass** — buttons mix `Capsule` and `RoundedRectangle(14)` shapes across Breathing/Paywall/Onboarding; pick one radius token. Consider `.presentationDetents([.medium])` for the custom-pattern editor (it's a small form under a full sheet), and a light haptic on each breath-phase transition (you already have the generators prepared).
 
 ---
 
