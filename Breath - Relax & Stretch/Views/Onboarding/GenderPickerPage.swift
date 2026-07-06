@@ -57,11 +57,15 @@ private struct GenderCard: View {
     private var silhouetteFill: LinearGradient {
         sex == "male"
             ? LinearGradient(
-                colors: [Color(.systemBlue).opacity(0.28), Color(.systemCyan).opacity(0.12)],
+                colors: [Color(.systemBlue).opacity(0.9), Color(.systemCyan).opacity(0.6)],
                 startPoint: .top, endPoint: .bottom)
             : LinearGradient(
-                colors: [Color(.systemPink).opacity(0.28), Color(.systemOrange).opacity(0.12)],
+                colors: [Color(.systemPink).opacity(0.9), Color(.systemOrange).opacity(0.6)],
                 startPoint: .top, endPoint: .bottom)
+    }
+
+    private var figureSymbol: String {
+        sex == "male" ? "figure.stand" : "figure.stand.dress"
     }
 
     private var borderColor: Color {
@@ -72,21 +76,11 @@ private struct GenderCard: View {
         Button(action: action) {
             VStack(spacing: 14) {
                 ZStack {
-                    if sex == "male" {
-                        MaleSilhouetteShape()
-                            .fill(silhouetteFill)
-                            .overlay(
-                                MaleSilhouetteShape()
-                                    .stroke(borderColor.opacity(0.7), lineWidth: 1.2)
-                            )
-                    } else {
-                        FemaleSilhouetteShape()
-                            .fill(silhouetteFill)
-                            .overlay(
-                                FemaleSilhouetteShape()
-                                    .stroke(borderColor.opacity(0.7), lineWidth: 1.2)
-                            )
-                    }
+                    Image(systemName: figureSymbol)
+                        .resizable()
+                        .scaledToFit()
+                        .foregroundStyle(silhouetteFill)
+                        .padding(.vertical, 8)
                 }
                 .aspectRatio(0.46, contentMode: .fit)
                 .frame(maxWidth: .infinity)

@@ -2,44 +2,24 @@ import SwiftUI
 import SwiftData
 
 // MARK: - BodyMapView
+//
+// One 3D skin body map. Free-rotate to browse; enter Mark mode to freeze the
+// current rotation and draw on the visible projection. Strokes resolve to
+// anatomical muscle groups (via the invisible muscle proxy) and glow through the
+// skin in 3D. Marks persist in `MuscleMarkStore`; the marked-areas banner feeds
+// the exercise finder.
 
 struct BodyMapView: View {
-    @AppStorage("bodyMapSex") private var bodyMapSex = "male"
+    @State private var rig = BodyRig()
+    @StateObject private var store = MuscleMarkStore()
 
-    @State private var currentLayer: BodyLayer
     @State private var facing: BodyFacing = .front
-
-    init() {
-        // Overridable per-launch (-debugBodyLayer Muscle|Skeleton) so UI
-        // verification can land on any layer directly — no synthetic taps.
-        let raw = UserDefaults.standard.string(forKey: "debugBodyLayer") ?? ""
-        _currentLayer = State(initialValue: BodyLayer(rawValue: raw) ?? .skin)
-    }
-
-    // Regions the user has marked (by drawing on them or tapping them).
-    // This is the single source of truth for "areas to train on".
-    @State private var markedRegions: Set<String> = []
-    @State private var showMarkedExercises = false
-
-    // Annotation state
     @State private var annotationMode = UserDefaults.standard.bool(forKey: "debugMarkMode")
-    @StateObject private var annotationStore = AnnotationStore()
-    @State private var selectedTool: DrawingTool       = .pen
+
+    @State private var selectedTool: DrawingTool        = .pen
     @State private var selectedSensation: SensationColor = sensationColors[0]
     @State private var showLegend = false
-
-    // Zoom & pan
-    @State private var zoomScale: CGFloat = 1
-    @State private var lastScale: CGFloat = 1
-    @State private var panOffset: CGSize = .zero
-    @State private var lastPan: CGSize = .zero
-
-    private let minZoom: CGFloat = 1
-    private let maxZoom: CGFloat = 4
-    private let fingerZoomThreshold: CGFloat = 2.2
-
-    /// Individual fingers become tappable once zoomed in past the threshold.
-    private var detailLevel: BodyDetail { zoomScale >= fingerZoomThreshold ? .fine : .normal }
+    @State private var showMarkedExercises = false
 
     var body: some View {
         NavigationStack {
@@ -52,73 +32,41 @@ struct BodyMapView: View {
                         .padding(.vertical, 8)
                         .background(.regularMaterial)
                 } else {
-                    HStack(spacing: 8) {
-                        layerPickerRow
-                        Spacer(minLength: 8)
+                    HStack {
+                        Spacer()
                         facingToggleButton
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                 }
 
-                // ── The body figure ───────────────────────────────────────────
-                // All three layers (skin, muscle, skeleton) are freely-rotatable
-                // 3D models with their own drag/pinch gestures. Marking needs a
-                // fixed front/back projection, so entering Mark mode locks the
-                // model's rotation and overlays the same invisible region grid,
-                // calibrated to the same footprint regardless of layer.
-                Group {
-                    if !annotationMode {
-                        BodySceneView(facing: facing, style: currentLayer.modelStyle)
-                    } else {
-                        GeometryReader { geo in
-                            ZStack {
-                                // Matches BodyFigureCanvas's own internal figure
-                                // padding so the 3D render and the region grid it
-                                // carries land in the same box.
-                                BodySceneView(facing: facing,
-                                              style: currentLayer.modelStyle,
-                                              interactive: false)
-                                    .padding(.horizontal, 28)
-                                    .padding(.vertical, 6)
-                                BodyFigureCanvas(layer: currentLayer,
-                                                 facing: facing,
-                                                 detail: detailLevel,
-                                                 annotationMode: annotationMode,
-                                                 selectedTool: selectedTool,
-                                                 selectedSensation: selectedSensation,
-                                                 sex: bodyMapSex,
-                                                 showSilhouette: false,
-                                                 store: annotationStore,
-                                                 markedRegions: $markedRegions)
-                            }
-                                .scaleEffect(zoomScale, anchor: .center)
-                                .offset(panOffset)
-                                // scaleEffect/offset are reversed during hit-testing, so
-                                // taps and drawing still map onto the true region geometry.
-                                .frame(width: geo.size.width, height: geo.size.height)
-                                .contentShape(Rectangle())
-                                .gesture(panGesture(container: geo.size))
-                                .simultaneousGesture(magnifyGesture)
-                                .clipped()
-                                .overlay(alignment: .bottomTrailing) {
-                                    zoomControls.padding(12)
-                                }
-                                .overlay(alignment: .top) {
-                                    if detailLevel == .fine {
-                                        Text("Zoom detail — tap fingers, toes, eyes & nose")
-                                            .font(.caption2.weight(.medium))
-                                            .padding(.horizontal, 10).padding(.vertical, 5)
-                                            .background(.regularMaterial, in: Capsule())
-                                            .padding(.top, 6)
-                                            .transition(.opacity)
-                                    }
-                                }
-                        }
+                // ── The 3D body ──────────────────────────────────────────────
+                if rig.loadFailed {
+                    ContentUnavailableView(
+                        "3D Model Unavailable",
+                        systemImage: "figure.stand",
+                        description: Text("The body model couldn't be loaded.")
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ZStack(alignment: .top) {
+                        MarkableBodyView(
+                            rig: rig,
+                            markMode: annotationMode,
+                            inkColor: inkColor,
+                            onStrokePoint: handleStrokePoint,
+                            onStrokeEnded: {}
+                        )
+                        Text(annotationMode ? "Draw on the areas that hurt or feel tight"
+                                            : "Drag to rotate · pinch to zoom")
+                            .font(.caption2.weight(.medium))
+                            .padding(.horizontal, 10).padding(.vertical, 5)
+                            .background(.regularMaterial, in: Capsule())
+                            .padding(.top, 6)
+                            .opacity(0.85)
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .animation(.easeInOut(duration: 0.15), value: detailLevel)
 
                 // ── Bottom bar ───────────────────────────────────────────────
                 if annotationMode {
@@ -126,88 +74,74 @@ struct BodyMapView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
                         .background(.regularMaterial)
-                } else if !markedRegions.isEmpty {
+                } else if !store.marks.isEmpty {
                     MarkedAreasBanner(
-                        regionNames: markedRegions.sorted(),
+                        regionNames: store.markedNames.sorted(),
                         onFind:  { showMarkedExercises = true },
-                        onClear: { withAnimation { markedRegions.removeAll() } }
+                        onClear: { withAnimation { store.clear() } }
                     )
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
             .floatingTabBarClearance()
-            .navigationTitle(annotationMode ? "Mark Your Body" : "Body Map")
+            .navigationTitle(annotationMode ? "Mark Areas" : "Body Map")
             .navigationBarTitleDisplayMode(.inline)
-            .animation(.easeInOut(duration: 0.25), value: currentLayer)
             .animation(.easeInOut(duration: 0.25), value: facing)
-            .animation(.easeInOut(duration: 0.2),  value: markedRegions.isEmpty)
+            .animation(.easeInOut(duration: 0.2),  value: store.marks.isEmpty)
             .animation(.easeInOut(duration: 0.2),  value: annotationMode)
             .navigationDestination(isPresented: $showMarkedExercises) {
-                BodyPartExercisesView(bodyParts: markedRegions.sorted())
+                BodyPartExercisesView(bodyParts: store.markedNames.sorted())
             }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            annotationMode.toggle()
-                        }
+                        withAnimation(.easeInOut(duration: 0.2)) { annotationMode.toggle() }
                     } label: {
-                        Label(
-                            annotationMode ? "Done" : "Mark",
-                            systemImage: annotationMode
-                                ? "checkmark.circle.fill"
-                                : "pencil.tip.crop.circle"
-                        )
+                        Label(annotationMode ? "Done" : "Mark",
+                              systemImage: annotationMode
+                                  ? "checkmark.circle.fill"
+                                  : "pencil.tip.crop.circle")
                     }
                     .accessibilityLabel(annotationMode ? "Finish marking" : "Mark areas by drawing")
                 }
             }
             .sheet(isPresented: $showLegend) { LegendSheet() }
-            .onAppear {
-                if let saved = UserDefaults.standard.stringArray(forKey: "bodymap.markedRegions") {
-                    markedRegions = markedRegions.union(saved)
-                }
-            }
-            .onChange(of: markedRegions) { _, regions in
-                UserDefaults.standard.set(Array(regions), forKey: "bodymap.markedRegions")
-            }
+            .onAppear(perform: applyHighlights)
+            .onChange(of: store.marks) { _, _ in applyHighlights() }
         }
     }
 
-    // MARK: - Layer + facing controls
+    // MARK: - Stroke handling
 
-    private var layerPickerRow: some View {
-        HStack(spacing: 6) {
-            ForEach(BodyLayer.allCases, id: \.self) { layer in
-                let isActive = currentLayer == layer
-                Button {
-                    withAnimation(.spring(response: 0.28, dampingFraction: 0.76)) {
-                        currentLayer = layer
-                    }
-                } label: {
-                    Text(layer.rawValue)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(isActive ? .white : .secondary)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 7)
-                        .background {
-                            Capsule()
-                                .fill(isActive ? layer.accentColor : Color(.tertiarySystemFill))
-                        }
-                }
-                .buttonStyle(.plain)
-                .animation(.spring(response: 0.28, dampingFraction: 0.76), value: currentLayer)
-                .accessibilityLabel("\(layer.rawValue) layer")
-                .accessibilityAddTraits(isActive ? .isSelected : [])
-            }
+    private var inkColor: UIColor {
+        selectedTool == .eraser ? UIColor.systemGray : UIColor(selectedSensation.color)
+    }
+
+    private func handleStrokePoint(_ group: MuscleGroup?) {
+        guard let group else { return }
+        if selectedTool == .eraser {
+            store.unmark(group)
+        } else {
+            store.mark(group, colorID: selectedSensation.id)
         }
     }
+
+    private func applyHighlights() {
+        let colors: [String: UIColor] = store.marks.reduce(into: [:]) { dict, pair in
+            let swiftColor = sensationColors.first { $0.id == pair.value }?.color ?? .red
+            dict[pair.key] = UIColor(swiftColor)
+        }
+        rig.setHighlights(colors, resolver: { rig.proxyGroups[$0] })
+    }
+
+    // MARK: - Facing control
 
     private var facingToggleButton: some View {
         Button {
             withAnimation(.easeInOut(duration: 0.28)) {
                 facing = facing == .front ? .back : .front
             }
+            rig.snap(to: facing == .front ? 0 : .pi)
         } label: {
             HStack(spacing: 4) {
                 Image(systemName: "arrow.left.arrow.right")
@@ -224,93 +158,13 @@ struct BodyMapView: View {
         .accessibilityLabel("Toggle body facing — currently \(facing.rawValue)")
     }
 
-    // MARK: - Zoom & pan
-
-    private var magnifyGesture: some Gesture {
-        MagnifyGesture()
-            .onChanged { value in
-                zoomScale = min(max(lastScale * value.magnification, minZoom), maxZoom)
-            }
-            .onEnded { _ in
-                lastScale = zoomScale
-                if zoomScale <= minZoom + 0.01 { resetZoom() }
-            }
-    }
-
-    private func panGesture(container: CGSize) -> some Gesture {
-        DragGesture()
-            .onChanged { value in
-                guard zoomScale > 1, !annotationMode else { return }
-                let proposed = CGSize(width:  lastPan.width  + value.translation.width,
-                                      height: lastPan.height + value.translation.height)
-                panOffset = clampPan(proposed, container: container)
-            }
-            .onEnded { _ in lastPan = panOffset }
-    }
-
-    private func clampPan(_ offset: CGSize, container: CGSize) -> CGSize {
-        let maxX = max(0, (zoomScale - 1) * container.width  / 2)
-        let maxY = max(0, (zoomScale - 1) * container.height / 2)
-        return CGSize(width:  min(max(offset.width,  -maxX), maxX),
-                      height: min(max(offset.height, -maxY), maxY))
-    }
-
-    private func stepZoom(_ delta: CGFloat) {
-        let target = min(max(zoomScale + delta, minZoom), maxZoom)
-        withAnimation(.easeInOut(duration: 0.2)) {
-            zoomScale = target
-            lastScale = target
-            panOffset = .zero          // re-centre on button zoom
-            lastPan   = .zero
-        }
-    }
-
-    private func resetZoom() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            zoomScale = 1; lastScale = 1; panOffset = .zero; lastPan = .zero
-        }
-    }
-
-    private var zoomControls: some View {
-        VStack(spacing: 0) {
-            zoomButton("plus")  { stepZoom(0.6) }
-                .disabled(zoomScale >= maxZoom - 0.01)
-            Divider().frame(width: 30)
-            zoomButton("minus") { stepZoom(-0.6) }
-                .disabled(zoomScale <= minZoom + 0.01)
-            if zoomScale > minZoom + 0.01 {
-                Divider().frame(width: 30)
-                zoomButton("arrow.counterclockwise") { resetZoom() }
-            }
-        }
-        .frame(width: 38)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color(.systemGray4), lineWidth: 0.5))
-        .shadow(color: .black.opacity(0.12), radius: 5, y: 2)
-    }
-
-    private func zoomButton(_ icon: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: icon)
-                .font(.system(size: 15, weight: .semibold))
-                .frame(width: 38, height: 38)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(icon == "plus" ? "Zoom in"
-                          : icon == "minus" ? "Zoom out" : "Reset zoom")
-    }
-
     // MARK: - Annotation toolbar (top)
 
     private var annotationToolbarView: some View {
         HStack(spacing: 12) {
-            // Tool picker
             HStack(spacing: 0) {
                 ForEach(DrawingTool.allCases) { tool in
-                    Button {
-                        selectedTool = tool
-                    } label: {
+                    Button { selectedTool = tool } label: {
                         Image(systemName: tool.icon)
                             .font(.system(size: 16, weight: .medium))
                             .frame(width: 40, height: 36)
@@ -321,30 +175,26 @@ struct BodyMapView: View {
                     .accessibilityLabel(tool.label)
                 }
             }
-            .background(Color(.secondarySystemFill),
-                        in: RoundedRectangle(cornerRadius: 10))
+            .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: 10))
 
             Spacer()
 
-            Button { annotationStore.undo() } label: {
+            Button { store.undo() } label: {
                 Image(systemName: "arrow.uturn.backward")
                     .font(.system(size: 16, weight: .medium))
                     .frame(width: 36, height: 36)
             }
-            .disabled(annotationStore.strokes.isEmpty)
-            .accessibilityLabel("Undo last stroke")
+            .disabled(store.marks.isEmpty)
+            .accessibilityLabel("Undo last mark")
 
             Button(role: .destructive) {
-                withAnimation {
-                    annotationStore.clear()
-                    markedRegions.removeAll()
-                }
+                withAnimation { store.clear() }
             } label: {
                 Image(systemName: "trash")
                     .font(.system(size: 16, weight: .medium))
                     .frame(width: 36, height: 36)
             }
-            .disabled(annotationStore.strokes.isEmpty && markedRegions.isEmpty)
+            .disabled(store.marks.isEmpty)
             .accessibilityLabel("Clear all marks")
 
             Button { showLegend = true } label: {
