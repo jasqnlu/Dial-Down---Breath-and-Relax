@@ -1,6 +1,8 @@
 # Breath: Relax & Stretch — TODO
 
-Updated 2026-07-06 (rev 3 — infrastructure sweep)
+Updated 2026-07-06 (rev 4 — consolidated queue: model assignments, Jason tasks, risk register)
+
+Model tags: **Haiku 4.5** = cheap/mechanical · **Sonnet 5** = standard feature/fix work · **Opus 4.8** = complex multi-file features · **Fable 5** = conflict-heavy merges / judgment-heavy work · **Jason** = human-only (Blender, Xcode capabilities, accounts, content).
 
 ---
 
@@ -68,7 +70,7 @@ Updated 2026-07-06 (rev 3 — infrastructure sweep)
 - [x] **Social / community scaffold** — `RemoteProfile` DTO + `SupabaseService.uploadProfile()`/`fetchLeaderboard()`; `LeaderboardView`; `ChallengePayload` shares streak/points as a `breath://challenge?data=...` link with a "Challenge a Friend" button in Profile → Account; `ChallengeInviteView` handles incoming invites and routes into a Quick Session. Like routine borrowing, the leaderboard won't show real data until Supabase credentials are configured
 - [x] **Apple Watch app (code)** — `BreathWatch/` (watch app: pattern picker, glanceable timer, `HKWorkoutSession`-backed live heart rate during the session) + `BreathWatchComplication/` (circular/rectangular streak complication, reads the same App Group data as the iOS widget)
 - [x] **Localization infrastructure** — `Localizable.xcstrings` String Catalog with ~80 of the highest-traffic strings (tab names, common actions, breathing patterns, settings, progress, community, onboarding) translated into Spanish, French, and Simplified Chinese; `es`/`fr`/`zh-Hans` added to the project's `knownRegions`. **AI-translated — get a native speaker pass before shipping.** Exercise instruction text in `SeedData.json` (44 exercises) is not yet localized — that's a separate, much larger effort
-- [x] **Body layer switching** — turns out this was already fully implemented (`BodyMapView`'s Skin/Muscle/Skeleton segmented picker + `BodyLayer.silhouetteFill`/`.highlightColor` in `HumanFigureView.swift`) — the old TODO note calling this unbuilt was stale
+- [x] **Body layer switching** — turns out this was already fully implemented (`BodyMapView`'s Skin/Muscle/Skeleton segmented picker + `BodyLayer.silhouetteFill`/`.highlightColor` in `HumanFigureView.swift`) — the old TODO note calling this unbuilt was stale. **Superseded (rev 4): the layer picker is being REMOVED — see § 1, bodymap merge**
 
 **Discovered while implementing the above (not new work, just corrections):**
 - `RoutineSharePayload`/`ChallengePayload` share near-identical base64 URL-encode/decode logic. Left un-DRY'd for now, consistent with this codebase's existing tolerance for that kind of small duplication (e.g. the repeated `#if DEBUG` SwiftData-save-error blocks) — revisit if a third payload type shows up.
@@ -91,7 +93,7 @@ Updated 2026-07-06 (rev 3 — infrastructure sweep)
 - [x] **StoreManager** — StoreKit 2 `ObservableObject`: loads products, purchases, restores, listens to `Transaction.updates`, computes `isPro`/`hasLifetime`/`owns(productID:)` from `Transaction.currentEntitlements`
 - [x] **GuidedProgram** — `proFullReset` is a real 30-day structure generated from the existing `GoalMeta` exercise pools (rotating offset, not hand-authored filler); `starterProgram(goalIDs:)` is a free 3-day program personalized from the user's onboarding goals — this *is* the "quick starter survey → small program" since onboarding's goal picker already serves as the survey
 - [x] **ContentPack** — 2 packs (Desk Worker, Athlete Recovery), each a curated list of existing exercises gated behind its own non-consumable IAP; verified every referenced exercise name actually exists in `SeedData.json`
-- [x] **PaywallView** — Monthly/Annual/Lifetime cards, "Launch Sale" strikethrough pricing (flagged with an `isLaunchPeriod` flag to turn off later — the real charged price always comes live from StoreKit, the strikethrough is just marketing framing), live-computed annual savings %, 7-day trial messaging, restore purchases
+- [x] **PaywallView** — Monthly/Annual/Lifetime cards, "Launch Sale" strikethrough pricing (flagged with an `isLaunchPeriod` flag to turn off later — the real charged price always comes live from StoreKit, the strikethrough is just marketing framing), live-computed annual savings %, 7-day trial messaging, restore purchases. **⚠ See § 3 — the strikethrough/trial copy needs a compliance pass before submission**
 - [x] **GuidedProgramsView / GuidedProgramDetailView / ContentPacksView** — Day 1 of `proFullReset` is always playable as a free preview; days 2–30 prompt the paywall when `!isPro`. Entry points added: Routines tab (Guided Programs + Content Packs links), Profile → Account ("Upgrade to Breath Pro" banner, hidden once Pro)
 - [x] **Paywall trigger** — fires once after the 3rd completed session (`hasSeenInitialPaywall` flag prevents repeats), in both `SessionPlayerView` and `BreathingView`. Made mutually exclusive with the StoreKit review prompt at session 3 specifically (review now fires at 10/25 only) so the two sheets never collide
 
@@ -128,37 +130,87 @@ None of this can be done from the command line — these features are fully code
 
 ---
 
-## 🔴 High Priority — engineering queue (model recommendations noted)
+## ✅ Completed (v0.8 — engineering queue + Sonnet-5 batch, 2026-07-06)
 
-- [x] **Wire Supabase Auth end-to-end** — done (Fable 5, 2026-07-06): `AuthManager.prepareAppleSignInRequest` adds a SHA-256 nonce; `handleAppleCredential` exchanges the Apple identity token for a Supabase session (`SupabaseService.signInWithApple`), persisted in the keychain as `SupabaseSession` and auto-refreshed ~2 min before expiry. New `AuthManager.backendID` (auth.uid() when Apple-signed-in, anonymous UUID otherwise) keys all community rows; RLS in `supabase_schema.sql` tightened to `auth.uid()` with `drop policy if exists` migration. Trade-off (by design): guests/email users read community data but their uploads are rejected — LeaderboardView says so. **Manual steps required** — see ⚙️ section (Apple provider + re-run schema). Design doc: [docs/superpowers/specs/2026-07-06-supabase-auth-and-flexibility-checkins-design.md](docs/superpowers/specs/2026-07-06-supabase-auth-and-flexibility-checkins-design.md)
-- [x] **Background-resilient session timers** — `SessionPlayerView`/`BreathingView` now anchor to a wall-clock `phaseEndDate` instead of decrementing a tick counter, so a backgrounded app (call, app-switch) no longer freezes the countdown while real time keeps passing. Pause/resume banks the remaining interval; a `scenePhase == .active` handler catches up (advancing through however many exercises/phases elapsed) on return to the foreground.
-- [x] **Extract a shared `SessionRecorder`** — new `Services/SessionRecorder.swift` consolidates the ~60 duplicated lines (Session insert, profile/streak/badges, HealthKit, Calendar, Widget write) that `SessionPlayerView` and `BreathingView` each drove independently; both views now call `SessionRecorder.record(...)`. Covered by `SessionRecorderTests.swift` (in-memory `ModelContainer`).
-- [ ] **Decide: wire or delete `uploadSession`/`uploadRoutine`** — written, never called; sessions/routines tables exist but receive nothing. If cross-device sync is the plan, wire them behind Supabase Auth; otherwise delete the dead paths. → **Sonnet 5** (after the auth task lands)
-- [x] **AuthManager unit tests** — extracted a `KeychainStore` protocol seam (`SecItemKeychainStore` for production, `FakeKeychainStore` in tests) and made the PBKDF2 hasher injectable (`PasswordHasher` typealias) so failures can be simulated deterministically. `AuthManagerTests.swift` covers signUp/signIn validation, duplicate accounts, corrupted stored credentials (missing separator / invalid hex salt), and empty-hash paths on both the signUp and signIn side. Suite is `.serialized` since `AuthManager` persists to the process-global `UserDefaults.standard`.
-
-## 🟡 Cleanups (cheap, batchable)
-
-- [x] Replace `#if DEBUG print(...)` blocks with `os.Logger` categories → **Haiku 4.5**
-- [x] Reuse one `ISO8601DateFormatter` in `SupabaseService.uploadSession` (creates two per call) → **Haiku 4.5**
-- [x] `Session.completionPercent` semantics: app writes 0–1, schema check allows 0–100 — pick one and document → **Haiku 4.5**
-
----
-
-## 🌿 Bend-inspired features (competitive parity)
-
-Features the Bend stretching app has that we don't; ordered by value-for-effort:
-
-- [ ] **Side-switch cues for unilateral stretches** — Bend splits e.g. "Neck Tilt" into left/right halves with a spoken "switch sides" cue mid-exercise. We already have mirrored L/R seed exercises; add an `isBilateral` flag so the player runs half the duration per side with a haptic + `VoiceCueService` cue. → **Opus 4.8** (touches seed data model + player)
-- [ ] **Duration multiplier (0.5×/1×/2×)** — Bend's single best-loved control: one segmented control before starting a routine scales every hold time. Trivial to pipe through `SessionPlayerView` as a multiplier on `durationSeconds`. → **Sonnet 5**
-- [ ] **Get-ready countdown between exercises** — Bend gives a 3-2-1 interstitial with the next exercise's name/preview instead of hard-cutting. Slot into `advanceToNext()` as a short `.transition` phase. → **Sonnet 5**
-- [ ] **Time-aware daily routine on Today tab** — Bend leads with one tappable "Your daily stretch" (Wake Up in the morning, Unwind at night). We have `ForYouSection` + `GoalMeta` pools; add a time-of-day pick and make it the Today tab hero. → **Sonnet 5**
-- [ ] **Streak freeze / repair** — Bend (like Duolingo) lets a missed day be repaired; softens the harshest churn moment. One earned "freeze" token per N sessions, consumed automatically in `GamificationService.updateStreak`. → **Sonnet 5** (pure logic + tests)
-- [ ] **Live Activity / Dynamic Island for active sessions** — remaining hold time on the lock screen; pairs perfectly with the backgrounding fix above. Needs a widget-extension target first (see Manual Xcode setup). → **Opus 4.8 + Jason** (ActivityKit code + target/entitlement in Xcode)
-- [x] **Flexibility check-ins** — done (Fable 5, 2026-07-06, design doc first per plan): 4 standard self-tests (Toe Touch / Shoulder Reach / Neck Rotation / Butterfly) × 5 ordinal levels; `FlexibilityCheckIn` @Model + `FlexibilityStats`; `FlexibilityCheckInView` sheet flow (skip any test, saves only on Finish); Progress screen "Flexibility" card with latest level + delta per test, 14-day re-check nudge, and a step-line chart once a test has ≥2 points. 13 unit tests + an end-to-end XCUITest (which also surfaced & fixed the broken UITests target: stale `TEST_TARGET_NAME`). No gamification points for v1 — revisit deliberately.
+- [x] **Wire Supabase Auth end-to-end** (Fable 5) — Apple identity token → Supabase session, keychain-persisted + auto-refreshed; `AuthManager.backendID` keys community rows; RLS tightened to `auth.uid()`. Manual steps remain in ⚙️. Design doc: [docs/superpowers/specs/2026-07-06-supabase-auth-and-flexibility-checkins-design.md](docs/superpowers/specs/2026-07-06-supabase-auth-and-flexibility-checkins-design.md)
+- [x] **Background-resilient session timers** — wall-clock `phaseEndDate` anchoring in `SessionPlayerView`/`BreathingView`; pause banks remaining time; `scenePhase` catch-up on foreground
+- [x] **Shared `SessionRecorder`** — consolidates the ~60 duplicated save/streak/HealthKit/Calendar/Widget lines from both players; covered by `SessionRecorderTests`
+- [x] **AuthManager unit tests** — `KeychainStore` seam + injectable `PasswordHasher`; covers validation, duplicates, corrupted credentials, empty-hash paths
+- [x] **Flexibility check-ins** (Fable 5) — 4 self-tests × 5 levels; `FlexibilityCheckIn` @Model, Progress card with deltas + step-line chart, 14-day nudge; 13 unit tests + e2e XCUITest (also fixed stale `TEST_TARGET_NAME` in the UITests target)
+- [x] **Duration multiplier (0.5×/1×/2×)** (Sonnet 5, `97738e5`) — segmented control in the session player scales every hold time
+- [x] **Get-ready countdown between exercises** (Sonnet 5, `fcf76b3` + re-entrancy/cancellation fixes `3963ddc`/`8cba850`/`c849af3`/`48bd8b9`) — 3-2-1 interstitial with next exercise name; "Auto-Skip" toggle in Settings
+- [x] **Time-aware Today hero** (Sonnet 5, `5612a22`) — Wake Up (5–11h) / Unwind (20–5h) curated pools via new `GoalMeta` entries
+- [x] **Streak freeze + streak-lost alert** (Sonnet 5, `91df7e2` + `29d8ca1`) — 1 token earned per 7 sessions; broken-streak detection on Today appear; restore spends a token, dismiss doesn't
+- [x] **Haiku cleanups** — `os.Logger` categories replace `#if DEBUG print`; one shared `ISO8601DateFormatter`; `completionPercent` semantics documented as 0–1
 
 ---
 
-## 🎨 UI queue — assigned to Jason (with tips)
+## 1 · 🔀 In-flight branches to land (highest value — the work already exists)
+
+Merge order: bodymap → breathing-preview → onboarding-survey → branch triage → page-titles (audits the merged result, runs LAST).
+
+- [ ] **Merge `feature/bodymap-3d-marking` into main** → **Fable 5**. This is the "remove the Skin/Muscle/Skeleton tabs" item: the branch (code-complete T1–T6 at `c00a973`, build + tests green, simulator-verified) replaces the three-layer picker with ONE skin map; strokes hit-test an invisible muscle proxy (`MuscleNameResolver` → ~40 `MuscleGroup`s) and marked muscles glow through the skin in 3D. Deletes `HumanFigureView`, `BodyFigureCanvas`, `MuscleAnatomyCanvas`, `SkeletonAnatomyCanvas`, `AnatomyDrawingHelpers`, `AnnotationStore`, `BodySkeleton.obj`. **The branch diverged at `9184a78` — before Supabase auth, flexibility check-ins, and the Sonnet-5 batch.** Conflict hot spots: `SessionPlayerView.swift`, `TodayView.swift`, `supabase_schema.sql`, `GamificationServiceTests.swift`, `TODO.md`. Resolution rule: keep main's newer feature code; take the branch's body-map deletions/additions wholesale. After merge: full test suite + simulator verify (browse, mark mode at an oblique angle, find-exercises from a marked group). Also lands `docs/BLENDER_MUSCLE_EXPORT.md` + `docs/superpowers/2026-07-05-master-todo.md` on main.
+- [ ] **Finish breathing preview (Task 2)** → **Opus 4.8**. Task 1 (`BreathPreviewController` + tests) is committed at `3649fff`; the `BreathingView` wiring sits **half-done and uncommitted** in worktree `.claude/worktrees/agent-ac2c9b9e789ee75c0`. Recover it, finish per [plan](docs/superpowers/plans/2026-07-04-4-breathing-preview.md), discard the off-plan `BreathingPreviewUITests.swift`, merge.
+- [ ] **Onboarding survey + facts** → **Opus 4.8**. Per [plan](docs/superpowers/plans/2026-07-04-3-onboarding-survey.md): 5 survey questions interleaved with cited stretching-fact cards; answers pre-mark body-map muscles + pre-fill the reminder hour. **Blocked on the bodymap merge** (needs `MuscleMarkStore`/`MuscleGroup` on main).
+- [ ] **Branch triage — ~24 unmerged fix/test branches ship nowhere** → **Opus 4.8**. For each: already re-implemented on main (e.g. `fix/deadline-based-timers`) → delete ref; still valuable → rebase-merge. Likely keepers: `fix/signout-clears-userdefaults`, `fix/email-case-sensitivity`, `fix/apple-signin-email-recovery` (stable Apple user ID never persisted), `fix/seed-exercise-stable-uuid`, `fix/userprofile-dedupe`, `fix/watch-deadline-based-timer` (main only fixed the iOS timers), `test/core-logic-unit-tests`.
+- [ ] **Page-title audit + fixes** → **Sonnet 5** (drives the simulator via the repo's `verify` skill). Per [plan](docs/superpowers/plans/2026-07-04-5-page-titles.md): screenshot audit at iPhone SE width, then convention/truncation fixes (tab roots `.large`, pushed pages `.inline`, shorten colliding literals). Titles are being fixed, not removed.
+
+---
+
+## 2 · 🔧 Engineering queue
+
+- [ ] **Decide: wire or delete `uploadSession`/`uploadRoutine`** → **Sonnet 5** (auth landed, so this is unblocked). Written, never called. Delete unless cross-device sync is imminent — and drop the matching Supabase policies so no dead write-path stays open.
+- [ ] **Exercise cautions shown in-session** → **Sonnet 5**. 5+ entry points (`HomeView`, `TodayView`, `ForYouSection`, `ExerciseListView`, `GuidedProgramDetailView`) launch `SessionPlayerView` directly, bypassing the detail page's CautionCard; 66/152 seed exercises define cautions. Render the caution on the get-ready screen — it's the natural slot now that the countdown exists. Safety issue for a wellness app.
+- [ ] **Side-switch cues for unilateral stretches** → **Opus 4.8**. `isBilateral` flag on seed exercises; player runs half the duration per side with a haptic + `VoiceCueService` "switch sides" cue (touches seed data model + player).
+- [ ] **Background-load the OBJ models** → **Sonnet 5**, after the bodymap merge. First Body Map open parses multi-MB OBJs synchronously on the main thread — seconds-long freeze on older devices. Load templates off-main with a placeholder.
+- [ ] **Live Activity / Dynamic Island for active sessions** → **Opus 4.8 + Jason**. Remaining hold time on the lock screen; needs the widget-extension target to exist first (⚙️ section).
+- [ ] **Data export completeness** → **Sonnet 5**. Export omits profile, badges, routines — "Export My Data" should cover all user-generated data (GDPR expectation).
+- [ ] **`seedDataVersion` bumps even when `context.save()` fails** → **Haiku 4.5**. `Breath__Relax___StretchApp.swift` (v3 path line ~183 and the v4 equivalent) — a failed save silently skips the migration forever. Bump only after a successful save.
+- [ ] **`restorePurchases` swallows failures** → **Haiku 4.5**. `try? await AppStore.sync()` in `StoreManager` — surface an alert on failure.
+- [ ] **Rename the "2FA" toggle** → **Haiku 4.5**. It's a biometric app-lock, not two-factor auth (`auth.twoFAEnabled`). Rename UI copy + defaults key (with migration), and fix the v0.1 claim above.
+
+---
+
+## 3 · 🚨 App Store / compliance risk register (fix BEFORE TestFlight / submission)
+
+Things that will bite later if ignored — ordered by severity:
+
+- [ ] **No `PrivacyInfo.xcprivacy` anywhere** → **Sonnet 5**. Uploads fail (ITMS-91053) on required-reason APIs — UserDefaults is used everywhere. Declare reason CA92.1 + collected data types (leaderboard display name/stats). Widget/Watch targets need it too once they exist.
+- [ ] **Paywall compliance (Guideline 3.1.2)** → **Sonnet 5 + Jason**. Live issues in `PaywallView.swift`: fabricated strikethrough compare-at prices ($39.99/$5.99/$89.99) inside a hardcoded 90-day "launch window" from a guessed date; hardcoded `"$"` breaks every non-USD storefront; "7-Day Free Trial" copy not derived from `product.subscription?.introductoryOffer`; **no Terms of Use / Privacy Policy links** (required for auto-renewing subscriptions). Model work: derive trial + prices from StoreKit, delete invented strikethroughs. Jason: host real Terms/Privacy pages (model can generate the HTML).
+- [ ] **In-app Privacy Policy makes a false claim** → **Haiku 4.5** now, **Jason** later. `ProfileSettingsTab` says data lives in a "private Supabase instance" — it's a shared project with the key in the binary. Fix the copy now; replace with the real hosted policy when it exists. `AuthView`'s ToS text also links nowhere.
+- [ ] **Localization is ~36% complete across 4 declared languages** → **Jason decision**, then **Sonnet 5**. es/fr/zh users get mixed-language UI. Either finish coverage (+ native-speaker pass) or remove the languages from `knownRegions` until ready.
+- [ ] **"Female" body-type picker promises a model that doesn't exist** → **Haiku 4.5** (soften the copy now); female mesh is a Jason/Blender task later (§ 4B).
+- [ ] **Migration matches exercises by name** → **Opus 4.8** (fold into branch triage — pairs with `fix/seed-exercise-stable-uuid`). A user renaming a seed exercise breaks migration for that row forever; key on stable UUIDs.
+- [ ] **Placeholder credentials still shipping** — `group.REPLACE_WITH_YOUR_BUNDLE_ID` (`WidgetDataService.swift:15`), Supabase URL/key, Google Client ID. All inert but must be resolved via ⚙️ before the features go live (**Jason**).
+- [ ] **~7 MB of OBJs in the bundle** → **Sonnet 5**, low priority, after the bodymap merge settles. Convert to `.scn`/`.usdz` (5–10× smaller); pairs with the background-loading item in § 2.
+
+---
+
+## 4 · 🧑‍🎨 Jason's queue (human-only)
+
+### A. Blender — per-muscle hitbox export (unblocks accurate marking; **no code change needed after**)
+
+The merged `BodyMuscle.obj` (single `o AnatomyExport`) makes marking fall back to a coarse position heuristic. A per-muscle re-export switches on full accuracy + muscle glow automatically. Full guide: [docs/BLENDER_MUSCLE_EXPORT.md](docs/BLENDER_MUSCLE_EXPORT.md) (lands with the bodymap merge). Summary:
+
+1. Open the Z-Anatomy `.blend`; in the Outliner select the **muscular-system collection**. **Do not join objects** — each muscle keeps its own name.
+2. Decimate first: add a **Decimate (Collapse)** modifier, ratio ≈ 0.1, to all muscle objects and **Apply** (target < 8 MB total — the proxy is never drawn, heavy geometry is pure waste).
+3. `File ▸ Export ▸ Wavefront (.obj)`: **Limit to Selected Only ON**, **OBJ Objects ON** (this is what preserves per-muscle `o` names), **Apply Modifiers ON**, **Triangulated Mesh ON**, Forward **−Z**, Up **Y** (must match the skin export so the proxy aligns; scale doesn't matter — the app re-normalises).
+4. Replace `Breath - Relax & Stretch/Resources/Models3D/BodyMuscle.obj` and verify:
+   `grep -c "^o " BodyMuscle.obj` → **hundreds** = success; **1** = still merged, redo step 3.
+   Spot-check names (`grep "^o " BodyMuscle.obj | head`) — expect `o Gastrocnemius.l` style; if a name isn't recognised, add a keyword to `MuscleNameResolver`'s table.
+
+**Resources:** Z-Anatomy project (z-anatomy.com; .blend sources at github.com/LluisV/Z-Anatomy) · Blender manual → File Formats → Wavefront OBJ (export options) · Blender manual → Modifiers → Decimate · this repo's `docs/BLENDER_MUSCLE_EXPORT.md` + the Claude memory note `bodymap_3d_skin_architecture.md` (normalisation/alignment conventions).
+
+### B. Blender — later / optional
+
+- [ ] **Female body mesh** — Z-Anatomy includes one; export the female skin with the same settings/pipeline as `BodyMale.obj` (the code re-normalises: bbox-centre pivot, height → 2.0). Unblocks the honest version of the body-type picker (§ 3).
+- [ ] **Lower-poly skin re-export** — if/when the `.usdz` conversion happens (§ 3 last item), a decimated skin keeps quality while shrinking the bundle further.
+
+### C. Xcode capabilities & accounts
+
+Everything in the **⚙️ Manual Xcode setup** section above — HealthKit, iCloud, Widget target + App Group, `breath://` URL scheme, Watch targets, StoreKit Configuration scheme step, Google Client ID, Supabase credentials + Apple provider + schema re-run.
+
+### D. UI polish queue (with tips)
 
 - [ ] **Session progress bar is exercise-granular** — `ProgressView(value: Double(currentIndex), total: Double(exercises.count))` jumps in whole-exercise steps. Tip: feed it `completedSeconds / totalSeconds` and wrap updates in `withAnimation(.linear(duration: 1))` so it glides once per tick.
 - [ ] **`BreathingCircle` in the session player pulses at a fixed 4s** regardless of the exercise's actual breathing pattern. Tip: either drive it from the same phase durations `BreathingView` uses, or swap in the phase-labeled circle so "Inhale/Exhale" text matches the motion — mismatched breathing pacing is the kind of thing wellness-app reviews call out.
@@ -167,30 +219,23 @@ Features the Bend stretching app has that we don't; ordered by value-for-effort:
 - [ ] **"No Exercises" empty state is a dead end** — the `ContentUnavailableView` in the player has only an X. Tip: `ContentUnavailableView` takes an `actions:` builder — add a "Browse Exercises" button that dismisses and switches to the Exercises tab.
 - [ ] **General polish pass** — buttons mix `Capsule` and `RoundedRectangle(14)` shapes across Breathing/Paywall/Onboarding; pick one radius token. Consider `.presentationDetents([.medium])` for the custom-pattern editor (it's a small form under a full sheet), and a light haptic on each breath-phase transition (you already have the generators prepared).
 
----
+### E. Content
 
-## 🟡 Medium Priority
-
-All caught up — see ✅ Completed (v0.3) above. Next candidates live in 🟢 Nice to Have.
-
----
-
-## 🟢 Nice to Have
-
-Everything from the original list is done as of v0.4 (see above) except two, deliberately deferred:
-
-- [ ] **Skeleton/muscle overlay** — actual anatomically-correct SVG paths per muscle group, replacing the current polygon regions + recolored silhouette. Needs real vector art assets (not something to hand-roll as code) — find/commission anatomical SVGs before attempting this
-- [ ] **Mac Catalyst / visionOS** — deliberately deferred per this file's own "after iPhone is solid" guidance; App Store readiness gaps (icon, screenshots, Google Sign-In, real Supabase backend) should close first
+- [ ] **Film exercise demo videos** — the `localVideoName` slot + "Video coming soon" placeholder card are live; drop bundled `.mp4`s and set the field in seed data.
+- [ ] **Set real IAP pricing** in `Configuration.storekit` before going live (no code changes needed).
+- [ ] **Native-speaker pass** on the ES/FR/ZH-Hans strings (currently AI-translated).
 
 ---
 
-## 💰 Monetization
+## 5 · 🌫 Deferred (deliberate)
 
-Done — see ✅ Completed (v0.6) above. Needs the StoreKit Configuration scheme step (⚙️ above) before it actually works in a build.
+- **Mac Catalyst / visionOS** — after the iPhone app is solid; App Store readiness gaps close first.
+- **`BorrowRoutineView` placeholder Supabase URL** — resolves itself when Supabase credentials are configured (⚙️).
+- **Exercise-instruction localization** (152 exercises × 3 languages) — separate, much larger effort than the UI-string catalog.
 
 ---
 
-## 🐛 Known Bugs / Tech Debt
+## 🐛 Known Bugs / Tech Debt (history)
 
 - [x] Body map annotation eraser — fixed: `blendMode(.destinationOut)` inside isolated `drawLayer`
 - [x] `SessionPlayerView` timer leak — fixed: `sessionActive` flag set in `.onDisappear`
@@ -198,8 +243,7 @@ Done — see ✅ Completed (v0.6) above. Needs the StoreKit Configuration scheme
 - [x] Missing `import Combine` in `StickFigureView.swift` (`Timer.publish().autoconnect()`) broke the build — fixed
 - [x] Invalid `Section("Title") { } footer: { }` calls (2×) in `ProfileSettingsTab.swift` — SwiftUI doesn't support a footer on the string-title initializer; switched to `Section { } header: { } footer: { }` — fixed
 - [x] ~~`AuthManager.signUp` hashes password with SHA-256 (fast hash)~~ — stale note, it already uses PBKDF2 (100k rounds, SHA-256 PRF, 16-byte random salt) via CommonCrypto
-- [ ] `BorrowRoutineView` uses placeholder Supabase URL — real fetch will fail until `.env`-equivalent credentials are configured
-- [~] Unit tests — **first batch landed** (Swift Testing, not XCTest — the test target was already scaffolded for `import Testing`): `GamificationServiceTests` (points/streak/badge math) + `SharePayloadTests` (`RoutineSharePayload`/`ChallengePayload` URL-safe-base64 round trips & malformed-input handling). 31 cases, all green via `xcodebuild test` on the iPhone 17 sim. Still uncovered: `AuthManager` (keychain-backed — needs a test seam to avoid touching the real keychain) and the body-map `AnnotationStore` (`@MainActor` UI state)
+- [x] Unit tests — Swift Testing suites now cover `GamificationService`, `SharePayload`s, `SessionRecorder`, `AuthManager` (keychain seam), `SupabaseSession`, flexibility check-ins, seed data v4, `GoalMeta`/`TodayView` time logic, and `SessionPlayerView.scaledDuration`. Remaining gap: body-map stores (`MuscleMarkStore`/`MuscleNameResolver` tests exist on the bodymap branch and land with its merge)
 
 ---
 
@@ -207,14 +251,9 @@ Done — see ✅ Completed (v0.6) above. Needs the StoreKit Configuration scheme
 
 | Sprint | Focus |
 |--------|-------|
-| 1 | Onboarding + push notifications ✅ |
-| 2 | Breathing exercise module ✅ |
-| 3 | Progress charts (Swift Charts) ✅ |
-| 4 | Custom exercise creation ✅ |
-| 5 | Data export + profile photo ✅ |
-| 6 | Bug sweep + onboarding goals + StoreKit review + voice cues ✅ |
-| 7 | HealthKit + iCloud + WidgetKit (code) ✅ — Xcode capability wiring ⬜ |
-| 8 | Custom breathing patterns + Calendar + sleep suggestions + streak cards + community scaffold + Watch app (code) + localization ✅ — Xcode/capability wiring for Watch + Calendar ⬜ |
-| 9 | App icon + screenshots + Google Sign-In (code) + Supabase schema ✅ — StoreKit/Google Cloud/Supabase account setup ⬜ |
-| 10 | Monetization: StoreKit products, paywall, guided programs, content packs ✅ — StoreKit Configuration scheme step ⬜ |
-| 11 | TestFlight + final App Store submission prep |
+| 1–10 | ✅ All shipped (see completed sections above) |
+| 11 | Land in-flight branches: bodymap merge → breathing preview → onboarding survey → branch triage → page titles |
+| 12 | Engineering queue § 2 (cautions in-session, uploads decision, OBJ loading, small guards) |
+| 13 | Compliance pack § 3 (privacy manifest, paywall, policy pages) + Jason's ⚙️ capability wiring |
+| 14 | Jason content (Blender re-export, videos, pricing, localization pass) |
+| 15 | TestFlight + final App Store submission prep |
