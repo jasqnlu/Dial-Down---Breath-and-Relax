@@ -20,6 +20,8 @@ struct GamificationService {
     // MARK: - Streak
 
     static func updateStreak(for profile: UserProfile) {
+        profile.pendingStreakBreak = 0
+
         let calendar = Calendar.current
         if let last = profile.lastSessionDate {
             if calendar.isDateInYesterday(last) {
@@ -32,6 +34,47 @@ struct GamificationService {
             profile.streak = 1
         }
         profile.lastSessionDate = Date()
+
+        profile.sessionsTowardNextFreezeToken += 1
+        if profile.sessionsTowardNextFreezeToken >= 7 {
+            profile.sessionsTowardNextFreezeToken = 0
+            profile.streakFreezeTokens += 1
+        }
+    }
+
+    // MARK: - Streak Freeze
+
+    /// Detects an unresolved break in the streak caused by inactivity (not by
+    /// completing a session — that's handled above in `updateStreak`). Call
+    /// this on app foreground, not on session completion. Idempotent: once a
+    /// break is pending, repeated calls return the same value until resolved
+    /// via `restoreStreak` or `dismissStreakBreak`.
+    @discardableResult
+    static func checkForBrokenStreak(for profile: UserProfile) -> Int? {
+        if profile.pendingStreakBreak > 0 { return profile.pendingStreakBreak }
+        guard let last = profile.lastSessionDate else { return nil }
+        let calendar = Calendar.current
+        guard !calendar.isDateInToday(last), !calendar.isDateInYesterday(last) else { return nil }
+        guard profile.streak >= 2 else { return nil }
+        profile.pendingStreakBreak = profile.streak
+        profile.streak = 0
+        return profile.pendingStreakBreak
+    }
+
+    /// Spends one freeze token to restore the streak lost in
+    /// `checkForBrokenStreak`. No-op if there's no pending break or no
+    /// tokens banked.
+    static func restoreStreak(for profile: UserProfile) {
+        guard profile.streakFreezeTokens > 0, profile.pendingStreakBreak > 0 else { return }
+        profile.streakFreezeTokens -= 1
+        profile.streak = profile.pendingStreakBreak
+        profile.pendingStreakBreak = 0
+        profile.lastSessionDate = Date()
+    }
+
+    /// Acknowledges a lost streak without spending a token.
+    static func dismissStreakBreak(for profile: UserProfile) {
+        profile.pendingStreakBreak = 0
     }
 
     // MARK: - Badges

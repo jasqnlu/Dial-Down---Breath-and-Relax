@@ -11,6 +11,9 @@ final class UserProfile {
     var streak: Int = 0
     var lastSessionDate: Date? = nil
     var badges: [String] = []
+    var streakFreezeTokens: Int = 0
+    var sessionsTowardNextFreezeToken: Int = 0
+    var pendingStreakBreak: Int = 0
 
     init(profileID: String, displayName: String) {
         self.profileID = profileID

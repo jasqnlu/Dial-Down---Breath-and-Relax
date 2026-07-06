@@ -22,13 +22,17 @@ struct GamificationServiceTests {
                              minutes: Int = 0,
                              points: Int = 0,
                              badges: [String] = [],
-                             lastSession: Date? = nil) -> UserProfile {
+                             lastSession: Date? = nil,
+                             pendingStreakBreak: Int = 0,
+                             streakFreezeTokens: Int = 0) -> UserProfile {
         let p = UserProfile(profileID: "test", displayName: "Tester")
         p.streak = streak
         p.totalMinutes = minutes
         p.totalPoints = points
         p.badges = badges
         p.lastSessionDate = lastSession
+        p.pendingStreakBreak = pendingStreakBreak
+        p.streakFreezeTokens = streakFreezeTokens
         return p
     }
 
@@ -182,5 +186,97 @@ struct GamificationServiceTests {
         let p = makeProfile(badges: ["A"])
         GamificationService.applyBadges(["A", "B", "B", "C"], to: p)
         #expect(p.badges == ["A", "B", "C"])
+    }
+
+    // MARK: - Streak Freeze
+
+    @Test func noBreakWhenLastSessionWasToday() {
+        let p = makeProfile(streak: 5, lastSession: noon(daysAgo: 0))
+        #expect(GamificationService.checkForBrokenStreak(for: p) == nil)
+        #expect(p.streak == 5)
+    }
+
+    @Test func noBreakWhenLastSessionWasYesterday() {
+        let p = makeProfile(streak: 5, lastSession: noon(daysAgo: 1))
+        #expect(GamificationService.checkForBrokenStreak(for: p) == nil)
+        #expect(p.streak == 5)
+    }
+
+    @Test func breakDetectedAfterMultipleMissedDays() {
+        let p = makeProfile(streak: 6, lastSession: noon(daysAgo: 3))
+        #expect(GamificationService.checkForBrokenStreak(for: p) == 6)
+        #expect(p.streak == 0)
+        #expect(p.pendingStreakBreak == 6)
+    }
+
+    @Test func streakOfOneDoesNotTriggerBreakPopup() {
+        let p = makeProfile(streak: 1, lastSession: noon(daysAgo: 3))
+        #expect(GamificationService.checkForBrokenStreak(for: p) == nil)
+        #expect(p.streak == 1)
+    }
+
+    @Test func repeatedChecksReturnSamePendingValue() {
+        let p = makeProfile(streak: 8, lastSession: noon(daysAgo: 5))
+        #expect(GamificationService.checkForBrokenStreak(for: p) == 8)
+        p.streak = 999 // something else touched it between checks
+        #expect(GamificationService.checkForBrokenStreak(for: p) == 8)
+    }
+
+    @Test func restoreStreakSpendsTokenAndRestoresValue() {
+        let p = makeProfile(pendingStreakBreak: 6, streakFreezeTokens: 2)
+        GamificationService.restoreStreak(for: p)
+        #expect(p.streak == 6)
+        #expect(p.pendingStreakBreak == 0)
+        #expect(p.streakFreezeTokens == 1)
+        #expect(Calendar.current.isDateInToday(p.lastSessionDate ?? .distantPast))
+    }
+
+    @Test func restoreStreakNoOpWithoutTokens() {
+        let p = makeProfile(pendingStreakBreak: 6, streakFreezeTokens: 0)
+        GamificationService.restoreStreak(for: p)
+        #expect(p.streak == 0)
+        #expect(p.pendingStreakBreak == 6)
+    }
+
+    @Test func restoreStreakNoOpWithoutPendingBreak() {
+        let p = makeProfile(pendingStreakBreak: 0, streakFreezeTokens: 3)
+        GamificationService.restoreStreak(for: p)
+        #expect(p.streak == 0)
+        #expect(p.streakFreezeTokens == 3)
+    }
+
+    @Test func dismissStreakBreakClearsPendingWithoutSpendingToken() {
+        let p = makeProfile(pendingStreakBreak: 6, streakFreezeTokens: 2)
+        GamificationService.dismissStreakBreak(for: p)
+        #expect(p.pendingStreakBreak == 0)
+        #expect(p.streakFreezeTokens == 2)
+        #expect(p.streak == 0)
+    }
+
+    @Test func updateStreakClearsStalePendingBreak() {
+        let p = makeProfile(streak: 5, lastSession: noon(daysAgo: 1), pendingStreakBreak: 3)
+        GamificationService.updateStreak(for: p)
+        #expect(p.pendingStreakBreak == 0)
+    }
+
+    @Test func freezeTokenAwardedEverySevenSessions() {
+        let p = makeProfile(lastSession: noon(daysAgo: 1))
+        for _ in 0..<6 {
+            GamificationService.updateStreak(for: p)
+        }
+        #expect(p.streakFreezeTokens == 0)
+        #expect(p.sessionsTowardNextFreezeToken == 6)
+
+        GamificationService.updateStreak(for: p)
+        #expect(p.streakFreezeTokens == 1)
+        #expect(p.sessionsTowardNextFreezeToken == 0)
+    }
+
+    @Test func freezeTokensAccumulateUncapped() {
+        let p = makeProfile(lastSession: noon(daysAgo: 1))
+        for _ in 0..<21 {
+            GamificationService.updateStreak(for: p)
+        }
+        #expect(p.streakFreezeTokens == 3)
     }
 }
