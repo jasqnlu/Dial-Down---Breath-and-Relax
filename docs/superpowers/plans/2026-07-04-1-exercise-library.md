@@ -27,7 +27,7 @@
 **Interfaces:**
 - Produces: `enum MuscleGroup: String, CaseIterable, Codable` — `rawValue` is the display/storage name (e.g. `"Left Hamstrings"`); `static let oldRegionMap: [String: [String]]` mapping every legacy region name to ≥1 group rawValues; `static func migrate(_ oldNames: [String]) -> [String]`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```swift
 import Testing
@@ -70,9 +70,9 @@ struct MuscleGroupsTests {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails** — Expected: FAIL, `MuscleGroup` not defined.
+- [x] **Step 2: Run test to verify it fails** — Expected: FAIL, `MuscleGroup` not defined.
 
-- [ ] **Step 3: Write implementation**
+- [x] **Step 3: Write implementation**
 
 ```swift
 import Foundation
@@ -146,8 +146,8 @@ enum MuscleGroup: String, CaseIterable, Codable {
 }
 ```
 
-- [ ] **Step 4: Run tests — Expected: PASS**
-- [ ] **Step 5: Commit** — `git commit -m "feat: MuscleGroup vocabulary + legacy region migration"`
+- [x] **Step 4: Run tests — Expected: PASS**
+- [x] **Step 5: Commit** — `git commit -m "feat: MuscleGroup vocabulary + legacy region migration"`
 
 ---
 
@@ -163,7 +163,7 @@ enum MuscleGroup: String, CaseIterable, Codable {
 - Produces: `Exercise.localVideoName: String?` (bundle-relative video file name, e.g. `"hamstring_fold.mp4"`); `ExerciseMediaCard(exercise: Exercise)` view — plays looping muted `AVPlayer` when `localVideoName` resolves to a bundled file, else renders the "Video coming soon" placeholder.
 - Consumes: nothing from other tasks.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```swift
 import Testing
@@ -185,9 +185,9 @@ struct ExerciseMediaTests {
 }
 ```
 
-- [ ] **Step 2: Run test — Expected: FAIL (`localVideoURL` undefined).**
+- [x] **Step 2: Run test — Expected: FAIL (`localVideoURL` undefined).**
 
-- [ ] **Step 3: Model change** — in `Exercise.swift` add:
+- [x] **Step 3: Model change** — in `Exercise.swift` add:
 
 ```swift
     /// Bundle-relative file name of Jason's self-filmed demo clip.
@@ -203,9 +203,9 @@ struct ExerciseMediaTests {
     }
 ```
 
-- [ ] **Step 4: Run test — Expected: PASS.**
+- [x] **Step 4: Run test — Expected: PASS.**
 
-- [ ] **Step 5: New media card** — `ExerciseMediaCard.swift`:
+- [x] **Step 5: New media card** — `ExerciseMediaCard.swift`:
 
 ```swift
 import SwiftUI
@@ -257,10 +257,10 @@ struct ExerciseMediaCard: View {
 }
 ```
 
-- [ ] **Step 6: Rewire ExerciseDetailView** — delete the `videoSource` property, the stick-figure block (lines 33–45) and the `VideoPreviewCard` block (lines 49–55); insert `ExerciseMediaCard(exercise: exercise)` directly after the caution card. Delete the three dead files. Strip CreateExerciseView's video-URL field and pose editor UI (keep name/type/parts/duration/difficulty/instructions). Fix every grep hit from the Files list.
+- [x] **Step 6: Rewire ExerciseDetailView** — delete the `videoSource` property, the stick-figure block (lines 33–45) and the `VideoPreviewCard` block (lines 49–55); insert `ExerciseMediaCard(exercise: exercise)` directly after the caution card. Delete the three dead files. Strip CreateExerciseView's video-URL field and pose editor UI (keep name/type/parts/duration/difficulty/instructions). Fix every grep hit from the Files list.
 
-- [ ] **Step 7: Build + full test run — Expected: compiles, all green.**
-- [ ] **Step 8: Commit** — `git commit -m "feat: local-video media card; remove stick figures and YouTube embeds"`
+- [x] **Step 7: Build + full test run — Expected: compiles, all green.**
+- [x] **Step 8: Commit** — `git commit -m "feat: local-video media card; remove stick figures and YouTube embeds"`
 
 ---
 
@@ -274,7 +274,7 @@ struct ExerciseMediaCard: View {
 - Consumes: `MuscleGroup` (Task 1).
 - Produces: `SeedData.json` with `"exercises"` array where every `targetBodyParts` entry is a valid `MuscleGroup` rawValue and every non-fallback group has ≥3 stretch exercises.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```swift
 import Testing
@@ -326,18 +326,18 @@ struct SeedDataTests {
 private final class BundleToken {}
 ```
 
-- [ ] **Step 2: Run — Expected: FAIL (old names like "Left Hamstring" invalid, coverage gaps).**
+- [x] **Step 2: Run — Expected: FAIL (old names like "Left Hamstring" invalid, coverage gaps).**
 
-- [ ] **Step 3: Author seed v4.** Rewrite `SeedData.json`:
+- [x] **Step 3: Author seed v4.** Rewrite `SeedData.json`:
   - Re-target all 64 existing exercises through `MuscleGroup.migrate` semantics (e.g. `"Left Hamstring"` → `"Left Hamstrings"`, `"Upper Back"` → both traps; bilateral stretches list both sides).
   - Strip every `poses` array and every YouTube/Vimeo `mediaURL`.
   - Add new stretches until every non-fallback group has ≥3 (write real content: name, `"type": "stretch"`, targets, 30–90s durations, difficulty 1–3, 4–7 numbered instruction steps, `caution` for neck/spine/loaded stretches). Expected total ≈ 180–200. Anatomy references for correctness: standard PT stretch catalogs (e.g. doorway pec stretch, cross-body rear-delt, standing quad pull, figure-four glute, kneeling hip-flexor lunge, seated adductor butterfly, downward-dog calves, kneeling tibialis sit-back, wrist flexor/extensor prayer stretches, levator-scapulae chin-tuck, cat-cow erectors, child's pose lats, supine twist obliques).
 
-- [ ] **Step 4: Seed import + migration** in `Breath__Relax___StretchApp.swift`:
+- [x] **Step 4: Seed import + migration** in `Breath__Relax___StretchApp.swift`:
   - Read optional `localVideoName` in `seedIfNeeded()` (after `caution`): `exercise.localVideoName = raw["localVideoName"] as? String`.
   - Extend `migrateSeedIfNeeded()` for `seedDataVersion < 4`: fetch all exercises; for seed-named ones update `targetBodyParts` via `MuscleGroup.migrate`; insert bundle exercises whose names don't exist yet; for user-created exercises apply `MuscleGroup.migrate` to their `targetBodyParts` too (pass-through keeps custom names). Set `seedDataVersion = 4`. Replace the v3 alert copy with: `"New stretches were added covering every muscle group — find them in the Exercises tab."`
   - Also migrate saved marks once: `UserDefaults` key `bodymap.markedRegions` → mapped names (same `migrate` call).
 
-- [ ] **Step 5: Run full suite — Expected: PASS.**
-- [ ] **Step 6: Simulator sanity** (per docs: launch, screenshot Exercises tab; verify count ≈190 and no "unknown" chips).
-- [ ] **Step 7: Commit** — `git commit -m "feat: seed v4 — full muscle-group exercise coverage"`
+- [x] **Step 5: Run full suite — Expected: PASS.**
+- [x] **Step 6: Simulator sanity** (per docs: launch, screenshot Exercises tab; verify count ≈190 and no "unknown" chips).
+- [x] **Step 7: Commit** — `git commit -m "feat: seed v4 — full muscle-group exercise coverage"`
