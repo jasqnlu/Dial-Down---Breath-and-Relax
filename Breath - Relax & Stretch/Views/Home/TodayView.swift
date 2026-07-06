@@ -123,8 +123,11 @@ struct TodayView: View {
         .onAppear {
             if !reduceMotion { isBreathingIn = true }
             if let profile {
-                brokenStreakValue = GamificationService.checkForBrokenStreak(for: profile)
-                try? modelContext.save()
+                let broken = GamificationService.checkForBrokenStreak(for: profile)
+                brokenStreakValue = broken
+                if broken != nil {
+                    try? modelContext.save()
+                }
             }
         }
     }
