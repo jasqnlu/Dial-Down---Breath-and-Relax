@@ -234,5 +234,29 @@ struct GoalMeta {
                 "Pursed Lip Breathing",
             ]
         ),
+        GoalMeta(
+            id: "wake_up",
+            displayName: "Wake Up",
+            exerciseNames: [
+                "Box Breathing",
+                "Cat-Cow Flow",
+                "Shoulder Roll",
+                "Standing Back Extension",
+                "Doorway Shoulder & Chest Opener",
+                "Seated Neck Rotation",
+            ]
+        ),
+        GoalMeta(
+            id: "unwind",
+            displayName: "Unwind",
+            exerciseNames: [
+                "4-7-8 Breathing",
+                "Deep Belly Breath",
+                "Diaphragmatic Breath with Counting",
+                "Child's Pose",
+                "Happy Baby Pose",
+                "Eye Palming",
+            ]
+        ),
     ]
 }

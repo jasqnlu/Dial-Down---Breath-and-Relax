@@ -19,6 +19,30 @@ struct TodayView: View {
     @State private var showingSession = false
     @State private var isBreathingIn = false
 
+    enum TimeOfDayFocus: Equatable {
+        case wakeUp, unwind, none
+
+        var heroTitle: String {
+            switch self {
+            case .wakeUp: return "Wake Up"
+            case .unwind: return "Unwind"
+            case .none:   return "Today's session"
+            }
+        }
+    }
+
+    static func timeOfDayFocus(forHour hour: Int) -> TimeOfDayFocus {
+        switch hour {
+        case 5..<11:         return .wakeUp
+        case 20..<24, 0..<5: return .unwind
+        default:             return .none
+        }
+    }
+
+    private var timeOfDayFocus: TimeOfDayFocus {
+        Self.timeOfDayFocus(forHour: Calendar.current.component(.hour, from: .now))
+    }
+
     private var profile: UserProfile? { profiles.first }
 
     private var activeGoalIDs: Set<String> {
@@ -28,6 +52,16 @@ struct TodayView: View {
     /// Today's session: goal-based recommendations, falling back to the first
     /// few catalog exercises when no goals were picked during onboarding.
     private var sessionExercises: [Exercise] {
+        switch timeOfDayFocus {
+        case .wakeUp:
+            let pool = GoalMeta.recommend(from: exercises, activeGoalIDs: ["wake_up"], limit: 4)
+            if !pool.isEmpty { return pool }
+        case .unwind:
+            let pool = GoalMeta.recommend(from: exercises, activeGoalIDs: ["unwind"], limit: 4)
+            if !pool.isEmpty { return pool }
+        case .none:
+            break
+        }
         let recommended = GoalMeta.recommend(from: exercises, activeGoalIDs: activeGoalIDs, limit: 4)
         return recommended.isEmpty ? Array(exercises.prefix(4)) : recommended
     }
@@ -136,7 +170,7 @@ struct TodayView: View {
 
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Today's session")
+                    Text(timeOfDayFocus.heroTitle)
                         .font(.system(.title3, design: .rounded, weight: .bold))
                     Text("\(sessionExercises.count) exercises · \(mins) min")
                         .font(.subheadline)
