@@ -9,6 +9,7 @@ struct ProfileSettingsTab: View {
     @AppStorage("bodyMapSex")           private var bodyMapSex = "male"
     @AppStorage("onboardingGoals")      private var goalsStr = ""
     @AppStorage("voiceCuesEnabled")     private var voiceCuesEnabled = false
+    @AppStorage("autoSkipGetReadyCountdown") private var autoSkipGetReadyCountdown = false
     @AppStorage("calendarSyncEnabled")  private var calendarSyncEnabled = false
     @State private var showingAppGuide = false
 
@@ -114,10 +115,13 @@ struct ProfileSettingsTab: View {
                 Toggle(isOn: $voiceCuesEnabled) {
                     Label("Voice Cues", systemImage: "waveform")
                 }
+                Toggle(isOn: $autoSkipGetReadyCountdown) {
+                    Label("Auto-Skip Get-Ready Countdown", systemImage: "forward.end")
+                }
             } header: {
                 Text("Session")
             } footer: {
-                Text("Announces exercise names and breathing phases aloud during sessions.")
+                Text("Announces exercise names and breathing phases aloud during sessions. Auto-skip jumps straight into each exercise without the 3-2-1 countdown.")
             }
 
             // Reminders
