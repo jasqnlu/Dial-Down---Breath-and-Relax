@@ -40,6 +40,7 @@ struct SessionPlayerView: View {
     @State private var isShowingGetReady = false
     @State private var getReadyExerciseName = ""
     @State private var getReadyCount = 3
+    @State private var getReadyTask: Task<Void, Never>? = nil
 
     // Haptics
     private let impactLight   = UIImpactFeedbackGenerator(style: .light)
@@ -97,6 +98,7 @@ struct SessionPlayerView: View {
         .onDisappear {
             UIApplication.shared.isIdleTimerDisabled = false
             VoiceCueService.shared.stop()
+            getReadyTask?.cancel()
         }
         .task {
             for await _ in Timer.publish(every: 1, on: .main, in: .common).autoconnect().values {
@@ -266,13 +268,13 @@ struct SessionPlayerView: View {
     }
 
     private func runGetReadyCountdown() {
-        Task { @MainActor in
-            while isShowingGetReady, getReadyCount > 0 {
+        getReadyTask = Task { @MainActor in
+            while isShowingGetReady, getReadyCount > 0, !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(1))
-                guard isShowingGetReady else { return }
+                guard isShowingGetReady, !Task.isCancelled else { return }
                 getReadyCount -= 1
             }
-            guard isShowingGetReady else { return }
+            guard isShowingGetReady, !Task.isCancelled else { return }
             isShowingGetReady = false
             startExercise()
         }
