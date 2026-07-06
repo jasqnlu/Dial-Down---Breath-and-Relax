@@ -36,6 +36,11 @@ struct SessionPlayerView: View {
     @State private var phaseEndDate = Date()
     @State private var pausedRemaining: TimeInterval? = nil
 
+    @AppStorage("autoSkipGetReadyCountdown") private var autoSkipGetReadyCountdown = false
+    @State private var isShowingGetReady = false
+    @State private var getReadyExerciseName = ""
+    @State private var getReadyCount = 3
+
     // Haptics
     private let impactLight   = UIImpactFeedbackGenerator(style: .light)
     private let impactMedium  = UIImpactFeedbackGenerator(style: .medium)
@@ -73,13 +78,15 @@ struct SessionPlayerView: View {
                     }
                     .padding()
                 }
+            } else if isShowingGetReady {
+                getReadyView(name: getReadyExerciseName)
             } else if let exercise = currentExercise {
                 playerContent(exercise: exercise)
             }
         }
         .onAppear {
             sessionStarted = Date()
-            startExercise()
+            beginNextExercise()
             impactLight.prepare()
             impactMedium.prepare()
             notifySuccess.prepare()
@@ -216,10 +223,64 @@ struct SessionPlayerView: View {
         }
     }
 
+    @ViewBuilder
+    private func getReadyView(name: String) -> some View {
+        VStack(spacing: 24) {
+            Spacer()
+            Text("Get Ready")
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Text(name)
+                .font(.largeTitle.weight(.bold))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            Text("\(getReadyCount)")
+                .font(.system(size: 72, weight: .thin, design: .rounded))
+                .monospacedDigit()
+            Spacer()
+            Button("Skip") { skipGetReady() }
+                .buttonStyle(.bordered)
+        }
+        .padding()
+        .contentShape(Rectangle())
+        .onTapGesture { skipGetReady() }
+        .accessibilityLabel("Get ready for \(name), starting in \(getReadyCount)")
+        .accessibilityAddTraits(.updatesFrequently)
+    }
+
     // MARK: - Logic
 
     static func scaledDuration(base: Int, multiplier: Double) -> Int {
         max(1, Int(Double(base) * multiplier))
+    }
+
+    private func beginNextExercise() {
+        guard !autoSkipGetReadyCountdown, let exercise = currentExercise else {
+            startExercise()
+            return
+        }
+        getReadyExerciseName = exercise.name
+        getReadyCount = 3
+        isShowingGetReady = true
+        runGetReadyCountdown()
+    }
+
+    private func runGetReadyCountdown() {
+        Task { @MainActor in
+            while isShowingGetReady, getReadyCount > 0 {
+                try? await Task.sleep(for: .seconds(1))
+                guard isShowingGetReady else { return }
+                getReadyCount -= 1
+            }
+            guard isShowingGetReady else { return }
+            isShowingGetReady = false
+            startExercise()
+        }
+    }
+
+    private func skipGetReady() {
+        isShowingGetReady = false
+        startExercise()
     }
 
     private func startExercise() {
@@ -246,11 +307,11 @@ struct SessionPlayerView: View {
                 secondsRemaining = Int(remaining.rounded(.up))
                 break
             }
-            advanceToNext(completion: 1.0)
+            advanceToNext(completion: 1.0, showGetReady: false)
         }
     }
 
-    private func advanceToNext(completion: Double) {
+    private func advanceToNext(completion: Double, showGetReady: Bool = true) {
         totalPointsEarned += GamificationService.points(for: currentExercise, completion: completion)
 
         if currentIndex + 1 < exercises.count {
@@ -258,7 +319,11 @@ struct SessionPlayerView: View {
             AudioServicesPlaySystemSound(soundTransition)
             currentIndex += 1
             breathTick = 0
-            startExercise()
+            if showGetReady {
+                beginNextExercise()
+            } else {
+                startExercise()
+            }
         } else {
             // Session complete
             notifySuccess.notificationOccurred(.success)
