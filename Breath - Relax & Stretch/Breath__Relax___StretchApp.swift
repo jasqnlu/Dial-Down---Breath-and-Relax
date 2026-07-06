@@ -40,6 +40,10 @@ struct BreathRelaxStretchApp: App {
     @AppStorage("notifiedSeedVersion") private var notifiedSeedVersion: Int = 0
     @State private var showNewContentAlert = false
 
+    init() {
+        LuminaFonts.registerAll()
+    }
+
     var body: some Scene {
         WindowGroup {
             OnboardingGate {
