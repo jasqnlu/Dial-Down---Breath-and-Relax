@@ -281,6 +281,7 @@ struct SessionPlayerView: View {
     }
 
     private func skipGetReady() {
+        getReadyTask?.cancel()
         isShowingGetReady = false
         startExercise()
     }
