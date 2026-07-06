@@ -100,7 +100,7 @@ struct SessionPlayerView: View {
         }
         .task {
             for await _ in Timer.publish(every: 1, on: .main, in: .common).autoconnect().values {
-                guard !isPaused, !showingSummary else { continue }
+                guard !isPaused, !showingSummary, !isShowingGetReady else { continue }
                 let remaining = Int(phaseEndDate.timeIntervalSinceNow.rounded(.up))
                 if remaining > 0 {
                     secondsRemaining = remaining
@@ -112,7 +112,7 @@ struct SessionPlayerView: View {
             }
         }
         .onChange(of: scenePhase) { _, newPhase in
-            guard newPhase == .active, !isPaused, !showingSummary else { return }
+            guard newPhase == .active, !isPaused, !showingSummary, !isShowingGetReady else { return }
             catchUpAfterBackground()
         }
         .onChange(of: showingSummary) { _, showing in
