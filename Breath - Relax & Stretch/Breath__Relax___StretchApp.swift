@@ -11,6 +11,7 @@ struct BreathRelaxStretchApp: App {
         let schema = Schema([
             BodyPart.self,
             Exercise.self,
+            FlexibilityCheckIn.self,
             Routine.self,
             Session.self,
             UserProfile.self,

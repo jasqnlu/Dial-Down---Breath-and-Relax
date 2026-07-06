@@ -9,9 +9,11 @@ struct ProgressChartsView: View {
     @Query(sort: \Session.startedAt) private var sessions: [Session]
     @Query private var profiles: [UserProfile]
     @Query private var exercises: [Exercise]
+    @Query(sort: \FlexibilityCheckIn.date) private var checkIns: [FlexibilityCheckIn]
 
     @State private var selectedDay: DaySelection?
     @State private var showingStreakShare = false
+    @State private var showingCheckIn = false
 
     private var profile: UserProfile? { profiles.first }
 
@@ -30,6 +32,7 @@ struct ProgressChartsView: View {
             VStack(spacing: 24) {
                 weeklyBarChartSection
                 allTimeStatsSection
+                flexibilitySection
                 streakCalendarSection
                 yearHeatmapSection
                 pointsHistorySection
@@ -57,6 +60,9 @@ struct ProgressChartsView: View {
                 sessions: sessionsOnDay(selection.date),
                 exercises: exercises
             )
+        }
+        .sheet(isPresented: $showingCheckIn) {
+            FlexibilityCheckInView()
         }
         .sheet(isPresented: $showingStreakShare) {
             StreakCardShareSheet(
@@ -133,6 +139,150 @@ struct ProgressChartsView: View {
                     label: "Streak",
                     icon: "flame.fill"
                 )
+            }
+        }
+    }
+
+    // MARK: - Section 2b: Flexibility Check-Ins
+
+    // Fixed color per test (identity never follows how many series happen to
+    // be chartable), ordered blue/orange/green/purple for adjacent-pair
+    // distinguishability under color-vision deficiency. Identity never rides
+    // on color alone: every series also carries its SF Symbol + name.
+    private static let testColors: [FlexibilityTest: Color] = [
+        .toeTouch:      .blue,
+        .shoulderReach: .orange,
+        .neckRotation:  .green,
+        .butterfly:     .purple
+    ]
+
+    private var flexibilitySection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                sectionHeader("Flexibility")
+                Spacer()
+                if !checkIns.isEmpty {
+                    Button {
+                        showingCheckIn = true
+                    } label: {
+                        Label("Check In", systemImage: "checklist")
+                            .font(.subheadline.weight(.semibold))
+                    }
+                }
+            }
+
+            if checkIns.isEmpty {
+                ContentUnavailableView {
+                    Label("No check-ins yet", systemImage: "figure.flexibility")
+                } description: {
+                    Text("Test how far you can reach every couple of weeks and watch your range grow.")
+                } actions: {
+                    Button("Start First Check-In") { showingCheckIn = true }
+                        .buttonStyle(.borderedProminent)
+                }
+                .frame(height: 220)
+                .cardStyle()
+            } else {
+                VStack(alignment: .leading, spacing: 14) {
+                    if FlexibilityStats.isDue(checkIns) {
+                        Label("It's been a couple of weeks — time for a new check-in.",
+                              systemImage: "clock.badge.exclamationmark")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    ForEach(FlexibilityTest.allCases) { test in
+                        if let latest = FlexibilityStats.latest(checkIns, for: test) {
+                            HStack(spacing: 10) {
+                                Image(systemName: test.icon)
+                                    .foregroundStyle(Self.testColors[test] ?? Color.accentColor)
+                                    .frame(width: 26)
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(test.name)
+                                        .font(.subheadline.weight(.medium))
+                                    Text(test.levels[min(latest.level, test.levels.count - 1)])
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                if let delta = FlexibilityStats.delta(checkIns, for: test) {
+                                    deltaBadge(delta)
+                                }
+                            }
+                        }
+                    }
+
+                    if !flexibilityChartPoints.isEmpty {
+                        flexibilityChart
+                    }
+                }
+                .padding()
+                .cardStyle()
+            }
+        }
+    }
+
+    /// Progress since the first check-in, in levels. Deliberately plain
+    /// secondary ink (arrow carries the direction) — green/red would collide
+    /// with the series colors above.
+    private func deltaBadge(_ delta: Int) -> some View {
+        HStack(spacing: 3) {
+            Image(systemName: delta > 0 ? "arrow.up.right" : delta < 0 ? "arrow.down.right" : "equal")
+                .font(.caption2.weight(.bold))
+            Text(delta == 0 ? "steady" : "\(abs(delta)) \(abs(delta) == 1 ? "level" : "levels")")
+                .font(.caption)
+        }
+        .foregroundStyle(.secondary)
+        .accessibilityLabel(
+            delta == 0 ? "No change since first check-in"
+                       : "\(delta > 0 ? "Up" : "Down") \(abs(delta)) levels since first check-in"
+        )
+    }
+
+    /// Step line per test, only for tests with ≥ 2 check-ins (a single point
+    /// draws no line and just adds legend noise). Levels display as 1–5.
+    private var flexibilityChart: some View {
+        Chart(flexibilityChartPoints) { point in
+            LineMark(
+                x: .value("Date", point.date),
+                y: .value("Level", point.level + 1),
+                series: .value("Test", point.testName)
+            )
+            .interpolationMethod(.stepEnd)
+            .foregroundStyle(by: .value("Test", point.testName))
+            .lineStyle(StrokeStyle(lineWidth: 2))
+
+            PointMark(
+                x: .value("Date", point.date),
+                y: .value("Level", point.level + 1)
+            )
+            .foregroundStyle(by: .value("Test", point.testName))
+            .symbolSize(36)
+        }
+        .chartForegroundStyleScale([
+            FlexibilityTest.toeTouch.name:      Self.testColors[.toeTouch]!,
+            FlexibilityTest.shoulderReach.name: Self.testColors[.shoulderReach]!,
+            FlexibilityTest.neckRotation.name:  Self.testColors[.neckRotation]!,
+            FlexibilityTest.butterfly.name:     Self.testColors[.butterfly]!
+        ])
+        .chartYScale(domain: 0...5)
+        .chartYAxis {
+            AxisMarks(position: .leading, values: [1, 2, 3, 4, 5]) { _ in
+                AxisGridLine()
+                AxisValueLabel()
+            }
+        }
+        .frame(height: 180)
+        .padding(.top, 4)
+    }
+
+    private var flexibilityChartPoints: [FlexibilityPoint] {
+        FlexibilityTest.allCases.flatMap { test -> [FlexibilityPoint] in
+            // checkIns arrives date-sorted from the @Query.
+            let history = checkIns.filter { $0.testID == test.rawValue }
+            guard history.count >= 2 else { return [] }
+            return history.map {
+                FlexibilityPoint(date: $0.date, level: $0.level, testName: test.name)
             }
         }
     }
@@ -482,6 +632,13 @@ private struct PointsDataPoint: Identifiable {
     let id = UUID()
     let date: Date
     let cumulativePoints: Int
+}
+
+private struct FlexibilityPoint: Identifiable {
+    let id = UUID()
+    let date: Date
+    let level: Int
+    let testName: String
 }
 
 // MARK: - Card Style Modifier
