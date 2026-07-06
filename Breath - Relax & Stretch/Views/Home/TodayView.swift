@@ -11,6 +11,7 @@ import SwiftData
 struct TodayView: View {
     @EnvironmentObject private var auth: AuthManager
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.modelContext) private var modelContext
     @Query private var exercises: [Exercise]
     @Query private var profiles: [UserProfile]
     @AppStorage("onboardingGoals") private var goalsStr = ""
@@ -18,6 +19,7 @@ struct TodayView: View {
 
     @State private var showingSession = false
     @State private var isBreathingIn = false
+    @State private var brokenStreakValue: Int? = nil
 
     enum TimeOfDayFocus: Equatable {
         case wakeUp, unwind, none
@@ -92,9 +94,38 @@ struct TodayView: View {
         .sheet(isPresented: $showingSession) {
             SessionPlayerView(exercises: sessionExercises)
         }
+        .alert(
+            "Streak Lost",
+            isPresented: Binding(
+                get: { brokenStreakValue != nil },
+                set: { if !$0 { brokenStreakValue = nil } }
+            )
+        ) {
+            if let profile, profile.streakFreezeTokens > 0 {
+                Button("Restore Streak (\(profile.streakFreezeTokens) left)") {
+                    GamificationService.restoreStreak(for: profile)
+                    try? modelContext.save()
+                    brokenStreakValue = nil
+                }
+            }
+            Button("Dismiss", role: .cancel) {
+                if let profile {
+                    GamificationService.dismissStreakBreak(for: profile)
+                    try? modelContext.save()
+                }
+                brokenStreakValue = nil
+            }
+        } message: {
+            if let brokenStreakValue {
+                Text("Your \(brokenStreakValue)-day streak was lost.")
+            }
+        }
         .onAppear {
-            guard !reduceMotion else { return }
-            isBreathingIn = true
+            if !reduceMotion { isBreathingIn = true }
+            if let profile {
+                brokenStreakValue = GamificationService.checkForBrokenStreak(for: profile)
+                try? modelContext.save()
+            }
         }
     }
 
