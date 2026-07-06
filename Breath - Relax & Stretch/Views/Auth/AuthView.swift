@@ -73,7 +73,9 @@ struct AuthView: View {
 
                     // MARK: Secondary — account options
                     SignInWithAppleButton(.signIn) { request in
-                        request.requestedScopes = [.fullName, .email]
+                        // Sets scopes + a nonce so the identity token can be
+                        // exchanged with Supabase Auth without replay risk.
+                        AuthManager.shared.prepareAppleSignInRequest(request)
                     } onCompletion: { result in
                         switch result {
                         case .success(let auth):

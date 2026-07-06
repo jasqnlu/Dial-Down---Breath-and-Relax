@@ -41,6 +41,11 @@ struct LeaderboardView: View {
                 )
             } else {
                 List {
+                    if !auth.isBackendAuthenticated {
+                        Text("Sign in with Apple to appear on the leaderboard.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                     ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
                         leaderboardRow(rank: index + 1, entry: entry)
                     }
@@ -55,7 +60,7 @@ struct LeaderboardView: View {
     }
 
     private func leaderboardRow(rank: Int, entry: RemoteProfile) -> some View {
-        let isMe = entry.id == auth.anonymousID
+        let isMe = entry.id == auth.backendID
         return HStack(spacing: 12) {
             Text("\(rank)")
                 .font(.subheadline.weight(.semibold))
@@ -84,11 +89,13 @@ struct LeaderboardView: View {
         isLoading = true
         defer { isLoading = false }
 
-        // Identified by the anonymous per-install UUID — the email never
-        // leaves the device (this table is publicly readable).
-        if let local = localProfile {
+        // Identified by the backend ID (Supabase auth.uid() when signed in
+        // with Apple, anonymous UUID otherwise) — the email never leaves the
+        // device (this table is publicly readable). Without a Supabase
+        // session the upsert is rejected by RLS; hence best-effort try?.
+        if let local = localProfile, auth.isBackendAuthenticated {
             let remote = RemoteProfile(
-                id: auth.anonymousID,
+                id: auth.backendID,
                 displayName: local.displayName,
                 totalPoints: local.totalPoints,
                 streak: local.streak,

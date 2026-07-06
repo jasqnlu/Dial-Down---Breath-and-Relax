@@ -10,18 +10,24 @@
 -- UUIDs. Emails are NEVER sent to these tables; several of them are publicly
 -- readable, so treat every column here as public data.
 --
--- SECURITY NOTE — READ BEFORE LAUNCH: AuthManager (this app's sign-in) is
--- fully local/keychain-based and is NOT wired to Supabase Auth — every request
--- the app makes uses the anon key, never a per-user Supabase session token.
--- The write policies below are therefore anon-writable: anyone who extracts
--- the anon key from the binary can insert/update rows (spoof leaderboard
--- scores, edit others' public routines). The check constraints limit the
--- blast radius (no megabyte payloads, no absurd values) but do NOT provide
--- per-user isolation. Before shipping the community features publicly, wire
--- AuthManager into SupabaseService.signInWithApple(identityToken:) (already
--- written, just unused) and tighten these to `auth.uid()`-based checks — or
--- keep the community features hidden (the app already gates them behind
--- SupabaseService.isConfigured).
+-- SECURITY NOTE (updated 2026-07-06): Supabase Auth is now wired end-to-end
+-- for Sign in with Apple — AuthManager exchanges the Apple identity token for
+-- a Supabase session (SupabaseService.signInWithApple), persists/refreshes it
+-- in the keychain, and attaches it as the Authorization bearer. All write
+-- policies below therefore require `auth.uid()` to match the row's owner
+-- column. Consequences:
+--   • Guests and local email/Google accounts have NO Supabase session: they
+--     can read public data but their uploads are rejected (the app treats
+--     every upload as best-effort, so nothing breaks client-side).
+--   • Rows written under the old anonymous-UUID scheme are orphaned — no
+--     token can ever match them. Fine pre-launch; wipe the tables when
+--     applying this version of the file.
+--   • REQUIRED DASHBOARD STEP: enable the Apple provider under
+--     Authentication → Providers, with the app's bundle ID as the client ID,
+--     or every token exchange returns 4xx (the app then just stays local).
+--
+-- The `drop policy if exists` lines migrate a project that ran the previous
+-- (anon-writable) version of this file; they no-op on a fresh project.
 
 -- ───────────────────────── exercises ─────────────────────────
 -- Public, read-only catalog. The app falls back to its bundled SeedData.json
@@ -69,14 +75,24 @@ create policy "public routines are readable by anyone"
   on routines for select
   using (is_public = true);
 
--- ⚠️ anon-writable until Supabase Auth is wired in (see security note above).
-create policy "anyone can upsert routines"
-  on routines for insert
-  with check (true);
+drop policy if exists "anyone can upsert routines" on routines;
+drop policy if exists "anyone can update routines" on routines;
+drop policy if exists "authors can insert their routines" on routines;
+drop policy if exists "authors can update their routines" on routines;
+drop policy if exists "authors can delete their routines" on routines;
 
-create policy "anyone can update routines"
+create policy "authors can insert their routines"
+  on routines for insert
+  with check (auth.uid() is not null and author_id = auth.uid()::text);
+
+create policy "authors can update their routines"
   on routines for update
-  using (true);
+  using (auth.uid() is not null and author_id = auth.uid()::text)
+  with check (auth.uid() is not null and author_id = auth.uid()::text);
+
+create policy "authors can delete their routines"
+  on routines for delete
+  using (auth.uid() is not null and author_id = auth.uid()::text);
 
 -- ───────────────────────── sessions ─────────────────────────
 -- Completed session history, one row per session, uploaded best-effort.
@@ -93,10 +109,12 @@ create table if not exists sessions (
 
 alter table sessions enable row level security;
 
--- ⚠️ anon-writable until Supabase Auth is wired in (see security note above).
-create policy "anyone can insert sessions"
+drop policy if exists "anyone can insert sessions" on sessions;
+drop policy if exists "users can insert their sessions" on sessions;
+
+create policy "users can insert their sessions"
   on sessions for insert
-  with check (true);
+  with check (auth.uid() is not null and user_id = auth.uid()::text);
 
 -- No public select policy — session history isn't read back from Supabase
 -- today (SwiftData is the source of truth on-device). Add one later if you
@@ -120,20 +138,25 @@ create policy "profiles are publicly readable"
   on profiles for select
   using (true);
 
--- ⚠️ anon-writable until Supabase Auth is wired in (see security note above).
-create policy "anyone can upsert their profile"
+drop policy if exists "anyone can upsert their profile" on profiles;
+drop policy if exists "anyone can update profiles" on profiles;
+drop policy if exists "anyone can delete a profile by id" on profiles;
+drop policy if exists "users can insert their profile" on profiles;
+drop policy if exists "users can update their profile" on profiles;
+drop policy if exists "users can delete their profile" on profiles;
+
+create policy "users can insert their profile"
   on profiles for insert
-  with check (true);
+  with check (auth.uid() is not null and id = auth.uid()::text);
 
-create policy "anyone can update profiles"
+create policy "users can update their profile"
   on profiles for update
-  using (true);
+  using (auth.uid() is not null and id = auth.uid()::text)
+  with check (auth.uid() is not null and id = auth.uid()::text);
 
--- ⚠️ anon-deletable, same caveat as the write policies above. Needed so the
--- app's Delete Account flow (AuthManager.deleteAccount →
--- SupabaseService.deleteProfile) can remove the public leaderboard row before
--- the anonymous ID is rotated; deletion requires knowing the full UUID.
--- Tighten to auth.uid() alongside the other policies when Supabase Auth lands.
-create policy "anyone can delete a profile by id"
+-- Delete Account flow (AuthManager.deleteAccount → SupabaseService
+-- .deleteProfile) removes the leaderboard row *before* revoking the session,
+-- so the token still authorizes this policy at that moment.
+create policy "users can delete their profile"
   on profiles for delete
-  using (true);
+  using (auth.uid() is not null and id = auth.uid()::text);

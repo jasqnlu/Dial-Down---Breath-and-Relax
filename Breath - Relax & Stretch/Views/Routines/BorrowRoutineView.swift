@@ -14,7 +14,7 @@ struct BorrowRoutineView: View {
     // Public routines from other users, ranked by popularity
     private var publicRoutines: [Routine] {
         allRoutines
-            .filter { $0.isPublic && $0.authorID != auth.anonymousID }
+            .filter { $0.isPublic && $0.authorID != auth.backendID }
             .sorted { $0.borrowCount > $1.borrowCount }
     }
 
@@ -82,7 +82,7 @@ struct BorrowRoutineView: View {
         let forked = Routine(
             name: routine.name + " (Borrowed)",
             exerciseIDs: routine.exerciseIDs,
-            authorID: auth.anonymousID,
+            authorID: auth.backendID,
             borrowedFromID: routine.uuid,
             isPublic: false
         )

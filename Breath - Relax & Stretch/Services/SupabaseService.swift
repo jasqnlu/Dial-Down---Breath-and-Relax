@@ -4,7 +4,13 @@ import Foundation
 
 actor SupabaseService {
     static let shared = SupabaseService()
-    private init() {}
+
+    /// `internal` (not `private`) for the same reason as AuthManager.init —
+    /// tests construct instances with a FakeKeychainStore; production code
+    /// should still go through `.shared`.
+    init(keychain: KeychainStore = SecItemKeychainStore(service: "com.breathapp.supabase")) {
+        self.keychain = keychain
+    }
 
     // The API base URL (https://<project-ref>.supabase.co) — NOT the dashboard
     // page URL. Dashboard → Settings → API → Project URL.
@@ -23,11 +29,43 @@ actor SupabaseService {
         return host.hasSuffix(".supabase.co")
     }
 
-    // Bearer token set after sign-in
-    private var accessToken: String? = nil
+    // MARK: - Session state
+    // A SupabaseSession exists only for users who signed in with Apple (the
+    // id_token exchange below). Guests / local email accounts have none —
+    // their requests carry the anon key and can only reach public-read data
+    // once the auth.uid() RLS policies in supabase_schema.sql are applied.
 
-    func setAccessToken(_ token: String?) {
-        accessToken = token
+    private let keychain: KeychainStore
+    private static let sessionAccount = "supabase.session"
+
+    private var session: SupabaseSession?
+    private var didLoadSession = false
+
+    private func loadSessionIfNeeded() {
+        guard !didLoadSession else { return }
+        didLoadSession = true
+        guard let json = keychain.loadCredential(account: Self.sessionAccount),
+              let data = json.data(using: .utf8),
+              let stored = try? JSONDecoder().decode(SupabaseSession.self, from: data) else { return }
+        session = stored
+    }
+
+    private func storeSession(_ new: SupabaseSession?) {
+        session = new
+        didLoadSession = true
+        if let new,
+           let data = try? JSONEncoder().encode(new),
+           let json = String(data: data, encoding: .utf8) {
+            keychain.save(account: Self.sessionAccount, value: json)
+        } else {
+            keychain.delete(account: Self.sessionAccount)
+        }
+    }
+
+    /// The Supabase user id (`auth.uid()`) of the current session, if any.
+    var supabaseUserID: String? {
+        loadSessionIfNeeded()
+        return session?.userID
     }
 
     // MARK: - Exercises
@@ -133,24 +171,93 @@ actor SupabaseService {
         try await post(path: "/rest/v1/sessions", body: data, upsert: false)
     }
 
-    // MARK: - Auth helpers
+    // MARK: - Auth
 
-    /// Sign in with Apple identity token via Supabase Auth.
-    func signInWithApple(identityToken: String) async throws -> String {
-        struct Body: Encodable { let provider = "apple"; let id_token: String }
-        struct Response: Decodable { let access_token: String }
-        let body = try JSONEncoder().encode(Body(id_token: identityToken))
-        let data = try await post(path: "/auth/v1/token?grant_type=id_token", body: body, upsert: false)
-        let response = try JSONDecoder().decode(Response.self, from: data ?? Data())
-        accessToken = response.access_token
-        return response.access_token
+    private struct TokenGrant: Decodable {
+        struct User: Decodable { let id: String }
+        let access_token: String
+        let refresh_token: String
+        let expires_in: Double
+        let user: User
+    }
+
+    /// Exchanges a Sign in with Apple identity token for a Supabase Auth
+    /// session and returns the Supabase user id (`auth.uid()`), which becomes
+    /// the app's backend identity (AuthManager.backendID). `nonce` is the raw
+    /// nonce whose SHA-256 was set on the ASAuthorization request. Requires
+    /// the Apple provider enabled in Supabase Dashboard → Authentication →
+    /// Providers with this app's bundle ID.
+    @discardableResult
+    func signInWithApple(identityToken: String, nonce: String? = nil) async throws -> String {
+        struct Body: Encodable {
+            let provider = "apple"
+            let id_token: String
+            let nonce: String?
+        }
+        let body = try JSONEncoder().encode(Body(id_token: identityToken, nonce: nonce))
+        let grant = try await tokenRequest(grantType: "id_token", body: body)
+        return grant.user.id
+    }
+
+    /// Best-effort server-side revocation of the refresh token, then clears
+    /// the local session. Never throws — signing out locally must always work.
+    func signOut() async {
+        loadSessionIfNeeded()
+        if let token = session?.accessToken {
+            var request = bareRequest(path: "/auth/v1/logout", method: "POST")
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            _ = try? await URLSession.shared.data(for: request)
+        }
+        storeSession(nil)
+    }
+
+    /// Refreshes an expiring session. A 4xx from the refresh endpoint means
+    /// the refresh token was revoked/expired server-side — the session is
+    /// dead, so it's cleared rather than retried forever.
+    private func refreshSession(_ current: SupabaseSession) async throws -> SupabaseSession? {
+        struct Body: Encodable { let refresh_token: String }
+        let body = try JSONEncoder().encode(Body(refresh_token: current.refreshToken))
+        do {
+            _ = try await tokenRequest(grantType: "refresh_token", body: body)
+            return session
+        } catch SupabaseError.httpError(let code) where (400..<500).contains(code) {
+            storeSession(nil)
+            return nil
+        }
+    }
+
+    /// Runs a token grant against /auth/v1/token and stores the session.
+    /// Uses bareRequest (anon Authorization) so a refresh can never recurse
+    /// through the data-request path that triggered it.
+    private func tokenRequest(grantType: String, body: Data) async throws -> TokenGrant {
+        var request = bareRequest(path: "/auth/v1/token?grant_type=\(grantType)", method: "POST")
+        request.httpBody = body
+        let (data, response) = try await URLSession.shared.data(for: request)
+        try validate(response)
+        let grant = try JSONDecoder().decode(TokenGrant.self, from: data)
+        storeSession(SupabaseSession(
+            accessToken:  grant.access_token,
+            refreshToken: grant.refresh_token,
+            userID:       grant.user.id,
+            expiresAt:    Date().addingTimeInterval(grant.expires_in)
+        ))
+        return grant
+    }
+
+    /// A valid (refreshed if needed) access token, or nil when signed out or
+    /// the refresh failed transiently — callers then fall back to the anon key.
+    private func currentAccessToken() async -> String? {
+        loadSessionIfNeeded()
+        guard let current = session else { return nil }
+        guard current.needsRefresh() else { return current.accessToken }
+        return (try? await refreshSession(current))?.accessToken
     }
 
     // MARK: - HTTP helpers
 
     @discardableResult
     private func post(path: String, body: Data, upsert: Bool) async throws -> Data? {
-        var request = makeRequest(path: path, method: "POST")
+        var request = await makeRequest(path: path, method: "POST")
         request.httpBody = body
         if upsert { request.setValue("resolution=merge-duplicates", forHTTPHeaderField: "Prefer") }
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -159,28 +266,32 @@ actor SupabaseService {
     }
 
     private func delete(path: String) async throws {
-        let request = makeRequest(path: path, method: "DELETE")
+        let request = await makeRequest(path: path, method: "DELETE")
         let (_, response) = try await URLSession.shared.data(for: request)
         try validate(response)
     }
 
     private func get(path: String) async throws -> Data {
-        let request = makeRequest(path: path, method: "GET")
+        let request = await makeRequest(path: path, method: "GET")
         let (data, response) = try await URLSession.shared.data(for: request)
         try validate(response)
         return data
     }
 
-    private func makeRequest(path: String, method: String) -> URLRequest {
+    /// apikey + Content-Type only — no Authorization. Auth endpoints build on
+    /// this directly so token grants never depend on having a token.
+    private func bareRequest(path: String, method: String) -> URLRequest {
         var request = URLRequest(url: URL(string: Self.supabaseURL + path)!)
         request.httpMethod = method
         request.setValue(Self.supabaseAnonKey, forHTTPHeaderField: "apikey")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if let token = accessToken {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        } else {
-            request.setValue("Bearer \(Self.supabaseAnonKey)", forHTTPHeaderField: "Authorization")
-        }
+        return request
+    }
+
+    private func makeRequest(path: String, method: String) async -> URLRequest {
+        var request = bareRequest(path: path, method: method)
+        let bearer = await currentAccessToken() ?? Self.supabaseAnonKey
+        request.setValue("Bearer \(bearer)", forHTTPHeaderField: "Authorization")
         return request
     }
 

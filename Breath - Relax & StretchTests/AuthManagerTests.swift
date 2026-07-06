@@ -17,7 +17,8 @@ struct AuthManagerTests {
 
     private static let keysToReset = [
         "auth.isSignedIn", "auth.displayName", "auth.email",
-        "auth.provider", "auth.twoFAEnabled", "auth.anonymousID"
+        "auth.provider", "auth.twoFAEnabled", "auth.anonymousID",
+        "auth.supabaseUserID"
     ]
 
     init() {
@@ -113,6 +114,41 @@ struct AuthManagerTests {
 
         #expect(manager.signIn(email: "ada@example.com", password: "password123")
                 == "Account data is corrupted. Please create a new account.")
+    }
+
+    // MARK: - backendID (Supabase auth.uid() vs anonymous fallback)
+
+    @Test func backendIDFallsBackToAnonymousID() {
+        let manager = makeManager()
+        #expect(manager.backendID == manager.anonymousID)
+        #expect(!manager.isBackendAuthenticated)
+    }
+
+    @Test func backendIDPrefersStoredSupabaseUserID() {
+        let manager = makeManager()
+        UserDefaults.standard.set("supabase-uid-123", forKey: "auth.supabaseUserID")
+        #expect(manager.backendID == "supabase-uid-123")
+        #expect(manager.isBackendAuthenticated)
+    }
+
+    @Test func signOutDropsTheSupabaseIdentity() {
+        let manager = makeManager()
+        _ = manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
+        UserDefaults.standard.set("supabase-uid-123", forKey: "auth.supabaseUserID")
+
+        manager.signOut()
+        #expect(!manager.isBackendAuthenticated)
+        #expect(manager.backendID == manager.anonymousID)
+    }
+
+    @Test func deleteAccountDropsTheSupabaseIdentity() {
+        let manager = makeManager()
+        _ = manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
+        UserDefaults.standard.set("supabase-uid-123", forKey: "auth.supabaseUserID")
+
+        manager.deleteAccount()
+        #expect(!manager.isBackendAuthenticated)
+        #expect(!manager.isSignedIn)
     }
 
     @Test func signInRejectsWhenComputedHashIsEmpty() {

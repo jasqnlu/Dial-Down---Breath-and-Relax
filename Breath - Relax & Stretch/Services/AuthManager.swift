@@ -4,6 +4,8 @@ import AuthenticationServices
 import Security
 import LocalAuthentication
 import CommonCrypto
+import CryptoKit
+import os
 
 // MARK: - Auth Provider
 
@@ -19,13 +21,16 @@ enum AuthProvider: String, Codable {
 // in-memory store — the real keychain is unreliable/unavailable in the test
 // runner's sandbox.
 
-protocol KeychainStore {
+// `nonisolated`: the project defaults declarations to @MainActor isolation,
+// but the keychain seam is also used from inside the SupabaseService actor
+// (session persistence), so it must stay actor-agnostic.
+nonisolated protocol KeychainStore {
     func save(account: String, value: String)
     func delete(account: String)
     func loadCredential(account: String) -> String?
 }
 
-struct SecItemKeychainStore: KeychainStore {
+nonisolated struct SecItemKeychainStore: KeychainStore {
     let service: String
 
     func save(account: String, value: String) {
@@ -89,6 +94,7 @@ final class AuthManager: ObservableObject {
     private let kProvider     = "auth.provider"
     private let kTwoFAEnabled = "auth.twoFAEnabled" // legacy key name; now drives App Lock
     private let kAnonymousID  = "auth.anonymousID"
+    private let kSupabaseUserID = "auth.supabaseUserID" // auth.uid() — not a secret; the tokens live in the keychain
 
     // MARK: - Anonymous identity
     // Backend-facing identity. A random UUID minted once per install and used
@@ -103,8 +109,28 @@ final class AuthManager: ObservableObject {
         return fresh
     }
 
+    // MARK: - Backend identity
+    // What community rows (profiles.id, routines.author_id, sessions.user_id)
+    // are keyed on. With a Supabase Auth session (Sign in with Apple) this is
+    // the Supabase user id, so the auth.uid() RLS policies authorize writes;
+    // otherwise it falls back to the anonymous per-install UUID, whose writes
+    // the backend now rejects — community uploads are best-effort by design.
+    var backendID: String {
+        UserDefaults.standard.string(forKey: kSupabaseUserID) ?? anonymousID
+    }
+
+    /// True when a Supabase Auth session backs this user (writes to the
+    /// community tables will be authorized as them).
+    var isBackendAuthenticated: Bool {
+        UserDefaults.standard.string(forKey: kSupabaseUserID) != nil
+    }
+
     private let keychain: KeychainStore
     private let hashPassword: PasswordHasher
+
+    /// Raw nonce for the in-flight Sign in with Apple request; its SHA-256 is
+    /// embedded in the Apple identity token, and Supabase verifies the pair.
+    private var pendingAppleNonce: String?
 
     /// `internal` (not `private`) so `@testable import` can construct
     /// instances with a fake keychain/hasher; production code should still
@@ -172,6 +198,18 @@ final class AuthManager: ObservableObject {
 
     // MARK: - Sign in with Apple
 
+    /// Configures the ASAuthorization request: scopes plus a fresh nonce
+    /// (SHA-256 on the request, raw kept for the Supabase exchange) so the
+    /// identity token can't be replayed by a third party.
+    func prepareAppleSignInRequest(_ request: ASAuthorizationAppleIDRequest) {
+        request.requestedScopes = [.fullName, .email]
+        let raw = Self.randomNonce()
+        pendingAppleNonce = raw
+        request.nonce = SHA256.hash(data: Data(raw.utf8))
+            .map { String(format: "%02x", $0) }
+            .joined()
+    }
+
     func handleAppleCredential(_ credential: ASAuthorizationAppleIDCredential) {
         var name = ""
         if let fn = credential.fullName?.givenName {
@@ -181,6 +219,45 @@ final class AuthManager: ObservableObject {
         if name.isEmpty { name = displayName.isEmpty ? "Apple User" : displayName }
         let email = credential.email ?? userEmail
         persist(name: name, email: email, providerVal: .apple)
+
+        // Exchange the Apple identity token for a Supabase Auth session so
+        // backend writes are authorized as this user (auth.uid() RLS).
+        // Best-effort: on failure (offline, provider not enabled in the
+        // dashboard) the app keeps working locally. Identity tokens are
+        // single-use with a ~10 min TTL, so there is no stored-token retry —
+        // the user can just sign in with Apple again.
+        let nonce = pendingAppleNonce
+        pendingAppleNonce = nil
+        guard SupabaseService.isConfigured,
+              let tokenData = credential.identityToken,
+              let identityToken = String(data: tokenData, encoding: .utf8) else { return }
+        Task { [weak self] in
+            do {
+                let uid = try await SupabaseService.shared.signInWithApple(
+                    identityToken: identityToken, nonce: nonce)
+                guard let self else { return }
+                UserDefaults.standard.set(uid, forKey: self.kSupabaseUserID)
+                self.objectWillChange.send() // backendID/isBackendAuthenticated changed
+            } catch {
+                Logger(subsystem: "com.jasonlu.breath", category: "supabaseAuth")
+                    .warning("Apple → Supabase token exchange failed: \(error)")
+            }
+        }
+    }
+
+    /// Random URL-safe nonce for Sign in with Apple. The slight modulo bias
+    /// is irrelevant here — the nonce only needs to be unpredictable, not
+    /// uniformly distributed.
+    nonisolated private static func randomNonce(length: Int = 32) -> String {
+        let charset = Array("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-._")
+        var bytes = [UInt8](repeating: 0, count: length)
+        let status = SecRandomCopyBytes(kSecRandomDefault, length, &bytes)
+        guard status == errSecSuccess else {
+            // SecRandom failing is effectively impossible; fall back to a
+            // UUID rather than sending a predictable constant.
+            return UUID().uuidString
+        }
+        return String(bytes.map { charset[Int($0) % charset.count] })
     }
 
     // MARK: - Sign in with Google
@@ -230,11 +307,24 @@ final class AuthManager: ObservableObject {
     // MARK: - Sign out
 
     func signOut() {
+        endSupabaseSession()
+        clearLocalSignIn()
+    }
+
+    private func clearLocalSignIn() {
         UserDefaults.standard.set(false, forKey: kIsSignedIn)
         isSignedIn  = false
         needsUnlock = false
         displayName = ""
         userEmail   = ""
+    }
+
+    /// Drops the Supabase user id and (best-effort) revokes the session's
+    /// refresh token server-side.
+    private func endSupabaseSession() {
+        UserDefaults.standard.removeObject(forKey: kSupabaseUserID)
+        guard SupabaseService.isConfigured else { return }
+        Task.detached { await SupabaseService.shared.signOut() }
     }
 
     // MARK: - Delete account
@@ -250,11 +340,14 @@ final class AuthManager: ObservableObject {
             keychain.delete(account: "name:\(userEmail)")
         }
         // Best-effort: remove the public leaderboard row before rotating the
-        // anonymous ID — once rotated, nothing can ever address that row again.
+        // identity — once rotated, nothing can ever address that row again.
+        // Ordered inside one task: the profiles delete policy requires
+        // id = auth.uid(), so the row must go *before* the session is revoked.
         if SupabaseService.isConfigured {
-            let departingID = anonymousID
+            let departingID = backendID
             Task.detached {
                 try? await SupabaseService.shared.deleteProfile(id: departingID)
+                await SupabaseService.shared.signOut()
             }
         }
         let d = UserDefaults.standard
@@ -263,7 +356,10 @@ final class AuthManager: ObservableObject {
         d.removeObject(forKey: kProvider)
         d.removeObject(forKey: kTwoFAEnabled)
         d.removeObject(forKey: kAnonymousID)
-        signOut()
+        d.removeObject(forKey: kSupabaseUserID)
+        // Not signOut() — that would race a second Supabase sign-out against
+        // the ordered delete-then-revoke task above.
+        clearLocalSignIn()
     }
 
     // MARK: - Biometrics
@@ -323,7 +419,7 @@ final class AuthManager: ObservableObject {
 
 // MARK: - Data hex helpers (file-private)
 
-private extension Data {
+nonisolated private extension Data {
     init?(hexString: String) {
         guard hexString.count.isMultiple(of: 2) else { return nil }
         let bytes = stride(from: 0, to: hexString.count, by: 2).compactMap {
