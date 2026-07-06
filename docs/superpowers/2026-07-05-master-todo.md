@@ -12,7 +12,7 @@
 | Branch | State |
 |---|---|
 | `feature/exercise-library` | ✅ **COMPLETE + reviewed** at `9184a78` (MuscleGroup vocabulary, 152-exercise seed v4, stick-figure/YouTube removal, local-video placeholder card, v4 migration) |
-| `feature/bodymap-3d-marking` | 🔶 In progress. Task 1/6 (MuscleNameResolver) implemented at `373ae8c`, tests green, **not yet task-reviewed** |
+| `feature/bodymap-3d-marking` | ✅ **Code-complete** (T1–T6) through `c00a973`. Skin-only 3D map, invisible muscle hit-proxy, MuscleMarkStore, MarkableBodyView draw-to-mark, x-ray highlights, 2D region-grid deleted, Blender export guide. Build + tests green; simulator-verified. Marking uses coarse fallback until Jason's per-muscle Blender re-export |
 | `feature/breathing-preview` | 🔶 In worktree `.claude/worktrees/agent-ac2c9b9e789ee75c0`. Task 1/2 (BreathPreviewController + tests) committed at `3649fff`; Task 2 (BreathingView wiring) half-done **uncommitted**; agent stalled going off-plan into a UITests target — the untracked `BreathingPreviewUITests.swift` should be discarded (plan never asked for UI tests) |
 | `feature/onboarding-survey` | ⬜ Not started (branch cut from bodymap when it completes) |
 | `fix/page-titles` | ⬜ Not started (runs last, after all merges) |
@@ -22,13 +22,14 @@
 
 ### B1. Body map 3D marking — `docs/superpowers/plans/2026-07-04-2-bodymap-3d-marking.md`
 **Spec:** one 3D skin-only body map; Mark mode freezes the user's current rotation and the visible projection becomes the drawing surface; strokes unproject via SceneKit hitTest into an invisible muscle-proxy mesh → ~40 `MuscleGroup`s; marked muscles glow through the skin in 3D (rotation-independent); marks persist as `{group: sensationColor}` with legacy-region migration; all 2D silhouette/region-grid code deleted.
-- [x] T1 MuscleNameResolver (`373ae8c`, tests green) — **pending task review**
-- [ ] T2 `MuscleMarkStore` (persistence + `bodymap.markedRegions` migration; full test code in plan)
-- [ ] T3 `BodyRig` skin-only + invisible muscle proxy + x-ray highlight layer; delete `BodySkeleton.obj`
-- [ ] T4 `MarkableBodyView` (`UIViewRepresentable` SCNView; hitTest per stroke point; rotate/zoom gestures; live-ink CAShapeLayer)
-- [ ] T5 `BodyMapView` rewrite + delete HumanFigureView / BodyFigureCanvas / Muscle+SkeletonAnatomyCanvas / AnatomyDrawingHelpers / silhouettes / AnnotationStore
-- [ ] T6 `docs/BLENDER_MUSCLE_EXPORT.md` guide
-- [ ] **YOUR action (Jason):** re-export the Z-Anatomy muscle layer from Blender with per-muscle object names kept (T6 documents the exact steps). Until then marking works via the coarse fallback only.
+- [x] T1 MuscleNameResolver (`373ae8c`, tests green)
+- [x] T2 `MuscleMarkStore` (`631c78e`, 4 tests green — persistence + `bodymap.markedRegions` migration)
+- [x] T3 `BodyRig` skin-only + invisible muscle proxy + x-ray highlight layer; `BodySkeleton.obj` deleted (`86ffea9`)
+- [x] T4 `MarkableBodyView` (`UIViewRepresentable` SCNView; hitTest per stroke point; rotate/zoom gestures; live-ink CAShapeLayer) (`86ffea9`)
+- [x] T5 `BodyMapView` rewrite + deleted HumanFigureView / BodyFigureCanvas / Muscle+SkeletonAnatomyCanvas / AnatomyDrawingHelpers / silhouettes / AnnotationStore; GenderPickerPage → SF-symbol figures (`81a6ad9`)
+- [x] T6 `docs/BLENDER_MUSCLE_EXPORT.md` guide (`c00a973`)
+- **Status:** ✅ B1 code-complete. Build + full test suite green; simulator verified Body Map browse + Mark mode render without crash. Marking currently uses the coarse skin fallback (merged OBJ) — see Jason action below.
+- [ ] **YOUR action (Jason):** re-export the Z-Anatomy muscle layer from Blender with per-muscle object names kept (`docs/BLENDER_MUSCLE_EXPORT.md` documents the exact steps). Until then marking works via the coarse fallback only (no per-muscle glow).
 
 ### B2. Onboarding survey + facts — `docs/superpowers/plans/2026-07-04-3-onboarding-survey.md`
 **Spec:** Bend-style flow for new users: 5 survey questions (goal, problem areas, flexibility, frequency, preferred time) interleaved with cited stretching-fact cards; answers → `@AppStorage`, problem areas pre-mark body-map muscles, preferred time pre-fills the reminder hour.
