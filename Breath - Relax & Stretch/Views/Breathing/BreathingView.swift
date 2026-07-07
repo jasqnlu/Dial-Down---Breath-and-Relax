@@ -373,7 +373,7 @@ struct BreathingView: View {
                         Text("Go Again")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(LuminaPillButtonStyle())
+                    .buttonStyle(LuminaPillButtonStyle(kind: .ghost))
 
                     Button {
                         resetSession()
