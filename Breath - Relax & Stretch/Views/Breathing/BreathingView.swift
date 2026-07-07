@@ -134,12 +134,12 @@ struct BreathingView: View {
             VStack(spacing: 6) {
                 Image(systemName: pattern.icon)
                     .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(isSelected ? .white : Color.accentColor)
+                    .foregroundStyle(isSelected ? Color.luminaOnPrimary : Color.luminaPrimary)
 
                 Text(pattern.rawValue)
-                    .font(.caption)
+                    .font(.luminaCaption)
                     .fontWeight(isSelected ? .semibold : .regular)
-                    .foregroundStyle(isSelected ? .white : .primary)
+                    .foregroundStyle(isSelected ? Color.luminaOnPrimary : Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
@@ -147,13 +147,13 @@ struct BreathingView: View {
             .frame(width: 90, height: 72)
             .background(
                 RoundedRectangle(cornerRadius: 14)
-                    .fill(isSelected ? Color.accentColor : Color(.secondarySystemFill))
+                    .fill(isSelected ? Color.luminaPrimary : Color.luminaContainer)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(isSelected ? Color.accentColor : Color.clear, lineWidth: 1.5)
+                    .strokeBorder(isSelected ? Color.luminaPrimary : Color.clear, lineWidth: 1.5)
             )
-            .shadow(color: isSelected ? Color.accentColor.opacity(0.3) : .clear, radius: 6, y: 3)
+            .shadow(color: isSelected ? Color.luminaPrimary.opacity(0.3) : .clear, radius: 6, y: 3)
         }
         .buttonStyle(.plain)
         .disabled(isRunning)
@@ -240,7 +240,7 @@ struct BreathingView: View {
             // Round counter
             if isRunning {
                 Text("Round \(round) / \(totalRounds)")
-                    .font(.subheadline)
+                    .font(.luminaSubheadline)
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
                     .animation(.easeInOut(duration: 0.3), value: round)
@@ -248,20 +248,20 @@ struct BreathingView: View {
                 // Round selector when idle
                 HStack(spacing: 12) {
                     Text("Rounds:")
-                        .font(.subheadline)
+                        .font(.luminaSubheadline)
                         .foregroundStyle(.secondary)
 
                     Stepper("\(totalRounds)", value: $totalRounds, in: 1...20)
                         .labelsHidden()
 
                     Text("\(totalRounds)")
-                        .font(.subheadline.weight(.semibold))
+                        .font(.luminaCardTitle)
                         .monospacedDigit()
                         .frame(minWidth: 24)
                 }
                 .padding(.horizontal, 28)
                 .padding(.vertical, 10)
-                .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: 12))
+                .background(Color.luminaContainer, in: RoundedRectangle(cornerRadius: 12))
             }
         }
         .padding(.horizontal, 20)
@@ -290,14 +290,9 @@ struct BreathingView: View {
                     isRunning ? (isPaused ? "Resume" : "Pause") : "Start",
                     systemImage: isRunning ? (isPaused ? "play.fill" : "pause.fill") : "play.fill"
                 )
-                .font(.headline)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(Color.accentColor)
-                .foregroundStyle(.white)
-                .clipShape(Capsule())
-                .shadow(color: Color.accentColor.opacity(0.35), radius: 8, y: 4)
             }
+            .buttonStyle(LuminaPillButtonStyle())
 
             // Stop button (shown only while running)
             if isRunning {
@@ -309,7 +304,7 @@ struct BreathingView: View {
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color(.secondarySystemFill))
+                        .background(Color.luminaContainer)
                         .clipShape(Capsule())
                 }
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
@@ -323,7 +318,7 @@ struct BreathingView: View {
 
     private var completionOverlay: some View {
         ZStack {
-            Color(.systemBackground).ignoresSafeArea()
+            Color.luminaSurface.ignoresSafeArea()
 
             VStack(spacing: 32) {
                 Spacer()
@@ -364,7 +359,7 @@ struct BreathingView: View {
                             value: selectedPattern.rawValue)
                 }
                 .padding(20)
-                .background(Color(.secondarySystemFill))
+                .background(Color.luminaContainer)
                 .clipShape(RoundedRectangle(cornerRadius: 18))
                 .padding(.horizontal, 24)
 
@@ -376,26 +371,17 @@ struct BreathingView: View {
                         resetSession()
                     } label: {
                         Text("Go Again")
-                            .font(.headline)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.accentColor)
-                            .foregroundStyle(.white)
-                            .clipShape(Capsule())
-                            .shadow(color: Color.accentColor.opacity(0.3), radius: 8, y: 4)
                     }
+                    .buttonStyle(LuminaPillButtonStyle())
 
                     Button {
                         resetSession()
                     } label: {
                         Text("Done")
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(Color(.secondarySystemFill))
-                            .clipShape(Capsule())
                     }
+                    .buttonStyle(LuminaPillButtonStyle())
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 40)
@@ -414,7 +400,7 @@ struct BreathingView: View {
             Text(value)
                 .fontWeight(.semibold)
         }
-        .font(.subheadline)
+        .font(.luminaSubheadline)
     }
 
     // MARK: - Timer logic
