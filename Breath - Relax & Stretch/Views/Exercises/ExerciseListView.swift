@@ -47,17 +47,19 @@ struct ExerciseListView: View {
                     ForYouSection(allExercises: exercises)
                 }
 
-                LazyVStack(spacing: 0) {
+                LazyVStack(spacing: 12) {
                     ForEach(filtered, id: \.uuid) { exercise in
                         NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
                             ExerciseRow(exercise: exercise)
-                                .padding(.horizontal)
-                                .padding(.vertical, 4)
                         }
-                        Divider().padding(.leading)
+                        .buttonStyle(.plain)
+                        .luminaCard()
+                        .padding(.horizontal)
                     }
                 }
+                .padding(.top, 8)
             }
+            .background(Color.luminaSurface)
             .searchable(text: $searchText, prompt: "Search exercises")
             .navigationTitle("Exercises")
             .floatingTabBarClearance()
@@ -133,10 +135,10 @@ struct ExerciseRow: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 Text(exercise.name)
-                    .font(.headline)
+                    .font(.luminaCardTitle)
                 if hasVideo {
                     Image(systemName: "film.fill")
-                        .font(.caption)
+                        .font(.luminaCaption)
                         .foregroundStyle(Color.accentColor)
                         .accessibilityHidden(true)
                 }
@@ -146,7 +148,7 @@ struct ExerciseRow: View {
                 Label(exercise.type.rawValue, systemImage: "figure.mind.and.body")
                 Label(difficultyLabel, systemImage: "chart.bar")
             }
-            .font(.caption)
+            .font(.luminaCaption)
             .foregroundStyle(.secondary)
         }
         .padding(.vertical, 4)

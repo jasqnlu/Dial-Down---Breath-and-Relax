@@ -10,9 +10,18 @@ struct ExerciseDetailView: View {
 
                 // ── Meta chips ──────────────────────────────────────────────
                 HStack(spacing: 16) {
-                    StatChip(icon: "clock",             label: exercise.durationFormatted)
-                    StatChip(icon: "chart.bar",         label: difficultyLabel)
-                    StatChip(icon: "figure.mind.and.body", label: exercise.type.rawValue)
+                    StatChip(icon: "clock",     label: exercise.durationFormatted)
+                    StatChip(icon: "chart.bar", label: difficultyLabel)
+                    // Category chip — static blue chip look per the mock's
+                    // "Flexibility"-style pill (exercise.type is the category).
+                    Text(exercise.type.rawValue)
+                        .font(.luminaLabel)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.luminaBlue.opacity(0.15))
+                        .foregroundStyle(Color.luminaBlue)
+                        .clipShape(Capsule())
+                        .accessibilityLabel(exercise.type.rawValue)
                 }
                 .padding(.horizontal)
 
@@ -30,17 +39,19 @@ struct ExerciseDetailView: View {
                 // ── Target body parts ────────────────────────────────────────
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Targets")
-                        .font(.headline)
+                        .font(.luminaCardTitle)
                         .padding(.horizontal)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(exercise.targetBodyParts, id: \.self) { part in
+                                // Body-area chip — static orange chip look per
+                                // the mock's "Lower Body"-style pill.
                                 Text(part)
-                                    .font(.caption)
+                                    .font(.luminaLabel)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
-                                    .background(Color.accentColor.opacity(0.12))
-                                    .foregroundStyle(Color.accentColor)
+                                    .background(Color.luminaOrange)
+                                    .foregroundStyle(Color.luminaOnOrange)
                                     .clipShape(Capsule())
                             }
                         }
@@ -53,21 +64,21 @@ struct ExerciseDetailView: View {
                 // ── Step-by-step instructions ────────────────────────────────
                 VStack(alignment: .leading, spacing: 14) {
                     Text("Instructions")
-                        .font(.headline)
+                        .font(.luminaCardTitle)
                         .padding(.horizontal)
                     ForEach(Array(exercise.instructions.enumerated()), id: \.offset) { index, step in
                         HStack(alignment: .top, spacing: 14) {
                             Text("\(index + 1)")
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                                .frame(width: 26, height: 26)
-                                .background(Color.accentColor.opacity(0.12))
-                                .foregroundStyle(Color.accentColor)
+                                .font(.luminaLabel)
+                                .frame(width: 28, height: 28)
+                                .background(Color.luminaPrimary)
+                                .foregroundStyle(Color.luminaOnPrimary)
                                 .clipShape(Circle())
                             Text(step)
-                                .font(.body)
+                                .font(.luminaBody)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
+                        .luminaCard()
                         .padding(.horizontal)
                     }
                 }
@@ -81,6 +92,7 @@ struct ExerciseDetailView: View {
             }
             .padding(.vertical)
         }
+        .background(Color.luminaSurface)
         .navigationTitle(exercise.name)
         .safeAreaInset(edge: .bottom) {
             Button {
@@ -88,12 +100,9 @@ struct ExerciseDetailView: View {
             } label: {
                 Label("Start Exercise", systemImage: "play.fill")
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
-                    .padding()
             }
+            .buttonStyle(LuminaPillButtonStyle())
+            .padding()
             .background(.regularMaterial)
         }
         // After the CTA inset so the clearance band sits below it: the
@@ -122,10 +131,10 @@ struct StatChip: View {
 
     var body: some View {
         Label(label, systemImage: icon)
-            .font(.caption)
+            .font(.luminaCaption)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background(Color(.secondarySystemFill))
+            .background(Color.luminaContainer)
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .accessibilityLabel(label)
     }
