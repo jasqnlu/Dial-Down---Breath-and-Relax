@@ -20,45 +20,51 @@ struct SessionSummaryView: View {
             Spacer()
 
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 80))
-                .foregroundStyle(.green)
+                .font(.system(size: 44))
+                .foregroundStyle(Color.luminaPrimary)
+                .frame(width: 88, height: 88)
+                .background(Color.luminaCardFill, in: Circle())
+                .shadow(color: Color.black.opacity(0.1), radius: 16, y: 8)
 
             VStack(spacing: 8) {
                 Text("Session Complete!")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+                    .font(.luminaHeadline)
+                    .foregroundStyle(Color.luminaPrimary)
 
                 Text("Great work. Keep the streak going!")
-                    .font(.subheadline)
+                    .font(.luminaSubheadline)
                     .foregroundStyle(.secondary)
             }
 
             VStack(spacing: 4) {
+                Image(systemName: "medal.fill")
+                    .font(.system(size: 22))
+                    .foregroundStyle(Color.luminaOrange)
                 Text("+\(pointsEarned)")
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color.accentColor)
+                    .font(.luminaHeadline)
+                    .foregroundStyle(Color.luminaPrimary)
                 Text("points earned")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    .textCase(.uppercase)
             }
-            .padding()
-            .background(Color.accentColor.opacity(0.08))
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .luminaCard()
 
             Spacer()
 
             Button(action: onDismiss) {
                 Text("Done")
-                    .font(.headline)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
-                    .padding(.horizontal)
             }
+            .buttonStyle(LuminaPillButtonStyle())
+            .padding(.horizontal)
             .padding(.bottom, 40)
         }
+        .background(
+            LinearGradient(colors: [Color.luminaMintTint, Color.luminaSurface],
+                           startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
+        )
     }
 }
 
