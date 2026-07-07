@@ -86,7 +86,7 @@ struct TodayView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 24)
             }
-            .background(Color(.systemGroupedBackground))
+            .background(Color.luminaSurface)
             .scrollIndicators(.hidden)
             .toolbar(.hidden, for: .navigationBar)
             .floatingTabBarClearance()
@@ -149,9 +149,9 @@ struct TodayView: View {
                 Text(auth.displayName.isEmpty || auth.isGuest
                      ? greeting
                      : "\(greeting), \(auth.displayName)")
-                    .font(.system(.title2, design: .rounded, weight: .bold))
+                    .font(.luminaHeadline)
                 Text(Date.now.formatted(.dateTime.weekday(.wide).month(.wide).day()))
-                    .font(.subheadline)
+                    .font(.luminaSubheadline)
                     .foregroundStyle(.secondary)
             }
 
@@ -161,11 +161,11 @@ struct TodayView: View {
                 HStack(spacing: 4) {
                     if showStreakEmoji { Text("🔥") }
                     Text("\(profile.streak)")
-                        .font(.system(.subheadline, design: .rounded, weight: .bold))
+                        .font(.custom("ManropeExtraLight-Bold", size: 15, relativeTo: .subheadline))
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 7)
-                .background(Color(.secondarySystemGroupedBackground), in: Capsule())
+                .background(Color.luminaCardFill, in: Capsule())
                 .accessibilityLabel("\(profile.streak) day streak")
             }
         }
@@ -179,7 +179,7 @@ struct TodayView: View {
 
         return ZStack(alignment: .topTrailing) {
             LinearGradient(
-                colors: [Color(.systemTeal).opacity(0.75), Color(.systemIndigo).opacity(0.9)],
+                colors: [Color.luminaGradientStart, Color.luminaGradientEnd],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -205,9 +205,9 @@ struct TodayView: View {
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(timeOfDayFocus.heroTitle)
-                        .font(.system(.title3, design: .rounded, weight: .bold))
+                        .font(.luminaTitle)
                     Text("\(sessionExercises.count) exercises · \(mins) min")
-                        .font(.subheadline)
+                        .font(.luminaSubheadline)
                         .opacity(0.85)
                 }
 
@@ -218,8 +218,8 @@ struct TodayView: View {
                         Image(systemName: "play.fill")
                         Text("Begin")
                     }
-                    .font(.system(.body, design: .rounded, weight: .semibold))
-                    .foregroundStyle(Color(.systemIndigo))
+                    .font(.luminaCardTitle)
+                    .foregroundStyle(Color.luminaBlue)
                     .padding(.horizontal, 28)
                     .frame(height: 44)
                     .background(.white, in: Capsule())
@@ -231,7 +231,7 @@ struct TodayView: View {
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 22))
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 
     // MARK: - Stats
@@ -247,14 +247,14 @@ struct TodayView: View {
     private func statTile(value: String, label: String) -> some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.system(.title3, design: .rounded, weight: .bold))
+                .font(.luminaTitle)
             Text(label)
-                .font(.caption)
+                .font(.luminaCaption)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
+        .padding(.vertical, 14)
+        .luminaCard(padding: 0)
         .accessibilityElement(children: .combine)
     }
 
@@ -269,14 +269,14 @@ struct TodayView: View {
                     .font(.title3)
                     .foregroundStyle(Color.accentColor)
                     .frame(width: 40, height: 40)
-                    .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                    .background(Color.luminaMintTint, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(program.title)
-                        .font(.subheadline.weight(.semibold))
+                        .font(.luminaCardTitle)
                         .foregroundStyle(.primary)
                     Text("\(program.days.count) days · free")
-                        .font(.caption)
+                        .font(.luminaCaption)
                         .foregroundStyle(.secondary)
                 }
 
@@ -286,8 +286,7 @@ struct TodayView: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.tertiary)
             }
-            .padding(14)
-            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
+            .luminaCard(padding: 14)
         }
         .buttonStyle(.plain)
     }
@@ -299,7 +298,7 @@ struct TodayView: View {
         if !forYouExercises.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
                 Text("For You")
-                    .font(.system(.title3, design: .rounded, weight: .bold))
+                    .font(.luminaTitle)
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(alignment: .top, spacing: 12) {

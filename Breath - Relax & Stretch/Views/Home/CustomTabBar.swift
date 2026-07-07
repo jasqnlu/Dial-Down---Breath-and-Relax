@@ -45,7 +45,7 @@ struct CustomTabBar: View {
                     RoundedRectangle(cornerRadius: 30)
                         .strokeBorder(Color(.systemGray5).opacity(0.8), lineWidth: 0.5)
                 }
-                .shadow(color: .black.opacity(0.14), radius: 22, x: 0, y: 6)
+                .shadow(color: Color.luminaPrimary.opacity(0.14), radius: 22, x: 0, y: 6)
         }
         .padding(.horizontal, 18)
     }
@@ -65,13 +65,13 @@ struct CustomTabBar: View {
 
                 if isActive {
                     Text(tab.label)
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.custom("ManropeExtraLight-SemiBold", size: 12, relativeTo: .caption))
                         .lineLimit(1)
                         .fixedSize()
                         .transition(.scale(scale: 0.7).combined(with: .opacity))
                 }
             }
-            .foregroundStyle(isActive ? Color.accentColor : Color(.systemGray))
+            .foregroundStyle(isActive ? Color.luminaPrimary : Color(.systemGray))
             .padding(.vertical, 10)
             .padding(.horizontal, isActive ? 14 : 0)
             // The pill lives in .background so it is sized by the label —
@@ -80,7 +80,7 @@ struct CustomTabBar: View {
             .background {
                 if isActive {
                     Capsule()
-                        .fill(Color.accentColor.opacity(0.12))
+                        .fill(Color.luminaMintTint)
                         .matchedGeometryEffect(id: "activePill", in: ns)
                 }
             }
