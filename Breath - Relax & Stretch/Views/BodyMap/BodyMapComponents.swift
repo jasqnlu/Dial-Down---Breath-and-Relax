@@ -42,9 +42,9 @@ struct MarkedAreasBanner: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.headline)
+                    .font(.luminaTitle)
                 Text(subtitle)
-                    .font(.caption)
+                    .font(.luminaCaption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
@@ -60,18 +60,12 @@ struct MarkedAreasBanner: View {
 
             Button(action: onFind) {
                 Label("Find Exercises", systemImage: "figure.mind.and.body")
-                    .font(.caption.bold())
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(.tint.opacity(0.12))
-                    .foregroundStyle(.tint)
-                    .clipShape(Capsule())
             }
+            .buttonStyle(LuminaPillButtonStyle())
             .accessibilityLabel("Find exercises for marked areas")
         }
-        .padding()
-        .background(.regularMaterial)
-        .shadow(color: Color.primary.opacity(0.08), radius: 6, y: -2)
+        .luminaCard(padding: 16)
+        .padding(.horizontal, 16)
     }
 }
 
