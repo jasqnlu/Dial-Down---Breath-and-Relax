@@ -69,5 +69,6 @@ struct ProfileAppearanceTab: View {
                 }
             }
         }
+        .listRowBackground(Color.luminaCardFill)
     }
 }

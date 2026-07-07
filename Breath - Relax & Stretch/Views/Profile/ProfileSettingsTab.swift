@@ -97,6 +97,8 @@ struct ProfileSettingsTab: View {
                 .padding(.vertical, 4)
             } header: {
                 Text("My Goals")
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             } footer: {
                 Text("Shapes the \"For You\" exercises in the Exercises tab.")
             }
@@ -120,6 +122,8 @@ struct ProfileSettingsTab: View {
                 }
             } header: {
                 Text("Session")
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             } footer: {
                 Text("Announces exercise names and breathing phases aloud during sessions. Auto-skip jumps straight into each exercise without the 3-2-1 countdown.")
             }
@@ -207,6 +211,8 @@ struct ProfileSettingsTab: View {
                 }
             } header: {
                 Text("Integrations")
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             } footer: {
                 Text("Logs stretch sessions as Flexibility workouts and breathing sessions as Mindful Minutes, and reads last night's sleep to suggest a gentler routine when you're under-rested. Google Health and other apps that sync with Apple Health will receive the data automatically. Calendar sync adds a same-time event for each completed session and suggests a free slot for your next one.")
             }
@@ -277,6 +283,7 @@ struct ProfileSettingsTab: View {
                 }
             }
         }
+        .listRowBackground(Color.luminaCardFill)
         .sheet(isPresented: $showingAppGuide) {
             AppGuideView()
         }
