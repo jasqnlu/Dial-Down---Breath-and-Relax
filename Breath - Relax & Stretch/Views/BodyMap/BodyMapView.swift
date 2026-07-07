@@ -135,6 +135,7 @@ struct BodyMapView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
+            .background(Color.luminaSurface.ignoresSafeArea())
             .floatingTabBarClearance()
             .navigationTitle(annotationMode ? "Mark Your Body" : "Body Map")
             .navigationBarTitleDisplayMode(.inline)
@@ -180,29 +181,21 @@ struct BodyMapView: View {
         HStack(spacing: 6) {
             ForEach(BodyLayer.allCases, id: \.self) { layer in
                 let isActive = currentLayer == layer
-                Button {
+                LuminaChip(title: layer.rawValue, isSelected: isActive) {
                     withAnimation(.spring(response: 0.28, dampingFraction: 0.76)) {
                         currentLayer = layer
                     }
-                } label: {
-                    Text(layer.rawValue)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(isActive ? .white : .secondary)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 7)
-                        .background {
-                            Capsule()
-                                .fill(isActive ? layer.accentColor : Color(.tertiarySystemFill))
-                        }
                 }
-                .buttonStyle(.plain)
                 .animation(.spring(response: 0.28, dampingFraction: 0.76), value: currentLayer)
                 .accessibilityLabel("\(layer.rawValue) layer")
-                .accessibilityAddTraits(isActive ? .isSelected : [])
             }
         }
     }
 
+    // Not a multi-option picker like the layer chips above — a single toggle
+    // between Front/Back — so it keeps its directional icon, restyled with
+    // the same chip tokens (unselected LuminaChip look) rather than wrapped
+    // in LuminaChip itself (which is text-only).
     private var facingToggleButton: some View {
         Button {
             withAnimation(.easeInOut(duration: 0.28)) {
@@ -213,12 +206,12 @@ struct BodyMapView: View {
                 Image(systemName: "arrow.left.arrow.right")
                     .font(.system(size: 10, weight: .medium))
                 Text(facing.rawValue)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.luminaLabel)
             }
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
-            .background(Color(.tertiarySystemFill), in: Capsule())
+            .foregroundStyle(Color.luminaOnSurfaceVariant)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 9)
+            .background(Color.luminaContainer, in: Capsule())
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Toggle body facing — currently \(facing.rawValue)")
@@ -321,7 +314,7 @@ struct BodyMapView: View {
                     .accessibilityLabel(tool.label)
                 }
             }
-            .background(Color(.secondarySystemFill),
+            .background(Color.luminaContainer,
                         in: RoundedRectangle(cornerRadius: 10))
 
             Spacer()
