@@ -16,17 +16,25 @@ struct RoutineListView: View {
             List {
                 Section {
                     NavigationLink(destination: GuidedProgramsView()) {
-                        Label("Guided Programs", systemImage: "calendar.badge.clock")
+                        entryRow(title: "Guided Programs", systemImage: "calendar.badge.clock")
                     }
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+
                     NavigationLink(destination: ContentPacksView()) {
-                        Label("Content Packs", systemImage: "shippingbox.fill")
+                        entryRow(title: "Content Packs", systemImage: "shippingbox.fill")
                     }
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
                 }
 
                 ForEach(routines) { routine in
                     RoutineRow(routine: routine) {
                         routineToPlay = routine
                     }
+                    .listRowBackground(Color.luminaCardFill)
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button(role: .destructive) {
                             modelContext.delete(routine)
@@ -51,6 +59,8 @@ struct RoutineListView: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(Color.luminaSurface)
             .navigationTitle("Routines")
             .floatingTabBarClearance()
             .toolbar {
@@ -71,13 +81,24 @@ struct RoutineListView: View {
             }
             .overlay {
                 if routines.isEmpty {
-                    ContentUnavailableView(
-                        "No Routines Yet",
-                        systemImage: "rectangle.stack.badge.plus",
-                        description: Text(SupabaseService.isConfigured
+                    ContentUnavailableView {
+                        VStack(spacing: 16) {
+                            Image(systemName: "rectangle.stack.badge.plus")
+                                .font(.system(size: 32))
+                                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                                .frame(width: 88, height: 88)
+                                .background(Color.luminaContainer, in: Circle())
+                            Text("No Routines Yet")
+                                .font(.luminaHeadline)
+                                .foregroundStyle(Color.luminaOnSurface)
+                        }
+                    } description: {
+                        Text(SupabaseService.isConfigured
                             ? "Create your own or borrow one from the library."
                             : "Create your own routine from your favorite exercises.")
-                    )
+                            .font(.luminaBody)
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    }
                 }
             }
             .sheet(isPresented: $showingBuilder) {
@@ -121,6 +142,23 @@ struct RoutineListView: View {
         guard !names.isEmpty else { return nil }
         return RoutineSharePayload(name: routine.name, exerciseNames: names).shareURL
     }
+
+    private func entryRow(title: String, systemImage: String) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: systemImage)
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(Color.luminaPrimary)
+                .frame(width: 44, height: 44)
+                .background(Color.luminaMintTint, in: Circle())
+
+            Text(title)
+                .font(.luminaCardTitle)
+                .foregroundStyle(Color.luminaOnSurface)
+
+            Spacer()
+        }
+        .luminaCard(padding: 14)
+    }
 }
 
 // MARK: - Routine row
@@ -134,7 +172,7 @@ struct RoutineRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Text(routine.name)
-                        .font(.headline)
+                        .font(.luminaCardTitle)
                     if routine.borrowedFromID != nil {
                         Label("Borrowed", systemImage: "arrow.triangle.branch")
                             .font(.caption2)
@@ -154,7 +192,7 @@ struct RoutineRow: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .font(.caption)
+                .font(.luminaCaption)
                 .foregroundStyle(.secondary)
             }
 

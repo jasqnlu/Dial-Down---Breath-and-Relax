@@ -14,41 +14,58 @@ struct GuidedProgramsView: View {
     var body: some View {
         List(programs) { program in
             NavigationLink(destination: GuidedProgramDetailView(program: program)) {
-                programRow(program)
+                programCard(program)
             }
+            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.luminaSurface)
         .navigationTitle("Programs")
         .navigationBarTitleDisplayMode(.inline)
         .floatingTabBarClearance()
     }
 
-    private func programRow(_ program: GuidedProgram) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: program.icon)
-                .font(.title2)
-                .foregroundStyle(Color.accentColor)
-                .frame(width: 32)
+    private func programCard(_ program: GuidedProgram) -> some View {
+        ZStack(alignment: .bottomLeading) {
+            LinearGradient(colors: [.luminaGradientStart, .luminaGradientEnd],
+                            startPoint: .topLeading, endPoint: .bottomTrailing)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 6) {
-                    Text(program.title)
-                        .font(.headline)
-                    if program.isPro && !store.isPro {
-                        Image(systemName: "lock.fill")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
+                    Image(systemName: program.icon)
+                    Text("\(program.days.count) day\(program.days.count == 1 ? "" : "s")")
                 }
-                Text(program.summary)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                Text("\(program.days.count) day\(program.days.count == 1 ? "" : "s")")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                .font(.luminaLabel)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(Color.black.opacity(0.35), in: Capsule())
+
+                Spacer(minLength: 0)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Text(program.title)
+                            .font(.luminaTitle)
+                        if program.isPro && !store.isPro {
+                            Image(systemName: "lock.fill")
+                                .font(.luminaCaption)
+                        }
+                    }
+                    .foregroundStyle(.white)
+                    Text(program.summary)
+                        .font(.luminaCaption)
+                        .foregroundStyle(.white.opacity(0.85))
+                        .lineLimit(2)
+                }
             }
+            .padding(16)
         }
-        .padding(.vertical, 4)
+        .frame(height: 176)
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 }
 
