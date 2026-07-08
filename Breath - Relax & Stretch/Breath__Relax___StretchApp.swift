@@ -9,7 +9,6 @@ struct BreathRelaxStretchApp: App {
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            BodyPart.self,
             Exercise.self,
             FlexibilityCheckIn.self,
             Routine.self,
@@ -36,6 +35,18 @@ struct BreathRelaxStretchApp: App {
         }
     }()
 
+    // 0 = System, 1 = Light, 2 = Dark (set in Profile > Appearance). New
+    // installs default to Dark for a sleeker first impression; the picker
+    // there lets users opt back to System or Light.
+    @AppStorage("colorSchemeOverride") private var colorSchemeOverride = 2
+    private var resolvedColorScheme: ColorScheme? {
+        switch colorSchemeOverride {
+        case 1:  return .light
+        case 2:  return .dark
+        default: return nil
+        }
+    }
+
     @AppStorage("seedDataVersion") private var seedDataVersion: Int = 0
     @AppStorage("notifiedSeedVersion") private var notifiedSeedVersion: Int = 0
     @State private var showNewContentAlert = false
@@ -49,6 +60,7 @@ struct BreathRelaxStretchApp: App {
             OnboardingGate {
                 RootView()
             }
+            .preferredColorScheme(resolvedColorScheme)
             .environmentObject(auth)
             .environmentObject(deepLinkRouter)
             .onAppear {

@@ -3,7 +3,10 @@ import SwiftUI
 // MARK: - Appearance Tab
 
 struct ProfileAppearanceTab: View {
-    @AppStorage("colorSchemeOverride") private var colorSchemeOverride = 0
+    // Keep this default in sync with BreathRelaxStretchApp's colorSchemeOverride
+    // default (2 = Dark) so the picker's initial selection always matches what
+    // the app is actually rendering for a fresh install.
+    @AppStorage("colorSchemeOverride") private var colorSchemeOverride = 2
     @AppStorage("accentColorName")     private var accentColorName = "Blue"
     @AppStorage("compactListMode")     private var compactListMode = false
     @AppStorage("showStreakEmoji")     private var showStreakEmoji = true
