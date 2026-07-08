@@ -61,7 +61,7 @@ struct MarkedAreasBanner: View {
             Button(action: onFind) {
                 Label("Find Exercises", systemImage: "figure.mind.and.body")
             }
-            .buttonStyle(LuminaPillButtonStyle())
+            .buttonStyle(LuminaPillButtonStyle(compact: true))
             .accessibilityLabel("Find exercises for marked areas")
         }
         .luminaCard(padding: 16)

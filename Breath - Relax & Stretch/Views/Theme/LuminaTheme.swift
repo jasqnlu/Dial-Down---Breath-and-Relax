@@ -42,18 +42,23 @@ extension Color {
 struct LuminaPillButtonStyle: ButtonStyle {
     enum Kind { case prominent, ghost }
     var kind: Kind = .prominent
+    /// Smaller sizing for inline/secondary placements (e.g. a banner action)
+    /// that shouldn't compete with a full-width primary CTA.
+    var compact: Bool = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.luminaCardTitle)
+            .font(compact ? .luminaLabel : .luminaCardTitle)
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
             .foregroundStyle(kind == .prominent ? Color.luminaOnPrimary : Color.luminaPrimary)
-            .padding(.horizontal, 24)
-            .frame(minHeight: 48)
+            .padding(.horizontal, compact ? 14 : 24)
+            .frame(minHeight: compact ? 34 : 48)
             .background(
                 kind == .prominent ? Color.luminaPrimary : Color.luminaMintTint,
                 in: Capsule()
             )
-            .shadow(color: kind == .prominent ? Color.luminaPrimary.opacity(0.25) : .clear,
+            .shadow(color: kind == .prominent && !compact ? Color.luminaPrimary.opacity(0.25) : .clear,
                     radius: 10, y: 5)
             .opacity(configuration.isPressed ? 0.85 : 1)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
