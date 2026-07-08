@@ -78,12 +78,13 @@ struct ExerciseGraphView: View {
 
         if isFocused {
             let categoryCenter = CGPoint(x: normalized.x * categoryRadius, y: normalized.y * categoryRadius)
-            ForEach(Array(categoryExercises.enumerated()), id: \.element.uuid) { exPair in
-                let exIndex = exPair.offset
-                let exercise = exPair.element
-                let exNormalized = GraphLayout.exercisePosition(
-                    index: exIndex, count: categoryExercises.count,
-                    around: categoryCenter, radius: exerciseRingRadius)
+            let positions = GraphLayout.ringPositions(count: categoryExercises.count,
+                                                        around: categoryCenter,
+                                                        baseRadius: exerciseRingRadius,
+                                                        ringSpacing: 0.16)
+            ForEach(Array(zip(categoryExercises, positions).enumerated()), id: \.offset) { pair in
+                let exercise = pair.element.0
+                let exNormalized = pair.element.1
                 ExerciseNode(exercise: exercise, color: category.accentColor)
                     .position(x: center.x + exNormalized.x * scale,
                               y: center.y + exNormalized.y * scale)
@@ -216,13 +217,13 @@ private struct ExerciseNode: View {
         VStack(spacing: 4) {
             Circle()
                 .fill(color.opacity(0.75))
-                .frame(width: 44, height: 44)
+                .frame(width: 36, height: 36)
                 .overlay(Circle().strokeBorder(.white.opacity(0.5), lineWidth: 1))
             Text(exercise.name)
                 .font(.luminaCaption)
                 .foregroundStyle(Color.luminaOnSurface)
                 .lineLimit(1)
-                .frame(maxWidth: 76)
+                .frame(maxWidth: 64)
         }
         .contentShape(Circle())
         .accessibilityElement(children: .combine)
