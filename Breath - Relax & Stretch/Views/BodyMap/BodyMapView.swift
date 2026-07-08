@@ -6,15 +6,10 @@ import SwiftData
 struct BodyMapView: View {
     @AppStorage("bodyMapSex") private var bodyMapSex = "male"
 
-    @State private var currentLayer: BodyLayer
+    // Skin is the only body layer now — marking region colours still key off
+    // BodyLayer, so this stays as the single source of truth for those tokens.
+    private let currentLayer: BodyLayer = .skin
     @State private var facing: BodyFacing = .front
-
-    init() {
-        // Overridable per-launch (-debugBodyLayer Muscle|Skeleton) so UI
-        // verification can land on any layer directly — no synthetic taps.
-        let raw = UserDefaults.standard.string(forKey: "debugBodyLayer") ?? ""
-        _currentLayer = State(initialValue: BodyLayer(rawValue: raw) ?? .skin)
-    }
 
     // Regions the user has marked (by drawing on them or tapping them).
     // This is the single source of truth for "areas to train on".
@@ -53,8 +48,7 @@ struct BodyMapView: View {
                         .background(.regularMaterial)
                 } else {
                     HStack(spacing: 8) {
-                        layerPickerRow
-                        Spacer(minLength: 8)
+                        Spacer(minLength: 0)
                         facingToggleButton
                     }
                     .padding(.horizontal, 16)
@@ -69,7 +63,7 @@ struct BodyMapView: View {
                 // calibrated to the same footprint regardless of layer.
                 Group {
                     if !annotationMode {
-                        BodySceneView(facing: facing, style: currentLayer.modelStyle)
+                        BodySceneView(facing: facing, style: .skin)
                     } else {
                         GeometryReader { geo in
                             ZStack {
@@ -77,7 +71,7 @@ struct BodyMapView: View {
                                 // padding so the 3D render and the region grid it
                                 // carries land in the same box.
                                 BodySceneView(facing: facing,
-                                              style: currentLayer.modelStyle,
+                                              style: .skin,
                                               interactive: false)
                                     .padding(.horizontal, 28)
                                     .padding(.vertical, 6)
@@ -139,7 +133,6 @@ struct BodyMapView: View {
             .floatingTabBarClearance()
             .navigationTitle(annotationMode ? "Mark Your Body" : "Body Map")
             .navigationBarTitleDisplayMode(.inline)
-            .animation(.easeInOut(duration: 0.25), value: currentLayer)
             .animation(.easeInOut(duration: 0.25), value: facing)
             .animation(.easeInOut(duration: 0.2),  value: markedRegions.isEmpty)
             .animation(.easeInOut(duration: 0.2),  value: annotationMode)
@@ -175,24 +168,9 @@ struct BodyMapView: View {
         }
     }
 
-    // MARK: - Layer + facing controls
+    // MARK: - Facing control
 
-    private var layerPickerRow: some View {
-        HStack(spacing: 6) {
-            ForEach(BodyLayer.allCases, id: \.self) { layer in
-                let isActive = currentLayer == layer
-                LuminaChip(title: layer.rawValue, isSelected: isActive) {
-                    withAnimation(.spring(response: 0.28, dampingFraction: 0.76)) {
-                        currentLayer = layer
-                    }
-                }
-                .animation(.spring(response: 0.28, dampingFraction: 0.76), value: currentLayer)
-                .accessibilityLabel("\(layer.rawValue) layer")
-            }
-        }
-    }
-
-    // Not a multi-option picker like the layer chips above — a single toggle
+    // Not a multi-option picker — a single toggle
     // between Front/Back — so it keeps its directional icon, restyled with
     // the same chip tokens (unselected LuminaChip look) rather than wrapped
     // in LuminaChip itself (which is text-only).

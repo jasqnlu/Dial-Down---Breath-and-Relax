@@ -85,7 +85,7 @@ struct HomeView: View {
 }
 
 #Preview {
-    let schema = Schema([Exercise.self, Routine.self, Session.self, UserProfile.self, BodyPart.self])
+    let schema = Schema([Exercise.self, Routine.self, Session.self, UserProfile.self])
     let container = try! ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
     HomeView()
         .modelContainer(container)

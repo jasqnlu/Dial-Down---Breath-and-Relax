@@ -17,34 +17,19 @@ import SceneKit
 // Confirmed empirically from the source OBJ (see decimation notes): Y is up,
 // the figure's face points toward +Z. Rotation 0 == front, π == back.
 
-/// Which anatomy model a rig renders. Each layer is a separate mesh exported
-/// from the Z-Anatomy Blender files (skin from the ZBrush OBJ, muscle/skeleton
-/// decimated from the .blend systems), normalised to the same height so all
-/// three share a footprint and the tap-region overlay lines up while marking.
-extension BodyLayer {
-    /// The 3D model style that renders this anatomy layer.
-    var modelStyle: BodyModelStyle {
-        switch self {
-        case .skin:     return .skin
-        case .muscle:   return .muscle
-        case .skeleton: return .skeleton
-        }
-    }
-}
-
+/// The 3D model style that renders the body. Skin is the only layer now —
+/// the mesh is exported from the Z-Anatomy Blender file's ZBrush OBJ.
 enum BodyModelStyle {
-    case skin, muscle, skeleton
+    case skin
 
     var resourceName: String {
         switch self {
-        case .skin:     return "BodyMale"
-        case .muscle:   return "BodyMuscle"
-        case .skeleton: return "BodySkeleton"
+        case .skin: return "BodyMale"
         }
     }
 
-    /// Programmatic PBR material — the meshes ship without textures, so colour
-    /// is applied in code (skin tone / anatomical red / bone off-white).
+    /// Programmatic PBR material — the mesh ships without textures, so colour
+    /// (skin tone) is applied in code.
     func makeMaterial() -> SCNMaterial {
         let m = SCNMaterial()
         m.lightingModel = .physicallyBased
@@ -54,12 +39,6 @@ enum BodyModelStyle {
         case .skin:
             m.diffuse.contents = UIColor(red: 0.89, green: 0.72, blue: 0.62, alpha: 1)
             m.roughness.contents = 0.7
-        case .muscle:
-            m.diffuse.contents = UIColor(red: 0.74, green: 0.17, blue: 0.15, alpha: 1)
-            m.roughness.contents = 0.55
-        case .skeleton:
-            m.diffuse.contents = UIColor(red: 0.90, green: 0.87, blue: 0.79, alpha: 1)
-            m.roughness.contents = 0.8
         }
         return m
     }
@@ -267,6 +246,7 @@ struct BodySceneView: View {
     @State private var dragActive = false
     @State private var cameraZ: CGFloat
     @State private var committedCameraZ: CGFloat
+    @Environment(\.colorScheme) private var colorScheme
 
     private let minCameraZ: CGFloat = BodyRig.defaultCameraDistance * 0.62         // closer  = zoomed in
     private let maxCameraZ: CGFloat = BodyRig.freeExploreCameraDistance * 1.25      // farther = zoomed out
@@ -324,6 +304,17 @@ struct BodySceneView: View {
         .onChange(of: interactive) { _, isInteractive in
             if !isInteractive { resetCamera() }
         }
+        .onAppear { applyBackground() }
+        .onChange(of: colorScheme) { _, _ in applyBackground() }
+    }
+
+    /// SCNScene renders opaque white behind the mesh by default, which reads
+    /// as a jarring flash of light content in dark mode — so this keys the
+    /// scene background to the same dynamic surface colour as the rest of
+    /// the screen and re-applies it whenever the app's colour scheme flips.
+    private func applyBackground() {
+        let trait = UITraitCollection(userInterfaceStyle: colorScheme == .dark ? .dark : .light)
+        rig.scene.background.contents = UIColor(Color.luminaSurface).resolvedColor(with: trait)
     }
 
     /// Restores the calibrated default framing — used whenever the locked
@@ -370,15 +361,5 @@ struct BodySceneView: View {
 
 #Preview("Skin") {
     BodySceneView(facing: .front, style: .skin)
-        .frame(height: 520)
-}
-
-#Preview("Muscle") {
-    BodySceneView(facing: .front, style: .muscle)
-        .frame(height: 520)
-}
-
-#Preview("Skeleton") {
-    BodySceneView(facing: .front, style: .skeleton)
         .frame(height: 520)
 }

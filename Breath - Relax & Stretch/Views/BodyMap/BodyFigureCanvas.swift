@@ -122,33 +122,19 @@ struct BodyFigureCanvas: View {
     }
 
     // MARK: - Gender-specific silhouette
-    //
-    // Skin stays a flat tinted silhouette; Muscle/Skeleton layer in the
-    // anatomical artwork on top, clipped to the same outline.
 
     @ViewBuilder
     private var silhouetteView: some View {
         if sex == "female" {
             ZStack {
                 FemaleSilhouetteShape().fill(layer.silhouetteFill)
-                anatomyOverlay.clipShape(FemaleSilhouetteShape())
                 FemaleSilhouetteShape().stroke(layer.accentColor.opacity(0.30), lineWidth: 1.2)
             }
         } else {
             ZStack {
                 MaleSilhouetteShape().fill(layer.silhouetteFill)
-                anatomyOverlay.clipShape(MaleSilhouetteShape())
                 MaleSilhouetteShape().stroke(layer.accentColor.opacity(0.30), lineWidth: 1.2)
             }
-        }
-    }
-
-    @ViewBuilder
-    private var anatomyOverlay: some View {
-        switch layer {
-        case .skin:     EmptyView()
-        case .muscle:   MuscleAnatomyCanvas(facing: facing)
-        case .skeleton: SkeletonAnatomyCanvas(facing: facing)
         }
     }
 
