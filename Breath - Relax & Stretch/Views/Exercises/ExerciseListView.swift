@@ -6,58 +6,51 @@ struct ExerciseListView: View {
     @State private var searchText = ""
     @State private var selectedType: ExerciseType? = nil
     @State private var showingCreate = false
+    @State private var selectedExercise: Exercise?
 
-    @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
-    @State private var suggestedSlot: Date?
-    @State private var lastNightSleepHours: Double?
-    @State private var showingGentleSession = false
-    @State private var suggestedBannerDismissed = false
-
-    var filtered: [Exercise] {
+    private var searchFiltered: [Exercise] {
         exercises.filter { ex in
-            let matchesSearch = searchText.isEmpty || ex.name.localizedCaseInsensitiveContains(searchText)
+            let matchesSearch = ex.name.localizedCaseInsensitiveContains(searchText)
             let matchesType = selectedType == nil || ex.type == selectedType
             return matchesSearch && matchesType
         }
     }
 
-    private func gentleSessionExercises() -> [Exercise] {
-        Array(exercises.filter { $0.difficulty == 1 }.prefix(4))
+    private var isShowingDetail: Binding<Bool> {
+        Binding(get: { selectedExercise != nil }, set: { if !$0 { selectedExercise = nil } })
     }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                // Personalized section — hidden while the user is actively searching or filtering
-                if searchText.isEmpty && selectedType == nil {
-                    if let hours = lastNightSleepHours, hours < 7 {
-                        SleepSuggestionBanner(hours: hours) {
-                            showingGentleSession = true
+            Group {
+                if searchText.isEmpty {
+                    ExerciseGraphView(exercises: exercises, typeFilter: selectedType) { exercise in
+                        selectedExercise = exercise
+                    }
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            ForEach(searchFiltered, id: \.uuid) { exercise in
+                                NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
+                                    ExerciseRow(exercise: exercise)
+                                }
+                                .buttonStyle(.plain)
+                                .luminaCard()
+                                .padding(.horizontal)
+                            }
                         }
-                        .padding(.horizontal)
                         .padding(.top, 8)
                     }
-                    if let slot = suggestedSlot, !suggestedBannerDismissed {
-                        SuggestedTimeBanner(date: slot) {
-                            suggestedBannerDismissed = true
+                    .overlay {
+                        if searchFiltered.isEmpty {
+                            ContentUnavailableView(
+                                "No Exercises",
+                                systemImage: "figure.mind.and.body",
+                                description: Text("No results for your search.")
+                            )
                         }
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                    }
-                    ForYouSection(allExercises: exercises)
-                }
-
-                LazyVStack(spacing: 12) {
-                    ForEach(filtered, id: \.uuid) { exercise in
-                        NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
-                            ExerciseRow(exercise: exercise)
-                        }
-                        .buttonStyle(.plain)
-                        .luminaCard()
-                        .padding(.horizontal)
                     }
                 }
-                .padding(.top, 8)
             }
             .background(Color.luminaSurface)
             .searchable(text: $searchText, prompt: "Search exercises")
@@ -89,25 +82,17 @@ struct ExerciseListView: View {
             .sheet(isPresented: $showingCreate) {
                 CreateExerciseView()
             }
-            .sheet(isPresented: $showingGentleSession) {
-                SessionPlayerView(exercises: gentleSessionExercises())
-            }
-            .onAppear {
-                if calendarSyncEnabled {
-                    suggestedSlot = CalendarService.shared.suggestFreeSlot()
-                }
-                Task {
-                    lastNightSleepHours = await HealthKitService.shared.lastNightSleepHours()
+            .navigationDestination(isPresented: isShowingDetail) {
+                if let selectedExercise {
+                    ExerciseDetailView(exercise: selectedExercise)
                 }
             }
             .overlay {
-                if filtered.isEmpty {
+                if exercises.isEmpty {
                     ContentUnavailableView(
                         "No Exercises",
                         systemImage: "figure.mind.and.body",
-                        description: Text(exercises.isEmpty
-                                          ? "Seed exercises will load on first launch."
-                                          : "No results for your search.")
+                        description: Text("Seed exercises will load on first launch.")
                     )
                 }
             }
@@ -154,76 +139,6 @@ struct ExerciseRow: View {
         .padding(.vertical, 4)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(exercise.name), \(exercise.type.rawValue), \(exercise.durationFormatted), \(difficultyLabel)\(hasVideo ? ", has video" : "")")
-    }
-}
-
-// MARK: - Sleep suggestion banner
-
-private struct SleepSuggestionBanner: View {
-    let hours: Double
-    let onStartGentleSession: () -> Void
-
-    private var hoursLabel: String {
-        String(format: "%.1f", hours)
-    }
-
-    var body: some View {
-        Button(action: onStartGentleSession) {
-            HStack(spacing: 10) {
-                Image(systemName: "moon.zzz.fill")
-                    .foregroundStyle(.indigo)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("You slept \(hoursLabel)h last night")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.primary)
-                    Text("Tap for a gentler routine today")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(10)
-            .background(Color.indigo.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Suggested time banner
-
-private struct SuggestedTimeBanner: View {
-    let date: Date
-    let onDismiss: () -> Void
-
-    private static let timeFmt: DateFormatter = {
-        let fmt = DateFormatter()
-        fmt.dateFormat = "h:mm a"
-        return fmt
-    }()
-
-    private var timeLabel: String { Self.timeFmt.string(from: date) }
-
-    var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "calendar.badge.clock")
-                .foregroundStyle(Color.accentColor)
-            Text("You're free at \(timeLabel) today — good time for a session.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Spacer(minLength: 0)
-            Button(action: onDismiss) {
-                Image(systemName: "xmark")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Dismiss suggestion")
-        }
-        .padding(10)
-        .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
     }
 }
 
