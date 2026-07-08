@@ -31,7 +31,7 @@ struct GenderPickerPage: View {
                 }
 
                 GenderCard(sex: "female",
-                           label: "Female",
+                           label: "Female (coming soon)",
                            isSelected: bodyMapSex == "female") {
                     withAnimation(.easeInOut(duration: 0.18)) { bodyMapSex = "female" }
                 }

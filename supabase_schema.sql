@@ -81,14 +81,10 @@ drop policy if exists "authors can insert their routines" on routines;
 drop policy if exists "authors can update their routines" on routines;
 drop policy if exists "authors can delete their routines" on routines;
 
-create policy "authors can insert their routines"
-  on routines for insert
-  with check (auth.uid() is not null and author_id = auth.uid()::text);
-
-create policy "authors can update their routines"
-  on routines for update
-  using (auth.uid() is not null and author_id = auth.uid()::text)
-  with check (auth.uid() is not null and author_id = auth.uid()::text);
+-- "authors can insert/update their routines" policies removed (2026-07-07):
+-- they existed only to support SupabaseService.uploadRoutine(), which was
+-- dead code (no in-app caller) and has been deleted. The `drop policy if
+-- exists` lines above already retire them on databases that had them.
 
 create policy "authors can delete their routines"
   on routines for delete
@@ -112,9 +108,10 @@ alter table sessions enable row level security;
 drop policy if exists "anyone can insert sessions" on sessions;
 drop policy if exists "users can insert their sessions" on sessions;
 
-create policy "users can insert their sessions"
-  on sessions for insert
-  with check (auth.uid() is not null and user_id = auth.uid()::text);
+-- "users can insert their sessions" policy removed (2026-07-07): it existed
+-- only to support SupabaseService.uploadSession(), which was dead code (no
+-- in-app caller) and has been deleted. The `drop policy if exists` lines
+-- above already retire it on databases that had it.
 
 -- No public select policy — session history isn't read back from Supabase
 -- today (SwiftData is the source of truth on-device). Add one later if you

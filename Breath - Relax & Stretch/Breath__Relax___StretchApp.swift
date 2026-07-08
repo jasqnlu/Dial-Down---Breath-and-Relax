@@ -48,6 +48,9 @@ struct BreathRelaxStretchApp: App {
     }
 
     @AppStorage("seedDataVersion") private var seedDataVersion: Int = 0
+    /// Highest seed version that added new exercises the user should be told
+    /// about. Later data-only migrations bump `seedDataVersion` past this.
+    private static let latestContentSeedVersion = 4
     @AppStorage("notifiedSeedVersion") private var notifiedSeedVersion: Int = 0
     @State private var showNewContentAlert = false
 
@@ -70,7 +73,10 @@ struct BreathRelaxStretchApp: App {
                     // A first-ever launch already has all the content — don't
                     // greet new users with a "New Content Added" alert.
                     notifiedSeedVersion = seedDataVersion
-                } else if notifiedSeedVersion < seedDataVersion {
+                } else if notifiedSeedVersion < Self.latestContentSeedVersion {
+                    // Only greet users about versions that actually added new
+                    // exercises. Data-only migrations (e.g. v5's isBilateral
+                    // flag) bump seedDataVersion but shouldn't pop the alert.
                     showNewContentAlert = true
                 }
             }
@@ -116,10 +122,14 @@ struct BreathRelaxStretchApp: App {
 
             let mediaURL = raw["mediaURL"] as? String
             let caution  = raw["caution"] as? String
+            // Missing key defaults to true — most stretches are bilateral;
+            // the seed only marks the one-side-at-a-time exercises false.
+            let isBilateral = raw["isBilateral"] as? Bool ?? true
             let exercise = Exercise(
                 name: name, type: type, targetBodyParts: parts,
                 durationSeconds: duration, difficulty: difficulty,
-                instructions: instructions, mediaURL: mediaURL, caution: caution
+                instructions: instructions, mediaURL: mediaURL, caution: caution,
+                isBilateral: isBilateral
             )
             exercise.localVideoName = raw["localVideoName"] as? String
             if let posesRaw = raw["poses"],
@@ -141,10 +151,12 @@ struct BreathRelaxStretchApp: App {
     //   v2 — pose keyframes for the stick-figure animation
     //   v3 — video tutorial links (mediaURL) for select exercises
     //   v4 — full muscle-group vocabulary (MuscleGroup) + full coverage seed
+    //   v5 — isBilateral flag (side-switch cue for unilateral stretches)
 
     private func migrateSeedIfNeeded() {
         migrateSeedToV3IfNeeded()
         migrateSeedToV4IfNeeded()
+        migrateSeedToV5IfNeeded()
     }
 
     private func migrateSeedToV3IfNeeded() {
@@ -194,9 +206,15 @@ struct BreathRelaxStretchApp: App {
         }
 
         if changed {
-            try? context.save()
+            do {
+                try context.save()
+                seedDataVersion = 3
+            } catch {
+                Logger(subsystem: "com.jasonlu.breath", category: "seedData").warning("v3 migration save failed: \(error)")
+            }
+        } else {
+            seedDataVersion = 3
         }
-        seedDataVersion = 3
     }
 
     /// v4 — migrates the exercise vocabulary from the old coarse body-map
@@ -251,7 +269,8 @@ struct BreathRelaxStretchApp: App {
                     durationSeconds: duration, difficulty: difficulty,
                     instructions: instructions,
                     mediaURL: raw["mediaURL"] as? String,
-                    caution: raw["caution"] as? String
+                    caution: raw["caution"] as? String,
+                    isBilateral: raw["isBilateral"] as? Bool ?? true
                 )
                 exercise.localVideoName = raw["localVideoName"] as? String
                 context.insert(exercise)
@@ -283,9 +302,65 @@ struct BreathRelaxStretchApp: App {
         }
 
         if changed {
-            try? context.save()
+            do {
+                try context.save()
+                seedDataVersion = 4
+            } catch {
+                Logger(subsystem: "com.jasonlu.breath", category: "seedData").warning("v4 migration save failed: \(error)")
+            }
+        } else {
+            seedDataVersion = 4
         }
-        seedDataVersion = 4
+    }
+
+    /// v5 — backfills the `isBilateral` flag onto already-seeded exercises so
+    /// upgrading users get the same "switch sides" cues as fresh installs. New
+    /// installs already read `isBilateral` at seed time, so this only matters
+    /// for users seeded before the flag existed (all such rows defaulted to
+    /// true). We only ever flip a bundle-seeded exercise to `false`; we never
+    /// touch user-created exercises (default stays true).
+    private func migrateSeedToV5IfNeeded() {
+        guard seedDataVersion < 5 else { return }
+
+        guard
+            let url  = Bundle.main.url(forResource: "SeedData", withExtension: "json"),
+            let data = try? Data(contentsOf: url),
+            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let rawExercises = json["exercises"] as? [[String: Any]]
+        else {
+            seedDataVersion = 5
+            return
+        }
+
+        // Only the exercises the bundle explicitly marks unilateral.
+        var unilateralNames: Set<String> = []
+        for raw in rawExercises {
+            guard let name = raw["name"] as? String else { continue }
+            if (raw["isBilateral"] as? Bool) == false {
+                unilateralNames.insert(name)
+            }
+        }
+
+        let context = sharedModelContainer.mainContext
+        let existing = (try? context.fetch(FetchDescriptor<Exercise>())) ?? []
+        var changed = false
+        for exercise in existing where unilateralNames.contains(exercise.name) {
+            if exercise.isBilateral {
+                exercise.isBilateral = false
+                changed = true
+            }
+        }
+
+        if changed {
+            do {
+                try context.save()
+                seedDataVersion = 5
+            } catch {
+                Logger(subsystem: "com.jasonlu.breath", category: "seedData").warning("v5 migration save failed: \(error)")
+            }
+        } else {
+            seedDataVersion = 5
+        }
     }
 
     // MARK: - Remote catalog sync (best-effort, offline-first)

@@ -42,6 +42,13 @@ struct SessionPlayerView: View {
     @State private var getReadyCount = 3
     @State private var getReadyTask: Task<Void, Never>? = nil
 
+    // Side-switch cue for unilateral (one-side-at-a-time) stretches. The switch
+    // point is anchored to `phaseEndDate` (via a lead offset) rather than a
+    // fixed wall-clock date, so it survives pause/resume and background
+    // catch-up, which already restore `phaseEndDate` as the source of truth.
+    @State private var sideSwitchPending = false
+    @State private var sideSwitchLeadFromEnd: TimeInterval = 0
+
     // Haptics
     private let impactLight   = UIImpactFeedbackGenerator(style: .light)
     private let impactMedium  = UIImpactFeedbackGenerator(style: .medium)
@@ -106,6 +113,7 @@ struct SessionPlayerView: View {
                 let remaining = Int(phaseEndDate.timeIntervalSinceNow.rounded(.up))
                 if remaining > 0 {
                     secondsRemaining = remaining
+                    checkSideSwitch()
                     breathTick += 1
                     if breathTick % 4 == 0 { AudioServicesPlaySystemSound(soundTick) }
                 } else {
@@ -239,6 +247,14 @@ struct SessionPlayerView: View {
             Text("\(getReadyCount)")
                 .font(.system(size: 72, weight: .thin, design: .rounded))
                 .monospacedDigit()
+            // Surface the exercise's safety caution here — this is the only
+            // screen every session-launch path passes through, so users who
+            // start a Quick / For You / guided-program session (skipping the
+            // exercise detail page) still see it before the exercise begins.
+            if let caution = currentExercise?.caution, !caution.isEmpty {
+                CautionCard(text: caution)
+                    .padding(.horizontal)
+            }
             Spacer()
             Button("Skip") { skipGetReady() }
                 .buttonStyle(.bordered)
@@ -257,7 +273,14 @@ struct SessionPlayerView: View {
     }
 
     private func beginNextExercise() {
-        guard !autoSkipGetReadyCountdown, let exercise = currentExercise else {
+        guard let exercise = currentExercise else {
+            startExercise()
+            return
+        }
+        // Auto-skip is a convenience preference for the get-ready countdown,
+        // but we never skip it for an exercise that carries a safety caution —
+        // the get-ready screen is the slot where that caution is surfaced.
+        if autoSkipGetReadyCountdown && (exercise.caution ?? "").isEmpty {
             startExercise()
             return
         }
@@ -294,9 +317,30 @@ struct SessionPlayerView: View {
         phaseEndDate = Date().addingTimeInterval(TimeInterval(duration))
         pausedRemaining = nil
         isPaused = false
+        // Unilateral stretches: cue a side switch at the halfway point, then
+        // let the same exercise run the second half before advancing.
+        if let exercise = currentExercise, exercise.isBilateral == false {
+            sideSwitchPending = true
+            sideSwitchLeadFromEnd = TimeInterval(duration) / 2
+        } else {
+            sideSwitchPending = false
+            sideSwitchLeadFromEnd = 0
+        }
         if let exercise = currentExercise {
             VoiceCueService.shared.speak(exercise.name)
         }
+    }
+
+    /// Fires the "switch sides" haptic + voice cue once, when the current
+    /// unilateral exercise passes its halfway point. Anchored to
+    /// `phaseEndDate` so pause/resume and background catch-up stay correct.
+    private func checkSideSwitch() {
+        guard sideSwitchPending else { return }
+        let switchDate = phaseEndDate.addingTimeInterval(-sideSwitchLeadFromEnd)
+        guard Date() >= switchDate else { return }
+        sideSwitchPending = false
+        impactMedium.impactOccurred()
+        VoiceCueService.shared.speak("Switch sides")
     }
 
     /// Called when the app returns to the foreground. `Timer.publish` doesn't
@@ -309,6 +353,9 @@ struct SessionPlayerView: View {
             let remaining = phaseEndDate.timeIntervalSinceNow
             if remaining > 0 {
                 secondsRemaining = Int(remaining.rounded(.up))
+                // If the halfway switch point elapsed while backgrounded, fire
+                // the cue now (once) so the user isn't left on the wrong side.
+                checkSideSwitch()
                 break
             }
             advanceToNext(completion: 1.0, showGetReady: false)

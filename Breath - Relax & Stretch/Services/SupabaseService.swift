@@ -96,25 +96,9 @@ actor SupabaseService {
         return try JSONDecoder().decode([RemoteRoutine].self, from: data)
     }
 
-    /// Upserts a routine to the remote database. `authorID` must be the
-    /// anonymous UUID (AuthManager.anonymousID) — never an email; the table
-    /// is publicly readable.
-    func uploadRoutine(_ routine: Routine, authorID: String) async throws {
-        let body = RemoteRoutine(
-            id:             routine.uuid.uuidString,
-            name:           routine.name,
-            exerciseIDs:    routine.exerciseIDs.map { $0.uuidString },
-            authorID:       authorID,
-            authorName:     routine.authorName,
-            borrowedFromID: routine.borrowedFromID?.uuidString,
-            isPublic:       routine.isPublic,
-            borrowCount:    routine.borrowCount
-        )
-        // RemoteRoutine.encode(to:) is @MainActor-isolated (Swift 6 inference);
-        // hop to main actor for the encode, then continue in the actor.
-        let data = try await MainActor.run { try JSONEncoder().encode(body) }
-        try await post(path: "/rest/v1/routines", body: data, upsert: true)
-    }
+    // Note: the write-side counterpart of this fetch (uploadRoutine) was
+    // removed as dead code — nothing in the app called it. See
+    // supabase_schema.sql for the matching RLS policy removal.
 
     // MARK: - Community (leaderboard / public profile)
 
@@ -151,25 +135,9 @@ actor SupabaseService {
         return try JSONDecoder().decode([RemoteProfile].self, from: data)
     }
 
-    // MARK: - Sessions
-
-    /// Inserts a completed session to the remote database. `userID` must be
-    /// the anonymous UUID (AuthManager.anonymousID) — never an email.
-    func uploadSession(_ session: Session, userID: String) async throws {
-        let formatter = ISO8601DateFormatter()
-        let body = RemoteSession(
-            id:                session.uuid.uuidString,
-            userID:            userID,
-            routineID:         session.routineID.uuidString,
-            startedAt:         formatter.string(from: session.startedAt),
-            completedAt:       session.completedAt.map { formatter.string(from: $0) },
-            completionPercent: session.completionPercent * 100,
-            pointsEarned:      session.pointsEarned
-        )
-        // Same @MainActor isolation reason as uploadRoutine above.
-        let data = try await MainActor.run { try JSONEncoder().encode(body) }
-        try await post(path: "/rest/v1/sessions", body: data, upsert: false)
-    }
+    // Note: sessions had a write path (uploadSession) that was removed as
+    // dead code — nothing in the app called it. See supabase_schema.sql for
+    // the matching RLS policy removal.
 
     // MARK: - Auth
 

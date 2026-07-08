@@ -258,6 +258,7 @@
     },
     {
       "name": "Seated Neck Rotation",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Front Neck",
@@ -311,6 +312,7 @@
     },
     {
       "name": "Left Upper Trapezius Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Trapezius"
@@ -328,6 +330,7 @@
     },
     {
       "name": "Right Upper Trapezius Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Trapezius"
@@ -655,6 +658,7 @@
     },
     {
       "name": "Left Single-Leg Supine Knee-to-Chest",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Lower Back",
@@ -672,6 +676,7 @@
     },
     {
       "name": "Right Single-Leg Supine Knee-to-Chest",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Lower Back",
@@ -799,6 +804,7 @@
     },
     {
       "name": "Left Standing Side Reach",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Obliques",
@@ -816,6 +822,7 @@
     },
     {
       "name": "Right Standing Side Reach",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Obliques",
@@ -867,6 +874,7 @@
     },
     {
       "name": "Left Kneeling Lat Stretch (Hands on Chair)",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Lats",
@@ -884,6 +892,7 @@
     },
     {
       "name": "Right Kneeling Lat Stretch (Hands on Chair)",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Lats",
@@ -901,6 +910,7 @@
     },
     {
       "name": "Left Wall Bicep Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Biceps"
@@ -918,6 +928,7 @@
     },
     {
       "name": "Right Wall Bicep Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Biceps"
@@ -935,6 +946,7 @@
     },
     {
       "name": "Left Doorway Bicep Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Biceps",
@@ -952,6 +964,7 @@
     },
     {
       "name": "Right Doorway Bicep Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Biceps",
@@ -989,6 +1002,7 @@
     },
     {
       "name": "Left Overhead Triceps Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Triceps"
@@ -1005,6 +1019,7 @@
     },
     {
       "name": "Right Overhead Triceps Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Triceps"
@@ -1021,6 +1036,7 @@
     },
     {
       "name": "Left Cross-Body Elbow Pull",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Triceps",
@@ -1038,6 +1054,7 @@
     },
     {
       "name": "Right Cross-Body Elbow Pull",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Triceps",
@@ -1055,6 +1072,7 @@
     },
     {
       "name": "Left Towel-Assisted Triceps Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Triceps",
@@ -1073,6 +1091,7 @@
     },
     {
       "name": "Right Towel-Assisted Triceps Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Triceps",
@@ -1091,6 +1110,7 @@
     },
     {
       "name": "Left Wrist Flexor Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Forearm"
@@ -1106,6 +1126,7 @@
     },
     {
       "name": "Right Wrist Flexor Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Forearm"
@@ -1121,6 +1142,7 @@
     },
     {
       "name": "Left Wrist Extensor Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Forearm"
@@ -1136,6 +1158,7 @@
     },
     {
       "name": "Right Wrist Extensor Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Forearm"
@@ -1204,6 +1227,7 @@
     },
     {
       "name": "Left Seated Figure-Four Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Glutes"
@@ -1221,6 +1245,7 @@
     },
     {
       "name": "Right Seated Figure-Four Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Glutes"
@@ -1238,6 +1263,7 @@
     },
     {
       "name": "Left Supine Figure-4 Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Glutes"
@@ -1254,6 +1280,7 @@
     },
     {
       "name": "Right Supine Figure-4 Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Glutes"
@@ -1270,6 +1297,7 @@
     },
     {
       "name": "Left Standing Figure-4 Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Glutes"
@@ -1287,6 +1315,7 @@
     },
     {
       "name": "Right Standing Figure-4 Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Glutes"
@@ -1340,6 +1369,7 @@
     },
     {
       "name": "Left Kneeling Hip-Flexor Lunge",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Hip Flexors"
@@ -1357,6 +1387,7 @@
     },
     {
       "name": "Right Kneeling Hip-Flexor Lunge",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Hip Flexors"
@@ -1374,6 +1405,7 @@
     },
     {
       "name": "Left Low Lunge (Anjaneyasana)",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Hip Flexors",
@@ -1391,6 +1423,7 @@
     },
     {
       "name": "Right Low Lunge (Anjaneyasana)",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Hip Flexors",
@@ -1408,6 +1441,7 @@
     },
     {
       "name": "Left Standing Hip-Flexor Stretch (Foot Elevated)",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Hip Flexors"
@@ -1425,6 +1459,7 @@
     },
     {
       "name": "Right Standing Hip-Flexor Stretch (Foot Elevated)",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Hip Flexors"
@@ -1460,6 +1495,7 @@
     },
     {
       "name": "Left Side Lunge (Groin Stretch)",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Adductors"
@@ -1476,6 +1512,7 @@
     },
     {
       "name": "Right Side Lunge (Groin Stretch)",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Adductors"
@@ -1530,6 +1567,7 @@
     },
     {
       "name": "Left Standing Quad Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Quadriceps"
@@ -1547,6 +1585,7 @@
     },
     {
       "name": "Right Standing Quad Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Quadriceps"
@@ -1564,6 +1603,7 @@
     },
     {
       "name": "Left Kneeling Quad Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Quadriceps",
@@ -1582,6 +1622,7 @@
     },
     {
       "name": "Right Kneeling Quad Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Quadriceps",
@@ -1600,6 +1641,7 @@
     },
     {
       "name": "Left Side-Lying Quad Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Quadriceps"
@@ -1616,6 +1658,7 @@
     },
     {
       "name": "Right Side-Lying Quad Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Quadriceps"
@@ -1651,6 +1694,7 @@
     },
     {
       "name": "Left Seated Hamstring Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Hamstrings",
@@ -1668,6 +1712,7 @@
     },
     {
       "name": "Right Seated Hamstring Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Hamstrings",
@@ -1685,6 +1730,7 @@
     },
     {
       "name": "Left Supine Hamstring Stretch with Towel",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Hamstrings"
@@ -1701,6 +1747,7 @@
     },
     {
       "name": "Right Supine Hamstring Stretch with Towel",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Hamstrings"
@@ -1758,6 +1805,7 @@
     },
     {
       "name": "Calf Stretch at Wall (Straight-Knee)",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Calves",
@@ -1774,6 +1822,7 @@
     },
     {
       "name": "Bent-Knee Wall Calf Stretch (Soleus)",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Calves",
@@ -1790,6 +1839,7 @@
     },
     {
       "name": "Left Seated Calf Stretch with Towel",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Calves"
@@ -1806,6 +1856,7 @@
     },
     {
       "name": "Right Seated Calf Stretch with Towel",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Calves"
@@ -1840,6 +1891,7 @@
     },
     {
       "name": "Left Standing Tibialis Stretch (Toe Point)",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Tibialis"
@@ -1856,6 +1908,7 @@
     },
     {
       "name": "Right Standing Tibialis Stretch (Toe Point)",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Tibialis"
@@ -1872,6 +1925,7 @@
     },
     {
       "name": "Shin & Ankle Mobiliser",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Tibialis",
@@ -1890,6 +1944,7 @@
     },
     {
       "name": "Ankle Alphabet",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Foot",
@@ -1906,6 +1961,7 @@
     },
     {
       "name": "Wrist & Forearm Release",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Forearm",
@@ -2021,6 +2077,7 @@
     },
     {
       "name": "Left Sleeper Stretch (Internal Rotation)",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Shoulder"
@@ -2037,6 +2094,7 @@
     },
     {
       "name": "Right Sleeper Stretch (Internal Rotation)",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Shoulder"
@@ -2053,6 +2111,7 @@
     },
     {
       "name": "Left Doorway External Rotation Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Shoulder"
@@ -2068,6 +2127,7 @@
     },
     {
       "name": "Right Doorway External Rotation Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Shoulder"
@@ -2117,6 +2177,7 @@
     },
     {
       "name": "Left Wall Corner Pec Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Chest"
@@ -2133,6 +2194,7 @@
     },
     {
       "name": "Right Wall Corner Pec Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Chest"
@@ -2188,6 +2250,7 @@
     },
     {
       "name": "Left Standing Reach-Through Twist",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Obliques",
@@ -2205,6 +2268,7 @@
     },
     {
       "name": "Right Standing Reach-Through Twist",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Obliques",
@@ -2222,6 +2286,7 @@
     },
     {
       "name": "Left Overhead Reach Lat Stretch with Strap",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Lats",
@@ -2238,6 +2303,7 @@
     },
     {
       "name": "Right Overhead Reach Lat Stretch with Strap",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Lats",
@@ -2254,6 +2320,7 @@
     },
     {
       "name": "Left Extended-Fingers Bicep Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Biceps",
@@ -2270,6 +2337,7 @@
     },
     {
       "name": "Right Extended-Fingers Bicep Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Biceps",
@@ -2286,6 +2354,7 @@
     },
     {
       "name": "Left Behind-Head Strap-Assisted Triceps Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Triceps",
@@ -2303,6 +2372,7 @@
     },
     {
       "name": "Right Behind-Head Strap-Assisted Triceps Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Triceps",
@@ -2336,6 +2406,7 @@
     },
     {
       "name": "Left Standing Crossed-Leg Fold",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Glutes"
@@ -2352,6 +2423,7 @@
     },
     {
       "name": "Right Standing Crossed-Leg Fold",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Glutes"
@@ -2368,6 +2440,7 @@
     },
     {
       "name": "Left Couch Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Hip Flexors",
@@ -2386,6 +2459,7 @@
     },
     {
       "name": "Right Couch Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Hip Flexors",
@@ -2404,6 +2478,7 @@
     },
     {
       "name": "Left Cossack Squat Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Adductors",
@@ -2422,6 +2497,7 @@
     },
     {
       "name": "Right Cossack Squat Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Adductors",
@@ -2440,6 +2516,7 @@
     },
     {
       "name": "Left Reclined Quad Stretch with Strap",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Quadriceps"
@@ -2456,6 +2533,7 @@
     },
     {
       "name": "Right Reclined Quad Stretch with Strap",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Quadriceps"
@@ -2472,6 +2550,7 @@
     },
     {
       "name": "Left Doorframe Hamstring Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Hamstrings"
@@ -2488,6 +2567,7 @@
     },
     {
       "name": "Right Doorframe Hamstring Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Hamstrings"
@@ -2504,6 +2584,7 @@
     },
     {
       "name": "Runner's Calf Stretch (Staggered Stance)",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Calves",
@@ -2520,6 +2601,7 @@
     },
     {
       "name": "Left Toe Spread & Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Foot"
@@ -2535,6 +2617,7 @@
     },
     {
       "name": "Right Toe Spread & Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Foot"
@@ -2550,6 +2633,7 @@
     },
     {
       "name": "Left Finger Extension Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Left Hand"
@@ -2565,6 +2649,7 @@
     },
     {
       "name": "Right Finger Extension Stretch",
+      "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
         "Right Hand"

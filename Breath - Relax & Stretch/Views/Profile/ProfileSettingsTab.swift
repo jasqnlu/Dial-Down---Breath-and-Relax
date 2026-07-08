@@ -104,12 +104,18 @@ struct ProfileSettingsTab: View {
             }
 
             // Body Map
-            Section("Body Map") {
+            Section {
                 Picker("Body Type", selection: $bodyMapSex) {
                     Text("Male").tag("male")
-                    Text("Female").tag("female")
+                    Text("Female (coming soon)").tag("female")
                 }
                 .pickerStyle(.segmented)
+            } header: {
+                Text("Body Map")
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            } footer: {
+                Text("Female body model currently uses the same anatomy as male for muscle targeting—dedicated female model is coming soon.")
             }
 
             // Session
@@ -226,7 +232,7 @@ struct ProfileSettingsTab: View {
                     ContentUnavailableView(
                         "Privacy Policy",
                         systemImage: "hand.raised.fill",
-                        description: Text("Your data is stored locally on your device and synced to your private Supabase instance.")
+                        description: Text("Your data is stored locally on your device and synced to our cloud backend.")
                     )
                     .navigationTitle("Privacy & Data")
                 } label: {

@@ -19,6 +19,12 @@ final class Exercise {
     var instructions: [String] = []
     var mediaURL: String? = nil
     var caution: String? = nil
+    /// Whether the exercise is performed on both sides at once / inherently
+    /// bilateral (true) vs. one side at a time (false). Unilateral exercises
+    /// get a mid-duration "switch sides" cue in the session player.
+    /// Defaults to true — most stretches are bilateral — so the seed JSON only
+    /// needs to specify `false` for the one-side-at-a-time exercises.
+    var isBilateral: Bool = true
     var posesData: Data = Data()
 
     /// Decoded pose keyframes for the stick-figure animation.
@@ -57,7 +63,8 @@ final class Exercise {
         difficulty: Int,
         instructions: [String],
         mediaURL: String? = nil,
-        caution: String? = nil
+        caution: String? = nil,
+        isBilateral: Bool = true
     ) {
         self.uuid = uuid
         self.name = name
@@ -68,5 +75,6 @@ final class Exercise {
         self.instructions = instructions
         self.mediaURL = mediaURL
         self.caution = caution
+        self.isBilateral = isBilateral
     }
 }

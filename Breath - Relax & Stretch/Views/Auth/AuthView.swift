@@ -116,6 +116,8 @@ struct AuthView: View {
                 .padding(.horizontal, 28)
 
                 // MARK: Legal
+                // TODO: Wire real Terms of Service and Privacy Policy URLs to these links
+                // (currently placeholder text with no navigation)
                 Text("By continuing you agree to our Terms of Service and Privacy Policy.")
                     .font(.caption2)
                     .foregroundStyle(.white.opacity(0.55))
