@@ -102,8 +102,8 @@ struct ExerciseGraphView: View {
             focusedCategory = category
             zoomScale = focusThreshold
             lastScale = focusThreshold
-            panOffset = CGSize(width: -normalized.x * scale * categoryRadius * (focusThreshold - 1),
-                                height: -normalized.y * scale * categoryRadius * (focusThreshold - 1))
+            panOffset = CGSize(width: -normalized.x * scale * categoryRadius * focusThreshold,
+                                height: -normalized.y * scale * categoryRadius * focusThreshold)
             lastPan = panOffset
         }
     }
@@ -128,13 +128,14 @@ struct ExerciseGraphView: View {
                     focusedCategory = nil
                 }
             }
-            .onEnded { _ in
+            .onEnded { value in
                 lastScale = zoomScale
                 let categories = visibleCategories
                 if zoomScale < focusThreshold {
                     unfocus()
                 } else if focusedCategory == nil,
-                          let nearestIndex = nearestCategoryIndex(categories: categories, center: center, scale: scale) {
+                          let nearestIndex = nearestCategoryIndex(categories: categories, center: center, scale: scale,
+                                                                   pinchLocation: value.startLocation) {
                     focus(on: categories[nearestIndex], index: nearestIndex, categories: categories,
                           center: center, scale: scale)
                 }
@@ -150,17 +151,23 @@ struct ExerciseGraphView: View {
             .onEnded { _ in lastPan = panOffset }
     }
 
-    /// Index of whichever visible category's node sits nearest the canvas
-    /// center under the current pan/zoom — the category a pinch-in focuses.
-    private func nearestCategoryIndex(categories: [ExerciseCategory], center: CGPoint, scale: CGFloat) -> Int? {
+    /// Index of whichever visible category's node sits nearest `pinchLocation`
+    /// (the screen point a pinch gesture started at) under the current
+    /// pan/zoom — the category a pinch-in focuses.
+    private func nearestCategoryIndex(categories: [ExerciseCategory], center: CGPoint, scale: CGFloat,
+                                       pinchLocation: CGPoint) -> Int? {
         guard !categories.isEmpty else { return nil }
+        let pinchOffsetX = pinchLocation.x - center.x
+        let pinchOffsetY = pinchLocation.y - center.y
         var bestIndex = 0
         var bestDistance = CGFloat.greatestFiniteMagnitude
         for index in categories.indices {
             let normalized = GraphLayout.categoryPosition(index: index, count: categories.count)
             let screenX = normalized.x * scale * categoryRadius * zoomScale + panOffset.width
             let screenY = normalized.y * scale * categoryRadius * zoomScale + panOffset.height
-            let distance = (screenX * screenX + screenY * screenY).squareRoot()
+            let dx = screenX - pinchOffsetX
+            let dy = screenY - pinchOffsetY
+            let distance = (dx * dx + dy * dy).squareRoot()
             if distance < bestDistance {
                 bestDistance = distance
                 bestIndex = index
