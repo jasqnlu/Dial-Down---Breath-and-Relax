@@ -232,7 +232,7 @@ struct ProfileSettingsTab: View {
                     ContentUnavailableView(
                         "Privacy Policy",
                         systemImage: "hand.raised.fill",
-                        description: Text("Your data is stored locally on your device and synced to our cloud backend.")
+                        description: Text("Your session history and settings are stored locally on your device. If you opt into community features or supported sign-in, the app may send only the profile and authentication data needed for those features.")
                     )
                     .navigationTitle("Privacy & Data")
                 } label: {

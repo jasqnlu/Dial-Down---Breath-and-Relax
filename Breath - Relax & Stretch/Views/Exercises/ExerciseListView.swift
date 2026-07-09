@@ -8,9 +8,16 @@ struct ExerciseListView: View {
     @State private var showingCreate = false
     @State private var selectedExercise: Exercise?
 
+    private var normalizedSearchText: String {
+        searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     private var searchFiltered: [Exercise] {
         exercises.filter { ex in
-            let matchesSearch = ex.name.localizedCaseInsensitiveContains(searchText)
+            let matchesSearch = normalizedSearchText.isEmpty
+                || ex.name.localizedCaseInsensitiveContains(normalizedSearchText)
+                || ex.type.rawValue.localizedCaseInsensitiveContains(normalizedSearchText)
+                || ex.targetBodyParts.contains { $0.localizedCaseInsensitiveContains(normalizedSearchText) }
             let matchesType = selectedType == nil || ex.type == selectedType
             return matchesSearch && matchesType
         }
@@ -23,7 +30,7 @@ struct ExerciseListView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if searchText.isEmpty {
+                if normalizedSearchText.isEmpty {
                     ExerciseGraphView(exercises: exercises, typeFilter: selectedType) { exercise in
                         selectedExercise = exercise
                     }
@@ -53,8 +60,8 @@ struct ExerciseListView: View {
                 }
             }
             .background(Color.luminaSurface)
-            .searchable(text: $searchText, prompt: "Search exercises")
-            .navigationTitle("Exercises")
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
             .floatingTabBarClearance()
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -69,6 +76,9 @@ struct ExerciseListView: View {
                               ? "line.3.horizontal.decrease.circle"
                               : "line.3.horizontal.decrease.circle.fill")
                     }
+                }
+                ToolbarItem(placement: .principal) {
+                    searchBar
                 }
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -97,6 +107,50 @@ struct ExerciseListView: View {
                 }
             }
         }
+    }
+
+    private var searchBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(Color.cyan.opacity(0.95))
+
+            TextField("Search exercises", text: $searchText)
+                .font(.luminaLabel)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .submitLabel(.search)
+
+            if !searchText.isEmpty {
+                Button {
+                    searchText = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                }
+                .accessibilityLabel("Clear search")
+            }
+        }
+        .frame(width: 230, height: 36)
+        .padding(.horizontal, 12)
+        .background(Color.luminaCardFill.opacity(0.96), in: Capsule())
+        .overlay(
+            Capsule()
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            Color.cyan.opacity(0.58),
+                            Color.mint.opacity(0.34),
+                            Color.cyan.opacity(0.50)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.0
+                )
+        )
+        .shadow(color: Color.cyan.opacity(0.18), radius: 7, x: 0, y: 0)
+        .shadow(color: Color.mint.opacity(0.10), radius: 11, x: 0, y: 0)
+        .accessibilityElement(children: .contain)
     }
 }
 

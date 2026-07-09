@@ -68,4 +68,52 @@ struct GraphLayoutTests {
     @Test func ringPositionsZeroCountReturnsEmpty() {
         #expect(GraphLayout.ringPositions(count: 0, around: .zero, baseRadius: 0.3, ringSpacing: 0.16).isEmpty)
     }
+
+    @Test func clampedZoomKeepsScaleInsideBounds() {
+        #expect(GraphLayout.clampedZoom(0.2, min: 0.85, max: 3.2) == 0.85)
+        #expect(GraphLayout.clampedZoom(4.0, min: 0.85, max: 3.2) == 3.2)
+        #expect(GraphLayout.clampedZoom(1.7, min: 0.85, max: 3.2) == 1.7)
+    }
+
+    @Test func labelOpacityHidesLabelsAtLowZoomUnlessFocused() {
+        #expect(GraphLayout.labelOpacity(zoomScale: 1.0, isFocused: false) == 0)
+        #expect(GraphLayout.labelOpacity(zoomScale: 1.0, isFocused: true) == 1)
+    }
+
+    @Test func labelOpacityFadesInAtHighZoom() {
+        let midOpacity = GraphLayout.labelOpacity(zoomScale: 1.6, isFocused: false)
+        #expect(midOpacity > 0)
+        #expect(midOpacity < 1)
+        #expect(GraphLayout.labelOpacity(zoomScale: 2.2, isFocused: false) == 1)
+    }
+
+    @Test func namedExerciseNodeRingUsesRoomierSpacing() {
+        let compact = GraphLayout.namedExerciseRingConfiguration(for: 3)
+        let crowded = GraphLayout.namedExerciseRingConfiguration(for: 12)
+
+        #expect(compact.perRing == 4)
+        #expect(crowded.perRing == 4)
+        #expect(crowded.ringSpacing > compact.ringSpacing)
+        #expect(crowded.baseRadius >= compact.baseRadius)
+    }
+
+    @Test func overviewExerciseRingUsesSmallerDenserSatellitesThanFocusedRing() {
+        let overview = GraphLayout.exerciseSatelliteRingConfiguration(for: 12, isFocused: false)
+        let focused = GraphLayout.exerciseSatelliteRingConfiguration(for: 12, isFocused: true)
+
+        #expect(overview.perRing > focused.perRing)
+        #expect(overview.baseRadius < focused.baseRadius)
+        #expect(overview.ringSpacing < focused.ringSpacing)
+        #expect(GraphLayout.exerciseSatelliteDiameter(isFocused: false) < GraphLayout.exerciseSatelliteDiameter(isFocused: true))
+    }
+
+    @Test func focusedDefaultZoomFitsSatellitesInsideCompactPhoneWidth() {
+        let compactPhoneWidth: CGFloat = 393
+        let scale = compactPhoneWidth / 2
+        let ring = GraphLayout.exerciseSatelliteRingConfiguration(for: 8, isFocused: true)
+        let contentRadius = (ring.baseRadius * scale + GraphLayout.exerciseSatelliteDiameter(isFocused: true) / 2)
+            * GraphLayout.defaultFocusZoom
+
+        #expect(contentRadius < compactPhoneWidth / 2)
+    }
 }

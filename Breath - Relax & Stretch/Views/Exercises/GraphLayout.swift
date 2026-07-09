@@ -4,6 +4,14 @@ import CoreGraphics
 /// normalised -1...1 space independent of screen size. Deterministic
 /// (no physics simulation) so the layout is calm and reproducible.
 enum GraphLayout {
+    static let defaultFocusZoom: CGFloat = 1.6
+
+    struct RingConfiguration {
+        let baseRadius: CGFloat
+        let ringSpacing: CGFloat
+        let perRing: Int
+    }
+
     /// Evenly spaced position on a unit ring for one of `count` categories.
     /// Index 0 sits at 12 o'clock; indices proceed clockwise.
     static func categoryPosition(index: Int, count: Int) -> CGPoint {
@@ -46,5 +54,48 @@ enum GraphLayout {
             ring += 1
         }
         return positions
+    }
+
+    static func clampedZoom(_ zoomScale: CGFloat, min minZoom: CGFloat, max maxZoom: CGFloat) -> CGFloat {
+        Swift.min(Swift.max(zoomScale, minZoom), maxZoom)
+    }
+
+    static func labelOpacity(zoomScale: CGFloat, isFocused: Bool,
+                             fadeStart: CGFloat = 1.55,
+                             fadeEnd: CGFloat = 2.2) -> Double {
+        if isFocused {
+            return 1
+        }
+        guard fadeEnd > fadeStart else {
+            return zoomScale >= fadeEnd ? 1 : 0
+        }
+        let progress = (zoomScale - fadeStart) / (fadeEnd - fadeStart)
+        return Double(clampedZoom(progress, min: 0, max: 1))
+    }
+
+    static func namedExerciseRingConfiguration(for nodeCount: Int) -> RingConfiguration {
+        exerciseSatelliteRingConfiguration(for: nodeCount, isFocused: true)
+    }
+
+    static func exerciseSatelliteRingConfiguration(for nodeCount: Int, isFocused: Bool) -> RingConfiguration {
+        if !isFocused {
+            let hasManyNodes = nodeCount > 10
+            return RingConfiguration(
+                baseRadius: hasManyNodes ? 0.34 : 0.31,
+                ringSpacing: hasManyNodes ? 0.14 : 0.12,
+                perRing: hasManyNodes ? 10 : 8
+            )
+        }
+
+        let needsOuterRoom = nodeCount > 8
+        return RingConfiguration(
+            baseRadius: needsOuterRoom ? 0.52 : 0.46,
+            ringSpacing: needsOuterRoom ? 0.35 : 0.29,
+            perRing: 4
+        )
+    }
+
+    static func exerciseSatelliteDiameter(isFocused: Bool) -> CGFloat {
+        isFocused ? 54 : 22
     }
 }

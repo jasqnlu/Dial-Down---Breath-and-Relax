@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import Combine
 import StoreKit
+import UIKit
 
 // BreathingPattern and BreathPhase enums live in BreathingModels.swift
 
@@ -39,8 +40,8 @@ struct BreathingView: View {
     @AppStorage("totalSessionsCompleted") private var totalSessionsCompleted = 0
     @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
     @AppStorage("hasSeenInitialPaywall") private var hasSeenInitialPaywall = false
+    @AppStorage("pendingInitialPaywall") private var pendingInitialPaywall = false
     @State private var shouldRequestReview = false
-    @State private var shouldShowPaywall = false
 
     // Fixed breathing-session routine ID (not tied to a real Routine record).
     // NOTE: must be a valid hex UUID — the previous literal contained non-hex
@@ -66,6 +67,7 @@ struct BreathingView: View {
                 // Completion overlay
                 if showCompletion {
                     completionOverlay
+                        .zIndex(10)
                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 }
             }
@@ -99,11 +101,9 @@ struct BreathingView: View {
             guard newPhase == .active, isRunning, !isPaused, !showCompletion else { return }
             catchUpAfterBackground()
         }
-        .sheet(isPresented: $shouldShowPaywall) {
-            PaywallView()
-        }
         .sheet(isPresented: $showingCustomEditor) {
             CustomPatternEditorView()
+                .presentationDetents([.medium])
         }
     }
 
@@ -471,6 +471,7 @@ struct BreathingView: View {
 
     private func transition(to phase: BreathPhase, duration: Int) {
         VoiceCueService.shared.speak(phase.displayLabel.replacingOccurrences(of: "...", with: ""))
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         phaseEndDate = Date().addingTimeInterval(TimeInterval(duration))
         withAnimation(.easeInOut(duration: 0.4)) {
             currentPhase    = phase
@@ -575,6 +576,7 @@ struct BreathingView: View {
         round            = 0
         isRunning        = false
         isPaused         = false
+        requestDeferredPaywallIfNeeded()
     }
 
     // MARK: - Persistence
@@ -603,12 +605,20 @@ struct BreathingView: View {
 
         if totalSessionsCompleted == 3 && !hasSeenInitialPaywall {
             hasSeenInitialPaywall = true
-            shouldShowPaywall = true
+            pendingInitialPaywall = true
         } else {
             let reviewMilestones: Set<Int> = [10, 25]
             if reviewMilestones.contains(totalSessionsCompleted) {
                 shouldRequestReview = true
             }
+        }
+    }
+
+    private func requestDeferredPaywallIfNeeded() {
+        guard pendingInitialPaywall else { return }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(350))
+            NotificationCenter.default.post(name: .deferredPaywallRequested, object: nil)
         }
     }
 }

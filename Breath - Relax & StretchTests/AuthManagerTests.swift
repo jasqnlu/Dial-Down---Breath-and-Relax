@@ -17,7 +17,7 @@ struct AuthManagerTests {
 
     private static let keysToReset = [
         "auth.isSignedIn", "auth.displayName", "auth.email",
-        "auth.provider", "auth.twoFAEnabled", "auth.anonymousID",
+        "auth.provider", "auth.appLockEnabled", "auth.twoFAEnabled", "auth.anonymousID",
         "auth.supabaseUserID"
     ]
 

@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - Exercise Graph View
 //
 // Pinch-zoom node graph: 8 category circles arranged on a ring; pinching in
-// near one focuses it, fading in its exercises on a smaller ring around it.
+// near one focuses it, fading in grouped exercise satellites around it.
 // Mirrors the zoom/pan gesture pattern already used by BodyMapView.
 
 struct ExerciseGraphView: View {
@@ -16,12 +16,13 @@ struct ExerciseGraphView: View {
     @State private var panOffset: CGSize = .zero
     @State private var lastPan: CGSize = .zero
     @State private var focusedCategory: ExerciseCategory?
+    @State private var selectedGroup: SelectedExerciseGraphGroup?
 
-    private let minZoom: CGFloat = 1
-    private let maxZoom: CGFloat = 3
-    private let focusThreshold: CGFloat = 1.8
-    private let categoryRadius: CGFloat = 0.62      // normalised distance from canvas center
-    private let exerciseRingRadius: CGFloat = 0.30  // normalised distance from a focused category
+    private let minZoom: CGFloat = 0.85
+    private let maxZoom: CGFloat = 3.2
+    private let focusThreshold: CGFloat = 1.45
+    private let categoryRadius: CGFloat = 0.70      // normalised distance from canvas center
+    private let graphAnimation = Animation.spring(response: 0.42, dampingFraction: 0.86)
 
     private var filteredExercises: [Exercise] {
         guard let typeFilter else { return exercises }
@@ -43,18 +44,32 @@ struct ExerciseGraphView: View {
             let scale = min(size.width, size.height) / 2
             let categories = visibleCategories
 
-            ZStack {
-                ForEach(Array(categories.enumerated()), id: \.element) { pair in
-                    categoryLayer(pair: pair, categories: categories, center: center, scale: scale)
+            ZStack(alignment: .topTrailing) {
+                ZStack {
+                    ForEach(Array(categories.enumerated()), id: \.element) { pair in
+                        categoryLayer(pair: pair, categories: categories, center: center, scale: scale)
+                    }
                 }
+                .frame(width: size.width, height: size.height)
+                .contentShape(Rectangle())
+                .scaleEffect(zoomScale, anchor: .center)
+                .offset(panOffset)
+                .gesture(magnifyGesture(center: center, scale: scale))
+                .simultaneousGesture(panGesture)
+                .simultaneousGesture(resetGesture)
+                .animation(graphAnimation, value: focusedCategory)
+
+                zoomControls
             }
-            .frame(width: size.width, height: size.height)
-            .contentShape(Rectangle())
-            .scaleEffect(zoomScale, anchor: .center)
-            .offset(panOffset)
-            .gesture(magnifyGesture(center: center, scale: scale))
-            .simultaneousGesture(panGesture)
-            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: focusedCategory)
+        }
+        .sheet(item: $selectedGroup) { selected in
+            ExerciseGroupCorpusSheet(
+                selected: selected,
+                onSelect: { exercise in
+                    selectedGroup = nil
+                    onSelect(exercise)
+                }
+            )
         }
     }
 
@@ -66,31 +81,44 @@ struct ExerciseGraphView: View {
         let category = pair.element
         let normalized = GraphLayout.categoryPosition(index: index, count: categories.count)
         let isFocused = focusedCategory == category
-        let isDimmed = focusedCategory != nil && !isFocused
         let categoryExercises = exercises(in: category)
+        let shouldShowCategoryLayer = focusedCategory == nil || isFocused
 
-        CategoryNode(category: category, count: categoryExercises.count, isFocused: isFocused)
-            .position(x: center.x + normalized.x * scale * categoryRadius,
-                      y: center.y + normalized.y * scale * categoryRadius)
-            .opacity(isDimmed ? 0 : 1)
-            .allowsHitTesting(!isDimmed)
-            .onTapGesture { focus(on: category, index: index, categories: categories, center: center, scale: scale) }
-
-        if isFocused {
+        if shouldShowCategoryLayer {
+            let groups = ExerciseGraphGrouping.groups(for: categoryExercises, in: category)
             let categoryCenter = CGPoint(x: normalized.x * categoryRadius, y: normalized.y * categoryRadius)
-            let positions = GraphLayout.ringPositions(count: categoryExercises.count,
+            let ringConfiguration = GraphLayout.exerciseSatelliteRingConfiguration(
+                for: groups.count,
+                isFocused: isFocused
+            )
+            let positions = GraphLayout.ringPositions(count: groups.count,
                                                         around: categoryCenter,
-                                                        baseRadius: exerciseRingRadius,
-                                                        ringSpacing: 0.16)
-            ForEach(Array(zip(categoryExercises, positions).enumerated()), id: \.offset) { pair in
-                let exercise = pair.element.0
+                                                        baseRadius: ringConfiguration.baseRadius,
+                                                        ringSpacing: ringConfiguration.ringSpacing,
+                                                        perRing: ringConfiguration.perRing)
+            let labelOpacity = GraphLayout.labelOpacity(zoomScale: zoomScale, isFocused: isFocused)
+            ForEach(Array(zip(groups, positions).enumerated()), id: \.offset) { pair in
+                let group = pair.element.0
                 let exNormalized = pair.element.1
-                ExerciseNode(exercise: exercise, color: category.accentColor)
-                    .position(x: center.x + exNormalized.x * scale,
-                              y: center.y + exNormalized.y * scale)
-                    .transition(.opacity.combined(with: .scale(scale: 0.5)))
-                    .onTapGesture { onSelect(exercise) }
+                ExerciseGroupNode(
+                    group: group,
+                    color: category.accentColor,
+                    isFocused: isFocused,
+                    labelOpacity: labelOpacity
+                )
+                .position(x: center.x + exNormalized.x * scale,
+                          y: center.y + exNormalized.y * scale)
+                .allowsHitTesting(isFocused)
+                .transition(.opacity.combined(with: .scale(scale: 0.6)))
+                .onTapGesture {
+                    selectedGroup = SelectedExerciseGraphGroup(category: category, group: group)
+                }
             }
+
+            CategoryNode(category: category, count: categoryExercises.count, isFocused: isFocused)
+                .position(x: center.x + normalized.x * scale * categoryRadius,
+                          y: center.y + normalized.y * scale * categoryRadius)
+                .onTapGesture { focus(on: category, index: index, categories: categories, center: center, scale: scale) }
         }
     }
 
@@ -99,18 +127,18 @@ struct ExerciseGraphView: View {
     private func focus(on category: ExerciseCategory, index: Int, categories: [ExerciseCategory],
                         center: CGPoint, scale: CGFloat) {
         let normalized = GraphLayout.categoryPosition(index: index, count: categories.count)
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+        withAnimation(graphAnimation) {
             focusedCategory = category
-            zoomScale = focusThreshold
-            lastScale = focusThreshold
-            panOffset = CGSize(width: -normalized.x * scale * categoryRadius * focusThreshold,
-                                height: -normalized.y * scale * categoryRadius * focusThreshold)
+            zoomScale = GraphLayout.defaultFocusZoom
+            lastScale = GraphLayout.defaultFocusZoom
+            panOffset = CGSize(width: -normalized.x * scale * categoryRadius * GraphLayout.defaultFocusZoom,
+                                height: -normalized.y * scale * categoryRadius * GraphLayout.defaultFocusZoom)
             lastPan = panOffset
         }
     }
 
     private func unfocus() {
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+        withAnimation(graphAnimation) {
             focusedCategory = nil
             zoomScale = minZoom
             lastScale = minZoom
@@ -124,9 +152,11 @@ struct ExerciseGraphView: View {
     private func magnifyGesture(center: CGPoint, scale: CGFloat) -> some Gesture {
         MagnifyGesture()
             .onChanged { value in
-                zoomScale = min(max(lastScale * value.magnification, minZoom), maxZoom)
+                zoomScale = GraphLayout.clampedZoom(lastScale * value.magnification, min: minZoom, max: maxZoom)
                 if zoomScale < focusThreshold, focusedCategory != nil {
-                    focusedCategory = nil
+                    withAnimation(graphAnimation) {
+                        focusedCategory = nil
+                    }
                 }
             }
             .onEnded { value in
@@ -150,6 +180,71 @@ struct ExerciseGraphView: View {
                                     height: lastPan.height + value.translation.height)
             }
             .onEnded { _ in lastPan = panOffset }
+    }
+
+    private var resetGesture: some Gesture {
+        TapGesture(count: 2)
+            .onEnded { resetView() }
+    }
+
+    private var zoomControls: some View {
+        VStack(spacing: 8) {
+            Button {
+                zoom(by: 1.22)
+            } label: {
+                Image(systemName: "plus.magnifyingglass")
+                    .frame(width: 36, height: 36)
+            }
+            .accessibilityLabel("Zoom in")
+
+            Button {
+                zoom(by: 0.82)
+            } label: {
+                Image(systemName: "minus.magnifyingglass")
+                    .frame(width: 36, height: 36)
+            }
+            .accessibilityLabel("Zoom out")
+
+            Button {
+                resetView()
+            } label: {
+                Image(systemName: "arrow.counterclockwise")
+                    .frame(width: 36, height: 36)
+            }
+            .accessibilityLabel("Reset graph view")
+        }
+        .font(.system(size: 18, weight: .semibold))
+        .buttonStyle(.plain)
+        .foregroundStyle(Color.luminaOnSurface)
+        .padding(6)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(Color.luminaOnSurface.opacity(0.08), lineWidth: 1)
+        )
+        .padding(.top, 12)
+        .padding(.trailing, 12)
+    }
+
+    private func zoom(by multiplier: CGFloat) {
+        let nextScale = GraphLayout.clampedZoom(zoomScale * multiplier, min: minZoom, max: maxZoom)
+        withAnimation(graphAnimation) {
+            zoomScale = nextScale
+            lastScale = nextScale
+            if nextScale < focusThreshold {
+                focusedCategory = nil
+            }
+        }
+    }
+
+    private func resetView() {
+        withAnimation(graphAnimation) {
+            focusedCategory = nil
+            zoomScale = 1
+            lastScale = 1
+            panOffset = .zero
+            lastPan = .zero
+        }
     }
 
     /// Index of whichever visible category's node sits nearest `pinchLocation`
@@ -178,6 +273,13 @@ struct ExerciseGraphView: View {
     }
 }
 
+private struct SelectedExerciseGraphGroup: Identifiable {
+    let category: ExerciseCategory
+    let group: ExerciseGraphGroup
+
+    var id: String { "\(category.id)-\(group.id)" }
+}
+
 // MARK: - Category node
 
 private struct CategoryNode: View {
@@ -185,49 +287,166 @@ private struct CategoryNode: View {
     let count: Int
     let isFocused: Bool
 
-    private var diameter: CGFloat { isFocused ? 90 : 64 }
+    private var diameter: CGFloat { isFocused ? 136 : 96 }
 
     var body: some View {
-        VStack(spacing: 6) {
+        ZStack {
             Circle()
-                .fill(category.accentColor.opacity(0.85))
+                .fill(category.accentColor.opacity(isFocused ? 0.74 : 0.60))
                 .frame(width: diameter, height: diameter)
-                .overlay(Circle().strokeBorder(.white.opacity(0.4), lineWidth: 1.5))
-            Text(category.rawValue)
-                .font(.luminaLabel)
-                .foregroundStyle(Color.luminaOnSurface)
-            Text("\(count)")
-                .font(.luminaCaption)
-                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                .overlay(Circle().strokeBorder(.white.opacity(0.50), lineWidth: 1.5))
+                .shadow(color: category.accentColor.opacity(isFocused ? 0.28 : 0.14), radius: isFocused ? 14 : 8)
+            VStack(spacing: 3) {
+                Text(category.rawValue)
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaOnSurface)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.70)
+                    .frame(width: diameter - 16)
+                Text("\(count)")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.luminaCardFill.opacity(0.58), in: Capsule())
+            }
         }
         .contentShape(Circle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(category.rawValue), \(count) exercise\(count == 1 ? "" : "s")")
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isFocused)
+        .animation(.spring(response: 0.34, dampingFraction: 0.86), value: isFocused)
     }
 }
 
-// MARK: - Exercise node
+// MARK: - Exercise group corpus
 
-private struct ExerciseNode: View {
+private struct ExerciseGroupCorpusSheet: View {
+    let selected: SelectedExerciseGraphGroup
+    let onSelect: (Exercise) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                LazyVStack(spacing: 10) {
+                    ForEach(selected.group.exercises, id: \.uuid) { exercise in
+                        Button {
+                            dismiss()
+                            onSelect(exercise)
+                        } label: {
+                            ExerciseCorpusRow(exercise: exercise, color: selected.category.accentColor)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding()
+            }
+            .background(Color.luminaSurface)
+            .navigationTitle(selected.group.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
+            .safeAreaInset(edge: .top) {
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(selected.category.accentColor.opacity(0.66))
+                        .frame(width: 10, height: 10)
+                    Text("\(selected.group.exercises.count) exercise\(selected.group.exercises.count == 1 ? "" : "s")")
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    Spacer()
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .background(.regularMaterial)
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+}
+
+private struct ExerciseCorpusRow: View {
     let exercise: Exercise
     let color: Color
 
+    private var difficultyLabel: String {
+        switch exercise.difficulty {
+        case 1: return "Easy"
+        case 2: return "Medium"
+        case 3: return "Hard"
+        default: return ""
+        }
+    }
+
     var body: some View {
-        VStack(spacing: 4) {
-            Circle()
-                .fill(color.opacity(0.75))
-                .frame(width: 36, height: 36)
-                .overlay(Circle().strokeBorder(.white.opacity(0.5), lineWidth: 1))
+        VStack(alignment: .leading, spacing: 8) {
             Text(exercise.name)
-                .font(.luminaCaption)
+                .font(.luminaCardTitle)
                 .foregroundStyle(Color.luminaOnSurface)
-                .lineLimit(1)
-                .frame(maxWidth: 64)
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
+            HStack(spacing: 10) {
+                Label(exercise.durationFormatted, systemImage: "clock")
+                Label(difficultyLabel, systemImage: "chart.bar")
+                Label(exercise.type.rawValue, systemImage: "figure.mind.and.body")
+            }
+            .font(.luminaCaption)
+            .foregroundStyle(Color.luminaOnSurfaceVariant)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder(color.opacity(0.22), lineWidth: 1)
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(exercise.name), \(exercise.durationFormatted), \(difficultyLabel)")
+    }
+}
+
+// MARK: - Exercise group node
+
+private struct ExerciseGroupNode: View {
+    let group: ExerciseGraphGroup
+    let color: Color
+    let isFocused: Bool
+    let labelOpacity: Double
+
+    private var diameter: CGFloat {
+        GraphLayout.exerciseSatelliteDiameter(isFocused: isFocused)
+    }
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(color.opacity(isFocused ? 0.48 : 0.34))
+                .frame(width: diameter, height: diameter)
+                .overlay(Circle().strokeBorder(.white.opacity(isFocused ? 0.55 : 0.34), lineWidth: isFocused ? 1 : 0.7))
+                .shadow(color: color.opacity(isFocused ? 0.16 : 0.08), radius: isFocused ? 9 : 3)
+            VStack(spacing: isFocused ? 2 : 0) {
+                Text(group.title)
+                    .font(.system(size: isFocused ? 9.5 : 5.2, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Color.luminaOnSurface)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(isFocused ? 3 : 1)
+                    .minimumScaleFactor(isFocused ? 0.46 : 0.35)
+                Text("\(group.exercises.count)")
+                    .font(.system(size: isFocused ? 8 : 4.5, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
+            .frame(width: diameter - 8, height: diameter - 8)
+            .padding(4)
+            .opacity(labelOpacity)
         }
         .contentShape(Circle())
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(exercise.name)
+        .accessibilityLabel("\(group.title), \(group.exercises.count) exercise\(group.exercises.count == 1 ? "" : "s")")
     }
 }
 

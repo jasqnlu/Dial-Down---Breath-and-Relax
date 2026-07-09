@@ -18,8 +18,8 @@ struct SessionPlayerView: View {
     @AppStorage("totalSessionsCompleted") private var totalSessionsCompleted = 0
     @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
     @AppStorage("hasSeenInitialPaywall") private var hasSeenInitialPaywall = false
+    @AppStorage("pendingInitialPaywall") private var pendingInitialPaywall = false
     @AppStorage("sessionDurationMultiplier") private var durationMultiplier: Double = 1.0
-    @State private var shouldShowPaywall = false
 
     @State private var currentIndex = 0
     @State private var secondsRemaining = 0
@@ -65,19 +65,50 @@ struct SessionPlayerView: View {
         return exercises[currentIndex]
     }
 
+    private var totalSessionSeconds: Int {
+        exercises.reduce(0) { total, exercise in
+            total + Self.scaledDuration(base: exercise.durationSeconds, multiplier: durationMultiplier)
+        }
+    }
+
+    private var elapsedSessionSeconds: Int {
+        guard currentIndex < exercises.count else { return totalSessionSeconds }
+
+        let completed = exercises.prefix(currentIndex).reduce(0) { total, exercise in
+            total + Self.scaledDuration(base: exercise.durationSeconds, multiplier: durationMultiplier)
+        }
+        let currentDuration = Self.scaledDuration(base: exercises[currentIndex].durationSeconds, multiplier: durationMultiplier)
+        let currentElapsed = max(0, min(currentDuration, currentDuration - secondsRemaining))
+        return completed + currentElapsed
+    }
+
+    private var sessionProgress: Double {
+        guard totalSessionSeconds > 0 else { return 0 }
+        return min(1, Double(elapsedSessionSeconds) / Double(totalSessionSeconds))
+    }
+
     var body: some View {
         Group {
             if showingSummary {
                 SessionSummaryView(pointsEarned: totalPointsEarned) {
                     onComplete?(totalPointsEarned)
                     dismiss()
+                    requestDeferredPaywallIfNeeded()
                 }
             } else if exercises.isEmpty {
-                ContentUnavailableView(
-                    "No Exercises",
-                    systemImage: "figure.mind.and.body",
-                    description: Text("There are no exercises to play.")
-                )
+                ContentUnavailableView {
+                    Label("No Exercises", systemImage: "figure.mind.and.body")
+                } description: {
+                    Text("There are no exercises to play.")
+                } actions: {
+                    Button {
+                        dismiss()
+                        NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
+                    } label: {
+                        Label("Browse Exercises", systemImage: "list.bullet")
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
                 .overlay(alignment: .topLeading) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark.circle.fill")
@@ -133,9 +164,6 @@ struct SessionPlayerView: View {
                 shouldRequestReview = false
             }
         }
-        .sheet(isPresented: $shouldShowPaywall) {
-            PaywallView()
-        }
     }
 
     // MARK: - Player UI
@@ -167,8 +195,11 @@ struct SessionPlayerView: View {
             }
             .padding()
 
-            ProgressView(value: Double(currentIndex), total: Double(exercises.count))
+            ProgressView(value: sessionProgress)
                 .padding(.horizontal)
+                .animation(.linear(duration: 1), value: sessionProgress)
+                .accessibilityLabel("Session progress")
+                .accessibilityValue("\(Int((sessionProgress * 100).rounded())) percent")
 
             Spacer()
 
@@ -188,7 +219,10 @@ struct SessionPlayerView: View {
             if exercise.type != .breath {
                 ExerciseMediaCard(exercise: exercise)
             } else {
-                BreathingCircle(isPaused: isPaused)
+                BreathingCircle(
+                    isPaused: isPaused,
+                    cycleDuration: breathingCycleDuration(for: exercise)
+                )
                     .padding()
             }
 
@@ -270,6 +304,14 @@ struct SessionPlayerView: View {
 
     static func scaledDuration(base: Int, multiplier: Double) -> Int {
         max(1, Int(Double(base) * multiplier))
+    }
+
+    private func breathingCycleDuration(for exercise: Exercise) -> Double {
+        let scaled = Self.scaledDuration(base: exercise.durationSeconds, multiplier: durationMultiplier)
+        // Breath exercises in the stretch player do not carry a phase model,
+        // so tie the visual cadence to the exercise length instead of a fixed
+        // 4s pulse. Longer holds breathe more slowly; short drills stay lively.
+        return min(8, max(3, Double(scaled) / 10))
     }
 
     private func beginNextExercise() {
@@ -412,7 +454,7 @@ struct SessionPlayerView: View {
 
         if totalSessionsCompleted == 3 && !hasSeenInitialPaywall {
             hasSeenInitialPaywall = true
-            shouldShowPaywall = true
+            pendingInitialPaywall = true
         } else {
             let reviewMilestones: Set<Int> = [10, 25]
             if reviewMilestones.contains(totalSessionsCompleted) {
@@ -424,12 +466,21 @@ struct SessionPlayerView: View {
     private func timeString(_ seconds: Int) -> String {
         String(format: "%d:%02d", seconds / 60, seconds % 60)
     }
+
+    private func requestDeferredPaywallIfNeeded() {
+        guard pendingInitialPaywall else { return }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(350))
+            NotificationCenter.default.post(name: .deferredPaywallRequested, object: nil)
+        }
+    }
 }
 
 // MARK: - Breathing animation
 
 struct BreathingCircle: View {
     let isPaused: Bool
+    let cycleDuration: Double
     @State private var scale: CGFloat = 1.0
 
     var body: some View {
@@ -449,6 +500,11 @@ struct BreathingCircle: View {
                 .frame(width: 100, height: 100)
         }
         .onAppear { animate() }
+        .onChange(of: cycleDuration) { _, _ in
+            guard !isPaused else { return }
+            scale = 1.0
+            animate()
+        }
         .onChange(of: isPaused) { _, paused in
             if paused {
                 withAnimation(.easeOut(duration: 0.3)) { scale = 1.0 }
@@ -459,7 +515,7 @@ struct BreathingCircle: View {
     }
 
     private func animate() {
-        withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
+        withAnimation(.easeInOut(duration: cycleDuration).repeatForever(autoreverses: true)) {
             scale = 1.35
         }
     }

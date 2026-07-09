@@ -19,7 +19,7 @@ Model tags: **Haiku 4.5** = cheap/mechanical · **Sonnet 5** = standard feature/
 - [x] Gamification — points, streak, badges
 - [x] Supabase REST backend (exercises, routines, sessions)
 - [x] Sign in with Apple + email/password auth
-- [x] Two-Factor Authentication toggle
+- [x] App Lock toggle (Face ID / Touch ID / passcode)
 - [x] Sign Out
 - [x] Dark mode polish (no hardcoded colours)
 - [x] VoiceOver accessibility labels
@@ -105,17 +105,17 @@ Model tags: **Haiku 4.5** = cheap/mechanical · **Sonnet 5** = standard feature/
 
 None of this can be done from the command line — these features are fully coded but inert until you do the following in Xcode:
 
-- [ ] **HealthKit** — target → Signing & Capabilities → add HealthKit; add `NSHealthShareUsageDescription` + `NSHealthUpdateUsageDescription` to Info.plist (share description should now also mention sleep, since `HealthKitService` reads sleep analysis too)
+- [x] **HealthKit** — HealthKit entitlement is present, and generated Info.plist includes `NSHealthShareUsageDescription` + `NSHealthUpdateUsageDescription` with sleep-aware copy.
 - [ ] **iCloud/CloudKit** — target → Signing & Capabilities → add iCloud (check CloudKit) → create container; add Background Modes → Remote notifications
 - [ ] **Widget Extension** — File → New → Target → Widget Extension named `BreathWidget`; replace generated files with [BreathWidget/BreathWidget.swift](BreathWidget/BreathWidget.swift); add App Groups capability to *both* the main app and widget targets with a shared group ID; replace the `group.REPLACE_WITH_YOUR_BUNDLE_ID` placeholder in both [WidgetDataService.swift](Breath%20-%20Relax%20%26%20Stretch/Services/WidgetDataService.swift) and `BreathWidget/BreathWidget.swift`
 - [ ] **Widget deep link** — add `breath` URL scheme to Info.plist so the widget's "Start Session" button can open the app (handler is written — `DeepLinkRouter` + `.onOpenURL`; just needs the Info.plist URL scheme registered)
-- [ ] **Calendar (EventKit)** — add `NSCalendarsFullAccessUsageDescription` to Info.plist, or the "Add Sessions to Calendar" toggle's access request will silently fail
+- [x] **Calendar (EventKit)** — generated Info.plist includes `NSCalendarsFullAccessUsageDescription` for the "Add Sessions to Calendar" toggle.
 - [ ] **Apple Watch app** — File → New → Target → Watch App, name it `BreathWatch`; replace generated files with the three files in [BreathWatch/](BreathWatch/); add `BreathingModels.swift` to the new target's membership (File Inspector → Target Membership) since the watch UI reuses `BreathingPattern`/`BreathPhase`; add HealthKit capability to this target too (for live heart rate)
 - [ ] **Watch streak complication** — File → New → Target → Widget Extension embedded in `BreathWatch`, name it `BreathWatchComplication`; replace generated files with [BreathWatchComplication/BreathWatchComplication.swift](BreathWatchComplication/BreathWatchComplication.swift); add the *same* App Group used for `BreathWidget` to this target; update the placeholder group ID in the file
 - [ ] **Localization** — `Localizable.xcstrings` is in place with ES/FR/ZH-Hans translations for ~80 strings; no code changes needed since `Text("...")` etc. auto-resolve against the catalog. Have a native speaker review before shipping, and expand coverage to onboarding copy and exercise instructions when there's time
 - [ ] **StoreKit Configuration** — Product → Scheme → Edit Scheme → Run → Options tab → StoreKit Configuration → select `Configuration.storekit`. Without this, `StoreManager.loadProducts()` returns an empty list and the paywall shows blank prices
 - [ ] **Google Sign-In** — when ready (parked for now): Google Cloud Console → Credentials → Create OAuth client ID → iOS → enter Bundle ID → copy the Client ID into `GoogleAuthService.clientID`. No SPM package, no Info.plist entry needed — that's it
-- [ ] **Supabase credentials** — run [supabase_schema.sql](supabase_schema.sql) in the Supabase SQL editor, then copy Project URL + anon key into `SupabaseService.swift`
+- [ ] **Supabase schema** — real Project URL + anon key are present in `SupabaseService.swift`; still run [supabase_schema.sql](supabase_schema.sql) in the Supabase SQL editor for the live project.
 - [ ] **Supabase Auth (Apple provider)** — new since the auth wiring (2026-07-06): Supabase Dashboard → Authentication → Providers → enable **Apple**, set the app's Bundle ID as the client ID; then **re-run [supabase_schema.sql](supabase_schema.sql)** to apply the tightened `auth.uid()` RLS policies (safe to re-run — it drops the old anon-writable ones first). Until both are done, Sign in with Apple still works locally; only the backend token exchange 4xx's (logged, non-fatal) and community uploads stay rejected
 
 ---
@@ -159,15 +159,15 @@ Merge order: bodymap → breathing-preview → onboarding-survey → branch tria
 
 ## 2 · 🔧 Engineering queue
 
-- [ ] **Decide: wire or delete `uploadSession`/`uploadRoutine`** → **Sonnet 5** (auth landed, so this is unblocked). Written, never called. Delete unless cross-device sync is imminent — and drop the matching Supabase policies so no dead write-path stays open.
-- [ ] **Exercise cautions shown in-session** → **Sonnet 5**. 5+ entry points (`HomeView`, `TodayView`, `ForYouSection`, `ExerciseListView`, `GuidedProgramDetailView`) launch `SessionPlayerView` directly, bypassing the detail page's CautionCard; 66/152 seed exercises define cautions. Render the caution on the get-ready screen — it's the natural slot now that the countdown exists. Safety issue for a wellness app.
-- [ ] **Side-switch cues for unilateral stretches** → **Opus 4.8**. `isBilateral` flag on seed exercises; player runs half the duration per side with a haptic + `VoiceCueService` "switch sides" cue (touches seed data model + player).
+- [x] **Decide: wire or delete `uploadSession`/`uploadRoutine`** — fixed: dead write methods were removed from `SupabaseService`, and matching insert/update RLS policies were dropped from `supabase_schema.sql`.
+- [x] **Exercise cautions shown in-session** — fixed: `SessionPlayerView` renders `CautionCard` on the get-ready screen, and auto-skip does not bypass cautioned exercises.
+- [x] **Side-switch cues for unilateral stretches** — fixed: `isBilateral` is seeded/migrated and `SessionPlayerView` emits a haptic + voice "Switch sides" cue at the halfway point.
 - [ ] **Background-load the OBJ models** → **Sonnet 5**, after the bodymap merge. First Body Map open parses multi-MB OBJs synchronously on the main thread — seconds-long freeze on older devices. Load templates off-main with a placeholder.
 - [ ] **Live Activity / Dynamic Island for active sessions** → **Opus 4.8 + Jason**. Remaining hold time on the lock screen; needs the widget-extension target to exist first (⚙️ section).
-- [ ] **Data export completeness** → **Sonnet 5**. Export omits profile, badges, routines — "Export My Data" should cover all user-generated data (GDPR expectation).
-- [ ] **`seedDataVersion` bumps even when `context.save()` fails** → **Haiku 4.5**. `Breath__Relax___StretchApp.swift` (v3 path line ~183 and the v4 equivalent) — a failed save silently skips the migration forever. Bump only after a successful save.
-- [ ] **`restorePurchases` swallows failures** → **Haiku 4.5**. `try? await AppStore.sync()` in `StoreManager` — surface an alert on failure.
-- [ ] **Rename the "2FA" toggle** → **Haiku 4.5**. It's a biometric app-lock, not two-factor auth (`auth.twoFAEnabled`). Rename UI copy + defaults key (with migration), and fix the v0.1 claim above.
+- [x] **Data export completeness** — fixed: CSV/JSON export includes sessions, routines, profile totals, badges, and streak-freeze state.
+- [x] **`seedDataVersion` bumps even when `context.save()` fails** — fixed: migration versions now advance only after successful saves when changes were made.
+- [x] **`restorePurchases` swallows failures** — fixed: `StoreManager.restorePurchases()` publishes `restoreError`, and `PaywallView` shows a Restore Failed alert.
+- [x] **Rename the "2FA" toggle** — fixed 2026-07-08: live UI says App Lock, the historical TODO wording was corrected, and `AuthManager` now migrates `auth.twoFAEnabled` to `auth.appLockEnabled`.
 
 ---
 
@@ -175,13 +175,13 @@ Merge order: bodymap → breathing-preview → onboarding-survey → branch tria
 
 Things that will bite later if ignored — ordered by severity:
 
-- [ ] **No `PrivacyInfo.xcprivacy` anywhere** → **Sonnet 5**. Uploads fail (ITMS-91053) on required-reason APIs — UserDefaults is used everywhere. Declare reason CA92.1 + collected data types (leaderboard display name/stats). Widget/Watch targets need it too once they exist.
-- [ ] **Paywall compliance (Guideline 3.1.2)** → **Sonnet 5 + Jason**. Live issues in `PaywallView.swift`: fabricated strikethrough compare-at prices ($39.99/$5.99/$89.99) inside a hardcoded 90-day "launch window" from a guessed date; hardcoded `"$"` breaks every non-USD storefront; "7-Day Free Trial" copy not derived from `product.subscription?.introductoryOffer`; **no Terms of Use / Privacy Policy links** (required for auto-renewing subscriptions). Model work: derive trial + prices from StoreKit, delete invented strikethroughs. Jason: host real Terms/Privacy pages (model can generate the HTML).
-- [ ] **In-app Privacy Policy makes a false claim** → **Haiku 4.5** now, **Jason** later. `ProfileSettingsTab` says data lives in a "private Supabase instance" — it's a shared project with the key in the binary. Fix the copy now; replace with the real hosted policy when it exists. `AuthView`'s ToS text also links nowhere.
+- [x] **No `PrivacyInfo.xcprivacy` anywhere** — fixed: main app has `PrivacyInfo.xcprivacy` declaring UserDefaults reasons CA92.1/1C8F.1 and collected leaderboard profile/stats data. Widget/Watch manifests are still tied to creating those targets.
+- [x] **Paywall compliance (Guideline 3.1.2)** — code fixed: `PaywallView` uses StoreKit display prices, derives free-trial copy from `product.subscription?.introductoryOffer`, has no fabricated strikethrough prices, surfaces restore failures, and links bundled Terms/Privacy documents. Jason still needs hosted legal URLs before public launch.
+- [x] **In-app Privacy Policy makes a false claim** — fixed 2026-07-08: `ProfileSettingsTab` now says local data stays on-device and only feature-required profile/auth data may be sent when the user opts into community features or supported sign-in.
 - [ ] **Localization is ~36% complete across 4 declared languages** → **Jason decision**, then **Sonnet 5**. es/fr/zh users get mixed-language UI. Either finish coverage (+ native-speaker pass) or remove the languages from `knownRegions` until ready.
-- [ ] **"Female" body-type picker promises a model that doesn't exist** → **Haiku 4.5** (soften the copy now); female mesh is a Jason/Blender task later (§ 4B).
+- [x] **"Female" body-type picker promises a model that doesn't exist** — fixed: picker says "Female (coming soon)" and the footer clarifies it currently uses the same targeting anatomy.
 - [ ] **Migration matches exercises by name** → **Opus 4.8** (fold into branch triage — pairs with `fix/seed-exercise-stable-uuid`). A user renaming a seed exercise breaks migration for that row forever; key on stable UUIDs.
-- [ ] **Placeholder credentials still shipping** — `group.REPLACE_WITH_YOUR_BUNDLE_ID` (`WidgetDataService.swift:15`), Supabase URL/key, Google Client ID. All inert but must be resolved via ⚙️ before the features go live (**Jason**).
+- [ ] **Placeholder credentials still shipping** — `group.REPLACE_WITH_YOUR_BUNDLE_ID` (`WidgetDataService.swift:15`, widget/watch source files) and Google Client ID. All inert but must be resolved via ⚙️ before those features go live (**Jason**).
 - [ ] **~7 MB of OBJs in the bundle** → **Sonnet 5**, low priority, after the bodymap merge settles. Convert to `.scn`/`.usdz` (5–10× smaller); pairs with the background-loading item in § 2.
 
 ---
@@ -212,12 +212,12 @@ Everything in the **⚙️ Manual Xcode setup** section above — HealthKit, iCl
 
 ### D. UI polish queue (with tips)
 
-- [ ] **Session progress bar is exercise-granular** — `ProgressView(value: Double(currentIndex), total: Double(exercises.count))` jumps in whole-exercise steps. Tip: feed it `completedSeconds / totalSeconds` and wrap updates in `withAnimation(.linear(duration: 1))` so it glides once per tick.
-- [ ] **`BreathingCircle` in the session player pulses at a fixed 4s** regardless of the exercise's actual breathing pattern. Tip: either drive it from the same phase durations `BreathingView` uses, or swap in the phase-labeled circle so "Inhale/Exhale" text matches the motion — mismatched breathing pacing is the kind of thing wellness-app reviews call out.
-- [ ] **Completion overlay vs floating tab bar** — `BreathingView`'s completion overlay renders inside the tab's ZStack, so the floating `CustomTabBar` stays visible above it. Tip: present completion as `.fullScreenCover` (or raise its `zIndex` above the bar) so the moment feels like a reward screen, not a banner behind chrome. (Remember the per-page `.floatingTabBarClearance()` convention.)
-- [ ] **Paywall stacks directly onto the session-3 summary** — sheet-over-summary right after a win feels punitive. Tip: set a `pendingPaywall` flag and present it on the *next* app foreground or Home visit instead; conversion literature consistently favors "next natural pause" over "interrupt the reward".
-- [ ] **"No Exercises" empty state is a dead end** — the `ContentUnavailableView` in the player has only an X. Tip: `ContentUnavailableView` takes an `actions:` builder — add a "Browse Exercises" button that dismisses and switches to the Exercises tab.
-- [ ] **General polish pass** — buttons mix `Capsule` and `RoundedRectangle(14)` shapes across Breathing/Paywall/Onboarding; pick one radius token. Consider `.presentationDetents([.medium])` for the custom-pattern editor (it's a small form under a full sheet), and a light haptic on each breath-phase transition (you already have the generators prepared).
+- [x] **Session progress bar is exercise-granular** — fixed 2026-07-08: `SessionPlayerView` now computes elapsed seconds across scaled exercise durations and animates progress linearly each tick.
+- [x] **`BreathingCircle` in the session player pulses at a fixed 4s** — fixed 2026-07-08: the session-player breath visual now derives cadence from the scaled breathing exercise duration instead of using one hardcoded pulse length. A richer future pass could still share the full phase-labeled `BreathingView` model.
+- [x] **Completion overlay vs floating tab bar** — fixed 2026-07-08: `BreathingView` gives the completion overlay a high z-index so it reliably sits above the tab chrome.
+- [x] **Paywall stacks directly onto the session-3 summary** — fixed 2026-07-08: session completion now sets a `pendingInitialPaywall` flag and requests presentation from `HomeView` after the reward screen is dismissed / the app returns active.
+- [x] **"No Exercises" empty state is a dead end** — fixed 2026-07-08: the player empty state has a "Browse Exercises" action that dismisses and switches the shell to the Exercises tab.
+- [ ] **General polish pass** — buttons mix `Capsule` and `RoundedRectangle(14)` shapes across Breathing/Paywall/Onboarding; pick one radius token. Custom-pattern editor now uses a medium detent and breathing phase transitions have light haptics.
 
 ### E. Content
 

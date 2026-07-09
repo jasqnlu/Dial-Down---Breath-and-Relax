@@ -4,9 +4,12 @@ import SwiftData
 struct HomeView: View {
     @EnvironmentObject private var auth: AuthManager
     @EnvironmentObject private var router: DeepLinkRouter
+    @Environment(\.scenePhase) private var scenePhase
     @Query private var exercises: [Exercise]
     @AppStorage("onboardingGoals") private var goalsStr = ""
+    @AppStorage("pendingInitialPaywall") private var pendingInitialPaywall = false
     @State private var selectedTab: Int
+    @State private var showingDeferredPaywall = false
     // Tabs are created on first visit and kept alive after, so nav/scroll
     // state survives switching (what TabView used to give us) without
     // TabView's 5-item UIKit limit — a 6th child spills into a "More"
@@ -46,6 +49,16 @@ struct HomeView: View {
         .onChange(of: selectedTab) { _, tab in
             visitedTabs.insert(tab)
         }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            presentDeferredPaywallIfNeeded()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .browseExercisesRequested)) { _ in
+            selectedTab = 2
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .deferredPaywallRequested)) { _ in
+            presentDeferredPaywallIfNeeded()
+        }
         .ignoresSafeArea(.keyboard)
         .sheet(item: pendingActionBinding) { action in
             switch action {
@@ -62,6 +75,9 @@ struct HomeView: View {
                     onDismiss: { router.pendingAction = nil }
                 )
             }
+        }
+        .sheet(isPresented: $showingDeferredPaywall) {
+            PaywallView()
         }
     }
 
@@ -81,6 +97,12 @@ struct HomeView: View {
         let ids = Set(goalsStr.split(separator: ",").map(String.init))
         let recommended = GoalMeta.recommend(from: exercises, activeGoalIDs: ids, limit: 4)
         return recommended.isEmpty ? Array(exercises.prefix(4)) : recommended
+    }
+
+    private func presentDeferredPaywallIfNeeded() {
+        guard pendingInitialPaywall, router.pendingAction == nil else { return }
+        pendingInitialPaywall = false
+        showingDeferredPaywall = true
     }
 }
 
