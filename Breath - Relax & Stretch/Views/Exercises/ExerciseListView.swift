@@ -5,22 +5,21 @@ struct ExerciseListView: View {
     @Query private var exercises: [Exercise]
     @State private var searchText = ""
     @State private var selectedType: ExerciseType? = nil
-    @State private var showingCreate = false
     @State private var selectedExercise: Exercise?
+    @State private var visibleSearchCount = ExerciseSearchResults.pageSize
+    @FocusState private var isSearchFocused: Bool
 
     private var normalizedSearchText: String {
         searchText.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private var searchFiltered: [Exercise] {
-        exercises.filter { ex in
-            let matchesSearch = normalizedSearchText.isEmpty
-                || ex.name.localizedCaseInsensitiveContains(normalizedSearchText)
-                || ex.type.rawValue.localizedCaseInsensitiveContains(normalizedSearchText)
-                || ex.targetBodyParts.contains { $0.localizedCaseInsensitiveContains(normalizedSearchText) }
-            let matchesType = selectedType == nil || ex.type == selectedType
-            return matchesSearch && matchesType
-        }
+    private var searchResults: ExerciseSearchResults {
+        ExerciseSearchResults(
+            exercises: exercises,
+            searchText: normalizedSearchText,
+            selectedType: selectedType,
+            visibleCount: visibleSearchCount
+        )
     }
 
     private var isShowingDetail: Binding<Bool> {
@@ -37,19 +36,29 @@ struct ExerciseListView: View {
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 12) {
-                            ForEach(searchFiltered, id: \.uuid) { exercise in
+                            ForEach(searchResults.visible, id: \.uuid) { exercise in
                                 NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
                                     ExerciseRow(exercise: exercise)
                                 }
                                 .buttonStyle(.plain)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 .luminaCard()
                                 .padding(.horizontal)
+                            }
+
+                            if searchResults.canLoadMore {
+                                ProgressView()
+                                    .padding(.vertical, 12)
+                                    .frame(maxWidth: .infinity)
+                                    .onAppear {
+                                        visibleSearchCount = searchResults.nextVisibleCount
+                                    }
                             }
                         }
                         .padding(.top, 8)
                     }
                     .overlay {
-                        if searchFiltered.isEmpty {
+                        if searchResults.matches.isEmpty {
                             ContentUnavailableView(
                                 "No Exercises",
                                 systemImage: "figure.mind.and.body",
@@ -80,17 +89,15 @@ struct ExerciseListView: View {
                 ToolbarItem(placement: .principal) {
                     searchBar
                 }
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        showingCreate = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                    .accessibilityLabel("Create exercise")
+            }
+            .onChange(of: normalizedSearchText) { _, _ in
+                resetSearchPage()
+                if !normalizedSearchText.isEmpty {
+                    refocusSearchField()
                 }
             }
-            .sheet(isPresented: $showingCreate) {
-                CreateExerciseView()
+            .onChange(of: selectedType) { _, _ in
+                resetSearchPage()
             }
             .navigationDestination(isPresented: isShowingDetail) {
                 if let selectedExercise {
@@ -109,6 +116,16 @@ struct ExerciseListView: View {
         }
     }
 
+    private func resetSearchPage() {
+        visibleSearchCount = ExerciseSearchResults.pageSize
+    }
+
+    private func refocusSearchField() {
+        Task { @MainActor in
+            isSearchFocused = true
+        }
+    }
+
     private var searchBar: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
@@ -119,10 +136,12 @@ struct ExerciseListView: View {
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .submitLabel(.search)
+                .focused($isSearchFocused)
 
             if !searchText.isEmpty {
                 Button {
                     searchText = ""
+                    isSearchFocused = true
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
@@ -191,6 +210,7 @@ struct ExerciseRow: View {
             .foregroundStyle(.secondary)
         }
         .padding(.vertical, 4)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(exercise.name), \(exercise.type.rawValue), \(exercise.durationFormatted), \(difficultyLabel)\(hasVideo ? ", has video" : "")")
     }

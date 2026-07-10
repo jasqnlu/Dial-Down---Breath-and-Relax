@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - App Guide
 //
-// A short, replayable tour of the app's 5 tabs. Shown once automatically
+// A short, replayable tour of the app's tabs. Shown once automatically
 // right after onboarding completes (see OnboardingGate in OnboardingView.swift),
 // and reachable anytime afterward from Profile → Settings → Help.
 
@@ -10,31 +10,7 @@ struct AppGuideView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var currentPage = 0
 
-    private struct GuidePage: Identifiable {
-        let id = UUID()
-        let icon: String
-        let title: String
-        let description: String
-    }
-
-    // Mirrors CustomTabBar's tab order, icons, and labels.
-    private let pages: [GuidePage] = [
-        GuidePage(icon: "figure.stand",
-                  title: "Body Map",
-                  description: "Tap any body part to find exercises that target it. Switch between Skin, Muscle, and Skeleton views, or mark sore spots with the drawing tool."),
-        GuidePage(icon: "list.bullet",
-                  title: "Exercises",
-                  description: "Browse the full library, or check For You for picks based on the goals you chose during setup."),
-        GuidePage(icon: "wind",
-                  title: "Breathe",
-                  description: "Follow guided breathing patterns like Box Breathing and 4-7-8 to calm down in just a few minutes."),
-        GuidePage(icon: "rectangle.stack",
-                  title: "Routines",
-                  description: "Build your own routines, borrow ones from the community, or start a guided program."),
-        GuidePage(icon: "person.circle",
-                  title: "Profile",
-                  description: "Track streaks, points, and badges, manage reminders, and replay this tour anytime from Settings."),
-    ]
+    private let pages = AppGuideContent.pages
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -82,7 +58,7 @@ struct AppGuideView: View {
         }
     }
 
-    private func guidePage(_ page: GuidePage) -> some View {
+    private func guidePage(_ page: AppGuidePage) -> some View {
         VStack(spacing: 24) {
             Spacer(minLength: 80)
 

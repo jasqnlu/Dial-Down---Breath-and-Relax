@@ -274,7 +274,7 @@ struct ProfileSettingsTab: View {
                 Button {
                     showingAppGuide = true
                 } label: {
-                    Label("Replay App Tour", systemImage: "questionmark.circle")
+                    Label("Restart App Tutorial", systemImage: "questionmark.circle")
                 }
             }
 

@@ -338,9 +338,11 @@ private struct ExerciseGroupCorpusSheet: View {
                             ExerciseCorpusRow(exercise: exercise, color: selected.category.accentColor)
                         }
                         .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
-                .padding()
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
             }
             .background(Color.luminaSurface)
             .navigationTitle(selected.group.title)

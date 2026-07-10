@@ -42,6 +42,21 @@ struct ExerciseGraphGroupingTests {
         #expect(groups.map(\.title).contains("General Chest"))
     }
 
+    @Test func generalChestGroupKeepsChestTargetedExercisesThatDoNotSayChestOrPec() {
+        let exercises = [
+            makeExercise(name: "Reverse Prayer Shoulder Mobiliser", targetBodyParts: ["Left Shoulder", "Right Shoulder", "Left Chest", "Right Chest"], difficulty: 2),
+            makeExercise(name: "Left Doorway Bicep Stretch", targetBodyParts: ["Left Biceps", "Left Chest"], difficulty: 1)
+        ]
+
+        let groups = ExerciseGraphGrouping.groups(for: exercises, in: .chest)
+        let generalChest = groups.first { $0.title == "General Chest" }
+
+        #expect(generalChest?.exercises.map(\.name).sorted() == [
+            "Left Doorway Bicep Stretch",
+            "Reverse Prayer Shoulder Mobiliser"
+        ])
+    }
+
     private func makeExercise(name: String, targetBodyParts: [String], difficulty: Int) -> Exercise {
         Exercise(
             name: name,

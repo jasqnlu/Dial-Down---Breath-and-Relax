@@ -31,7 +31,7 @@ struct ExerciseDetailView: View {
                         .padding(.horizontal)
                 }
 
-                // ── Media: local demo video, or placeholder ──────────────────
+                // ── Media: local demo video, when available ──────────────────
                 ExerciseMediaCard(exercise: exercise)
 
                 Divider()
@@ -103,7 +103,6 @@ struct ExerciseDetailView: View {
             }
             .buttonStyle(LuminaPillButtonStyle())
             .padding()
-            .background(.regularMaterial)
         }
         // After the CTA inset so the clearance band sits below it: the
         // docked button then rests above the floating tab bar, not behind it.

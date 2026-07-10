@@ -13,7 +13,7 @@ struct BodyMapView: View {
 
     // Regions the user has marked (by drawing on them or tapping them).
     // This is the single source of truth for "areas to train on".
-    @State private var markedRegions: Set<String> = []
+    @State private var markedRegions: Set<String> = BodyMapLaunchState.initialMarkedRegions()
     @State private var showMarkedExercises = false
 
     // Annotation state
@@ -158,12 +158,9 @@ struct BodyMapView: View {
             }
             .sheet(isPresented: $showLegend) { LegendSheet() }
             .onAppear {
-                if let saved = UserDefaults.standard.stringArray(forKey: "bodymap.markedRegions") {
-                    markedRegions = markedRegions.union(saved)
-                }
-            }
-            .onChange(of: markedRegions) { _, regions in
-                UserDefaults.standard.set(Array(regions), forKey: "bodymap.markedRegions")
+                markedRegions = BodyMapLaunchState.initialMarkedRegions(
+                    savedRegions: UserDefaults.standard.stringArray(forKey: "bodymap.markedRegions")
+                )
             }
         }
     }

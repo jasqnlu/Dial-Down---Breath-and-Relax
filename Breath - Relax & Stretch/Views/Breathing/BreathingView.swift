@@ -18,6 +18,7 @@ struct BreathingView: View {
     @State private var phaseSecondsLeft: Int             = 0
     @State private var round:            Int             = 0
     @State private var totalRounds:      Int             = 5
+    @State private var activeRunPlan:    BreathingRunPlan = .session(selectedRounds: 5)
     @State private var sessionStarted:   Date            = Date()
     @State private var showCompletion:   Bool            = false
     @State private var showingCustomEditor: Bool         = false
@@ -206,7 +207,13 @@ struct BreathingView: View {
                 }
             }
             .frame(height: 200 * 1.4 * 1.1)   // reserve space for outermost ring at full scale
+            .contentShape(Rectangle())
+            .onTapGesture {
+                startCirclePreview()
+            }
             .animation(.easeInOut(duration: 0.4), value: circleColor)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityHint("Plays one round of the selected breathing pattern")
 
             // Phase label
             if isRunning {
@@ -239,7 +246,7 @@ struct BreathingView: View {
 
             // Round counter
             if isRunning {
-                Text("Round \(round) / \(totalRounds)")
+                Text("Round \(round) / \(activeRunPlan.totalRounds)")
                     .font(.luminaSubheadline)
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
@@ -342,7 +349,7 @@ struct BreathingView: View {
                     statRow(icon: "arrow.triangle.2.circlepath",
                             color: .blue,
                             label: "Rounds completed",
-                            value: "\(totalRounds)")
+                            value: "\(activeRunPlan.totalRounds)")
 
                     Divider()
 
@@ -460,7 +467,7 @@ struct BreathingView: View {
     }
 
     private func finishRound() {
-        if round < totalRounds {
+        if round < activeRunPlan.totalRounds {
             round += 1
             transition(to: .inhale, duration: selectedPattern.phases.inhale)
         } else {
@@ -499,7 +506,7 @@ struct BreathingView: View {
 
     private func handleStartPause() {
         if !isRunning {
-            startSession()
+            startSession(plan: .session(selectedRounds: totalRounds))
         } else {
             if !isPaused {
                 VoiceCueService.shared.stop()
@@ -514,8 +521,14 @@ struct BreathingView: View {
         }
     }
 
-    private func startSession() {
+    private func startCirclePreview() {
+        guard !isRunning else { return }
+        startSession(plan: .circlePreview(selectedRounds: totalRounds))
+    }
+
+    private func startSession(plan: BreathingRunPlan) {
         let p = selectedPattern.phases
+        activeRunPlan    = plan
         sessionStarted   = Date()
         round            = 1
         isPaused         = false
@@ -548,6 +561,7 @@ struct BreathingView: View {
         phaseSecondsLeft = 0
         currentPhase     = .inhale
         pausedRemaining  = nil
+        activeRunPlan    = .session(selectedRounds: totalRounds)
     }
 
     private func completeSession() {
@@ -558,7 +572,12 @@ struct BreathingView: View {
             circleScale = 1.0
         }
 
-        saveSession()
+        guard activeRunPlan.recordsCompletion else {
+            resetPreviewSession()
+            return
+        }
+
+        saveSession(roundsCompleted: activeRunPlan.totalRounds)
 
         withAnimation(.easeInOut(duration: 0.45).delay(0.1)) {
             showCompletion = true
@@ -576,14 +595,27 @@ struct BreathingView: View {
         round            = 0
         isRunning        = false
         isPaused         = false
+        activeRunPlan    = .session(selectedRounds: totalRounds)
         requestDeferredPaywallIfNeeded()
+    }
+
+    private func resetPreviewSession() {
+        VoiceCueService.shared.stop()
+        circleColor      = BreathPhase.inhale.color
+        currentPhase     = .inhale
+        phaseSecondsLeft = 0
+        round            = 0
+        isRunning        = false
+        isPaused         = false
+        pausedRemaining  = nil
+        activeRunPlan    = .session(selectedRounds: totalRounds)
     }
 
     // MARK: - Persistence
 
-    private func saveSession() {
+    private func saveSession(roundsCompleted: Int) {
         let completedAt  = Date()
-        let pointsEarned = totalRounds * 5
+        let pointsEarned = roundsCompleted * 5
 
         totalSessionsCompleted += 1
         SessionRecorder.record(
@@ -594,8 +626,8 @@ struct BreathingView: View {
                 completionPercent: 1.0,
                 pointsEarned: pointsEarned,
                 sessionLabel: selectedPattern.rawValue,
-                roundsCompleted: totalRounds,
-                calendarTitle: "\(selectedPattern.rawValue) (\(totalRounds) rounds)",
+                roundsCompleted: roundsCompleted,
+                calendarTitle: "\(selectedPattern.rawValue) (\(roundsCompleted) rounds)",
                 healthKitKind: .breathing
             ),
             modelContext: modelContext,
