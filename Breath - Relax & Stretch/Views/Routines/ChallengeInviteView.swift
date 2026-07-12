@@ -15,15 +15,16 @@ struct ChallengeInviteView: View {
 
                 Image(systemName: "flame.fill")
                     .font(.system(size: 56))
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Color.luminaOrange)
 
                 Text("\(payload.fromName.isEmpty ? "A friend" : payload.fromName) challenges you!")
-                    .font(.title2.bold())
+                    .font(.luminaTitle)
+                    .foregroundStyle(Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
 
                 Text("They're on a \(payload.streak)-day streak with \(payload.totalPoints) points. Think you can keep up?")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.luminaSubheadline)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
 
@@ -31,16 +32,13 @@ struct ChallengeInviteView: View {
 
                 Button(action: onAccept) {
                     Text("Accept & Start a Session")
-                        .font(.headline)
                         .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.accentColor)
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
+                .buttonStyle(LuminaPillButtonStyle())
                 .padding(.horizontal)
                 .padding(.bottom, 24)
             }
+            .background(Color.luminaSurface.ignoresSafeArea())
             .navigationTitle("Challenge")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
