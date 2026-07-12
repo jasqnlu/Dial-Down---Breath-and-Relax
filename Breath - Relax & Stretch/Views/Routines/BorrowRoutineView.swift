@@ -22,20 +22,32 @@ struct BorrowRoutineView: View {
         NavigationStack {
             Group {
                 if publicRoutines.isEmpty {
-                    ContentUnavailableView(
-                        "No Public Routines",
-                        systemImage: "globe",
-                        description: Text("No one has shared a routine yet. Create one and publish it to the community!")
-                    )
+                    ContentUnavailableView {
+                        VStack(spacing: 16) {
+                            Image(systemName: "globe")
+                                .font(.system(size: 32))
+                                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                                .frame(width: 88, height: 88)
+                                .background(Color.luminaContainer, in: Circle())
+                            Text("No Public Routines")
+                                .font(.luminaHeadline)
+                                .foregroundStyle(Color.luminaOnSurface)
+                        }
+                    } description: {
+                        Text("No one has shared a routine yet. Create one and publish it to the community!")
+                            .font(.luminaBody)
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    }
                 } else {
                     List {
                         Section {
                             Text("Browse community routines, ranked by popularity. Fork one to add it to your library.")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
+                                .font(.luminaCaption)
+                                .foregroundStyle(Color.luminaOnSurfaceVariant)
                         }
+                        .listRowBackground(Color.clear)
 
-                        Section("Community Routines") {
+                        Section {
                             ForEach(publicRoutines, id: \.uuid) { routine in
                                 BorrowRoutineRow(
                                     routine: routine,
@@ -44,10 +56,19 @@ struct BorrowRoutineView: View {
                                     showingConfirmation = routine
                                 }
                             }
+                            .listRowBackground(Color.luminaCardFill)
+                        } header: {
+                            Text("Community Routines")
+                                .font(.luminaLabel)
+                                .foregroundStyle(Color.luminaOnSurfaceVariant)
                         }
                     }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .background(Color.luminaSurface)
                 }
             }
+            .background(Color.luminaSurface.ignoresSafeArea())
             .navigationTitle("Browse Routines")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -119,7 +140,8 @@ private struct BorrowRoutineRow: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(routine.name)
-                    .font(.headline)
+                    .font(.luminaCardTitle)
+                    .foregroundStyle(Color.luminaOnSurface)
 
                 HStack(spacing: 10) {
                     Label("\(routine.exerciseIDs.count) exercise\(routine.exerciseIDs.count == 1 ? "" : "s")",
@@ -130,8 +152,8 @@ private struct BorrowRoutineRow: View {
                             .lineLimit(1)
                     }
                 }
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.luminaCaption)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
 
             Spacer()
@@ -141,30 +163,24 @@ private struct BorrowRoutineRow: View {
                 VStack(spacing: 2) {
                     Image(systemName: "flame.fill")
                         .font(.caption2)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Color.luminaOrange)
                     Text("\(routine.borrowCount)")
                         .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Color.luminaOrange)
                 }
                 .frame(width: 28)
             }
 
             if isBorrowed {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color.luminaPrimary)
             } else {
                 Button {
                     onBorrow()
                 } label: {
                     Label("Fork", systemImage: "arrow.triangle.branch")
-                        .font(.caption)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(.tint.opacity(0.12))
-                        .foregroundStyle(.tint)
-                        .clipShape(Capsule())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(LuminaPillButtonStyle(kind: .ghost, compact: true))
             }
         }
         .padding(.vertical, 4)
