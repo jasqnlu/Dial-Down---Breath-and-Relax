@@ -37,7 +37,7 @@ struct ExerciseMediaCard: View {
                     }
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.panel))
         .padding(.horizontal)
     }
 }

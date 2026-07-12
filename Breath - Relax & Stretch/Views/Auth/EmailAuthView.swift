@@ -76,7 +76,7 @@ struct EmailAuthView: View {
                         .font(.luminaLabel)
                         .foregroundStyle(.red)
                         .padding(10)
-                        .background(.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                        .background(.red.opacity(0.08), in: RoundedRectangle(cornerRadius: LuminaRadius.badge))
                     }
 
                     // Primary action
@@ -250,7 +250,7 @@ private struct AuthField: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
         .background(Color.luminaContainer,
-                    in: RoundedRectangle(cornerRadius: 8))
+                    in: RoundedRectangle(cornerRadius: LuminaRadius.tag))
     }
 }
 

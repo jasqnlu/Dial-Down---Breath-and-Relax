@@ -231,7 +231,7 @@ struct TodayView: View {
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
     }
 
     // MARK: - Stats
@@ -269,7 +269,7 @@ struct TodayView: View {
                     .font(.title3)
                     .foregroundStyle(Color.accentColor)
                     .frame(width: 40, height: 40)
-                    .background(Color.luminaMintTint, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .background(Color.luminaMintTint, in: RoundedRectangle(cornerRadius: LuminaRadius.chip, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(program.title)

@@ -197,7 +197,7 @@ struct ProfileView: View {
             }
         }
         .padding(4)
-        .background(Color.luminaContainer, in: RoundedRectangle(cornerRadius: 16))
+        .background(Color.luminaContainer, in: RoundedRectangle(cornerRadius: LuminaRadius.panel))
     }
 
     // MARK: - Profile photo helpers

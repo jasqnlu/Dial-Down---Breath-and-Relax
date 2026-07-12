@@ -147,11 +147,11 @@ struct BreathingView: View {
             }
             .frame(width: 90, height: 72)
             .background(
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: LuminaRadius.control)
                     .fill(isSelected ? Color.luminaPrimary : Color.luminaContainer)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: LuminaRadius.control)
                     .strokeBorder(isSelected ? Color.luminaPrimary : Color.clear, lineWidth: 1.5)
             )
             .shadow(color: isSelected ? Color.luminaPrimary.opacity(0.3) : .clear, radius: 6, y: 3)

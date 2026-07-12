@@ -252,8 +252,8 @@ struct BodyMapView: View {
             }
         }
         .frame(width: 38)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color(.systemGray4), lineWidth: 0.5))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: LuminaRadius.chip))
+        .overlay(RoundedRectangle(cornerRadius: LuminaRadius.chip).strokeBorder(Color(.systemGray4), lineWidth: 0.5))
         .shadow(color: .black.opacity(0.12), radius: 5, y: 2)
     }
 
@@ -284,13 +284,13 @@ struct BodyMapView: View {
                             .frame(width: 40, height: 36)
                             .foregroundStyle(selectedTool == tool ? .white : .primary)
                             .background(selectedTool == tool ? Color.accentColor : Color.clear)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.tag))
                     }
                     .accessibilityLabel(tool.label)
                 }
             }
             .background(Color.luminaContainer,
-                        in: RoundedRectangle(cornerRadius: 10))
+                        in: RoundedRectangle(cornerRadius: LuminaRadius.badge))
 
             Spacer()
 

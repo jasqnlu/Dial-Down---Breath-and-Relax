@@ -83,7 +83,7 @@ struct FeatureRow: View {
                 .foregroundStyle(Color.luminaPrimary)
                 .frame(width: 44, height: 44)
                 .background(Color.luminaMintTint)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.badge))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)

@@ -217,9 +217,9 @@ struct ExerciseGraphView: View {
         .buttonStyle(.plain)
         .foregroundStyle(Color.luminaOnSurface)
         .padding(6)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: LuminaRadius.panel, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: LuminaRadius.panel, style: .continuous)
                 .strokeBorder(Color.luminaOnSurface.opacity(0.08), lineWidth: 1)
         )
         .padding(.top, 12)
@@ -402,9 +402,9 @@ private struct ExerciseCorpusRow: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.tag, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
+            RoundedRectangle(cornerRadius: LuminaRadius.tag, style: .continuous)
                 .strokeBorder(color.opacity(0.22), lineWidth: 1)
         )
         .accessibilityElement(children: .combine)

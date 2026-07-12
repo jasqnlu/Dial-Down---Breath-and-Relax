@@ -649,7 +649,7 @@ private struct FlexibilityPoint: Identifiable {
 private extension View {
     func cardStyle() -> some View {
         self
-            .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
             .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
     }
 }

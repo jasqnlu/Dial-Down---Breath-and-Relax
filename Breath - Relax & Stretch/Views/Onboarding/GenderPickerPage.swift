@@ -108,11 +108,11 @@ private struct GenderCard: View {
             .padding(16)
             .frame(maxWidth: .infinity)
             .background(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
                     .fill(Color.luminaCardFill)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
                     .strokeBorder(borderColor, lineWidth: isSelected ? 2 : 1)
             )
         }

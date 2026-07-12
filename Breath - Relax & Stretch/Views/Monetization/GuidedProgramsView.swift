@@ -65,7 +65,7 @@ struct GuidedProgramsView: View {
             .padding(16)
         }
         .frame(height: 176)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
     }
 }
 

@@ -37,6 +37,27 @@ extension Color {
     static let luminaGradientEnd      = Color(UIColor.lumina(light: 0x7663F1, dark: 0x4A3D99))
 }
 
+// MARK: - Corner radius scale
+//
+// One source of truth for the handful of intended radii used across cards,
+// buttons, and small containers. Values are unchanged from what call sites
+// already used — this only replaces the scattered magic numbers.
+
+enum LuminaRadius {
+    /// Large surfaces: hero cards, sheets, primary panels.
+    static let card: CGFloat = 24
+    /// Medium containers: thumbnails, popovers, secondary panels.
+    static let panel: CGFloat = 16
+    /// Compact controls: selectable buttons/chips, callout boxes.
+    static let control: CGFloat = 14
+    /// Small inline containers: segmented tabs, icon badges, stepper backgrounds.
+    static let chip: CGFloat = 12
+    /// Small toolbar/banner containers.
+    static let badge: CGFloat = 10
+    /// Tiny accents: inline icon tags.
+    static let tag: CGFloat = 8
+}
+
 // MARK: - Pill button
 
 struct LuminaPillButtonStyle: ButtonStyle {
@@ -74,7 +95,7 @@ private struct LuminaCard: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(padding)
-            .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
             .shadow(color: Color(UIColor.lumina(light: 0x0F172A, dark: 0x000000)).opacity(0.05),
                     radius: 10, y: 4)
     }
