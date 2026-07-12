@@ -43,13 +43,16 @@ struct LeaderboardView: View {
                 List {
                     if !auth.isBackendAuthenticated {
                         Text("Sign in with Apple to appear on the leaderboard.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
+                            .font(.luminaCaption)
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
+                            .listRowBackground(Color.luminaCardFill)
                     }
                     ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
                         leaderboardRow(rank: index + 1, entry: entry)
                     }
                 }
+                .scrollContentBackground(.hidden)
+                .background(Color.luminaSurface)
                 .refreshable { await load() }
             }
         }
@@ -63,26 +66,27 @@ struct LeaderboardView: View {
         let isMe = entry.id == auth.backendID
         return HStack(spacing: 12) {
             Text("\(rank)")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
                 .frame(width: 28, alignment: .leading)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(entry.displayName.isEmpty ? "Anonymous" : entry.displayName)
-                    .font(.subheadline.weight(isMe ? .bold : .regular))
+                    .font(isMe ? .luminaCardTitle : .luminaBody)
+                    .foregroundStyle(Color.luminaOnSurface)
                 Text("\(entry.streak) day streak · \(entry.totalMinutes) min")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
 
             Spacer()
 
             Text("\(entry.totalPoints)")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color.accentColor)
+                .font(.luminaCardTitle)
+                .foregroundStyle(Color.luminaPrimary)
         }
         .padding(.vertical, isMe ? 4 : 0)
-        .listRowBackground(isMe ? Color.accentColor.opacity(0.08) : nil)
+        .listRowBackground(isMe ? Color.luminaPrimary.opacity(0.08) : Color.luminaCardFill)
     }
 
     private func load() async {
