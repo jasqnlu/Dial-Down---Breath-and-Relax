@@ -23,11 +23,16 @@ struct DataExportView: View {
 
     var body: some View {
         List {
-            formatSection
-            summarySection
-            exportSection
+            Group {
+                formatSection
+                summarySection
+                exportSection
+            }
+            .listRowBackground(Color.luminaCardFill)
         }
         .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .background(Color.luminaSurface)
         .navigationTitle("Export My Data")
         .navigationBarTitleDisplayMode(.inline)
         .floatingTabBarClearance()
