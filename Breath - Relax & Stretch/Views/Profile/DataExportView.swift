@@ -33,7 +33,7 @@ struct DataExportView: View {
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
         .background(Color.luminaSurface)
-        .navigationTitle("Export My Data")
+        .navigationTitle("Export Data")
         .navigationBarTitleDisplayMode(.inline)
         .floatingTabBarClearance()
         .onChange(of: exportFormat) { _, _ in exportURL = nil }

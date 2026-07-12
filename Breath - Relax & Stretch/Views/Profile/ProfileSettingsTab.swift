@@ -226,7 +226,7 @@ struct ProfileSettingsTab: View {
             // Data
             Section("Data") {
                 NavigationLink(destination: DataExportView()) {
-                    Label("Export My Data", systemImage: "square.and.arrow.up")
+                    Label("Export Data", systemImage: "square.and.arrow.up")
                 }
                 NavigationLink {
                     ContentUnavailableView(

@@ -131,7 +131,7 @@ struct BodyMapView: View {
             }
             .background(Color.luminaSurface.ignoresSafeArea())
             .floatingTabBarClearance()
-            .navigationTitle(annotationMode ? "Mark Your Body" : "Body Map")
+            .navigationTitle(annotationMode ? "Mark Areas" : "Body Map")
             .navigationBarTitleDisplayMode(.inline)
             .animation(.easeInOut(duration: 0.25), value: facing)
             .animation(.easeInOut(duration: 0.2),  value: markedRegions.isEmpty)

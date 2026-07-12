@@ -74,7 +74,10 @@ struct BreathingView: View {
                 }
             }
             .navigationTitle("Breathing")
-            .navigationBarTitleDisplayMode(.large)
+            // Every other tab root (Body Map, Exercises, Profile) uses .inline;
+            // this was the one outlier at .large — aligned per the page-title
+            // convention audit (docs/superpowers/plans/2026-07-04-5-page-titles.md).
+            .navigationBarTitleDisplayMode(.inline)
             .animation(.easeInOut(duration: 0.35), value: showCompletion)
             .floatingTabBarClearance()
         }
