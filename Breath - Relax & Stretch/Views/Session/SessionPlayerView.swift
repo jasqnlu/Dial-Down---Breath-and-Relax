@@ -29,6 +29,12 @@ struct SessionPlayerView: View {
     @State private var sessionStarted = Date()
     @State private var shouldRequestReview = false
 
+    // Big countdown numerals aren't inside any fixed-size container here (just
+    // a plain VStack with Spacers), so unlike the breathing circle / graph
+    // node labels there's no overflow risk in letting these scale.
+    @ScaledMetric(relativeTo: .largeTitle) private var exerciseTimerSize: CGFloat = 64
+    @ScaledMetric(relativeTo: .largeTitle) private var getReadyCountSize: CGFloat = 72
+
     // Wall-clock end of the current exercise's countdown. `secondsRemaining` is
     // a display value derived from this each tick, so backgrounding the app
     // (a call, app-switch) doesn't stall the countdown — real elapsed time
@@ -230,7 +236,7 @@ struct SessionPlayerView: View {
             }
 
             Text(timeString(secondsRemaining))
-                .font(.system(size: 64, weight: .thin, design: .rounded))
+                .font(.system(size: exerciseTimerSize, weight: .thin, design: .rounded))
                 .monospacedDigit()
                 .foregroundStyle(Color.luminaOnSurface)
 
@@ -287,7 +293,7 @@ struct SessionPlayerView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
             Text("\(getReadyCount)")
-                .font(.system(size: 72, weight: .thin, design: .rounded))
+                .font(.system(size: getReadyCountSize, weight: .thin, design: .rounded))
                 .monospacedDigit()
                 .foregroundStyle(Color.luminaPrimary)
             // Surface the exercise's safety caution here — this is the only

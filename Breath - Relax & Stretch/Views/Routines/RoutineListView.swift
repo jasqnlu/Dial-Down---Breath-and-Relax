@@ -62,6 +62,10 @@ struct RoutineListView: View {
             .scrollContentBackground(.hidden)
             .background(Color.luminaSurface)
             .navigationTitle("Routines")
+            // Left unset before, which defaults to a large title at the root
+            // of a NavigationStack — made explicit and aligned to .inline to
+            // match the other tab roots (see page-title convention audit).
+            .navigationBarTitleDisplayMode(.inline)
             .floatingTabBarClearance()
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

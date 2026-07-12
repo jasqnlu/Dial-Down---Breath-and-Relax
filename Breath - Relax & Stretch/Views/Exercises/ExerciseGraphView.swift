@@ -18,11 +18,20 @@ struct ExerciseGraphView: View {
     @State private var focusedCategory: ExerciseCategory?
     @State private var selectedGroup: SelectedExerciseGraphGroup?
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private let minZoom: CGFloat = 0.85
     private let maxZoom: CGFloat = 3.2
     private let focusThreshold: CGFloat = 1.45
     private let categoryRadius: CGFloat = 0.70      // normalised distance from canvas center
-    private let graphAnimation = Animation.spring(response: 0.42, dampingFraction: 0.86)
+
+    /// Focus/zoom transitions use a springy bounce for polish; under Reduce
+    /// Motion that overshoot is dropped in favor of a short, direct ease so
+    /// the pan/zoom position still updates (that's the functional part) but
+    /// without the bouncy bloom.
+    private var graphAnimation: Animation {
+        reduceMotion ? .easeInOut(duration: 0.15) : .spring(response: 0.42, dampingFraction: 0.86)
+    }
 
     private var filteredExercises: [Exercise] {
         guard let typeFilter else { return exercises }
@@ -71,6 +80,13 @@ struct ExerciseGraphView: View {
                 }
             )
         }
+        // Category/satellite node labels are sized in fixed points to fit
+        // inside circles whose diameters come from GraphLayout's normalised
+        // canvas math, not from the type system. Letting Dynamic Type grow
+        // this text would overflow those circles well before it became more
+        // legible, so the diagram itself is pinned to the standard size;
+        // the sheet it presents (a plain list) scales normally.
+        .dynamicTypeSize(.large)
     }
 
     @ViewBuilder
@@ -217,9 +233,9 @@ struct ExerciseGraphView: View {
         .buttonStyle(.plain)
         .foregroundStyle(Color.luminaOnSurface)
         .padding(6)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: LuminaRadius.panel, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: LuminaRadius.panel, style: .continuous)
                 .strokeBorder(Color.luminaOnSurface.opacity(0.08), lineWidth: 1)
         )
         .padding(.top, 12)
@@ -287,6 +303,8 @@ private struct CategoryNode: View {
     let count: Int
     let isFocused: Bool
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private var diameter: CGFloat { isFocused ? 136 : 96 }
 
     var body: some View {
@@ -315,7 +333,8 @@ private struct CategoryNode: View {
         .contentShape(Circle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(category.rawValue), \(count) exercise\(count == 1 ? "" : "s")")
-        .animation(.spring(response: 0.34, dampingFraction: 0.86), value: isFocused)
+        .animation(reduceMotion ? .easeInOut(duration: 0.15) : .spring(response: 0.34, dampingFraction: 0.86),
+                   value: isFocused)
     }
 }
 
@@ -402,9 +421,9 @@ private struct ExerciseCorpusRow: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.tag, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
+            RoundedRectangle(cornerRadius: LuminaRadius.tag, style: .continuous)
                 .strokeBorder(color.opacity(0.22), lineWidth: 1)
         )
         .accessibilityElement(children: .combine)

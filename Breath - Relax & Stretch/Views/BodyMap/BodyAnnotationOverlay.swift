@@ -242,12 +242,12 @@ struct BodyAnnotationOverlay: View {
                             .frame(width: 40, height: 36)
                             .foregroundStyle(selectedTool == tool ? .white : .primary)
                             .background(selectedTool == tool ? Color.accentColor : Color.clear)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.tag))
                     }
                     .accessibilityLabel(tool.label)
                 }
             }
-            .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: 10))
+            .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: LuminaRadius.badge))
 
             Spacer()
 

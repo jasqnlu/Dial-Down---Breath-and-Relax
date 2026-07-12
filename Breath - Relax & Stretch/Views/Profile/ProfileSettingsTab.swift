@@ -83,10 +83,10 @@ struct ProfileSettingsTab: View {
                                 selected
                                     ? Color.accentColor.opacity(0.10)
                                     : Color(.secondarySystemFill),
-                                in: RoundedRectangle(cornerRadius: 10)
+                                in: RoundedRectangle(cornerRadius: LuminaRadius.badge)
                             )
                             .overlay(
-                                RoundedRectangle(cornerRadius: 10)
+                                RoundedRectangle(cornerRadius: LuminaRadius.badge)
                                     .strokeBorder(selected ? Color.accentColor : Color.clear, lineWidth: 1.5)
                             )
                         }
@@ -226,7 +226,7 @@ struct ProfileSettingsTab: View {
             // Data
             Section("Data") {
                 NavigationLink(destination: DataExportView()) {
-                    Label("Export My Data", systemImage: "square.and.arrow.up")
+                    Label("Export Data", systemImage: "square.and.arrow.up")
                 }
                 NavigationLink {
                     ContentUnavailableView(

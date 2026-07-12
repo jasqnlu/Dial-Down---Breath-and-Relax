@@ -163,10 +163,10 @@ struct PaywallView: View {
             .padding()
             .background(
                 isSelected ? Color.luminaMintTint : Color.luminaCardFill,
-                in: RoundedRectangle(cornerRadius: 24, style: .continuous)
+                in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
                     .strokeBorder(isSelected ? Color.luminaPrimary : Color.luminaOutline,
                                   lineWidth: isSelected ? 2 : 1)
             )

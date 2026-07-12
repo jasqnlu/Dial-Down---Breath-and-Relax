@@ -13,7 +13,7 @@ struct ForYouCard: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 110)
                 .background(Color.luminaMintTint)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.panel, style: .continuous))
 
             Text(exercise.name)
                 .font(.luminaLabel)

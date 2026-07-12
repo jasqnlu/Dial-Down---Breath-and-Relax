@@ -35,6 +35,11 @@ struct ProfileView: View {
     @AppStorage("accentColorName")  private var accentColorName = "Blue"
     @AppStorage("showStreakEmoji") private var showStreakEmoji = true
 
+    // Icon/label pair in the 3-segment tab bar below, kept in proportion the
+    // same way CustomTabBar does.
+    @ScaledMetric(relativeTo: .caption) private var tabBarIconSize: CGFloat = 18
+    @ScaledMetric(relativeTo: .caption) private var tabBarLabelSize: CGFloat = 11
+
     private let accentOptions: [(name: String, color: Color)] = [
         ("Blue", .blue), ("Purple", .purple), ("Pink", .pink),
         ("Red",  .red),  ("Orange", .orange), ("Green", .green),
@@ -177,17 +182,17 @@ struct ProfileView: View {
                 } label: {
                     VStack(spacing: 4) {
                         Image(systemName: tab.icon)
-                            .font(.system(size: 18,
+                            .font(.system(size: tabBarIconSize,
                                           weight: selectedTab == tab ? .semibold : .regular))
                         Text(tab.rawValue)
-                            .font(.system(size: 11,
+                            .font(.system(size: tabBarLabelSize,
                                           weight: selectedTab == tab ? .semibold : .regular))
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
                     .foregroundStyle(selectedTab == tab ? Color.luminaPrimary : Color.luminaOnSurfaceVariant)
                     .background(
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: LuminaRadius.chip)
                             .fill(selectedTab == tab ? Color.luminaCardFill : Color.clear)
                     )
                 }
@@ -197,7 +202,7 @@ struct ProfileView: View {
             }
         }
         .padding(4)
-        .background(Color.luminaContainer, in: RoundedRectangle(cornerRadius: 16))
+        .background(Color.luminaContainer, in: RoundedRectangle(cornerRadius: LuminaRadius.panel))
     }
 
     // MARK: - Profile photo helpers

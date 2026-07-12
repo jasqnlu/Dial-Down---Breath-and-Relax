@@ -109,7 +109,7 @@ struct StreakCardShareSheet: View {
                             .padding()
                             .background(Color.accentColor)
                             .foregroundStyle(.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.control))
                     }
                     .padding(.horizontal)
                     .padding(.bottom, 24)

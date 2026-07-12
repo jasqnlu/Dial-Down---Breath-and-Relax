@@ -90,11 +90,11 @@ struct GoalCard: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 28)
             .background(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
                     .fill(isSelected ? Color.luminaMintTint : Color.luminaCardFill)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
                     .strokeBorder(isSelected ? Color.luminaPrimary : Color.luminaOutline,
                                   lineWidth: isSelected ? 2 : 1)
             )

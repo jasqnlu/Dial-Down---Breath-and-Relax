@@ -134,7 +134,7 @@ struct StatChip: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .background(Color.luminaContainer)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.tag))
             .accessibilityLabel(label)
     }
 }
