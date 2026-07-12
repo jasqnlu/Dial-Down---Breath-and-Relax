@@ -17,16 +17,24 @@ struct GuidedProgramDetailView: View {
         List {
             Section {
                 Text(program.summary)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.luminaSubheadline)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
 
-            Section("Days") {
+            Section {
                 ForEach(program.days) { day in
                     dayRow(day)
                 }
+            } header: {
+                Text("Days")
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
         }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .background(Color.luminaSurface)
+        .listRowBackground(Color.luminaCardFill)
         .navigationTitle(program.title)
         .navigationBarTitleDisplayMode(.inline)
         .floatingTabBarClearance()
@@ -59,22 +67,23 @@ struct GuidedProgramDetailView: View {
         } label: {
             HStack {
                 Text("Day \(day.dayNumber)")
-                    .font(.subheadline.weight(.semibold))
+                    .font(.luminaCardTitle)
+                    .foregroundStyle(Color.luminaOnSurface)
                 if day.dayNumber == 1 && program.isPro {
                     Text("Free Preview")
-                        .font(.caption2.weight(.semibold))
+                        .font(.luminaCaption)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(Color.accentColor.opacity(0.15), in: Capsule())
-                        .foregroundStyle(Color.accentColor)
+                        .background(Color.luminaOrange.opacity(0.15), in: Capsule())
+                        .foregroundStyle(Color.luminaOrange)
                 }
                 Spacer()
                 Text("\(day.exerciseNames.count) exercises")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
                 Image(systemName: isLocked ? "lock.fill" : "chevron.right")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
         }
         .foregroundStyle(.primary)
