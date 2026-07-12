@@ -30,6 +30,7 @@ struct BreathingView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.requestReview) private var requestReview
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // Wall-clock end of the current phase (inhale/hold/exhale/hold2).
     // `phaseSecondsLeft` is a display value derived from this each tick, so
@@ -222,7 +223,7 @@ struct BreathingView: View {
                     .fontWeight(.semibold)
                     .foregroundStyle(circleColor)
                     .id(currentPhase)          // forces crossfade on phase change
-                    .transition(.opacity.combined(with: .scale(scale: 0.92)))
+                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.92)))
                     .animation(.easeInOut(duration: 0.4), value: currentPhase)
             } else {
                 Text(selectedPattern.description)
@@ -268,14 +269,19 @@ struct BreathingView: View {
                 }
                 .padding(.horizontal, 28)
                 .padding(.vertical, 10)
-                .background(Color.luminaContainer, in: RoundedRectangle(cornerRadius: 12))
+                .background(Color.luminaContainer, in: RoundedRectangle(cornerRadius: LuminaRadius.chip))
             }
         }
         .padding(.horizontal, 20)
     }
 
     /// The animation duration mirrors the phase duration so the circle reaches full scale at the end of inhale / fully contracts at end of exhale.
-    private var circleAnimation: Animation {
+    /// `nil` under Reduce Motion: the circle still resizes to mark each phase
+    /// (phase label, color, and countdown text already carry the same
+    /// information without motion), it just jumps instead of easing through
+    /// a multi-second continuous zoom.
+    private var circleAnimation: Animation? {
+        guard !reduceMotion else { return nil }
         let duration: Double
         switch currentPhase {
         case .inhale:           duration = Double(selectedPattern.phases.inhale)

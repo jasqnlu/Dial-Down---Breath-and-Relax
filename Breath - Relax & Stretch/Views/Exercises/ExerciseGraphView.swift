@@ -18,11 +18,20 @@ struct ExerciseGraphView: View {
     @State private var focusedCategory: ExerciseCategory?
     @State private var selectedGroup: SelectedExerciseGraphGroup?
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private let minZoom: CGFloat = 0.85
     private let maxZoom: CGFloat = 3.2
     private let focusThreshold: CGFloat = 1.45
     private let categoryRadius: CGFloat = 0.70      // normalised distance from canvas center
-    private let graphAnimation = Animation.spring(response: 0.42, dampingFraction: 0.86)
+
+    /// Focus/zoom transitions use a springy bounce for polish; under Reduce
+    /// Motion that overshoot is dropped in favor of a short, direct ease so
+    /// the pan/zoom position still updates (that's the functional part) but
+    /// without the bouncy bloom.
+    private var graphAnimation: Animation {
+        reduceMotion ? .easeInOut(duration: 0.15) : .spring(response: 0.42, dampingFraction: 0.86)
+    }
 
     private var filteredExercises: [Exercise] {
         guard let typeFilter else { return exercises }
@@ -294,6 +303,8 @@ private struct CategoryNode: View {
     let count: Int
     let isFocused: Bool
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private var diameter: CGFloat { isFocused ? 136 : 96 }
 
     var body: some View {
@@ -322,7 +333,8 @@ private struct CategoryNode: View {
         .contentShape(Circle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(category.rawValue), \(count) exercise\(count == 1 ? "" : "s")")
-        .animation(.spring(response: 0.34, dampingFraction: 0.86), value: isFocused)
+        .animation(reduceMotion ? .easeInOut(duration: 0.15) : .spring(response: 0.34, dampingFraction: 0.86),
+                   value: isFocused)
     }
 }
 
