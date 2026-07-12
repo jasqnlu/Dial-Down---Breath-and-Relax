@@ -40,19 +40,26 @@ struct RoutineBuilderView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Routine Name") {
+                Section {
                     TextField("e.g. Morning Wake-Up", text: $routineName)
+                        .font(.luminaBody)
+                } header: {
+                    Text("Routine Name")
+                        .font(.luminaLabel)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                 }
 
                 Section {
                     ForEach(selectedIDs.indices, id: \.self) { index in
                         if let exercise = exercises.first(where: { $0.uuid == selectedIDs[index] }) {
                             HStack {
-                                VStack(alignment: .leading) {
-                                    Text(exercise.name).font(.subheadline)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(exercise.name)
+                                        .font(.luminaCardTitle)
+                                        .foregroundStyle(Color.luminaOnSurface)
                                     Text("\(exercise.durationFormatted) · \(exercise.type.rawValue)")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .font(.luminaCaption)
+                                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                                 }
                                 Spacer()
                                 Button(role: .destructive) {
@@ -71,35 +78,50 @@ struct RoutineBuilderView: View {
                         showingExercisePicker = true
                     } label: {
                         Label("Add Exercise", systemImage: "plus.circle")
+                            .font(.luminaBody)
+                            .foregroundStyle(Color.luminaPrimary)
                     }
                 } header: {
                     HStack {
                         Text("Exercises")
+                            .font(.luminaLabel)
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
                         Spacer()
                         if !selectedIDs.isEmpty {
                             Text(totalDuration < 60 ? "\(totalDuration)s total" : "\(totalDuration / 60)m total")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .font(.luminaCaption)
+                                .foregroundStyle(Color.luminaOnSurfaceVariant)
                         }
                     }
                 }
 
                 Section {
                     Toggle("Publish to Community", isOn: $isPublic)
+                        .font(.luminaBody)
+                        .tint(Color.luminaPrimary)
                         .disabled(!isPublic && publishLimitReached)
                 } footer: {
                     if isPublic {
                         Text("Your routine will appear in the community library. You've used \(myPublicCount) of \(maxPublicRoutines) publish slots.")
+                            .font(.luminaCaption)
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
                     } else if publishLimitReached {
                         Text("You've reached the \(maxPublicRoutines)-routine publish limit. Un-publish an existing routine to free a slot.")
+                            .font(.luminaCaption)
                             .foregroundStyle(.red)
                     } else {
                         let remaining = maxPublicRoutines - myPublicCount
                         Text("Share this routine with the community (\(remaining) publish slot\(remaining == 1 ? "" : "s") remaining).")
+                            .font(.luminaCaption)
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Color.luminaSurface)
+            .listRowBackground(Color.luminaCardFill)
             .navigationTitle(isEditing ? "Edit Routine" : "New Routine")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
@@ -175,8 +197,10 @@ struct ExercisePickerView: View {
                     exerciseRows(filtered)
                 }
             }
+            .background(Color.luminaSurface.ignoresSafeArea())
             .searchable(text: $searchText)
             .navigationTitle("Add Exercise")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Done") { dismiss() }
@@ -193,17 +217,18 @@ struct ExercisePickerView: View {
                 dismiss()
             } label: {
                 HStack {
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 2) {
                         Text(ex.name)
-                            .foregroundStyle(.primary)
+                            .font(.luminaCardTitle)
+                            .foregroundStyle(Color.luminaOnSurface)
                         Text("\(ex.durationFormatted) · \(ex.type.rawValue)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .font(.luminaCaption)
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
                     }
                     Spacer()
                     if selectedIDs.contains(ex.uuid) {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(.tint)
+                            .foregroundStyle(Color.luminaPrimary)
                     }
                 }
                 .padding(.horizontal)
