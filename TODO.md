@@ -20,24 +20,24 @@ Method: reuse the existing tokens and components — `LuminaTheme.swift` (`.lumi
 - [x] Onboarding: `Views/Onboarding/` (all pages + `AppGuideView`)
 - [x] `Views/Monetization/PaywallView.swift`
 
-**Tier 2:**
-- [ ] Profile sub-screens: `ProgressChartsView`, `BadgesView`, `LeaderboardView`, `FlexibilityCheckInView`, `DataExportView`
-- [ ] Routine flows: `RoutineBuilderView`, `ImportRoutineView`, `BorrowRoutineView`, `ChallengeInviteView`
+**Tier 2:** ✅ done 2026-07-12 (parallel-agent restyle, build+test verified)
+- [x] Profile sub-screens: `ProgressChartsView`, `BadgesView`, `LeaderboardView`, `FlexibilityCheckInView`, `DataExportView`
+- [x] Routine flows: `RoutineBuilderView`, `ImportRoutineView`, `BorrowRoutineView`, `ChallengeInviteView`
 
-**Tier 3:**
-- [ ] `Views/Exercises/CreateExerciseView.swift`, `ForYouSection.swift`
-- [ ] `Views/Monetization/ContentPacksView.swift`, `GuidedProgramDetailView.swift`
-- [ ] `Views/Legal/LegalDocumentView.swift`
+**Tier 3:** ✅ done 2026-07-12
+- [x] `Views/Exercises/CreateExerciseView.swift`, `ForYouSection.swift`
+- [x] `Views/Monetization/ContentPacksView.swift`, `GuidedProgramDetailView.swift`
+- [x] `Views/Legal/LegalDocumentView.swift`
 
 ---
 
 ## 2 · 🎨 UI — Cross-cutting polish
 
-- [ ] **One corner-radius token** — buttons mix `Capsule` and `RoundedRectangle(14)` across Breathing/Paywall/Onboarding; add the token to `LuminaTheme` and sweep (carried from old §4D)
-- [ ] **Dynamic Type pass** — Lumina fonts scale via `relativeTo:`, but only `ExerciseGraphView` uses `ScaledMetric`/`dynamicTypeSize`; audit fixed-size text (12pt tab labels, graph node text) at accessibility sizes
-- [ ] **Reduce-motion parity** — honored in `TodayView` only; audit `BreathingView`'s animation and the graph pinch-zoom
+- [x] **One corner-radius token** — done 2026-07-12: `LuminaRadius` (card/panel/control/chip/badge/tag) added to `LuminaTheme.swift`, magic-number call sites swept across Home/Auth/Breathing/Profile/Exercises/Monetization/Onboarding/BodyMap
+- [x] **Dynamic Type pass** — done 2026-07-12: `CustomTabBar`/`ProfileView` tab icons and `SessionPlayerView` countdowns now use `@ScaledMetric`; `ExerciseGraphView`/`BodyFigureCanvas` pinned to `.large` where growth would overflow fixed canvas math. Follow-up noted, not fixed: `BreathingView`'s countdown and `BorrowRoutineView`'s badge need a layout rework, not just a font tweak
+- [x] **Reduce-motion parity** — done 2026-07-12: `BreathingView`'s phase animation and `ExerciseGraphView`'s pinch-zoom/focus springs now honor `accessibilityReduceMotion`, matching `TodayView`'s existing pattern
 - [x] **Wire AuthView Terms/Privacy links** — done 2026-07-10: underlined Terms of Use / Privacy Policy buttons present `LegalDocumentView` sheets
-- [ ] **Page-title audit + fixes** — screenshot audit at iPhone SE width, then convention/truncation fixes (carried; plan: [docs/superpowers/plans/2026-07-04-5-page-titles.md](docs/superpowers/plans/2026-07-04-5-page-titles.md))
+- [x] **Page-title audit + fixes** — done 2026-07-12: fixed truncation on Body Map's marking title ("Mark Your Body" → "Mark Areas") and Data Export ("Export My Data" → "Export Data"); aligned Breathing/Routines to the `.inline` display mode every other tab root uses (plan: [docs/superpowers/plans/2026-07-04-5-page-titles.md](docs/superpowers/plans/2026-07-04-5-page-titles.md))
 
 ---
 
@@ -56,11 +56,11 @@ Today "offline-first" only covers the seed catalog (pull-only refresh). Sessions
 
 ## 4 · 🧱 Infrastructure — Foundation hardening
 
-- [ ] **UUID-keyed seed migrations** — `migrateSeedToV3/V4/V5IfNeeded` match rows by exercise *name* (renames break migration forever); key on stable UUIDs (`fix/seed-exercise-stable-uuid` branch exists) and add tests against an in-memory `ModelContext`
-- [ ] **Background-load the OBJ models** — first Body Map open parses ~7 MB of OBJs synchronously on the main thread; load off-main with a placeholder. Later: convert to `.usdz`/`.scn` (5–10× smaller bundle)
-- [ ] **Surface the in-memory `ModelContainer` fallback** — on store-open failure the app silently loses persistence for the session (`Breath__Relax___StretchApp.swift`); tell the user
-- [ ] **Reconcile build settings** — `SWIFT_VERSION = 5.0` vs. code written to Swift 6 concurrency rules; and decide whether `IPHONEOS_DEPLOYMENT_TARGET = 26.5` is intentional (very aggressive floor)
-- [ ] **Committed Supabase anon key** (`SupabaseService.swift:18-19`) — decide: acceptable (anon keys are semi-public by design, RLS is the real boundary) or move to a config file
+- [x] **UUID-keyed seed migrations** — done 2026-07-12: `Exercise.seedID` added, seed migrations now key on it (v4 matches by seedID first, falling back to name only for pre-existing rows; v6 backfills seedID for legacy installs); matching/migration logic extracted to testable `SeedMigrator`, 7 new tests against an in-memory `ModelContext`
+- [x] **Background-load the OBJ models** — done 2026-07-12: OBJ parse/triangulation moved to a `BodyMeshLoader` actor, `BodySceneView` shows a loading placeholder until the mesh attaches. `.usdz`/`.scn` bundle-size conversion still open, deliberately deferred
+- [x] **Surface the in-memory `ModelContainer` fallback** — done 2026-07-12: one-time alert shown on launch when the fallback path was taken
+- [x] **Reconcile build settings** — checked 2026-07-12: bumping `SWIFT_VERSION` to 6.0 fails immediately on an existing `@MainActor`-isolation violation, confirmed real concurrency work is needed (not a flip) — left at 5.0. `IPHONEOS_DEPLOYMENT_TARGET = 26.5` matches the installed toolchain's actual SDK, not a typo — left as-is
+- [x] **Committed Supabase anon key** (`SupabaseService.swift`) — decided 2026-07-12: acceptable as-is (RLS is the real boundary); decision recorded as a comment above the key so it isn't reopened
 
 ---
 
