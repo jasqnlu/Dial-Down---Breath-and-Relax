@@ -10,6 +10,11 @@ struct CustomTabBar: View {
     @Binding var selectedTab: Int
     @Namespace private var ns
 
+    /// Scales with the label's `.caption`-relative text so the icon and
+    /// label grow together, while the bar-level `.dynamicTypeSize` cap below
+    /// keeps the whole pill from outgrowing its fixed content clearance.
+    @ScaledMetric(relativeTo: .caption) private var tabIconSize: CGFloat = 17
+
     /// Vertical space a page must keep clear at the bottom so its content
     /// isn't covered by the floating bar (bar ≈ 52pt tall + 10pt bottom
     /// padding above the safe area, plus breathing room).
@@ -48,6 +53,12 @@ struct CustomTabBar: View {
                 .shadow(color: Color.luminaPrimary.opacity(0.14), radius: 22, x: 0, y: 6)
         }
         .padding(.horizontal, 18)
+        // The floating pill's height is a fixed assumption baked into
+        // `contentClearance` (and every page's bottom inset built on it).
+        // Cap growth to the standard (non-accessibility) range so the bar
+        // still scales a bit with the user's text size but never grows tall
+        // enough to blow past the clearance every page reserves for it.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 
     private func tabButton(index: Int) -> some View {
@@ -61,7 +72,7 @@ struct CustomTabBar: View {
         } label: {
             HStack(spacing: isActive ? 5 : 0) {
                 Image(systemName: isActive ? tab.activeIcon : tab.icon)
-                    .font(.system(size: 17, weight: isActive ? .semibold : .regular))
+                    .font(.system(size: tabIconSize, weight: isActive ? .semibold : .regular))
 
                 if isActive {
                     Text(tab.label)

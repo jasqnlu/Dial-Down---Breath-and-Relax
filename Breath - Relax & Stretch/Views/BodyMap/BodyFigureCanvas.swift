@@ -119,6 +119,12 @@ struct BodyFigureCanvas: View {
         }
         .padding(.horizontal, 28)
         .padding(.vertical, 6)
+        // Region name labels float at exact `.position(x:,y:)` coordinates
+        // on the silhouette (see the "Floating name label" comment below);
+        // Dynamic Type growth would push them off their marked region, so —
+        // like ExerciseGraphView's node labels — this canvas is pinned to
+        // the standard size.
+        .dynamicTypeSize(.large)
     }
 
     // MARK: - Gender-specific silhouette

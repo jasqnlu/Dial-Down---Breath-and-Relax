@@ -71,6 +71,13 @@ struct ExerciseGraphView: View {
                 }
             )
         }
+        // Category/satellite node labels are sized in fixed points to fit
+        // inside circles whose diameters come from GraphLayout's normalised
+        // canvas math, not from the type system. Letting Dynamic Type grow
+        // this text would overflow those circles well before it became more
+        // legible, so the diagram itself is pinned to the standard size;
+        // the sheet it presents (a plain list) scales normally.
+        .dynamicTypeSize(.large)
     }
 
     @ViewBuilder
