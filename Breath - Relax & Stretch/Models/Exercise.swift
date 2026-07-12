@@ -27,6 +27,14 @@ final class Exercise {
     var isBilateral: Bool = true
     var posesData: Data = Data()
 
+    /// Stable identifier tying this row back to its entry in the bundled
+    /// `SeedData.json` (the `"id"` field there), independent of `name`.
+    /// Seed migrations key off this instead of `name` so renaming an
+    /// exercise in the seed catalog doesn't orphan/duplicate installed
+    /// users' rows. `nil` for user-created exercises and for rows seeded
+    /// before this field existed (backfilled by `migrateSeedToV5IfNeeded`).
+    var seedID: String? = nil
+
     /// Decoded pose keyframes for the stick-figure animation.
     var poses: [ExercisePose] {
         get { (try? JSONDecoder().decode([ExercisePose].self, from: posesData)) ?? [] }

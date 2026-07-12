@@ -17,7 +17,8 @@
         "Hold for 2 counts.",
         "Exhale slowly through your mouth for 6 counts.",
         "Repeat for the full duration."
-      ]
+      ],
+      "id": "2528b87c-95b0-5143-8c46-3b8320565370"
     },
     {
       "name": "Box Breathing",
@@ -37,7 +38,8 @@
         "Exhale through your mouth for 4 counts.",
         "Hold for 4 counts.",
         "Repeat the cycle for the full duration."
-      ]
+      ],
+      "id": "96903a29-2150-5848-a5cb-422770cd4600"
     },
     {
       "name": "4-7-8 Breathing",
@@ -56,7 +58,8 @@
         "Hold your breath for 7 counts.",
         "Exhale completely through your mouth for 8 counts.",
         "This completes one cycle. Repeat 3-4 times."
-      ]
+      ],
+      "id": "a262ed03-3f8e-5f38-bfc3-d5b560833c73"
     },
     {
       "name": "Alternate Nostril Breathing",
@@ -76,7 +79,8 @@
         "Inhale through the right nostril for 4 counts.",
         "Close the right nostril and exhale through the left for 4 counts.",
         "This completes one cycle. Repeat for the full duration."
-      ]
+      ],
+      "id": "5e2a28ea-3705-5bc9-b9a5-4180e89ea741"
     },
     {
       "name": "Pursed-Lip Breathing",
@@ -94,7 +98,8 @@
         "Pucker or 'purse' your lips as if you are going to whistle.",
         "Exhale slowly through pursed lips for 4 counts.",
         "Repeat for the full duration."
-      ]
+      ],
+      "id": "f1661f4f-3967-5b83-a894-d36a42185c80"
     },
     {
       "name": "Diaphragmatic Breath with Counting",
@@ -112,7 +117,8 @@
         "Feel only the belly hand rise as your diaphragm drops.",
         "Exhale through pursed lips, counting to 6.",
         "Repeat, gradually lengthening the count as it feels comfortable."
-      ]
+      ],
+      "id": "3466f1c9-40ec-5b71-96c1-92323f236b55"
     },
     {
       "name": "Coherent Breathing",
@@ -130,7 +136,8 @@
         "Without pausing, exhale gently through your nose for a slow count of 5.",
         "Keep the breath smooth and even, about 6 breaths per minute.",
         "Continue for the full duration."
-      ]
+      ],
+      "id": "7b14105a-b031-5012-94da-53940bb9f661"
     },
     {
       "name": "Humming Bee Breath",
@@ -148,7 +155,8 @@
         "As you exhale, gently press the cartilage and hum steadily, feeling the vibration in your skull.",
         "Keep lips closed but jaw relaxed throughout the hum.",
         "Repeat for the full duration."
-      ]
+      ],
+      "id": "f08e4fa4-70f2-551b-9efa-4f07e5ae21a9"
     },
     {
       "name": "Lion's Breath",
@@ -167,7 +175,8 @@
         "Open your mouth wide, stick your tongue out toward your chin, and exhale forcefully with a 'ha' sound.",
         "Relax your face and return to a neutral breath.",
         "Repeat 5-6 times."
-      ]
+      ],
+      "id": "d5bc1290-8438-5453-8b7f-97e98a563021"
     },
     {
       "name": "Eye Palming",
@@ -182,7 +191,8 @@
         "Close your eyes and cup a warm palm gently over each eye without pressing on the eyeballs.",
         "Keep your fingers relaxed and breathe slowly, letting your eyes rest in the darkness.",
         "Hold for the full duration, then slowly lower your hands and open your eyes."
-      ]
+      ],
+      "id": "c6908bca-ba39-5c3c-988d-1a88c7f3444d"
     },
     {
       "name": "Chin Tuck (Forward Head Reset)",
@@ -200,7 +210,8 @@
         "Hold for 3-5 seconds, then release.",
         "Repeat 10 times to reset a forward-head posture."
       ],
-      "caution": "Move gently and stop if you feel dizziness or sharp pain."
+      "caution": "Move gently and stop if you feel dizziness or sharp pain.",
+      "id": "6a6f8f08-3755-580b-96e2-086639c25980"
     },
     {
       "name": "Seated Neck Rolls",
@@ -220,7 +231,8 @@
         "Reverse direction after a few slow half-circles.",
         "Avoid rolling the head all the way back; keep the motion in front."
       ],
-      "caution": "Skip or shorten the range if you have a neck injury, disc issue, or feel any pinching."
+      "caution": "Skip or shorten the range if you have a neck injury, disc issue, or feel any pinching.",
+      "id": "13c14934-a407-5a14-8c90-6f7d85d523dc"
     },
     {
       "name": "Neck Extension Stretch (Gentle Look-Up)",
@@ -237,7 +249,8 @@
         "Return your head to neutral slowly.",
         "Repeat 2-3 times."
       ],
-      "caution": "Move slowly, keep the stretch gentle, and stop immediately if you feel dizzy or lightheaded."
+      "caution": "Move slowly, keep the stretch gentle, and stop immediately if you feel dizzy or lightheaded.",
+      "id": "dd059f56-473b-511b-8263-8351d760250a"
     },
     {
       "name": "Neck Flexion Stretch (Chin-to-Chest)",
@@ -254,7 +267,8 @@
         "Hold for 15-20 seconds.",
         "Lift your head slowly back to neutral."
       ],
-      "caution": "Never bounce or pull forcefully; ease off if you feel numbness or tingling in the arms."
+      "caution": "Never bounce or pull forcefully; ease off if you feel numbness or tingling in the arms.",
+      "id": "d5136dde-526c-5e9b-9997-ff316cbfb388"
     },
     {
       "name": "Seated Neck Rotation",
@@ -272,7 +286,8 @@
         "Hold for 10-15 seconds, feeling a gentle stretch through the neck.",
         "Return to center and turn to look over your left shoulder.",
         "Hold, then return to center."
-      ]
+      ],
+      "id": "78190007-42c1-5e7a-9fdb-efae17df85bf"
     },
     {
       "name": "Left Levator Scapulae Stretch",
@@ -290,7 +305,8 @@
         "Hold for 20-30 seconds without pulling hard.",
         "Release slowly and return to neutral."
       ],
-      "caution": "Use only the light weight of your hand - never yank the head. Avoid with any neck injury."
+      "caution": "Use only the light weight of your hand - never yank the head. Avoid with any neck injury.",
+      "id": "b1b2a7ee-8ef8-57cb-bb49-f919c19d5f1c"
     },
     {
       "name": "Right Levator Scapulae Stretch",
@@ -308,7 +324,8 @@
         "Hold for 20-30 seconds without pulling hard.",
         "Release slowly and return to neutral."
       ],
-      "caution": "Use only the light weight of your hand - never yank the head. Avoid with any neck injury."
+      "caution": "Use only the light weight of your hand - never yank the head. Avoid with any neck injury.",
+      "id": "c883a986-76f7-51df-893d-958de71223df"
     },
     {
       "name": "Left Upper Trapezius Stretch",
@@ -326,7 +343,8 @@
         "Hold for 20-30 seconds, feeling the stretch along the left side of your neck and shoulder.",
         "Release slowly and repeat on the other side another time."
       ],
-      "caution": "Keep the pull light and slow. Skip if you have a neck injury, recent whiplash, or numbness in the arms."
+      "caution": "Keep the pull light and slow. Skip if you have a neck injury, recent whiplash, or numbness in the arms.",
+      "id": "8700a0d3-c8b3-507b-897b-91c038606075"
     },
     {
       "name": "Right Upper Trapezius Stretch",
@@ -344,7 +362,8 @@
         "Hold for 20-30 seconds, feeling the stretch along the right side of your neck and shoulder.",
         "Release slowly and repeat on the other side another time."
       ],
-      "caution": "Keep the pull light and slow. Skip if you have a neck injury, recent whiplash, or numbness in the arms."
+      "caution": "Keep the pull light and slow. Skip if you have a neck injury, recent whiplash, or numbness in the arms.",
+      "id": "2ea3a37c-fc10-5c44-802b-8bbda678bd9a"
     },
     {
       "name": "Shoulder Roll",
@@ -362,7 +381,8 @@
         "Lift both shoulders up toward your ears.",
         "Roll them back and down in a slow circle, squeezing the shoulder blades together at the back.",
         "Complete 5 backward rolls, then 5 forward rolls."
-      ]
+      ],
+      "id": "3751fbd0-f483-527e-aa28-9857095d7a51"
     },
     {
       "name": "Left Cross-Body Rear Delt Stretch",
@@ -379,7 +399,8 @@
         "Hold for 20 seconds, feeling the stretch in the back of your left shoulder.",
         "Release and lower your arm slowly."
       ],
-      "caution": "Stop if you feel shoulder pinching. Avoid if you have a rotator-cuff injury."
+      "caution": "Stop if you feel shoulder pinching. Avoid if you have a rotator-cuff injury.",
+      "id": "a09b5916-2d18-5fa1-a685-1345fa11cd8d"
     },
     {
       "name": "Right Cross-Body Rear Delt Stretch",
@@ -396,7 +417,8 @@
         "Hold for 20 seconds, feeling the stretch in the back of your right shoulder.",
         "Release and lower your arm slowly."
       ],
-      "caution": "Stop if you feel shoulder pinching. Avoid if you have a rotator-cuff injury."
+      "caution": "Stop if you feel shoulder pinching. Avoid if you have a rotator-cuff injury.",
+      "id": "736ec882-9876-5494-95ee-545d895e0448"
     },
     {
       "name": "Doorway Shoulder & Chest Opener",
@@ -416,7 +438,8 @@
         "Feel the stretch across your chest and the front of both shoulders.",
         "Hold for 20-30 seconds, then step back to release."
       ],
-      "caution": "Don't push into shoulder pain. Avoid if you have a shoulder injury or instability."
+      "caution": "Don't push into shoulder pain. Avoid if you have a shoulder injury or instability.",
+      "id": "e84da743-58c5-5f9f-88bb-0429d0396e8e"
     },
     {
       "name": "Left Thread the Needle",
@@ -434,7 +457,8 @@
         "Keep your right hand planted for support, or extend it forward for a deeper twist.",
         "Hold for 20-30 seconds, breathing into your upper back.",
         "Slowly unwind and return to hands and knees."
-      ]
+      ],
+      "id": "7474a60c-53b0-573d-aa88-e606acaa4820"
     },
     {
       "name": "Right Thread the Needle",
@@ -452,7 +476,8 @@
         "Keep your left hand planted for support, or extend it forward for a deeper twist.",
         "Hold for 20-30 seconds, breathing into your upper back.",
         "Slowly unwind and return to hands and knees."
-      ]
+      ],
+      "id": "b98e6327-ae2f-53e2-9bd1-98cc68ed30ba"
     },
     {
       "name": "Doorway Pec Stretch (Mid Chest)",
@@ -472,7 +497,8 @@
         "Hold for 20-30 seconds.",
         "Step back to release and repeat with the opposite foot forward."
       ],
-      "caution": "Don't push into shoulder pain. Avoid if you have a shoulder injury or instability."
+      "caution": "Don't push into shoulder pain. Avoid if you have a shoulder injury or instability.",
+      "id": "81d88380-b5ef-5554-aeaa-74aefdf276be"
     },
     {
       "name": "High Doorway Chest Stretch (Upper Chest)",
@@ -492,7 +518,8 @@
         "Hold for 20-30 seconds.",
         "Step back to release."
       ],
-      "caution": "Keep the lean gentle - this raised-arm position loads the shoulder more than the low variant."
+      "caution": "Keep the lean gentle - this raised-arm position loads the shoulder more than the low variant.",
+      "id": "d57f0a14-1586-500c-b82a-41da26f51adc"
     },
     {
       "name": "Left Supine Chest Opener (Open Book)",
@@ -509,7 +536,8 @@
         "Let your upper back and left chest rotate open toward the ceiling.",
         "Hold for 20-30 seconds, breathing into the stretch.",
         "Bring your arm back to the starting position and repeat as desired."
-      ]
+      ],
+      "id": "772d009f-383e-55a8-a216-6b3ac5df1800"
     },
     {
       "name": "Right Supine Chest Opener (Open Book)",
@@ -526,7 +554,8 @@
         "Let your upper back and right chest rotate open toward the ceiling.",
         "Hold for 20-30 seconds, breathing into the stretch.",
         "Bring your arm back to the starting position and repeat as desired."
-      ]
+      ],
+      "id": "94827d79-ea46-5ee0-a08d-0183528132c1"
     },
     {
       "name": "Cobra Stretch (Prone Press-Up)",
@@ -544,7 +573,8 @@
         "Hold for 15-20 seconds, breathing steadily.",
         "Lower back down slowly to release."
       ],
-      "caution": "Stop if you feel sharp or radiating lower-back pain; keep hips grounded throughout."
+      "caution": "Stop if you feel sharp or radiating lower-back pain; keep hips grounded throughout.",
+      "id": "9d9ab0a2-453e-5189-8484-e2faddbd1b14"
     },
     {
       "name": "Standing Back Extension",
@@ -562,7 +592,8 @@
         "Hold for 5-10 seconds.",
         "Return to standing tall and repeat 5-6 times."
       ],
-      "caution": "Keep the arch gentle and controlled. Avoid if you have osteoporosis or acute back pain."
+      "caution": "Keep the arch gentle and controlled. Avoid if you have osteoporosis or acute back pain.",
+      "id": "058b6726-2144-5b09-ac04-c494d5bca2a7"
     },
     {
       "name": "Kneeling Abdominal Stretch (Camel-Lite)",
@@ -580,7 +611,8 @@
         "Hold for 15-20 seconds.",
         "Return to upright kneeling slowly."
       ],
-      "caution": "Avoid if you have knee pain when kneeling, or lower-back or neck issues; keep the arch shallow."
+      "caution": "Avoid if you have knee pain when kneeling, or lower-back or neck issues; keep the arch shallow.",
+      "id": "6dd9be80-2036-5e0a-958e-8c76b626187f"
     },
     {
       "name": "Cat-Cow Flow",
@@ -598,7 +630,8 @@
         "Exhale: round your spine toward the ceiling, tucking chin and pelvis (Cat pose).",
         "Flow slowly between the two, following your breath.",
         "Repeat 8-10 times."
-      ]
+      ],
+      "id": "e247c2cd-e0b5-53d8-9381-289b429e5906"
     },
     {
       "name": "Left Seated Spinal Twist",
@@ -616,7 +649,8 @@
         "Inhale to lengthen your spine, then exhale and gently twist to the right.",
         "Hold for 20 seconds, keeping both sit bones grounded.",
         "Unwind slowly back to center."
-      ]
+      ],
+      "id": "2f9c7faa-f766-5d9e-af1d-245783b00543"
     },
     {
       "name": "Right Seated Spinal Twist",
@@ -634,7 +668,8 @@
         "Inhale to lengthen your spine, then exhale and gently twist to the left.",
         "Hold for 20 seconds, keeping both sit bones grounded.",
         "Unwind slowly back to center."
-      ]
+      ],
+      "id": "0b90a450-5de0-54ab-9d9d-09ed3292af26"
     },
     {
       "name": "Child's Pose",
@@ -654,7 +689,8 @@
         "Relax your forehead to the mat and let your lower back lengthen.",
         "Hold and breathe deeply for the full duration."
       ],
-      "caution": "Skip if kneeling causes knee pain, or widen the knees to make room for the belly if needed."
+      "caution": "Skip if kneeling causes knee pain, or widen the knees to make room for the belly if needed.",
+      "id": "edd92bc9-8867-5d71-8fa0-9c2ac3f61512"
     },
     {
       "name": "Left Single-Leg Supine Knee-to-Chest",
@@ -672,7 +708,8 @@
         "Keep your right foot flat and your lower back relaxed on the mat.",
         "Hold for 20-30 seconds, breathing evenly.",
         "Release and switch legs."
-      ]
+      ],
+      "id": "f90eedf6-c32f-5e8c-97b6-86e5c9d59748"
     },
     {
       "name": "Right Single-Leg Supine Knee-to-Chest",
@@ -690,7 +727,8 @@
         "Keep your left foot flat and your lower back relaxed on the mat.",
         "Hold for 20-30 seconds, breathing evenly.",
         "Release and switch legs."
-      ]
+      ],
+      "id": "3fbfdc54-fdc8-58db-8fbf-30f2088a15be"
     },
     {
       "name": "Double Knee-to-Chest Release",
@@ -708,7 +746,8 @@
         "Keep your head and shoulders relaxed on the mat.",
         "Rock gently side to side if it feels good, massaging the lower back.",
         "Hold for 20-30 seconds and breathe deeply."
-      ]
+      ],
+      "id": "a5df61e0-1cc8-547c-be7d-089f1937cf5c"
     },
     {
       "name": "Pelvic Tilt",
@@ -726,7 +765,8 @@
         "Hold the flattened position for 5 seconds.",
         "Release back to a neutral arch.",
         "Repeat 10-12 times, moving slowly with your breath."
-      ]
+      ],
+      "id": "c23cf278-0a5a-5ae9-b5ec-b0ea28132726"
     },
     {
       "name": "Seated Forward Fold",
@@ -746,7 +786,8 @@
         "Hold for 20-30 seconds, letting gravity deepen the stretch gradually.",
         "Roll back up slowly to sitting."
       ],
-      "caution": "Keep a slight bend in the knees if your hamstrings or lower back are tight."
+      "caution": "Keep a slight bend in the knees if your hamstrings or lower back are tight.",
+      "id": "8587ef8f-e393-5b3b-863e-40f89d0c70da"
     },
     {
       "name": "Happy Baby Pose",
@@ -764,7 +805,8 @@
         "Gently pull down on your feet while pressing your feet up into your hands.",
         "Rock slowly side to side to massage the lower back.",
         "Hold for 20-30 seconds and breathe deeply."
-      ]
+      ],
+      "id": "38f2451e-4dcc-5c6e-87f8-a7dfef37d92e"
     },
     {
       "name": "Left Supine Spinal Twist (Windshield Wipers)",
@@ -782,7 +824,8 @@
         "Turn your head to look toward your left hand for a deeper spinal stretch.",
         "Hold for 20-30 seconds, breathing into the low back and side body.",
         "Bring your knees back to center to release."
-      ]
+      ],
+      "id": "a7b543d7-b093-59dd-a507-40598f54c8db"
     },
     {
       "name": "Right Supine Spinal Twist (Windshield Wipers)",
@@ -800,7 +843,8 @@
         "Turn your head to look toward your right hand for a deeper spinal stretch.",
         "Hold for 20-30 seconds, breathing into the low back and side body.",
         "Bring your knees back to center to release."
-      ]
+      ],
+      "id": "505c4252-9cbe-551a-9ce6-d296805c0105"
     },
     {
       "name": "Left Standing Side Reach",
@@ -818,7 +862,8 @@
         "Feel the stretch along your left side body from hip to fingertips.",
         "Hold for 15-20 seconds without collapsing forward.",
         "Return to standing and repeat on the other side."
-      ]
+      ],
+      "id": "3cb3752a-445d-580a-8c19-5939a5555546"
     },
     {
       "name": "Right Standing Side Reach",
@@ -836,7 +881,8 @@
         "Feel the stretch along your right side body from hip to fingertips.",
         "Hold for 15-20 seconds without collapsing forward.",
         "Return to standing and repeat on the other side."
-      ]
+      ],
+      "id": "d9c7306b-f672-591b-93dc-98411cc9a1f8"
     },
     {
       "name": "Left Standing Side Bend",
@@ -853,7 +899,8 @@
         "Keep your hips facing forward and avoid twisting.",
         "Hold for 15-20 seconds, feeling the stretch along your left side.",
         "Return to upright slowly and repeat."
-      ]
+      ],
+      "id": "6f5fc1ea-88b1-55bc-aa3c-1a917a4e9498"
     },
     {
       "name": "Right Standing Side Bend",
@@ -870,7 +917,8 @@
         "Keep your hips facing forward and avoid twisting.",
         "Hold for 15-20 seconds, feeling the stretch along your right side.",
         "Return to upright slowly and repeat."
-      ]
+      ],
+      "id": "b8cc1936-4150-59b7-ba7b-50c8fb0eb7d8"
     },
     {
       "name": "Left Kneeling Lat Stretch (Hands on Chair)",
@@ -888,7 +936,8 @@
         "Let your left armpit sink toward the floor, feeling a stretch along your left side and lat.",
         "Hold for 20 seconds, breathing steadily.",
         "Walk your hands back to center and switch sides."
-      ]
+      ],
+      "id": "36dd7999-75c9-5c38-afb9-d4aad2a2423b"
     },
     {
       "name": "Right Kneeling Lat Stretch (Hands on Chair)",
@@ -906,7 +955,8 @@
         "Let your right armpit sink toward the floor, feeling a stretch along your right side and lat.",
         "Hold for 20 seconds, breathing steadily.",
         "Walk your hands back to center and switch sides."
-      ]
+      ],
+      "id": "9df6b7a1-f3cc-583a-86c3-e95af2ebaf2b"
     },
     {
       "name": "Left Wall Bicep Stretch",
@@ -924,7 +974,8 @@
         "Hold for 15-20 seconds.",
         "Rotate back to release and switch sides."
       ],
-      "caution": "Keep the elbow straight but not locked hard, and stop if you feel elbow or shoulder pain."
+      "caution": "Keep the elbow straight but not locked hard, and stop if you feel elbow or shoulder pain.",
+      "id": "007311ec-b271-5172-b321-54995410b855"
     },
     {
       "name": "Right Wall Bicep Stretch",
@@ -942,7 +993,8 @@
         "Hold for 15-20 seconds.",
         "Rotate back to release and switch sides."
       ],
-      "caution": "Keep the elbow straight but not locked hard, and stop if you feel elbow or shoulder pain."
+      "caution": "Keep the elbow straight but not locked hard, and stop if you feel elbow or shoulder pain.",
+      "id": "8c5ce4a8-423f-5f3a-bdcb-2d320df62608"
     },
     {
       "name": "Left Doorway Bicep Stretch",
@@ -960,7 +1012,8 @@
         "Feel the stretch along the front of your left upper arm and chest.",
         "Hold for 15-20 seconds.",
         "Step back to release and switch sides."
-      ]
+      ],
+      "id": "45c12ffc-15ef-5356-b292-edaf4283f785"
     },
     {
       "name": "Right Doorway Bicep Stretch",
@@ -978,7 +1031,8 @@
         "Feel the stretch along the front of your right upper arm and chest.",
         "Hold for 15-20 seconds.",
         "Step back to release and switch sides."
-      ]
+      ],
+      "id": "21572190-abc0-58ad-a7cf-b02dbcd7e22f"
     },
     {
       "name": "Clasped-Hands Behind-Back Stretch",
@@ -998,7 +1052,8 @@
         "Hold for 15-20 seconds, feeling the stretch across the front of your arms and shoulders.",
         "Release slowly."
       ],
-      "caution": "Skip or keep the lift small if you have shoulder impingement or limited shoulder mobility."
+      "caution": "Skip or keep the lift small if you have shoulder impingement or limited shoulder mobility.",
+      "id": "ec528f52-dab9-59b9-b9b0-bb8f2759bc3c"
     },
     {
       "name": "Left Overhead Triceps Stretch",
@@ -1015,7 +1070,8 @@
         "Use your right hand to gently press on your left elbow, deepening the stretch.",
         "Hold for 20 seconds, feeling the stretch along the back of your upper arm.",
         "Release and switch sides."
-      ]
+      ],
+      "id": "a023380a-7392-59c3-a050-5f84a4769149"
     },
     {
       "name": "Right Overhead Triceps Stretch",
@@ -1032,7 +1088,8 @@
         "Use your left hand to gently press on your right elbow, deepening the stretch.",
         "Hold for 20 seconds, feeling the stretch along the back of your upper arm.",
         "Release and switch sides."
-      ]
+      ],
+      "id": "fdeb709e-ac86-53b8-b70b-f560022a4158"
     },
     {
       "name": "Left Cross-Body Elbow Pull",
@@ -1050,7 +1107,8 @@
         "Keep your left shoulder relaxed away from your ear.",
         "Hold for 20 seconds.",
         "Release and switch sides."
-      ]
+      ],
+      "id": "4596532a-e63d-5f02-a07f-e67a5ae89bd9"
     },
     {
       "name": "Right Cross-Body Elbow Pull",
@@ -1068,7 +1126,8 @@
         "Keep your right shoulder relaxed away from your ear.",
         "Hold for 20 seconds.",
         "Release and switch sides."
-      ]
+      ],
+      "id": "0a9187ca-4104-5c45-a23d-04440f75a5b1"
     },
     {
       "name": "Left Towel-Assisted Triceps Stretch",
@@ -1087,7 +1146,8 @@
         "Hold for 20 seconds without forcing the pull.",
         "Release slowly and switch sides."
       ],
-      "caution": "Ease off if you feel shoulder pinching; a longer towel makes this gentler."
+      "caution": "Ease off if you feel shoulder pinching; a longer towel makes this gentler.",
+      "id": "5904c838-99c3-5192-9d0f-080a2e973048"
     },
     {
       "name": "Right Towel-Assisted Triceps Stretch",
@@ -1106,7 +1166,8 @@
         "Hold for 20 seconds without forcing the pull.",
         "Release slowly and switch sides."
       ],
-      "caution": "Ease off if you feel shoulder pinching; a longer towel makes this gentler."
+      "caution": "Ease off if you feel shoulder pinching; a longer towel makes this gentler.",
+      "id": "d23b9ce5-75ac-591c-81d6-b761c4b70b5e"
     },
     {
       "name": "Left Wrist Flexor Stretch",
@@ -1122,7 +1183,8 @@
         "Use your right hand to gently pull your left fingers back toward you.",
         "Hold for 15-20 seconds, feeling the stretch along the inner forearm.",
         "Release and switch sides."
-      ]
+      ],
+      "id": "29fe7232-d133-5233-a529-6ea1d5e04a42"
     },
     {
       "name": "Right Wrist Flexor Stretch",
@@ -1138,7 +1200,8 @@
         "Use your left hand to gently pull your right fingers back toward you.",
         "Hold for 15-20 seconds, feeling the stretch along the inner forearm.",
         "Release and switch sides."
-      ]
+      ],
+      "id": "903e096a-0223-58c2-aff3-7354990aaf00"
     },
     {
       "name": "Left Wrist Extensor Stretch",
@@ -1154,7 +1217,8 @@
         "Use your right hand to gently press the back of your left hand downward, curling the fingers under.",
         "Hold for 15-20 seconds, feeling the stretch along the top of the forearm.",
         "Release and switch sides."
-      ]
+      ],
+      "id": "7b84ffe1-cc90-5ad2-b55b-5a06910ae77f"
     },
     {
       "name": "Right Wrist Extensor Stretch",
@@ -1170,7 +1234,8 @@
         "Use your left hand to gently press the back of your right hand downward, curling the fingers under.",
         "Hold for 15-20 seconds, feeling the stretch along the top of the forearm.",
         "Release and switch sides."
-      ]
+      ],
+      "id": "06398809-c1ec-5875-a3f6-f97910bfe209"
     },
     {
       "name": "Reverse Prayer Stretch",
@@ -1190,7 +1255,8 @@
         "Hold for 15-20 seconds, feeling the stretch through both wrists and shoulders.",
         "Release your hands and shake them out."
       ],
-      "caution": "Skip if this is uncomfortable on the wrists or shoulders; a partial version is fine."
+      "caution": "Skip if this is uncomfortable on the wrists or shoulders; a partial version is fine.",
+      "id": "a90c1d0f-c3df-5b41-bc2d-f9782fe50f25"
     },
     {
       "name": "Prayer Stretch (Palms Together, Lower)",
@@ -1207,7 +1273,8 @@
         "Stop when you feel a stretch along the underside of both forearms and wrists.",
         "Hold for 15-20 seconds.",
         "Raise your hands back to chest height to release."
-      ]
+      ],
+      "id": "d7c449a0-b97c-526f-b900-46b73cd88dd1"
     },
     {
       "name": "Wrist Circles",
@@ -1223,7 +1290,8 @@
         "Slowly rotate your wrists in large circles, 10 times clockwise.",
         "Reverse direction for 10 circles counter-clockwise.",
         "Shake your hands out gently to finish."
-      ]
+      ],
+      "id": "b1d30153-3e92-5934-bca8-19a6a28ed83d"
     },
     {
       "name": "Left Seated Figure-Four Stretch",
@@ -1241,7 +1309,8 @@
         "Hold for 30 seconds, breathing steadily.",
         "Release and switch sides."
       ],
-      "caution": "Keep the crossed ankle relaxed rather than pressing on the knee joint itself."
+      "caution": "Keep the crossed ankle relaxed rather than pressing on the knee joint itself.",
+      "id": "38945874-9c94-5816-a744-ec46b2db827d"
     },
     {
       "name": "Right Seated Figure-Four Stretch",
@@ -1259,7 +1328,8 @@
         "Hold for 30 seconds, breathing steadily.",
         "Release and switch sides."
       ],
-      "caution": "Keep the crossed ankle relaxed rather than pressing on the knee joint itself."
+      "caution": "Keep the crossed ankle relaxed rather than pressing on the knee joint itself.",
+      "id": "d0a86d1b-6c0c-59c6-9793-7e9537723f71"
     },
     {
       "name": "Left Supine Figure-4 Stretch",
@@ -1276,7 +1346,8 @@
         "Reach through and clasp your hands behind your right thigh, gently drawing both legs toward your chest.",
         "Hold for 20-30 seconds, feeling the stretch deep in your left hip and glute.",
         "Release and switch sides."
-      ]
+      ],
+      "id": "c6723b77-fc43-5ff3-bcf0-0693df05df21"
     },
     {
       "name": "Right Supine Figure-4 Stretch",
@@ -1293,7 +1364,8 @@
         "Reach through and clasp your hands behind your left thigh, gently drawing both legs toward your chest.",
         "Hold for 20-30 seconds, feeling the stretch deep in your right hip and glute.",
         "Release and switch sides."
-      ]
+      ],
+      "id": "73013368-058d-5d51-ba68-2851cb45adc9"
     },
     {
       "name": "Left Standing Figure-4 Stretch",
@@ -1311,7 +1383,8 @@
         "Hold for 20 seconds, feeling the stretch in your left outer hip and glute.",
         "Lower your foot and switch sides."
       ],
-      "caution": "Hold onto a wall or chair for balance to avoid falling."
+      "caution": "Hold onto a wall or chair for balance to avoid falling.",
+      "id": "ff6ca2a1-778f-5c6a-b6bb-90f0c0750f42"
     },
     {
       "name": "Right Standing Figure-4 Stretch",
@@ -1329,7 +1402,8 @@
         "Hold for 20 seconds, feeling the stretch in your right outer hip and glute.",
         "Lower your foot and switch sides."
       ],
-      "caution": "Hold onto a wall or chair for balance to avoid falling."
+      "caution": "Hold onto a wall or chair for balance to avoid falling.",
+      "id": "c7f6c0e7-2b40-54c1-afd3-c2ce51578d79"
     },
     {
       "name": "Pigeon Pose (Right Leg Forward)",
@@ -1347,7 +1421,8 @@
         "Hold for 30-45 seconds, feeling the stretch in the right glute and the front of the left hip.",
         "Push back to hands and knees slowly to release."
       ],
-      "caution": "Go only as deep as your knees comfortably allow; avoid if you have knee pain or hip impingement."
+      "caution": "Go only as deep as your knees comfortably allow; avoid if you have knee pain or hip impingement.",
+      "id": "2ab5e9b4-3fb9-59b8-aeed-7c65e8fa0774"
     },
     {
       "name": "Pigeon Pose (Left Leg Forward)",
@@ -1365,7 +1440,8 @@
         "Hold for 30-45 seconds, feeling the stretch in the left glute and the front of the right hip.",
         "Push back to hands and knees slowly to release."
       ],
-      "caution": "Go only as deep as your knees comfortably allow; avoid if you have knee pain or hip impingement."
+      "caution": "Go only as deep as your knees comfortably allow; avoid if you have knee pain or hip impingement.",
+      "id": "b791042d-af1e-5ef9-afc0-28d365df7ecf"
     },
     {
       "name": "Left Kneeling Hip-Flexor Lunge",
@@ -1383,7 +1459,8 @@
         "Keep your torso upright rather than leaning forward.",
         "Hold for 30 seconds, then switch sides."
       ],
-      "caution": "Place padding under the kneeling knee if the floor is hard."
+      "caution": "Place padding under the kneeling knee if the floor is hard.",
+      "id": "f4ad5ef0-72b1-5fff-8a1e-c3c6770127c3"
     },
     {
       "name": "Right Kneeling Hip-Flexor Lunge",
@@ -1401,7 +1478,8 @@
         "Keep your torso upright rather than leaning forward.",
         "Hold for 30 seconds, then switch sides."
       ],
-      "caution": "Place padding under the kneeling knee if the floor is hard."
+      "caution": "Place padding under the kneeling knee if the floor is hard.",
+      "id": "a47a726e-c29c-5060-b017-9f9c3dc0ec7d"
     },
     {
       "name": "Left Low Lunge (Anjaneyasana)",
@@ -1419,7 +1497,8 @@
         "Raise your arms overhead and lean your hips gently forward.",
         "Hold for 20-30 seconds, feeling the stretch down the front of your left hip and thigh.",
         "Step back to release and switch sides."
-      ]
+      ],
+      "id": "5cece5c9-b9a3-5109-b0f4-cf923f900076"
     },
     {
       "name": "Right Low Lunge (Anjaneyasana)",
@@ -1437,7 +1516,8 @@
         "Raise your arms overhead and lean your hips gently forward.",
         "Hold for 20-30 seconds, feeling the stretch down the front of your right hip and thigh.",
         "Step back to release and switch sides."
-      ]
+      ],
+      "id": "db8847d5-d349-5ae7-9f65-793db3aec912"
     },
     {
       "name": "Left Standing Hip-Flexor Stretch (Foot Elevated)",
@@ -1455,7 +1535,8 @@
         "Hold for 20-30 seconds, feeling the stretch through the front of your left hip.",
         "Step down and switch sides."
       ],
-      "caution": "Hold onto a wall for balance and keep the surface low and stable."
+      "caution": "Hold onto a wall for balance and keep the surface low and stable.",
+      "id": "4c752212-8a55-50cf-8709-09c6d54782f5"
     },
     {
       "name": "Right Standing Hip-Flexor Stretch (Foot Elevated)",
@@ -1473,7 +1554,8 @@
         "Hold for 20-30 seconds, feeling the stretch through the front of your right hip.",
         "Step down and switch sides."
       ],
-      "caution": "Hold onto a wall for balance and keep the surface low and stable."
+      "caution": "Hold onto a wall for balance and keep the surface low and stable.",
+      "id": "ed5a7051-4cd5-507a-9ece-a54c2404c487"
     },
     {
       "name": "Seated Butterfly Stretch",
@@ -1491,7 +1573,8 @@
         "Hold for 30 seconds, breathing steadily.",
         "Release your legs slowly."
       ],
-      "caution": "Avoid forcing the knees down; let the stretch build gradually."
+      "caution": "Avoid forcing the knees down; let the stretch build gradually.",
+      "id": "3668b05c-2696-5ed1-8477-7d445b0cf5d7"
     },
     {
       "name": "Left Side Lunge (Groin Stretch)",
@@ -1508,7 +1591,8 @@
         "Keep your left foot flat and your chest lifted.",
         "Hold for 20-30 seconds, feeling the stretch along your left inner thigh.",
         "Push back to center and switch sides."
-      ]
+      ],
+      "id": "ef6331f8-da51-526e-9e79-727d4fe15223"
     },
     {
       "name": "Right Side Lunge (Groin Stretch)",
@@ -1525,7 +1609,8 @@
         "Keep your right foot flat and your chest lifted.",
         "Hold for 20-30 seconds, feeling the stretch along your right inner thigh.",
         "Push back to center and switch sides."
-      ]
+      ],
+      "id": "05c33162-a51e-569e-842b-cd955266f72c"
     },
     {
       "name": "Frog Stretch (Kneeling Groin Stretch)",
@@ -1543,7 +1628,8 @@
         "Hold for 20-30 seconds, keeping the sensation mild-to-moderate, never sharp.",
         "Slowly bring your knees back together to release."
       ],
-      "caution": "This is a deep stretch - ease in gradually and stop if you feel groin or hip pinching."
+      "caution": "This is a deep stretch - ease in gradually and stop if you feel groin or hip pinching.",
+      "id": "7a4c7fa0-c09d-5fca-a07f-7fbf49dee9e7"
     },
     {
       "name": "Wide-Legged Forward Fold",
@@ -1563,7 +1649,8 @@
         "Hold for 20-30 seconds, letting your inner thighs and hamstrings release.",
         "Walk your hands back and roll up slowly to stand."
       ],
-      "caution": "Bend your knees slightly if you feel strain in your lower back or hamstrings."
+      "caution": "Bend your knees slightly if you feel strain in your lower back or hamstrings.",
+      "id": "59fa58fe-0bf0-55af-83d4-6034062d4bce"
     },
     {
       "name": "Left Standing Quad Stretch",
@@ -1581,7 +1668,8 @@
         "Hold for 20-30 seconds, feeling the stretch along the front of your left thigh.",
         "Release and switch legs."
       ],
-      "caution": "Hold something for balance and avoid pulling the foot toward the glute if it strains the knee."
+      "caution": "Hold something for balance and avoid pulling the foot toward the glute if it strains the knee.",
+      "id": "f3b83d61-64af-5c21-98f3-fdfcb15c01cb"
     },
     {
       "name": "Right Standing Quad Stretch",
@@ -1599,7 +1687,8 @@
         "Hold for 20-30 seconds, feeling the stretch along the front of your right thigh.",
         "Release and switch legs."
       ],
-      "caution": "Hold something for balance and avoid pulling the foot toward the glute if it strains the knee."
+      "caution": "Hold something for balance and avoid pulling the foot toward the glute if it strains the knee.",
+      "id": "b6a9a3a8-1ffc-5a80-af03-3b85fd0c8952"
     },
     {
       "name": "Left Kneeling Quad Stretch",
@@ -1618,7 +1707,8 @@
         "Hold for 20-30 seconds, feeling the stretch through the front of your left thigh and hip.",
         "Release and switch sides."
       ],
-      "caution": "Place padding under the kneeling knee and avoid forcing the heel down if your knee is sensitive."
+      "caution": "Place padding under the kneeling knee and avoid forcing the heel down if your knee is sensitive.",
+      "id": "fdceaa89-1c23-5726-b7cf-331dae1fddb1"
     },
     {
       "name": "Right Kneeling Quad Stretch",
@@ -1637,7 +1727,8 @@
         "Hold for 20-30 seconds, feeling the stretch through the front of your right thigh and hip.",
         "Release and switch sides."
       ],
-      "caution": "Place padding under the kneeling knee and avoid forcing the heel down if your knee is sensitive."
+      "caution": "Place padding under the kneeling knee and avoid forcing the heel down if your knee is sensitive.",
+      "id": "95c6b2b3-2ecc-5869-8221-2f95a98058f2"
     },
     {
       "name": "Left Side-Lying Quad Stretch",
@@ -1654,7 +1745,8 @@
         "Gently draw your heel toward your glute, keeping your knees together.",
         "Hold for 20-30 seconds.",
         "Release and roll over to switch sides."
-      ]
+      ],
+      "id": "858cebdf-991d-5c25-920b-75f476a5ad5c"
     },
     {
       "name": "Right Side-Lying Quad Stretch",
@@ -1671,7 +1763,8 @@
         "Gently draw your heel toward your glute, keeping your knees together.",
         "Hold for 20-30 seconds.",
         "Release and roll over to switch sides."
-      ]
+      ],
+      "id": "64ae1405-ebb5-57c6-84ca-e7520675fb72"
     },
     {
       "name": "Standing Hamstring Stretch",
@@ -1690,7 +1783,8 @@
         "Hold for 20-30 seconds, letting your head and neck relax.",
         "Slowly roll back up to standing, one vertebra at a time."
       ],
-      "caution": "Roll up slowly to avoid dizziness, and keep a soft bend in the knees if your back is sensitive."
+      "caution": "Roll up slowly to avoid dizziness, and keep a soft bend in the knees if your back is sensitive.",
+      "id": "637d7399-1aee-55a3-918b-42ec7367afa3"
     },
     {
       "name": "Left Seated Hamstring Stretch",
@@ -1708,7 +1802,8 @@
         "Reach toward your left foot, keeping your back long rather than rounding hard.",
         "Hold for 20-30 seconds.",
         "Sit back up and switch legs."
-      ]
+      ],
+      "id": "269e29c1-48f4-56b4-b4d8-32ebb79d89ff"
     },
     {
       "name": "Right Seated Hamstring Stretch",
@@ -1726,7 +1821,8 @@
         "Reach toward your right foot, keeping your back long rather than rounding hard.",
         "Hold for 20-30 seconds.",
         "Sit back up and switch legs."
-      ]
+      ],
+      "id": "86bcea08-cc86-5ab6-b76e-97db9b758083"
     },
     {
       "name": "Left Supine Hamstring Stretch with Towel",
@@ -1743,7 +1839,8 @@
         "Gently pull the towel to draw your leg closer while keeping your lower back relaxed on the mat.",
         "Hold for 20-30 seconds, breathing steadily.",
         "Bend the knee to release and switch legs."
-      ]
+      ],
+      "id": "407138b9-2f06-5b80-9411-835374612ce5"
     },
     {
       "name": "Right Supine Hamstring Stretch with Towel",
@@ -1760,7 +1857,8 @@
         "Gently pull the towel to draw your leg closer while keeping your lower back relaxed on the mat.",
         "Hold for 20-30 seconds, breathing steadily.",
         "Bend the knee to release and switch legs."
-      ]
+      ],
+      "id": "37cc4f76-32b0-53f4-b4b1-90697aef7c97"
     },
     {
       "name": "Downward-Facing Dog",
@@ -1783,7 +1881,8 @@
         "Pedal your feet gently to stretch each calf and hamstring in turn.",
         "Hold for 20-30 seconds, then lower your knees to release."
       ],
-      "caution": "Bend the knees generously if your hamstrings are tight - a flat back matters more than straight legs."
+      "caution": "Bend the knees generously if your hamstrings are tight - a flat back matters more than straight legs.",
+      "id": "ce42d033-68ee-5f06-b552-96235237c751"
     },
     {
       "name": "Legs Up the Wall",
@@ -1801,7 +1900,8 @@
         "Let your arms rest out to the sides, palms up, and relax your shoulders.",
         "Breathe slowly and hold the full duration, letting your hamstrings and lower back release.",
         "Bend your knees and roll to one side to come out slowly."
-      ]
+      ],
+      "id": "23e9f91f-afee-51ac-a66a-764a527e747a"
     },
     {
       "name": "Calf Stretch at Wall (Straight-Knee)",
@@ -1818,7 +1918,8 @@
         "Step your right foot back into a lunge, keeping the back knee straight and heel flat on the floor.",
         "Lean toward the wall until you feel a stretch in the back of your right calf.",
         "Hold for 20-30 seconds, then switch legs."
-      ]
+      ],
+      "id": "4cfafc77-a187-565e-b72d-55345f56e691"
     },
     {
       "name": "Bent-Knee Wall Calf Stretch (Soleus)",
@@ -1835,7 +1936,8 @@
         "Step your right foot back, closer than the straight-knee version, and bend both knees slightly, keeping the back heel down.",
         "Lean gently into the wall, feeling the stretch lower in the calf near the Achilles.",
         "Hold for 20-30 seconds, then switch legs."
-      ]
+      ],
+      "id": "5e3c2914-5ab7-579a-aa6f-f89a0003608a"
     },
     {
       "name": "Left Seated Calf Stretch with Towel",
@@ -1852,7 +1954,8 @@
         "Keeping your knee straight, gently pull the towel to draw your toes back toward you.",
         "Hold for 20 seconds, feeling the stretch in your calf.",
         "Release and switch legs."
-      ]
+      ],
+      "id": "448bf1d9-1284-5c54-b151-6f75290d4df1"
     },
     {
       "name": "Right Seated Calf Stretch with Towel",
@@ -1869,7 +1972,8 @@
         "Keeping your knee straight, gently pull the towel to draw your toes back toward you.",
         "Hold for 20 seconds, feeling the stretch in your calf.",
         "Release and switch legs."
-      ]
+      ],
+      "id": "7b5db71f-b938-5df5-b8b3-b6877b7f7e2d"
     },
     {
       "name": "Kneeling Tibialis Stretch",
@@ -1887,7 +1991,8 @@
         "Lift your hips slightly to ease off if the stretch is too intense.",
         "Come forward off your heels to release."
       ],
-      "caution": "Keep this gentle if you have ankle or knee sensitivity; reduce how far you sit back."
+      "caution": "Keep this gentle if you have ankle or knee sensitivity; reduce how far you sit back.",
+      "id": "af65a8c2-dba3-58c2-892e-d4c9769f2479"
     },
     {
       "name": "Left Standing Tibialis Stretch (Toe Point)",
@@ -1904,7 +2009,8 @@
         "Gently press down through the top of the foot to deepen the stretch along your shin.",
         "Hold for 15-20 seconds.",
         "Release and switch sides."
-      ]
+      ],
+      "id": "d2be8052-d5e0-5799-b25e-912c62ef5e28"
     },
     {
       "name": "Right Standing Tibialis Stretch (Toe Point)",
@@ -1921,7 +2027,8 @@
         "Gently press down through the top of the foot to deepen the stretch along your shin.",
         "Hold for 15-20 seconds.",
         "Release and switch sides."
-      ]
+      ],
+      "id": "099c9efc-828a-5d4e-9d8d-9244a99eff17"
     },
     {
       "name": "Shin & Ankle Mobiliser",
@@ -1940,7 +2047,8 @@
         "Trace the letters of the alphabet in the air with your big toe, moving only at the ankle.",
         "Complete a few letters, then switch feet.",
         "This mobilises the ankle and gently stretches the muscles along the shin."
-      ]
+      ],
+      "id": "3d2d6f07-2542-5d17-ab93-cb3691c274bf"
     },
     {
       "name": "Ankle Alphabet",
@@ -1957,7 +2065,8 @@
         "Slowly trace the letters of the alphabet in the air using your big toe as the pointer.",
         "Move only at the ankle, keeping the motion slow and controlled.",
         "Switch feet and repeat."
-      ]
+      ],
+      "id": "fe4dea3b-f897-5d26-bd98-456d2a9f96ca"
     },
     {
       "name": "Wrist & Forearm Release",
@@ -1976,7 +2085,8 @@
         "Switch to stretch the fingers downward for the opposite side of the forearm.",
         "Shake out your hands, then interlace your fingers and stretch your arms forward, turning palms away from you.",
         "Repeat on the other arm."
-      ]
+      ],
+      "id": "9dd35509-f45a-590a-9e55-ba9d96dfd7f0"
     },
     {
       "name": "Sun Salutation Warm-Up",
@@ -1999,7 +2109,8 @@
         "Exhale, fold again, then inhale to rise back up to standing with arms overhead.",
         "Repeat the flow slowly 4-6 times, moving with your breath."
       ],
-      "caution": "Move slowly and keep knees soft throughout; skip deep folds if you have acute back pain."
+      "caution": "Move slowly and keep knees soft throughout; skip deep folds if you have acute back pain.",
+      "id": "a7bf77fe-c0a5-5671-b28b-63626369224c"
     },
     {
       "name": "Upper-Back Cat-Cow (Seated)",
@@ -2019,7 +2130,8 @@
         "Exhale, round your upper back, drop your chin toward your chest, and pull your knees together.",
         "Flow slowly between the two positions, following your breath.",
         "Repeat 8-10 times."
-      ]
+      ],
+      "id": "6426b9e2-2a5d-5d6e-b12c-bad771bf1ecd"
     },
     {
       "name": "Reverse Prayer Shoulder Mobiliser",
@@ -2039,7 +2151,8 @@
         "Hold for 15-20 seconds, breathing steadily.",
         "Release your arms and shake them out."
       ],
-      "caution": "Use the elbow-hold variation if the wrist position is uncomfortable."
+      "caution": "Use the elbow-hold variation if the wrist position is uncomfortable.",
+      "id": "946a4fd2-1a76-5d97-95e0-aebeedb0c8bd"
     },
     {
       "name": "Left Chin-to-Shoulder Diagonal Stretch",
@@ -2056,7 +2169,8 @@
         "Hold for 15-20 seconds, feeling the stretch along the back-left of your neck.",
         "Release slowly and return to neutral."
       ],
-      "caution": "Keep the pull light; skip if you have a neck injury or disc issue."
+      "caution": "Keep the pull light; skip if you have a neck injury or disc issue.",
+      "id": "69209589-1015-54cd-b89b-94b324601d25"
     },
     {
       "name": "Right Chin-to-Shoulder Diagonal Stretch",
@@ -2073,7 +2187,8 @@
         "Hold for 15-20 seconds, feeling the stretch along the back-right of your neck.",
         "Release slowly and return to neutral."
       ],
-      "caution": "Keep the pull light; skip if you have a neck injury or disc issue."
+      "caution": "Keep the pull light; skip if you have a neck injury or disc issue.",
+      "id": "ba2d9195-91ae-56b2-92db-d5ef842a20a0"
     },
     {
       "name": "Left Sleeper Stretch (Internal Rotation)",
@@ -2090,7 +2205,8 @@
         "Hold for 15-20 seconds, feeling the stretch in the back of your left shoulder.",
         "Release slowly and switch sides."
       ],
-      "caution": "Press gently - this targets a sensitive area of the shoulder. Stop if you feel pinching."
+      "caution": "Press gently - this targets a sensitive area of the shoulder. Stop if you feel pinching.",
+      "id": "04e53950-50e2-500a-b118-63b704538881"
     },
     {
       "name": "Right Sleeper Stretch (Internal Rotation)",
@@ -2107,7 +2223,8 @@
         "Hold for 15-20 seconds, feeling the stretch in the back of your right shoulder.",
         "Release slowly and switch sides."
       ],
-      "caution": "Press gently - this targets a sensitive area of the shoulder. Stop if you feel pinching."
+      "caution": "Press gently - this targets a sensitive area of the shoulder. Stop if you feel pinching.",
+      "id": "ae4f6735-3600-5207-a271-ba9139640cf3"
     },
     {
       "name": "Left Doorway External Rotation Stretch",
@@ -2123,7 +2240,8 @@
         "Keeping your elbow pinned to your side, rotate your body away from the frame.",
         "Hold for 15-20 seconds, feeling the stretch in the front-outer left shoulder.",
         "Rotate back to release and switch sides."
-      ]
+      ],
+      "id": "4e531138-59be-589f-9f92-e02806481373"
     },
     {
       "name": "Right Doorway External Rotation Stretch",
@@ -2139,7 +2257,8 @@
         "Keeping your elbow pinned to your side, rotate your body away from the frame.",
         "Hold for 15-20 seconds, feeling the stretch in the front-outer right shoulder.",
         "Rotate back to release and switch sides."
-      ]
+      ],
+      "id": "d033dc4e-2e38-5de1-8b56-d2b4f737f7b7"
     },
     {
       "name": "Left Overhead Shoulder Stretch with Strap",
@@ -2156,7 +2275,8 @@
         "Lead slightly with the left arm to bias the stretch toward the left shoulder.",
         "Hold for 15-20 seconds, then raise back overhead."
       ],
-      "caution": "Widen your grip on the strap if your shoulders feel tight or pinch."
+      "caution": "Widen your grip on the strap if your shoulders feel tight or pinch.",
+      "id": "ef81f46b-0d5d-5ad4-aa23-40290e8c0363"
     },
     {
       "name": "Right Overhead Shoulder Stretch with Strap",
@@ -2173,7 +2293,8 @@
         "Lead slightly with the right arm to bias the stretch toward the right shoulder.",
         "Hold for 15-20 seconds, then raise back overhead."
       ],
-      "caution": "Widen your grip on the strap if your shoulders feel tight or pinch."
+      "caution": "Widen your grip on the strap if your shoulders feel tight or pinch.",
+      "id": "52289fee-49a8-58ef-b3e6-50119759227e"
     },
     {
       "name": "Left Wall Corner Pec Stretch",
@@ -2190,7 +2311,8 @@
         "Hold for 20 seconds, feeling a deep, focused stretch across the left chest.",
         "Step back to release and switch sides."
       ],
-      "caution": "Don't push into shoulder pain. Avoid if you have a shoulder injury or instability."
+      "caution": "Don't push into shoulder pain. Avoid if you have a shoulder injury or instability.",
+      "id": "e06b4a3a-1a85-57f2-bd94-a41541bfe18f"
     },
     {
       "name": "Right Wall Corner Pec Stretch",
@@ -2207,7 +2329,8 @@
         "Hold for 20 seconds, feeling a deep, focused stretch across the right chest.",
         "Step back to release and switch sides."
       ],
-      "caution": "Don't push into shoulder pain. Avoid if you have a shoulder injury or instability."
+      "caution": "Don't push into shoulder pain. Avoid if you have a shoulder injury or instability.",
+      "id": "66fb424f-2da4-5971-97ec-eb43294199e4"
     },
     {
       "name": "Sphinx Pose",
@@ -2226,7 +2349,8 @@
         "Hold for 30 seconds, breathing steadily.",
         "Lower back down slowly to release."
       ],
-      "caution": "A gentler alternative to Cobra - stop if you feel sharp lower-back pain."
+      "caution": "A gentler alternative to Cobra - stop if you feel sharp lower-back pain.",
+      "id": "d7bd7336-fad3-53af-a962-e206b7471206"
     },
     {
       "name": "Standing Forward Fold (Ragdoll)",
@@ -2246,7 +2370,8 @@
         "Hold for 20-30 seconds, breathing into your lower back.",
         "Bend your knees more and roll up slowly, stacking one vertebra at a time."
       ],
-      "caution": "Roll up slowly to avoid dizziness."
+      "caution": "Roll up slowly to avoid dizziness.",
+      "id": "c0c71649-0fac-5f8b-b32f-35f3ef208e3e"
     },
     {
       "name": "Left Standing Reach-Through Twist",
@@ -2264,7 +2389,8 @@
         "Let your gaze follow your right hand as your torso twists.",
         "Hold for 10-15 seconds, then return to center.",
         "Repeat 3-4 times on this side before switching."
-      ]
+      ],
+      "id": "0cd20acc-c234-59f3-9c36-415582b8b12f"
     },
     {
       "name": "Right Standing Reach-Through Twist",
@@ -2282,7 +2408,8 @@
         "Let your gaze follow your left hand as your torso twists.",
         "Hold for 10-15 seconds, then return to center.",
         "Repeat 3-4 times on this side before switching."
-      ]
+      ],
+      "id": "5f20c7c5-815f-5b9d-a48a-045aacfb4638"
     },
     {
       "name": "Left Overhead Reach Lat Stretch with Strap",
@@ -2299,7 +2426,8 @@
         "Reach up and over to the right, leading with your left hip staying grounded.",
         "Feel the stretch travel down your left side and lat.",
         "Hold for 15-20 seconds, then return to center and switch sides."
-      ]
+      ],
+      "id": "99ceb9c2-8e02-5831-b40f-9f8ed0235388"
     },
     {
       "name": "Right Overhead Reach Lat Stretch with Strap",
@@ -2316,7 +2444,8 @@
         "Reach up and over to the left, leading with your right hip staying grounded.",
         "Feel the stretch travel down your right side and lat.",
         "Hold for 15-20 seconds, then return to center and switch sides."
-      ]
+      ],
+      "id": "05d2b699-bd18-526a-8fe7-f7fafb04d67c"
     },
     {
       "name": "Left Extended-Fingers Bicep Stretch",
@@ -2333,7 +2462,8 @@
         "Gently extend your wrist so your fingers point toward the floor behind you.",
         "Turn your head away from your left arm to add a gentle stretch through the whole limb.",
         "Hold for 15-20 seconds and switch sides."
-      ]
+      ],
+      "id": "7aef75e2-2df9-5488-b33f-5d97d2b82aed"
     },
     {
       "name": "Right Extended-Fingers Bicep Stretch",
@@ -2350,7 +2480,8 @@
         "Gently extend your wrist so your fingers point toward the floor behind you.",
         "Turn your head away from your right arm to add a gentle stretch through the whole limb.",
         "Hold for 15-20 seconds and switch sides."
-      ]
+      ],
+      "id": "faed889c-53e1-5fb2-9c03-5d63636a3f45"
     },
     {
       "name": "Left Behind-Head Strap-Assisted Triceps Stretch",
@@ -2368,7 +2499,8 @@
         "Gently walk your hands toward each other to increase the stretch through the left triceps.",
         "Hold for 15-20 seconds without forcing, then release and switch sides."
       ],
-      "caution": "Ease off if you feel shoulder pinching."
+      "caution": "Ease off if you feel shoulder pinching.",
+      "id": "cbd42227-4127-539d-9b31-4866a9f3f5e7"
     },
     {
       "name": "Right Behind-Head Strap-Assisted Triceps Stretch",
@@ -2386,7 +2518,8 @@
         "Gently walk your hands toward each other to increase the stretch through the right triceps.",
         "Hold for 15-20 seconds without forcing, then release and switch sides."
       ],
-      "caution": "Ease off if you feel shoulder pinching."
+      "caution": "Ease off if you feel shoulder pinching.",
+      "id": "0e22da6c-8daf-595f-ac28-116d5fd7daa6"
     },
     {
       "name": "Prayer Push Against Wall",
@@ -2402,7 +2535,8 @@
         "Keeping your palms flat, slowly lower your body slightly to increase the stretch under your forearms.",
         "Hold for 15-20 seconds.",
         "Release and shake your hands out."
-      ]
+      ],
+      "id": "b3f9e3af-762f-5acb-bb4f-7c04eaf04233"
     },
     {
       "name": "Left Standing Crossed-Leg Fold",
@@ -2419,7 +2553,8 @@
         "Feel the stretch settle into your left outer hip and glute.",
         "Hold for 15-20 seconds, then uncross and switch sides."
       ],
-      "caution": "Keep a soft bend in the knees and hold a wall nearby if you feel unsteady."
+      "caution": "Keep a soft bend in the knees and hold a wall nearby if you feel unsteady.",
+      "id": "fa99dc94-30de-5a86-b422-b9916b19bf85"
     },
     {
       "name": "Right Standing Crossed-Leg Fold",
@@ -2436,7 +2571,8 @@
         "Feel the stretch settle into your right outer hip and glute.",
         "Hold for 15-20 seconds, then uncross and switch sides."
       ],
-      "caution": "Keep a soft bend in the knees and hold a wall nearby if you feel unsteady."
+      "caution": "Keep a soft bend in the knees and hold a wall nearby if you feel unsteady.",
+      "id": "ec5ce892-d678-5390-8867-dcf61650f0a3"
     },
     {
       "name": "Left Couch Stretch",
@@ -2455,7 +2591,8 @@
         "Hold for 20-30 seconds, breathing steadily.",
         "Come out slowly and switch sides."
       ],
-      "caution": "This is an advanced, deep stretch - build up gradually and avoid if you have knee pain."
+      "caution": "This is an advanced, deep stretch - build up gradually and avoid if you have knee pain.",
+      "id": "eedb7704-036e-5f83-a538-0bec495c690d"
     },
     {
       "name": "Right Couch Stretch",
@@ -2474,7 +2611,8 @@
         "Hold for 20-30 seconds, breathing steadily.",
         "Come out slowly and switch sides."
       ],
-      "caution": "This is an advanced, deep stretch - build up gradually and avoid if you have knee pain."
+      "caution": "This is an advanced, deep stretch - build up gradually and avoid if you have knee pain.",
+      "id": "82f30448-391b-5e4c-b80e-807c0430f17d"
     },
     {
       "name": "Left Cossack Squat Stretch",
@@ -2493,7 +2631,8 @@
         "Push back through your left leg to center and switch sides.",
         "Repeat slowly for 4-6 controlled reps per side."
       ],
-      "caution": "Keep the movement controlled and shallow at first; skip if you have knee or groin pain."
+      "caution": "Keep the movement controlled and shallow at first; skip if you have knee or groin pain.",
+      "id": "98d4a5d9-274a-590c-bdc2-c4fcaeea5481"
     },
     {
       "name": "Right Cossack Squat Stretch",
@@ -2512,7 +2651,8 @@
         "Push back through your right leg to center and switch sides.",
         "Repeat slowly for 4-6 controlled reps per side."
       ],
-      "caution": "Keep the movement controlled and shallow at first; skip if you have knee or groin pain."
+      "caution": "Keep the movement controlled and shallow at first; skip if you have knee or groin pain.",
+      "id": "c3e75ae7-b2b2-5255-993a-897bce5f1f81"
     },
     {
       "name": "Left Reclined Quad Stretch with Strap",
@@ -2529,7 +2669,8 @@
         "Keep your knees stacked and your hips stable.",
         "Hold for 20 seconds, then release and switch sides."
       ],
-      "caution": "Useful if you can't reach your ankle directly; never force the range."
+      "caution": "Useful if you can't reach your ankle directly; never force the range.",
+      "id": "25d596f5-9bf6-5920-87e7-c5f45bac956f"
     },
     {
       "name": "Right Reclined Quad Stretch with Strap",
@@ -2546,7 +2687,8 @@
         "Keep your knees stacked and your hips stable.",
         "Hold for 20 seconds, then release and switch sides."
       ],
-      "caution": "Useful if you can't reach your ankle directly; never force the range."
+      "caution": "Useful if you can't reach your ankle directly; never force the range.",
+      "id": "3dd8b817-0c86-586f-8f48-968869449f9f"
     },
     {
       "name": "Left Doorframe Hamstring Stretch",
@@ -2563,7 +2705,8 @@
         "Keep your right leg extended flat through the doorway.",
         "Hold for 20-30 seconds, breathing steadily.",
         "Slide away from the frame to release and switch sides."
-      ]
+      ],
+      "id": "cb41baa6-2e3a-54e7-b29d-67e5e83b61f4"
     },
     {
       "name": "Right Doorframe Hamstring Stretch",
@@ -2580,7 +2723,8 @@
         "Keep your left leg extended flat through the doorway.",
         "Hold for 20-30 seconds, breathing steadily.",
         "Slide away from the frame to release and switch sides."
-      ]
+      ],
+      "id": "e74b058a-d3bf-53bb-a4f2-25012f534ea5"
     },
     {
       "name": "Runner's Calf Stretch (Staggered Stance)",
@@ -2597,7 +2741,8 @@
         "Lean into the wall, bending the front knee while keeping the back leg straight, to stretch the right calf.",
         "Hold for 20 seconds, then switch stance to stretch the left calf.",
         "Repeat 2 rounds per side."
-      ]
+      ],
+      "id": "18a22579-a7cf-57f9-8683-cd7624572be7"
     },
     {
       "name": "Left Toe Spread & Stretch",
@@ -2613,7 +2758,8 @@
         "Use your fingers to gently spread your left toes apart one at a time.",
         "Hold each toe for a couple of seconds, then gently flex and extend all toes together.",
         "Switch feet and repeat."
-      ]
+      ],
+      "id": "891263c8-0017-5c26-a760-61393090b126"
     },
     {
       "name": "Right Toe Spread & Stretch",
@@ -2629,7 +2775,8 @@
         "Use your fingers to gently spread your right toes apart one at a time.",
         "Hold each toe for a couple of seconds, then gently flex and extend all toes together.",
         "Switch feet and repeat."
-      ]
+      ],
+      "id": "a0bd2dc1-a47f-5dd0-9ce0-e9b11c4ca920"
     },
     {
       "name": "Left Finger Extension Stretch",
@@ -2645,7 +2792,8 @@
         "Use your right hand to gently pull each finger back individually toward your wrist.",
         "Hold each finger for 3-5 seconds.",
         "Shake out your hand and switch sides."
-      ]
+      ],
+      "id": "aec08e3f-882e-5265-8cf9-fe10dcd6a338"
     },
     {
       "name": "Right Finger Extension Stretch",
@@ -2661,7 +2809,8 @@
         "Use your left hand to gently pull each finger back individually toward your wrist.",
         "Hold each finger for 3-5 seconds.",
         "Shake out your hand and switch sides."
-      ]
+      ],
+      "id": "d685fa43-7816-5d33-8e90-6559bcb7ba9e"
     },
     {
       "name": "Equal Breathing (Sama Vritti)",
@@ -2679,7 +2828,8 @@
         "Exhale slowly through your nose for the same count of 4.",
         "Keep the inhale and exhale perfectly balanced in length and smoothness.",
         "Continue for the full duration, gradually increasing the count if it feels easy."
-      ]
+      ],
+      "id": "5c106616-a4c4-5941-87c0-5df4edfd3e83"
     },
     {
       "name": "Ocean Breath (Ujjayi)",
@@ -2697,7 +2847,8 @@
         "Exhale through your nose with the same gentle throat constriction, keeping the sound smooth and even.",
         "Keep both the inhale and exhale slow, quiet, and audible only to you.",
         "Continue for the full duration."
-      ]
+      ],
+      "id": "20973826-9df4-5d1b-8e26-72096f862e21"
     },
     {
       "name": "Physiological Sigh",
@@ -2714,7 +2865,8 @@
         "Take a deep inhale through your nose, then, without exhaling, sip in a second short extra inhale on top of it.",
         "Let out a long, slow, audible sigh through your mouth, releasing all the air.",
         "Pause briefly, then repeat 3-5 times to quickly calm your nervous system."
-      ]
+      ],
+      "id": "9eb02d66-cd72-57b6-80bc-be0cb249d5c4"
     }
   ]
 }
