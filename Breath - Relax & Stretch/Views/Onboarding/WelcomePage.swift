@@ -30,17 +30,18 @@ struct WelcomePage: View {
                 // Hero icon
                 Image(systemName: "lungs.fill")
                     .font(.system(size: 80))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Color.luminaPrimary)
                     .padding(.bottom, 28)
 
                 Text("Breath: Relax & Stretch")
-                    .font(.largeTitle.bold())
+                    .font(.luminaDisplay)
+                    .foregroundStyle(Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
 
                 Text("Your daily guide to breathing, stretching, and feeling better.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
+                    .font(.luminaBody)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
                     .padding(.top, 12)
@@ -58,8 +59,7 @@ struct WelcomePage: View {
                 }
                 .padding(.top, 40)
                 .padding(.horizontal, 20)
-                .background(RoundedRectangle(cornerRadius: 18)
-                    .fill(Color(.secondarySystemBackground)))
+                .luminaCard(padding: 0)
                 .padding(.horizontal, 20)
 
                 Spacer(minLength: 160)
@@ -80,16 +80,18 @@ struct FeatureRow: View {
         HStack(alignment: .center, spacing: 16) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Color.luminaPrimary)
                 .frame(width: 44, height: 44)
-                .background(Color.accentColor.opacity(0.12))
+                .background(Color.luminaMintTint)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.subheadline.bold())
+                Text(title)
+                    .font(.luminaCardTitle)
+                    .foregroundStyle(Color.luminaOnSurface)
                 Text(description)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
 
             Spacer()

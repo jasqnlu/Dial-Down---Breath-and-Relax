@@ -26,7 +26,7 @@ struct PaywallView: View {
 
                     if let errorMessage {
                         Text(errorMessage)
-                            .font(.caption)
+                            .font(.luminaCaption)
                             .foregroundStyle(.red)
                             .multilineTextAlignment(.center)
                     }
@@ -35,6 +35,7 @@ struct PaywallView: View {
                 }
                 .padding()
             }
+            .background(Color.luminaSurface.ignoresSafeArea())
             .navigationTitle("Breath Pro")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -56,12 +57,13 @@ struct PaywallView: View {
         VStack(spacing: 10) {
             Image(systemName: "figure.mind.and.body")
                 .font(.system(size: 48))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Color.luminaPrimary)
             Text("Unlock Breath Pro")
-                .font(.title2.bold())
+                .font(.luminaTitle)
+                .foregroundStyle(Color.luminaOnSurface)
             Text("Guided programs, bonus content, and the full experience.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.luminaSubheadline)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
                 .multilineTextAlignment(.center)
         }
     }
@@ -75,17 +77,17 @@ struct PaywallView: View {
             featureRow(icon: "heart.fill", text: "Support independent, ad-free development")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
+        .luminaCard()
     }
 
     private func featureRow(icon: String, text: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Color.luminaPrimary)
                 .frame(width: 24)
             Text(text)
-                .font(.subheadline)
+                .font(.luminaSubheadline)
+                .foregroundStyle(Color.luminaOnSurface)
             Spacer(minLength: 0)
         }
     }
@@ -132,20 +134,21 @@ struct PaywallView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(title)
-                            .font(.headline)
+                            .font(.luminaCardTitle)
+                            .foregroundStyle(Color.luminaOnSurface)
                         if let badge {
                             Text(badge)
-                                .font(.caption2.weight(.semibold))
+                                .font(.luminaCaption)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 3)
-                                .background(Color.accentColor.opacity(0.15), in: Capsule())
-                                .foregroundStyle(Color.accentColor)
+                                .background(Color.luminaOrange, in: Capsule())
+                                .foregroundStyle(Color.luminaOnOrange)
                         }
                     }
                     if let trialText = Self.trialDescription(for: product) {
                         Text("\(trialText) included")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .font(.luminaCaption)
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
                     }
                 }
 
@@ -153,17 +156,19 @@ struct PaywallView: View {
 
                 VStack(alignment: .trailing, spacing: 2) {
                     Text((product?.displayPrice ?? "—") + (period ?? ""))
-                        .font(.subheadline.weight(.semibold))
+                        .font(.luminaCardTitle)
+                        .foregroundStyle(Color.luminaOnSurface)
                 }
             }
             .padding()
             .background(
-                isSelected ? Color.accentColor.opacity(0.10) : Color(.secondarySystemBackground),
-                in: RoundedRectangle(cornerRadius: 14)
+                isSelected ? Color.luminaMintTint : Color.luminaCardFill,
+                in: RoundedRectangle(cornerRadius: 24, style: .continuous)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .strokeBorder(isSelected ? Color.luminaPrimary : Color.luminaOutline,
+                                  lineWidth: isSelected ? 2 : 1)
             )
         }
         .buttonStyle(.plain)
@@ -209,17 +214,13 @@ struct PaywallView: View {
         Button(action: purchaseSelected) {
             HStack {
                 if isPurchasing {
-                    ProgressView().tint(.white)
+                    ProgressView().tint(Color.luminaOnPrimary)
                 }
                 Text(ctaTitle)
-                    .font(.headline)
             }
             .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.accentColor)
-            .foregroundStyle(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 14))
         }
+        .buttonStyle(LuminaPillButtonStyle())
         .disabled(isPurchasing || selectedProduct == nil)
     }
 
@@ -262,19 +263,21 @@ struct PaywallView: View {
             Button("Restore Purchases") {
                 Task { await store.restorePurchases() }
             }
-            .font(.footnote)
+            .font(.luminaLabel)
+            .foregroundStyle(Color.luminaPrimary)
 
             Text("Cancel anytime in Settings. Subscriptions auto-renew until cancelled.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .font(.luminaCaption)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
                 .multilineTextAlignment(.center)
 
             HStack(spacing: 6) {
                 Button("Terms of Use") { legalDocument = .termsOfUse }
-                Text("·").foregroundStyle(.secondary)
+                Text("·").foregroundStyle(Color.luminaOnSurfaceVariant)
                 Button("Privacy Policy") { legalDocument = .privacyPolicy }
             }
-            .font(.caption2)
+            .font(.luminaCaption)
+            .foregroundStyle(Color.luminaPrimary)
         }
         .sheet(item: $legalDocument) { document in
             LegalDocumentView(document: document)

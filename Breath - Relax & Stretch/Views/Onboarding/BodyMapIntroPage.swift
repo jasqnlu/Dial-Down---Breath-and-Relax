@@ -19,19 +19,20 @@ struct BodyMapIntroPage: View {
 
                 Image(systemName: "figure.stand")
                     .font(.system(size: 90))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Color.luminaPrimary)
                     .padding(.bottom, 28)
 
                 Text("Your Personal Body Map")
-                    .font(.largeTitle.bold())
+                    .font(.luminaDisplay)
+                    .foregroundStyle(Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
 
                 Text(
                     "The Body Map is your interactive canvas. Tap any muscle group to instantly discover stretches and breathing exercises targeted to that area. Add annotations to track tension hotspots and watch them resolve as you build your practice."
                 )
-                .font(.body)
-                .foregroundStyle(.secondary)
+                .font(.luminaBody)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 28)
                 .padding(.top, 12)
@@ -41,18 +42,16 @@ struct BodyMapIntroPage: View {
                         HStack(alignment: .top, spacing: 14) {
                             Image(systemName: bullet.icon)
                                 .font(.title3)
-                                .foregroundStyle(Color.accentColor)
+                                .foregroundStyle(Color.luminaPrimary)
                                 .frame(width: 28)
 
                             Text(bullet.text)
-                                .font(.subheadline)
-                                .foregroundStyle(.primary)
+                                .font(.luminaSubheadline)
+                                .foregroundStyle(Color.luminaOnSurface)
                         }
                     }
                 }
-                .padding(20)
-                .background(RoundedRectangle(cornerRadius: 18)
-                    .fill(Color(.secondarySystemBackground)))
+                .luminaCard(padding: 20)
                 .padding(.horizontal, 20)
                 .padding(.top, 36)
 

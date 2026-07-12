@@ -26,13 +26,14 @@ struct GoalPickerPage: View {
                 Spacer(minLength: 60)
 
                 Text("What brings you here?")
-                    .font(.largeTitle.bold())
+                    .font(.luminaDisplay)
+                    .foregroundStyle(Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
 
                 Text("We'll personalise your experience.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
+                    .font(.luminaBody)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
                     .padding(.top, 10)
@@ -79,24 +80,23 @@ struct GoalCard: View {
             VStack(spacing: 14) {
                 Image(systemName: icon)
                     .font(.system(size: 36))
-                    .foregroundStyle(isSelected ? Color.accentColor : .secondary)
+                    .foregroundStyle(isSelected ? Color.luminaPrimary : Color.luminaOnSurfaceVariant)
 
                 Text(label)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(isSelected ? Color.accentColor : .primary)
+                    .font(.luminaCardTitle)
+                    .foregroundStyle(isSelected ? Color.luminaPrimary : Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 28)
             .background(
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(isSelected
-                          ? Color.accentColor.opacity(0.10)
-                          : Color(.secondarySystemBackground))
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(isSelected ? Color.luminaMintTint : Color.luminaCardFill)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 18)
-                    .strokeBorder(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .strokeBorder(isSelected ? Color.luminaPrimary : Color.luminaOutline,
+                                  lineWidth: isSelected ? 2 : 1)
             )
         }
         .buttonStyle(.plain)

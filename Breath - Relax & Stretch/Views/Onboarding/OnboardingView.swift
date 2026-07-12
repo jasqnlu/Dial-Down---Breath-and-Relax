@@ -68,21 +68,18 @@ struct OnboardingView: View {
 
                     Button(action: advancePage) {
                         HStack(spacing: 6) {
-                            Text("Next").fontWeight(.semibold)
+                            Text("Next")
                             Image(systemName: "arrow.right")
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.accentColor)
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
+                    .buttonStyle(LuminaPillButtonStyle())
                     .padding(.horizontal, 28)
                 }
                 .padding(.bottom, 44)
                 .background(
                     LinearGradient(
-                        colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
+                        colors: [Color.luminaSurface.opacity(0), Color.luminaSurface],
                         startPoint: .top, endPoint: .bottom
                     )
                     .frame(height: 160)
@@ -92,6 +89,7 @@ struct OnboardingView: View {
                 .transition(.opacity)
             }
         }
+        .background(Color.luminaSurface.ignoresSafeArea())
         .ignoresSafeArea(edges: .bottom)
     }
 
@@ -128,7 +126,7 @@ struct PageDotsIndicator: View {
         HStack(spacing: 8) {
             ForEach(0..<total, id: \.self) { index in
                 Capsule()
-                    .fill(index == current ? Color.accentColor : Color.secondary.opacity(0.35))
+                    .fill(index == current ? Color.luminaPrimary : Color.luminaOutline)
                     .frame(width: index == current ? 22 : 8, height: 8)
                     .animation(.spring(response: 0.3, dampingFraction: 0.7), value: current)
             }

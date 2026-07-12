@@ -13,16 +13,17 @@ struct NotificationsPage: View {
 
             Image(systemName: "bell.badge.fill")
                 .font(.system(size: 80))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Color.luminaPrimary)
                 .padding(.bottom, 28)
 
             Text("Stay on Track")
-                .font(.largeTitle.bold())
+                .font(.luminaDisplay)
+                .foregroundStyle(Color.luminaOnSurface)
                 .multilineTextAlignment(.center)
 
             Text("Get a gentle daily reminder to practise.")
-                .font(.body)
-                .foregroundStyle(.secondary)
+                .font(.luminaBody)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 36)
                 .padding(.top, 10)
@@ -33,31 +34,28 @@ struct NotificationsPage: View {
                 Button(action: requestNotificationsAndComplete) {
                     HStack(spacing: 8) {
                         if isRequesting {
-                            ProgressView().tint(.white)
+                            ProgressView().tint(Color.luminaOnPrimary)
                         } else {
                             Image(systemName: "bell.fill")
                         }
                         Text("Enable Reminders")
-                            .fontWeight(.semibold)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.accentColor)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
+                .buttonStyle(LuminaPillButtonStyle())
                 .disabled(isRequesting)
                 .padding(.horizontal, 28)
 
                 Button(action: onComplete) {
                     Text("Skip for Now")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.luminaSubheadline)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                         .padding(.vertical, 10)
                 }
             }
             .padding(.bottom, 52)
         }
+        .background(Color.luminaSurface.ignoresSafeArea())
     }
 
     private func requestNotificationsAndComplete() {

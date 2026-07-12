@@ -107,8 +107,9 @@ struct SessionPlayerView: View {
                     } label: {
                         Label("Browse Exercises", systemImage: "list.bullet")
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(LuminaPillButtonStyle())
                 }
+                .background(Color.luminaSurface.ignoresSafeArea())
                 .overlay(alignment: .topLeading) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark.circle.fill")
@@ -177,7 +178,7 @@ struct SessionPlayerView: View {
                 Button { dismiss() } label: {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                 }
                 Spacer()
                 Picker("Speed", selection: $durationMultiplier) {
@@ -190,12 +191,13 @@ struct SessionPlayerView: View {
                 .accessibilityLabel("Exercise duration speed")
                 Spacer()
                 Text("\(currentIndex + 1) / \(exercises.count)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
             .padding()
 
             ProgressView(value: sessionProgress)
+                .tint(Color.luminaPrimary)
                 .padding(.horizontal)
                 .animation(.linear(duration: 1), value: sessionProgress)
                 .accessibilityLabel("Session progress")
@@ -204,14 +206,15 @@ struct SessionPlayerView: View {
             Spacer()
 
             Text(exercise.name)
-                .font(.largeTitle)
-                .fontWeight(.bold)
+                .font(.luminaDisplay)
+                .foregroundStyle(Color.luminaOnSurface)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
             Text(exercise.type.rawValue)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.luminaLabel)
+                .textCase(.uppercase)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
                 .padding(.top, 4)
 
             Spacer()
@@ -229,6 +232,7 @@ struct SessionPlayerView: View {
             Text(timeString(secondsRemaining))
                 .font(.system(size: 64, weight: .thin, design: .rounded))
                 .monospacedDigit()
+                .foregroundStyle(Color.luminaOnSurface)
 
             Spacer()
 
@@ -239,7 +243,7 @@ struct SessionPlayerView: View {
                 } label: {
                     Image(systemName: "forward.skip")
                         .font(.title)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                 }
                 .accessibilityLabel("Skip exercise")
 
@@ -255,7 +259,8 @@ struct SessionPlayerView: View {
                 } label: {
                     Image(systemName: isPaused ? "play.circle.fill" : "pause.circle.fill")
                         .font(.system(size: 72))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Color.luminaPrimary)
+                        .shadow(color: Color.luminaPrimary.opacity(0.25), radius: 10, y: 5)
                 }
                 .accessibilityLabel(isPaused ? "Resume session" : "Pause session")
 
@@ -265,6 +270,7 @@ struct SessionPlayerView: View {
             }
             .padding(.bottom, 48)
         }
+        .background(Color.luminaSurface.ignoresSafeArea())
     }
 
     @ViewBuilder
@@ -272,15 +278,18 @@ struct SessionPlayerView: View {
         VStack(spacing: 24) {
             Spacer()
             Text("Get Ready")
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .font(.luminaLabel)
+                .textCase(.uppercase)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
             Text(name)
-                .font(.largeTitle.weight(.bold))
+                .font(.luminaHeadline)
+                .foregroundStyle(Color.luminaOnSurface)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
             Text("\(getReadyCount)")
                 .font(.system(size: 72, weight: .thin, design: .rounded))
                 .monospacedDigit()
+                .foregroundStyle(Color.luminaPrimary)
             // Surface the exercise's safety caution here — this is the only
             // screen every session-launch path passes through, so users who
             // start a Quick / For You / guided-program session (skipping the
@@ -291,9 +300,10 @@ struct SessionPlayerView: View {
             }
             Spacer()
             Button("Skip") { skipGetReady() }
-                .buttonStyle(.bordered)
+                .buttonStyle(LuminaPillButtonStyle(kind: .ghost, compact: true))
         }
         .padding()
+        .background(Color.luminaSurface.ignoresSafeArea())
         .contentShape(Rectangle())
         .onTapGesture { skipGetReady() }
         .accessibilityLabel("Get ready for \(name), starting in \(getReadyCount)")
@@ -486,17 +496,17 @@ struct BreathingCircle: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(Color.accentColor.opacity(0.08))
+                .fill(Color.luminaGradientStart.opacity(0.10))
                 .frame(width: 160, height: 160)
                 .scaleEffect(scale * 1.2)
 
             Circle()
-                .fill(Color.accentColor.opacity(0.15))
+                .fill(Color.luminaPrimary.opacity(0.15))
                 .frame(width: 160, height: 160)
                 .scaleEffect(scale)
 
             Circle()
-                .fill(Color.accentColor.opacity(0.25))
+                .fill(Color.luminaPrimary.opacity(0.25))
                 .frame(width: 100, height: 100)
         }
         .onAppear { animate() }

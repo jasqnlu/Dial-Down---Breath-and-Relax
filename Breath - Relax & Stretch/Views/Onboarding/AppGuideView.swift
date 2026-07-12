@@ -28,7 +28,7 @@ struct AppGuideView: View {
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .font(.title2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
                     .padding(20)
             }
             .accessibilityLabel("Skip tour")
@@ -40,22 +40,19 @@ struct AppGuideView: View {
                 Button(action: advance) {
                     HStack(spacing: 6) {
                         Text(currentPage == pages.count - 1 ? "Start Exploring" : "Next")
-                            .fontWeight(.semibold)
                         if currentPage < pages.count - 1 {
                             Image(systemName: "arrow.right")
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.accentColor)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
+                .buttonStyle(LuminaPillButtonStyle())
                 .padding(.horizontal, 28)
             }
             .padding(.bottom, 44)
             .allowsHitTesting(true)
         }
+        .background(Color.luminaSurface.ignoresSafeArea())
     }
 
     private func guidePage(_ page: AppGuidePage) -> some View {
@@ -64,18 +61,19 @@ struct AppGuideView: View {
 
             Image(systemName: page.icon)
                 .font(.system(size: 72))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Color.luminaPrimary)
                 .frame(width: 140, height: 140)
-                .background(Color.accentColor.opacity(0.12))
+                .background(Color.luminaMintTint)
                 .clipShape(Circle())
 
             Text(page.title)
-                .font(.largeTitle.bold())
+                .font(.luminaDisplay)
+                .foregroundStyle(Color.luminaOnSurface)
                 .multilineTextAlignment(.center)
 
             Text(page.description)
-                .font(.body)
-                .foregroundStyle(.secondary)
+                .font(.luminaBody)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 
