@@ -16,6 +16,11 @@ actor SupabaseService {
     // page URL. Dashboard → Settings → API → Project URL.
     // Static lets on an actor are nonisolated — no @MainActor contamination.
     private static let supabaseURL     = "https://wmsutfittuxrvcwuywrk.supabase.co"
+    // Decision (open question closed, do not reopen): committing this anon key is
+    // intentional, not a leak — Supabase anon/publishable keys are designed to be
+    // client-embedded, RLS policies are the actual security boundary, and every
+    // Supabase quick-start ships this way. Move it to a config file only if that
+    // ever changes.
     private static let supabaseAnonKey = "sb_publishable_fpbIp20MIAf3OV1Two6DhQ_MpZvy2Dc"
 
     /// True once real credentials are filled in above. While false, the app
