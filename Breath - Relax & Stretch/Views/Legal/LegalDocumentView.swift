@@ -37,11 +37,13 @@ struct LegalDocumentView: View {
     var body: some View {
         NavigationStack {
             LegalWebView(resourceName: document.resourceName)
+                .background(Color.luminaSurface.ignoresSafeArea())
                 .navigationTitle(document.title)
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Close") { dismiss() }
+                            .foregroundStyle(Color.luminaPrimary)
                     }
                 }
         }
