@@ -9,24 +9,26 @@ struct ForYouCard: View {
         VStack(alignment: .leading, spacing: 6) {
             Image(systemName: exercise.type == .breath ? "wind" : "figure.mind.and.body")
                 .font(.system(size: 40))
-                .foregroundStyle(Color.accentColor.opacity(0.55))
+                .foregroundStyle(Color.luminaPrimary.opacity(0.55))
                 .frame(maxWidth: .infinity)
                 .frame(height: 110)
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .background(Color.luminaMintTint)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 
             Text(exercise.name)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.primary)
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurface)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
 
             Text("\(exercise.durationFormatted) · \(exercise.type.rawValue)")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .font(.luminaCaption)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
         }
         .frame(width: 128)
+        .padding(8)
+        .luminaCard(padding: 0)
     }
 }
 

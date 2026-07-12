@@ -16,10 +16,14 @@ struct ContentPacksView: View {
 
             if let errorMessage {
                 Text(errorMessage)
-                    .font(.caption)
+                    .font(.luminaCaption)
                     .foregroundStyle(.red)
             }
         }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .background(Color.luminaSurface)
+        .listRowBackground(Color.luminaCardFill)
         .navigationTitle("Content Packs")
         .navigationBarTitleDisplayMode(.inline)
         .floatingTabBarClearance()
@@ -31,17 +35,17 @@ struct ContentPacksView: View {
             HStack(spacing: 12) {
                 Image(systemName: pack.icon)
                     .font(.title2)
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Color.luminaPrimary)
                     .frame(width: 32)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(pack.title).font(.headline)
+                    Text(pack.title).font(.luminaCardTitle).foregroundStyle(Color.luminaOnSurface)
                     Text(pack.summary)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                     Text("\(pack.exerciseNames.count) exercises included")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                 }
                 Spacer(minLength: 0)
             }
@@ -49,6 +53,7 @@ struct ContentPacksView: View {
 
             if store.owns(pack.id) {
                 Label("Unlocked", systemImage: "checkmark.circle.fill")
+                    .font(.luminaLabel)
                     .foregroundStyle(.green)
             } else if let product = store.product(for: pack.id) {
                 Button {
@@ -63,6 +68,7 @@ struct ContentPacksView: View {
                     }
                     .frame(maxWidth: .infinity)
                 }
+                .buttonStyle(LuminaPillButtonStyle(compact: true))
                 .disabled(purchasingID != nil)
             }
         }
