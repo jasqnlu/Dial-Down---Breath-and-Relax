@@ -11,8 +11,10 @@ struct AuthView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dismiss) private var dismiss
     @State private var showEmailAuth = false
-    @State private var appleError: String?
-    @State private var googleError: String?
+    /// Single error slot shared by both providers, so a new sign-in attempt
+    /// always replaces whatever error (if any) the other provider left behind
+    /// instead of the Apple/Google errors silently going stale next to each other.
+    @State private var authError: String?
     @State private var isBreathingIn = false
     @State private var legalDocument: LegalDocument?
 
@@ -79,12 +81,13 @@ struct AuthView: View {
                     } onCompletion: { result in
                         switch result {
                         case .success(let auth):
+                            authError = nil
                             if let credential = auth.credential as? ASAuthorizationAppleIDCredential {
                                 AuthManager.shared.handleAppleCredential(credential)
                             }
                         case .failure(let error):
                             if (error as NSError).code != ASAuthorizationError.canceled.rawValue {
-                                appleError = error.localizedDescription
+                                authError = error.localizedDescription
                             }
                         }
                     }
@@ -106,7 +109,7 @@ struct AuthView: View {
                         }
                     }
 
-                    if let err = appleError ?? googleError {
+                    if let err = authError {
                         Text(err)
                             .font(.luminaCaption)
                             .foregroundStyle(.red)
@@ -208,12 +211,12 @@ struct AuthView: View {
         guard let anchor = ASPresentationAnchor.currentWindow else { return }
         do {
             let user = try await GoogleAuthService.shared.signIn(presentationAnchor: anchor)
-            googleError = nil
+            authError = nil
             auth.handleGoogleSignIn(name: user.name, email: user.email)
         } catch GoogleAuthService.GoogleAuthError.cancelled {
             // User dismissed the sheet — not an error worth surfacing.
         } catch {
-            googleError = error.localizedDescription
+            authError = error.localizedDescription
         }
     }
 }
