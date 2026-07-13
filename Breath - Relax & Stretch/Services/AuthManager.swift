@@ -227,7 +227,24 @@ final class AuthManager: ObservableObject {
             if let ln = credential.fullName?.familyName { name += " \(ln)" }
         }
         if name.isEmpty { name = displayName.isEmpty ? "Apple User" : displayName }
-        let email = credential.email ?? userEmail
+
+        // Apple only returns `email` on the very first sign-in for a given app;
+        // every sign-in after that returns nil, so falling back to `userEmail`
+        // breaks after a reinstall (local state gone, nothing to fall back to).
+        // credential.user is Apple's stable per-app identifier and is returned
+        // on every sign-in, so we use it as a Keychain key to recover the email
+        // Apple gave us the first time.
+        let appleEmailAccount = "apple-email:\(credential.user)"
+        let email: String
+        if let freshEmail = credential.email, !freshEmail.isEmpty {
+            email = freshEmail
+            keychainSave(account: appleEmailAccount, value: freshEmail)
+        } else if let recoveredEmail = keychainLoadCredential(account: appleEmailAccount) {
+            email = recoveredEmail
+        } else {
+            email = userEmail
+        }
+
         persist(name: name, email: email, providerVal: .apple)
 
         // Exchange the Apple identity token for a Supabase Auth session so
