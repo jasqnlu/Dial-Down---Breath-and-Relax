@@ -73,6 +73,7 @@ struct BreathingView: View {
                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 }
             }
+            .background(Color.luminaSurface.ignoresSafeArea())
             .navigationTitle("Breathing")
             // Every other tab root (Body Map, Exercises, Profile) uses .inline;
             // this was the one outlier at .large — aligned per the page-title

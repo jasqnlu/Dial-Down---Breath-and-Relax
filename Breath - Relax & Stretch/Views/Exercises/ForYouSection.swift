@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 // MARK: - Exercise card
 
@@ -29,6 +30,109 @@ struct ForYouCard: View {
         .frame(width: 128)
         .padding(8)
         .luminaCard(padding: 0)
+    }
+}
+
+// MARK: - Recommended carousel
+//
+// A rotating carousel of specific exercises drawn from the user's chosen
+// focus areas (picked at signup), each card tagged with its category. Auto-
+// advances unless Reduce Motion is on, and can be swiped by hand.
+
+struct RecommendedCarousel: View {
+    let items: [RecommendedExercise]
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var index = 0
+    private let advance = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        VStack(spacing: 10) {
+            TabView(selection: $index) {
+                ForEach(Array(items.enumerated()), id: \.element.id) { offset, item in
+                    NavigationLink(destination: ExerciseDetailView(exercise: item.exercise)) {
+                        RecommendedCard(item: item)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 2)
+                    .tag(offset)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: 132)
+
+            if items.count > 1 {
+                HStack(spacing: 6) {
+                    ForEach(items.indices, id: \.self) { i in
+                        Capsule()
+                            .fill(i == index ? Color.luminaPrimary : Color.luminaOutline)
+                            .frame(width: i == index ? 18 : 6, height: 6)
+                    }
+                }
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: index)
+            }
+        }
+        .onReceive(advance) { _ in
+            guard !reduceMotion, items.count > 1 else { return }
+            withAnimation(.easeInOut(duration: 0.5)) {
+                index = (index + 1) % items.count
+            }
+        }
+        .onChange(of: items.count) { _, newCount in
+            if index >= newCount { index = 0 }
+        }
+    }
+}
+
+private struct RecommendedCard: View {
+    let item: RecommendedExercise
+
+    private var icon: String {
+        item.exercise.type == .breath ? "wind" : "figure.mind.and.body"
+    }
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: icon)
+                .font(.system(size: 30))
+                .foregroundStyle(item.category.accentColor)
+                .frame(width: 60, height: 60)
+                .background(
+                    RoundedRectangle(cornerRadius: LuminaRadius.chip, style: .continuous)
+                        .fill(item.category.accentColor.opacity(0.16))
+                )
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(item.category.rawValue.uppercased())
+                    .font(.luminaCaption)
+                    .foregroundStyle(item.category.accentColor)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(item.category.accentColor.opacity(0.14), in: Capsule())
+
+                Text(item.exercise.name)
+                    .font(.luminaCardTitle)
+                    .foregroundStyle(Color.luminaOnSurface)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text("\(item.exercise.durationFormatted) · \(item.exercise.type.rawValue)")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
+
+            Spacer(minLength: 0)
+
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .luminaCard(padding: 14)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(item.category.rawValue): \(item.exercise.name), \(item.exercise.durationFormatted)")
     }
 }
 

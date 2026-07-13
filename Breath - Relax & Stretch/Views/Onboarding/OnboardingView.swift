@@ -35,9 +35,10 @@ struct OnboardingGate<Content: View>: View {
 struct OnboardingView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @AppStorage("onboardingGoals")        private var onboardingGoals = ""
+    @AppStorage("onboardingAreas")        private var onboardingAreas = ""
 
     @State private var currentPage = 0
-    private let totalPages = 5
+    private let totalPages = 6
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -51,18 +52,21 @@ struct OnboardingView: View {
                 GoalPickerPage(selectedGoals: onboardingGoalsBinding)
                     .tag(2)
 
-                BodyMapIntroPage()
+                FocusAreaPickerPage(selectedAreas: onboardingAreasBinding)
                     .tag(3)
 
-                NotificationsPage(onComplete: completeOnboarding)
+                BodyMapIntroPage()
                     .tag(4)
+
+                NotificationsPage(onComplete: completeOnboarding)
+                    .tag(5)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.easeInOut, value: currentPage)
 
-            // Bottom overlay: dots + Next button (pages 0-3);
-            // page 4 provides its own action buttons.
-            if currentPage < 4 {
+            // Bottom overlay: dots + Next button (pages 0-4);
+            // the last page provides its own action buttons.
+            if currentPage < totalPages - 1 {
                 VStack(spacing: 20) {
                     PageDotsIndicator(total: totalPages, current: currentPage)
 
@@ -104,6 +108,19 @@ struct OnboardingView: View {
                 return Set(trimmed.split(separator: ",").map(String.init))
             },
             set: { onboardingGoals = $0.sorted().joined(separator: ",") }
+        )
+    }
+
+    /// Converts comma-separated `onboardingAreas` AppStorage string ↔ Set of
+    /// `ExerciseCategory` raw values (the Focus-area picker's selection).
+    private var onboardingAreasBinding: Binding<Set<String>> {
+        Binding(
+            get: {
+                let trimmed = onboardingAreas.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.isEmpty else { return [] }
+                return Set(trimmed.split(separator: ",").map(String.init))
+            },
+            set: { onboardingAreas = $0.sorted().joined(separator: ",") }
         )
     }
 

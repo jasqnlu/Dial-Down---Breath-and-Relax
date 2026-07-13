@@ -15,6 +15,7 @@ struct TodayView: View {
     @Query private var exercises: [Exercise]
     @Query private var profiles: [UserProfile]
     @AppStorage("onboardingGoals") private var goalsStr = ""
+    @AppStorage("onboardingAreas") private var onboardingAreas = ""
     @AppStorage("showStreakEmoji") private var showStreakEmoji = true
 
     @State private var showingSession = false
@@ -72,6 +73,16 @@ struct TodayView: View {
         GoalMeta.recommend(from: exercises, activeGoalIDs: activeGoalIDs, limit: 8)
     }
 
+    /// Personalised recommendations for the rotating carousel, keyed off the
+    /// focus areas the user picked at signup (`onboardingAreas`).
+    private var recommendedItems: [RecommendedExercise] {
+        ExerciseCategory.recommendedExercises(
+            from: exercises,
+            areas: ExerciseCategory.areas(from: onboardingAreas),
+            limit: 10
+        )
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -80,6 +91,7 @@ struct TodayView: View {
                     heroCard
                     statRow
                     programCard
+                    recommendedSection
                     forYouSection
                 }
                 .padding(.horizontal, 20)
@@ -289,6 +301,20 @@ struct TodayView: View {
             .luminaCard(padding: 14)
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Recommended (rotating carousel)
+
+    @ViewBuilder
+    private var recommendedSection: some View {
+        let items = recommendedItems
+        if !items.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Recommended for You")
+                    .font(.luminaTitle)
+                RecommendedCarousel(items: items)
+            }
+        }
     }
 
     // MARK: - For You

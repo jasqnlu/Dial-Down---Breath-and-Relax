@@ -55,17 +55,34 @@ struct ExerciseGraphView: View {
 
             ZStack(alignment: .topTrailing) {
                 ZStack {
+                    // Background gesture-catcher, BEHIND the nodes: it carries
+                    // the rectangular hit area the pan/pinch gestures need, so
+                    // the container itself no longer claims a full-rectangle hit
+                    // shape. Previously `.contentShape(Rectangle())` on the
+                    // container routed every in-bounds tap to the container's
+                    // gesture recognizers, so taps never reached the satellite
+                    // group Buttons drawn within it (the General Chest bug).
+                    Rectangle()
+                        .fill(Color.luminaSurface.opacity(0.001))
+                        .contentShape(Rectangle())
+                        // Double-tap-to-reset lives HERE, on the background,
+                        // rather than on the whole container. As a container
+                        // gesture its double-tap recognizer competed with — and
+                        // swallowed — single taps on the satellite group Buttons
+                        // (the General Chest bug). Scoped to empty space, it no
+                        // longer touches node taps; the reset button in
+                        // zoomControls covers taps that land on a node.
+                        .gesture(resetGesture)
+
                     ForEach(Array(categories.enumerated()), id: \.element) { pair in
                         categoryLayer(pair: pair, categories: categories, center: center, scale: scale)
                     }
                 }
                 .frame(width: size.width, height: size.height)
-                .contentShape(Rectangle())
                 .scaleEffect(zoomScale, anchor: .center)
                 .offset(panOffset)
                 .gesture(magnifyGesture(center: center, scale: scale))
                 .simultaneousGesture(panGesture)
-                .simultaneousGesture(resetGesture)
                 .animation(graphAnimation, value: focusedCategory)
 
                 zoomControls
@@ -113,28 +130,46 @@ struct ExerciseGraphView: View {
                                                         ringSpacing: ringConfiguration.ringSpacing,
                                                         perRing: ringConfiguration.perRing)
             let labelOpacity = GraphLayout.labelOpacity(zoomScale: zoomScale, isFocused: isFocused)
+
+            // Draw the category node FIRST (underneath) so the group satellites
+            // that follow sit on top of it and win hit-testing. Previously the
+            // category node was drawn last: its `.position`-expanded tap target
+            // covered the whole canvas and swallowed every satellite tap, so a
+            // focused group like "General Chest" opened nothing.
+            CategoryNode(category: category, count: categoryExercises.count, isFocused: isFocused)
+                .contentShape(Circle())
+                .onTapGesture { focus(on: category, index: index, categories: categories, center: center, scale: scale) }
+                .position(x: center.x + normalized.x * scale * categoryRadius,
+                          y: center.y + normalized.y * scale * categoryRadius)
+
             ForEach(Array(zip(groups, positions).enumerated()), id: \.offset) { pair in
                 let group = pair.element.0
                 let exNormalized = pair.element.1
-                ExerciseGroupNode(
-                    group: group,
-                    color: category.accentColor,
-                    isFocused: isFocused,
-                    labelOpacity: labelOpacity
-                )
+                // A Button, not `.onTapGesture`: inside this pinch/pan/double-tap
+                // canvas the satellites' tap gestures arbitrated unreliably
+                // against the container's simultaneous drag. Button hit-testing
+                // wins that arbitration; drawn last, it also sits on top.
+                Button {
+                    selectedGroup = SelectedExerciseGraphGroup(category: category, group: group)
+                } label: {
+                    ExerciseGroupNode(
+                        group: group,
+                        color: category.accentColor,
+                        isFocused: isFocused,
+                        labelOpacity: labelOpacity
+                    )
+                }
+                .buttonStyle(.plain)
+                .contentShape(Circle())
+                // `.disabled(!isFocused)` rather than `.allowsHitTesting`: the
+                // latter, applied before `.position` inside the scaled/offset
+                // canvas, left the button's hit region misaligned from where it
+                // drew, so taps on a focused satellite ("General Chest") missed.
+                .disabled(!isFocused)
+                .transition(.opacity.combined(with: .scale(scale: 0.6)))
                 .position(x: center.x + exNormalized.x * scale,
                           y: center.y + exNormalized.y * scale)
-                .allowsHitTesting(isFocused)
-                .transition(.opacity.combined(with: .scale(scale: 0.6)))
-                .onTapGesture {
-                    selectedGroup = SelectedExerciseGraphGroup(category: category, group: group)
-                }
             }
-
-            CategoryNode(category: category, count: categoryExercises.count, isFocused: isFocused)
-                .position(x: center.x + normalized.x * scale * categoryRadius,
-                          y: center.y + normalized.y * scale * categoryRadius)
-                .onTapGesture { focus(on: category, index: index, categories: categories, center: center, scale: scale) }
         }
     }
 
@@ -190,7 +225,11 @@ struct ExerciseGraphView: View {
     }
 
     private var panGesture: some Gesture {
-        DragGesture()
+        // A minimum distance so a stationary tap on a satellite node isn't
+        // claimed by this (simultaneous) pan drag. With the default 0-distance
+        // drag, taps on the small satellites arbitrated unreliably against the
+        // pan and often never reached the node's tap gesture.
+        DragGesture(minimumDistance: 10)
             .onChanged { value in
                 panOffset = CGSize(width: lastPan.width + value.translation.width,
                                     height: lastPan.height + value.translation.height)

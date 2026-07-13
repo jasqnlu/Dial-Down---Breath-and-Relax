@@ -69,6 +69,53 @@ struct MarkedAreasBanner: View {
     }
 }
 
+// MARK: - Region → exercise resolution
+//
+// Marked regions use the body map's COARSE names ("Core", "Left Arm", "Hips"),
+// but exercises target the FINE muscle-group names the seed data uses ("Abs",
+// "Left Biceps", "Left Hip Flexors"). The old code matched the two with a naive
+// bidirectional substring test, so coarse regions that don't share a substring
+// with any muscle name ("Core"↛"Abs", "Left Arm"↛"Left Biceps") silently
+// matched nothing.
+//
+// This resolver instead translates coarse → fine via `MuscleGroup.migrate`
+// (the same mapping the rest of the app uses), matches exactly, and then adds a
+// same-category fallback: exercises in the marked region's `ExerciseCategory`
+// that don't directly hit the muscle group. So a region with few specific
+// stretches surfaces related ones from the same area instead of nothing — and
+// never the whole catalog.
+struct RegionExerciseResolver {
+    /// Exercises that directly target one of the marked muscle groups.
+    let direct: [Exercise]
+    /// Other exercises in the same body-area category (the "related" fallback).
+    let related: [Exercise]
+
+    init(regions: [String], exercises: [Exercise]) {
+        // Expand fingers/toes to their parent (no "ring finger" stretches, but
+        // hand/forearm ones), then migrate coarse region names to fine ones.
+        let expanded = regions.flatMap { exerciseSearchTerms(for: $0) }
+        let fineNames = MuscleGroup.migrate(expanded)
+        let fineSet = Set(fineNames.map { $0.lowercased() })
+        let categories = ExerciseCategory.categories(for: fineNames)
+
+        var directList: [Exercise] = []
+        var relatedList: [Exercise] = []
+        for exercise in exercises {
+            let targets = exercise.targetBodyParts
+            if targets.contains(where: { fineSet.contains($0.lowercased()) }) {
+                directList.append(exercise)
+            } else if !categories.isEmpty,
+                      !categories.isDisjoint(with: ExerciseCategory.categories(for: targets)) {
+                relatedList.append(exercise)
+            }
+        }
+        self.direct = directList.sorted { $0.name < $1.name }
+        self.related = relatedList.sorted { $0.name < $1.name }
+    }
+
+    var isEmpty: Bool { direct.isEmpty && related.isEmpty }
+}
+
 // MARK: - Filtered exercise list for one or more body parts
 
 struct BodyPartExercisesView: View {
@@ -78,26 +125,8 @@ struct BodyPartExercisesView: View {
     init(bodyPart: String)        { self.bodyParts = [bodyPart] }
     init(bodyParts: [String])     { self.bodyParts = bodyParts }
 
-    /// Finger/toe marks expand to their parent so they still surface useful
-    /// exercises (there are no "ring finger" stretches, but hand/forearm ones).
-    private var searchParts: [String] {
-        var terms = Set<String>()
-        for part in bodyParts {
-            for t in exerciseSearchTerms(for: part) { terms.insert(t) }
-        }
-        return Array(terms)
-    }
-
-    private var filtered: [Exercise] {
-        let parts = searchParts
-        return allExercises.filter { ex in
-            ex.targetBodyParts.contains { target in
-                parts.contains { part in
-                    target.localizedCaseInsensitiveContains(part) ||
-                    part.localizedCaseInsensitiveContains(target)
-                }
-            }
-        }
+    private var resolver: RegionExerciseResolver {
+        RegionExerciseResolver(regions: bodyParts, exercises: allExercises)
     }
 
     private var navTitle: String {
@@ -105,8 +134,9 @@ struct BodyPartExercisesView: View {
     }
 
     var body: some View {
-        Group {
-            if filtered.isEmpty {
+        let resolver = resolver
+        return Group {
+            if resolver.isEmpty {
                 ContentUnavailableView(
                     "No Exercises Found",
                     systemImage: "figure.mind.and.body",
@@ -123,14 +153,23 @@ struct BodyPartExercisesView: View {
                             Text("Targeting")
                         }
                     }
-                    Section {
-                        ForEach(filtered, id: \.uuid) { exercise in
-                            NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
-                                ExerciseRow(exercise: exercise)
-                            }
+                    if !resolver.direct.isEmpty {
+                        Section {
+                            exerciseRows(resolver.direct)
+                        } header: {
+                            Text("\(resolver.direct.count) exercise\(resolver.direct.count == 1 ? "" : "s")")
                         }
-                    } header: {
-                        Text("\(filtered.count) exercise\(filtered.count == 1 ? "" : "s")")
+                    }
+                    if !resolver.related.isEmpty {
+                        Section {
+                            exerciseRows(resolver.related)
+                        } header: {
+                            Text("More from this area")
+                        } footer: {
+                            Text(resolver.direct.isEmpty
+                                 ? "No exercises target this exact spot yet — here are related ones for the same area."
+                                 : "Other exercises that work the same area.")
+                        }
                     }
                 }
             }
@@ -138,6 +177,15 @@ struct BodyPartExercisesView: View {
         .navigationTitle(navTitle)
         .navigationBarTitleDisplayMode(.inline)
         .floatingTabBarClearance()
+    }
+
+    @ViewBuilder
+    private func exerciseRows(_ exercises: [Exercise]) -> some View {
+        ForEach(exercises, id: \.uuid) { exercise in
+            NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
+                ExerciseRow(exercise: exercise)
+            }
+        }
     }
 
     private var emptyDescription: String {

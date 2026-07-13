@@ -68,3 +68,80 @@ struct ExerciseGraphGroupingTests {
         )
     }
 }
+
+// MARK: - Region → exercise resolution (task C)
+
+struct RegionExerciseResolverTests {
+    /// The regression: a coarse region name ("Core") must resolve to the fine
+    /// muscle it maps to ("Abs") instead of matching nothing.
+    @Test func coarseRegionResolvesToItsMuscleGroup() {
+        let abs = makeExercise(name: "Ab Crunch", targetBodyParts: ["Abs"])
+        let oblique = makeExercise(name: "Oblique Twist", targetBodyParts: ["Left Obliques"])
+        let bicep = makeExercise(name: "Bicep Stretch", targetBodyParts: ["Left Biceps"])
+
+        let resolver = RegionExerciseResolver(regions: ["Core"], exercises: [abs, oblique, bicep])
+
+        #expect(resolver.direct.map(\.name) == ["Ab Crunch"])
+        // Same category (Core) but different muscle → related fallback.
+        #expect(resolver.related.map(\.name) == ["Oblique Twist"])
+        // Never the whole catalog: an arms exercise is excluded entirely.
+        #expect(!(resolver.direct + resolver.related).contains { $0.name == "Bicep Stretch" })
+    }
+
+    /// When nothing targets the exact muscle, the same-category fallback still
+    /// surfaces related exercises instead of an empty screen.
+    @Test func fallsBackToSameCategoryWhenNoDirectMatch() {
+        let forearm = makeExercise(name: "Forearm Stretch", targetBodyParts: ["Left Forearm"])
+        let leg = makeExercise(name: "Quad Stretch", targetBodyParts: ["Left Quadriceps"])
+
+        // "Left Arm" migrates to biceps/triceps — no exercise targets those,
+        // but the forearm one shares the Arms category.
+        let resolver = RegionExerciseResolver(regions: ["Left Arm"], exercises: [forearm, leg])
+
+        #expect(resolver.direct.isEmpty)
+        #expect(resolver.related.map(\.name) == ["Forearm Stretch"])
+    }
+
+    private func makeExercise(name: String, targetBodyParts: [String]) -> Exercise {
+        Exercise(name: name, type: .stretch, targetBodyParts: targetBodyParts,
+                 durationSeconds: 60, difficulty: 1, instructions: [])
+    }
+}
+
+// MARK: - Focus-area recommendations (task A)
+
+struct FocusAreaRecommendationTests {
+    @Test func parsesStoredAreas() {
+        #expect(ExerciseCategory.areas(from: "Chest,Legs") == [.chest, .legs])
+        #expect(ExerciseCategory.areas(from: "") == [])
+    }
+
+    @Test func recommendsOnlyFromChosenAreasTaggedWithCategory() {
+        let chest = makeExercise(name: "Chest Opener", targetBodyParts: ["Left Chest"])
+        let leg = makeExercise(name: "Quad Stretch", targetBodyParts: ["Left Quadriceps"])
+        let arm = makeExercise(name: "Bicep Stretch", targetBodyParts: ["Left Biceps"])
+
+        let recs = ExerciseCategory.recommendedExercises(
+            from: [chest, leg, arm], areas: [.chest, .legs], limit: 10)
+
+        #expect(recs.count == 2)
+        #expect(recs.contains { $0.exercise.name == "Chest Opener" && $0.category == .chest })
+        #expect(recs.contains { $0.exercise.name == "Quad Stretch" && $0.category == .legs })
+        #expect(!recs.contains { $0.exercise.name == "Bicep Stretch" })
+    }
+
+    @Test func emptyAreasFallBackToEveryCategory() {
+        let chest = makeExercise(name: "Chest Opener", targetBodyParts: ["Left Chest"])
+        let arm = makeExercise(name: "Bicep Stretch", targetBodyParts: ["Left Biceps"])
+
+        let recs = ExerciseCategory.recommendedExercises(
+            from: [chest, arm], areas: [], limit: 10)
+
+        #expect(recs.count == 2)
+    }
+
+    private func makeExercise(name: String, targetBodyParts: [String]) -> Exercise {
+        Exercise(name: name, type: .stretch, targetBodyParts: targetBodyParts,
+                 durationSeconds: 60, difficulty: 1, instructions: [])
+    }
+}
