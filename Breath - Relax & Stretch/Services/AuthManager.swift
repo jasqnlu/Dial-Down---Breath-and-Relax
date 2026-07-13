@@ -238,8 +238,8 @@ final class AuthManager: ObservableObject {
         let email: String
         if let freshEmail = credential.email, !freshEmail.isEmpty {
             email = freshEmail
-            keychainSave(account: appleEmailAccount, value: freshEmail)
-        } else if let recoveredEmail = keychainLoadCredential(account: appleEmailAccount) {
+            keychain.save(account: appleEmailAccount, value: freshEmail)
+        } else if let recoveredEmail = keychain.loadCredential(account: appleEmailAccount) {
             email = recoveredEmail
         } else {
             email = userEmail
