@@ -143,6 +143,7 @@ struct BreathRelaxStretchApp: App {
             // the seed only marks the one-side-at-a-time exercises false.
             let isBilateral = raw["isBilateral"] as? Bool ?? true
             let exercise = Exercise(
+                uuid: Exercise.stableSeedUUID(forName: name),
                 name: name, type: type, targetBodyParts: parts,
                 durationSeconds: duration, difficulty: difficulty,
                 instructions: instructions, mediaURL: mediaURL, caution: caution,
