@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import Combine
 import StoreKit
+import UIKit
 
 // BreathingPattern and BreathPhase enums live in BreathingModels.swift
 
@@ -17,6 +18,7 @@ struct BreathingView: View {
     @State private var phaseSecondsLeft: Int             = 0
     @State private var round:            Int             = 0
     @State private var totalRounds:      Int             = 5
+    @State private var activeRunPlan:    BreathingRunPlan = .session(selectedRounds: 5)
     @State private var sessionStarted:   Date            = Date()
     @State private var showCompletion:   Bool            = false
     @State private var showingCustomEditor: Bool         = false
@@ -28,6 +30,7 @@ struct BreathingView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.requestReview) private var requestReview
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // Wall-clock end of the current phase (inhale/hold/exhale/hold2).
     // `phaseSecondsLeft` is a display value derived from this each tick, so
@@ -39,8 +42,8 @@ struct BreathingView: View {
     @AppStorage("totalSessionsCompleted") private var totalSessionsCompleted = 0
     @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
     @AppStorage("hasSeenInitialPaywall") private var hasSeenInitialPaywall = false
+    @AppStorage("pendingInitialPaywall") private var pendingInitialPaywall = false
     @State private var shouldRequestReview = false
-    @State private var shouldShowPaywall = false
 
     // Fixed breathing-session routine ID (not tied to a real Routine record).
     // NOTE: must be a valid hex UUID — the previous literal contained non-hex
@@ -66,11 +69,16 @@ struct BreathingView: View {
                 // Completion overlay
                 if showCompletion {
                     completionOverlay
+                        .zIndex(10)
                         .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 }
             }
+            .background(Color.luminaSurface.ignoresSafeArea())
             .navigationTitle("Breathing")
-            .navigationBarTitleDisplayMode(.large)
+            // Every other tab root (Body Map, Exercises, Profile) uses .inline;
+            // this was the one outlier at .large — aligned per the page-title
+            // convention audit (docs/superpowers/plans/2026-07-04-5-page-titles.md).
+            .navigationBarTitleDisplayMode(.inline)
             .animation(.easeInOut(duration: 0.35), value: showCompletion)
             .floatingTabBarClearance()
         }
@@ -99,11 +107,9 @@ struct BreathingView: View {
             guard newPhase == .active, isRunning, !isPaused, !showCompletion else { return }
             catchUpAfterBackground()
         }
-        .sheet(isPresented: $shouldShowPaywall) {
-            PaywallView()
-        }
         .sheet(isPresented: $showingCustomEditor) {
             CustomPatternEditorView()
+                .presentationDetents([.medium])
         }
     }
 
@@ -134,26 +140,26 @@ struct BreathingView: View {
             VStack(spacing: 6) {
                 Image(systemName: pattern.icon)
                     .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(isSelected ? .white : Color.accentColor)
+                    .foregroundStyle(isSelected ? Color.luminaOnPrimary : Color.luminaPrimary)
 
                 Text(pattern.rawValue)
-                    .font(.caption)
+                    .font(.luminaCaption)
                     .fontWeight(isSelected ? .semibold : .regular)
-                    .foregroundStyle(isSelected ? .white : .primary)
+                    .foregroundStyle(isSelected ? Color.luminaOnPrimary : Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(width: 90, height: 72)
             .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(isSelected ? Color.accentColor : Color(.secondarySystemFill))
+                RoundedRectangle(cornerRadius: LuminaRadius.control)
+                    .fill(isSelected ? Color.luminaPrimary : Color.luminaContainer)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(isSelected ? Color.accentColor : Color.clear, lineWidth: 1.5)
+                RoundedRectangle(cornerRadius: LuminaRadius.control)
+                    .strokeBorder(isSelected ? Color.luminaPrimary : Color.clear, lineWidth: 1.5)
             )
-            .shadow(color: isSelected ? Color.accentColor.opacity(0.3) : .clear, radius: 6, y: 3)
+            .shadow(color: isSelected ? Color.luminaPrimary.opacity(0.3) : .clear, radius: 6, y: 3)
         }
         .buttonStyle(.plain)
         .disabled(isRunning)
@@ -206,7 +212,13 @@ struct BreathingView: View {
                 }
             }
             .frame(height: 200 * 1.4 * 1.1)   // reserve space for outermost ring at full scale
+            .contentShape(Rectangle())
+            .onTapGesture {
+                startCirclePreview()
+            }
             .animation(.easeInOut(duration: 0.4), value: circleColor)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityHint("Plays one round of the selected breathing pattern")
 
             // Phase label
             if isRunning {
@@ -215,7 +227,7 @@ struct BreathingView: View {
                     .fontWeight(.semibold)
                     .foregroundStyle(circleColor)
                     .id(currentPhase)          // forces crossfade on phase change
-                    .transition(.opacity.combined(with: .scale(scale: 0.92)))
+                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.92)))
                     .animation(.easeInOut(duration: 0.4), value: currentPhase)
             } else {
                 Text(selectedPattern.description)
@@ -239,8 +251,8 @@ struct BreathingView: View {
 
             // Round counter
             if isRunning {
-                Text("Round \(round) / \(totalRounds)")
-                    .font(.subheadline)
+                Text("Round \(round) / \(activeRunPlan.totalRounds)")
+                    .font(.luminaSubheadline)
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
                     .animation(.easeInOut(duration: 0.3), value: round)
@@ -248,27 +260,32 @@ struct BreathingView: View {
                 // Round selector when idle
                 HStack(spacing: 12) {
                     Text("Rounds:")
-                        .font(.subheadline)
+                        .font(.luminaSubheadline)
                         .foregroundStyle(.secondary)
 
                     Stepper("\(totalRounds)", value: $totalRounds, in: 1...20)
                         .labelsHidden()
 
                     Text("\(totalRounds)")
-                        .font(.subheadline.weight(.semibold))
+                        .font(.luminaCardTitle)
                         .monospacedDigit()
                         .frame(minWidth: 24)
                 }
                 .padding(.horizontal, 28)
                 .padding(.vertical, 10)
-                .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: 12))
+                .background(Color.luminaContainer, in: RoundedRectangle(cornerRadius: LuminaRadius.chip))
             }
         }
         .padding(.horizontal, 20)
     }
 
     /// The animation duration mirrors the phase duration so the circle reaches full scale at the end of inhale / fully contracts at end of exhale.
-    private var circleAnimation: Animation {
+    /// `nil` under Reduce Motion: the circle still resizes to mark each phase
+    /// (phase label, color, and countdown text already carry the same
+    /// information without motion), it just jumps instead of easing through
+    /// a multi-second continuous zoom.
+    private var circleAnimation: Animation? {
+        guard !reduceMotion else { return nil }
         let duration: Double
         switch currentPhase {
         case .inhale:           duration = Double(selectedPattern.phases.inhale)
@@ -290,14 +307,9 @@ struct BreathingView: View {
                     isRunning ? (isPaused ? "Resume" : "Pause") : "Start",
                     systemImage: isRunning ? (isPaused ? "play.fill" : "pause.fill") : "play.fill"
                 )
-                .font(.headline)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(Color.accentColor)
-                .foregroundStyle(.white)
-                .clipShape(Capsule())
-                .shadow(color: Color.accentColor.opacity(0.35), radius: 8, y: 4)
             }
+            .buttonStyle(LuminaPillButtonStyle())
 
             // Stop button (shown only while running)
             if isRunning {
@@ -309,7 +321,7 @@ struct BreathingView: View {
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color(.secondarySystemFill))
+                        .background(Color.luminaContainer)
                         .clipShape(Capsule())
                 }
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
@@ -323,7 +335,7 @@ struct BreathingView: View {
 
     private var completionOverlay: some View {
         ZStack {
-            Color(.systemBackground).ignoresSafeArea()
+            Color.luminaSurface.ignoresSafeArea()
 
             VStack(spacing: 32) {
                 Spacer()
@@ -347,7 +359,7 @@ struct BreathingView: View {
                     statRow(icon: "arrow.triangle.2.circlepath",
                             color: .blue,
                             label: "Rounds completed",
-                            value: "\(totalRounds)")
+                            value: "\(activeRunPlan.totalRounds)")
 
                     Divider()
 
@@ -364,7 +376,7 @@ struct BreathingView: View {
                             value: selectedPattern.rawValue)
                 }
                 .padding(20)
-                .background(Color(.secondarySystemFill))
+                .background(Color.luminaContainer)
                 .clipShape(RoundedRectangle(cornerRadius: 18))
                 .padding(.horizontal, 24)
 
@@ -376,26 +388,17 @@ struct BreathingView: View {
                         resetSession()
                     } label: {
                         Text("Go Again")
-                            .font(.headline)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.accentColor)
-                            .foregroundStyle(.white)
-                            .clipShape(Capsule())
-                            .shadow(color: Color.accentColor.opacity(0.3), radius: 8, y: 4)
                     }
+                    .buttonStyle(LuminaPillButtonStyle(kind: .ghost))
 
                     Button {
                         resetSession()
                     } label: {
                         Text("Done")
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(Color(.secondarySystemFill))
-                            .clipShape(Capsule())
                     }
+                    .buttonStyle(LuminaPillButtonStyle())
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 40)
@@ -414,7 +417,7 @@ struct BreathingView: View {
             Text(value)
                 .fontWeight(.semibold)
         }
-        .font(.subheadline)
+        .font(.luminaSubheadline)
     }
 
     // MARK: - Timer logic
@@ -474,7 +477,7 @@ struct BreathingView: View {
     }
 
     private func finishRound() {
-        if round < totalRounds {
+        if round < activeRunPlan.totalRounds {
             round += 1
             transition(to: .inhale, duration: selectedPattern.phases.inhale)
         } else {
@@ -485,6 +488,7 @@ struct BreathingView: View {
 
     private func transition(to phase: BreathPhase, duration: Int) {
         VoiceCueService.shared.speak(phase.displayLabel.replacingOccurrences(of: "...", with: ""))
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         phaseEndDate = Date().addingTimeInterval(TimeInterval(duration))
         withAnimation(.easeInOut(duration: 0.4)) {
             currentPhase    = phase
@@ -512,7 +516,7 @@ struct BreathingView: View {
 
     private func handleStartPause() {
         if !isRunning {
-            startSession()
+            startSession(plan: .session(selectedRounds: totalRounds))
         } else {
             if !isPaused {
                 VoiceCueService.shared.stop()
@@ -527,8 +531,14 @@ struct BreathingView: View {
         }
     }
 
-    private func startSession() {
+    private func startCirclePreview() {
+        guard !isRunning else { return }
+        startSession(plan: .circlePreview(selectedRounds: totalRounds))
+    }
+
+    private func startSession(plan: BreathingRunPlan) {
         let p = selectedPattern.phases
+        activeRunPlan    = plan
         sessionStarted   = Date()
         round            = 1
         isPaused         = false
@@ -561,6 +571,7 @@ struct BreathingView: View {
         phaseSecondsLeft = 0
         currentPhase     = .inhale
         pausedRemaining  = nil
+        activeRunPlan    = .session(selectedRounds: totalRounds)
     }
 
     private func completeSession() {
@@ -571,7 +582,12 @@ struct BreathingView: View {
             circleScale = 1.0
         }
 
-        saveSession()
+        guard activeRunPlan.recordsCompletion else {
+            resetPreviewSession()
+            return
+        }
+
+        saveSession(roundsCompleted: activeRunPlan.totalRounds)
 
         withAnimation(.easeInOut(duration: 0.45).delay(0.1)) {
             showCompletion = true
@@ -589,13 +605,27 @@ struct BreathingView: View {
         round            = 0
         isRunning        = false
         isPaused         = false
+        activeRunPlan    = .session(selectedRounds: totalRounds)
+        requestDeferredPaywallIfNeeded()
+    }
+
+    private func resetPreviewSession() {
+        VoiceCueService.shared.stop()
+        circleColor      = BreathPhase.inhale.color
+        currentPhase     = .inhale
+        phaseSecondsLeft = 0
+        round            = 0
+        isRunning        = false
+        isPaused         = false
+        pausedRemaining  = nil
+        activeRunPlan    = .session(selectedRounds: totalRounds)
     }
 
     // MARK: - Persistence
 
-    private func saveSession() {
+    private func saveSession(roundsCompleted: Int) {
         let completedAt  = Date()
-        let pointsEarned = totalRounds * 5
+        let pointsEarned = roundsCompleted * 5
 
         totalSessionsCompleted += 1
         SessionRecorder.record(
@@ -606,8 +636,8 @@ struct BreathingView: View {
                 completionPercent: 1.0,
                 pointsEarned: pointsEarned,
                 sessionLabel: selectedPattern.rawValue,
-                roundsCompleted: totalRounds,
-                calendarTitle: "\(selectedPattern.rawValue) (\(totalRounds) rounds)",
+                roundsCompleted: roundsCompleted,
+                calendarTitle: "\(selectedPattern.rawValue) (\(roundsCompleted) rounds)",
                 healthKitKind: .breathing
             ),
             modelContext: modelContext,
@@ -617,12 +647,20 @@ struct BreathingView: View {
 
         if totalSessionsCompleted == 3 && !hasSeenInitialPaywall {
             hasSeenInitialPaywall = true
-            shouldShowPaywall = true
+            pendingInitialPaywall = true
         } else {
             let reviewMilestones: Set<Int> = [10, 25]
             if reviewMilestones.contains(totalSessionsCompleted) {
                 shouldRequestReview = true
             }
+        }
+    }
+
+    private func requestDeferredPaywallIfNeeded() {
+        guard pendingInitialPaywall else { return }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(350))
+            NotificationCenter.default.post(name: .deferredPaywallRequested, object: nil)
         }
     }
 }

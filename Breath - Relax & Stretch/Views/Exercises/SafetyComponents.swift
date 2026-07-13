@@ -34,9 +34,9 @@ struct CautionCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+        .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: LuminaRadius.control))
         .overlay(
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: LuminaRadius.control)
                 .strokeBorder(Color.orange.opacity(0.35), lineWidth: 1)
         )
         .accessibilityElement(children: .combine)

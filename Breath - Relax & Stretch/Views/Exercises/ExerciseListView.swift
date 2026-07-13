@@ -5,61 +5,72 @@ struct ExerciseListView: View {
     @Query private var exercises: [Exercise]
     @State private var searchText = ""
     @State private var selectedType: ExerciseType? = nil
-    @State private var showingCreate = false
+    @State private var selectedExercise: Exercise?
+    @State private var visibleSearchCount = ExerciseSearchResults.pageSize
+    @FocusState private var isSearchFocused: Bool
 
-    @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
-    @State private var suggestedSlot: Date?
-    @State private var lastNightSleepHours: Double?
-    @State private var showingGentleSession = false
-    @State private var suggestedBannerDismissed = false
-
-    var filtered: [Exercise] {
-        exercises.filter { ex in
-            let matchesSearch = searchText.isEmpty || ex.name.localizedCaseInsensitiveContains(searchText)
-            let matchesType = selectedType == nil || ex.type == selectedType
-            return matchesSearch && matchesType
-        }
+    private var normalizedSearchText: String {
+        searchText.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private func gentleSessionExercises() -> [Exercise] {
-        Array(exercises.filter { $0.difficulty == 1 }.prefix(4))
+    private var searchResults: ExerciseSearchResults {
+        ExerciseSearchResults(
+            exercises: exercises,
+            searchText: normalizedSearchText,
+            selectedType: selectedType,
+            visibleCount: visibleSearchCount
+        )
+    }
+
+    private var isShowingDetail: Binding<Bool> {
+        Binding(get: { selectedExercise != nil }, set: { if !$0 { selectedExercise = nil } })
     }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                // Personalized section — hidden while the user is actively searching or filtering
-                if searchText.isEmpty && selectedType == nil {
-                    if let hours = lastNightSleepHours, hours < 7 {
-                        SleepSuggestionBanner(hours: hours) {
-                            showingGentleSession = true
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 8)
+            Group {
+                if normalizedSearchText.isEmpty {
+                    ExerciseGraphView(exercises: exercises, typeFilter: selectedType) { exercise in
+                        selectedExercise = exercise
                     }
-                    if let slot = suggestedSlot, !suggestedBannerDismissed {
-                        SuggestedTimeBanner(date: slot) {
-                            suggestedBannerDismissed = true
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                    }
-                    ForYouSection(allExercises: exercises)
-                }
-
-                LazyVStack(spacing: 0) {
-                    ForEach(filtered, id: \.uuid) { exercise in
-                        NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
-                            ExerciseRow(exercise: exercise)
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            ForEach(searchResults.visible, id: \.uuid) { exercise in
+                                NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
+                                    ExerciseRow(exercise: exercise)
+                                }
+                                .buttonStyle(.plain)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .luminaCard()
                                 .padding(.horizontal)
-                                .padding(.vertical, 4)
+                            }
+
+                            if searchResults.canLoadMore {
+                                ProgressView()
+                                    .padding(.vertical, 12)
+                                    .frame(maxWidth: .infinity)
+                                    .onAppear {
+                                        visibleSearchCount = searchResults.nextVisibleCount
+                                    }
+                            }
                         }
-                        Divider().padding(.leading)
+                        .padding(.top, 8)
+                    }
+                    .overlay {
+                        if searchResults.matches.isEmpty {
+                            ContentUnavailableView(
+                                "No Exercises",
+                                systemImage: "figure.mind.and.body",
+                                description: Text("No results for your search.")
+                            )
+                        }
                     }
                 }
             }
-            .searchable(text: $searchText, prompt: "Search exercises")
-            .navigationTitle("Exercises")
+            .background(Color.luminaSurface)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
             .floatingTabBarClearance()
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -75,41 +86,90 @@ struct ExerciseListView: View {
                               : "line.3.horizontal.decrease.circle.fill")
                     }
                 }
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        showingCreate = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                    .accessibilityLabel("Create exercise")
+                ToolbarItem(placement: .principal) {
+                    searchBar
                 }
             }
-            .sheet(isPresented: $showingCreate) {
-                CreateExerciseView()
-            }
-            .sheet(isPresented: $showingGentleSession) {
-                SessionPlayerView(exercises: gentleSessionExercises())
-            }
-            .onAppear {
-                if calendarSyncEnabled {
-                    suggestedSlot = CalendarService.shared.suggestFreeSlot()
+            .onChange(of: normalizedSearchText) { _, _ in
+                resetSearchPage()
+                if !normalizedSearchText.isEmpty {
+                    refocusSearchField()
                 }
-                Task {
-                    lastNightSleepHours = await HealthKitService.shared.lastNightSleepHours()
+            }
+            .onChange(of: selectedType) { _, _ in
+                resetSearchPage()
+            }
+            .navigationDestination(isPresented: isShowingDetail) {
+                if let selectedExercise {
+                    ExerciseDetailView(exercise: selectedExercise)
                 }
             }
             .overlay {
-                if filtered.isEmpty {
+                if exercises.isEmpty {
                     ContentUnavailableView(
                         "No Exercises",
                         systemImage: "figure.mind.and.body",
-                        description: Text(exercises.isEmpty
-                                          ? "Seed exercises will load on first launch."
-                                          : "No results for your search.")
+                        description: Text("Seed exercises will load on first launch.")
                     )
                 }
             }
         }
+    }
+
+    private func resetSearchPage() {
+        visibleSearchCount = ExerciseSearchResults.pageSize
+    }
+
+    private func refocusSearchField() {
+        Task { @MainActor in
+            isSearchFocused = true
+        }
+    }
+
+    private var searchBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(Color.cyan.opacity(0.95))
+
+            TextField("Search exercises", text: $searchText)
+                .font(.luminaLabel)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .submitLabel(.search)
+                .focused($isSearchFocused)
+
+            if !searchText.isEmpty {
+                Button {
+                    searchText = ""
+                    isSearchFocused = true
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                }
+                .accessibilityLabel("Clear search")
+            }
+        }
+        .frame(width: 230, height: 36)
+        .padding(.horizontal, 12)
+        .background(Color.luminaCardFill.opacity(0.96), in: Capsule())
+        .overlay(
+            Capsule()
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            Color.cyan.opacity(0.58),
+                            Color.mint.opacity(0.34),
+                            Color.cyan.opacity(0.50)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.0
+                )
+        )
+        .shadow(color: Color.cyan.opacity(0.18), radius: 7, x: 0, y: 0)
+        .shadow(color: Color.mint.opacity(0.10), radius: 11, x: 0, y: 0)
+        .accessibilityElement(children: .contain)
     }
 }
 
@@ -133,10 +193,10 @@ struct ExerciseRow: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 Text(exercise.name)
-                    .font(.headline)
+                    .font(.luminaCardTitle)
                 if hasVideo {
                     Image(systemName: "film.fill")
-                        .font(.caption)
+                        .font(.luminaCaption)
                         .foregroundStyle(Color.accentColor)
                         .accessibilityHidden(true)
                 }
@@ -146,82 +206,13 @@ struct ExerciseRow: View {
                 Label(exercise.type.rawValue, systemImage: "figure.mind.and.body")
                 Label(difficultyLabel, systemImage: "chart.bar")
             }
-            .font(.caption)
+            .font(.luminaCaption)
             .foregroundStyle(.secondary)
         }
         .padding(.vertical, 4)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(exercise.name), \(exercise.type.rawValue), \(exercise.durationFormatted), \(difficultyLabel)\(hasVideo ? ", has video" : "")")
-    }
-}
-
-// MARK: - Sleep suggestion banner
-
-private struct SleepSuggestionBanner: View {
-    let hours: Double
-    let onStartGentleSession: () -> Void
-
-    private var hoursLabel: String {
-        String(format: "%.1f", hours)
-    }
-
-    var body: some View {
-        Button(action: onStartGentleSession) {
-            HStack(spacing: 10) {
-                Image(systemName: "moon.zzz.fill")
-                    .foregroundStyle(.indigo)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("You slept \(hoursLabel)h last night")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.primary)
-                    Text("Tap for a gentler routine today")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(10)
-            .background(Color.indigo.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Suggested time banner
-
-private struct SuggestedTimeBanner: View {
-    let date: Date
-    let onDismiss: () -> Void
-
-    private static let timeFmt: DateFormatter = {
-        let fmt = DateFormatter()
-        fmt.dateFormat = "h:mm a"
-        return fmt
-    }()
-
-    private var timeLabel: String { Self.timeFmt.string(from: date) }
-
-    var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "calendar.badge.clock")
-                .foregroundStyle(Color.accentColor)
-            Text("You're free at \(timeLabel) today — good time for a session.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Spacer(minLength: 0)
-            Button(action: onDismiss) {
-                Image(systemName: "xmark")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Dismiss suggestion")
-        }
-        .padding(10)
-        .background(Color.accentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
     }
 }
 

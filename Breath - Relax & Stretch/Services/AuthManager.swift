@@ -92,7 +92,8 @@ final class AuthManager: ObservableObject {
     private let kDisplayName  = "auth.displayName"
     private let kEmail        = "auth.email"
     private let kProvider     = "auth.provider"
-    private let kTwoFAEnabled = "auth.twoFAEnabled" // legacy key name; now drives App Lock
+    private let kAppLockEnabled = "auth.appLockEnabled"
+    private let kTwoFAEnabled = "auth.twoFAEnabled" // legacy key migrated to kAppLockEnabled
     private let kAnonymousID  = "auth.anonymousID"
     private let kSupabaseUserID = "auth.supabaseUserID" // auth.uid() — not a secret; the tokens live in the keychain
 
@@ -148,6 +149,7 @@ final class AuthManager: ObservableObject {
 
     private func loadPersistedState() {
         let d = UserDefaults.standard
+        migrateLegacyAppLockKeyIfNeeded(defaults: d)
         isSignedIn  = d.bool(forKey: kIsSignedIn)
         displayName = d.string(forKey: kDisplayName) ?? ""
         userEmail   = d.string(forKey: kEmail) ?? ""
@@ -188,8 +190,16 @@ final class AuthManager: ObservableObject {
     // MARK: - App Lock (biometric gate on launch — not a second auth factor)
 
     var appLockEnabled: Bool {
-        get { UserDefaults.standard.bool(forKey: kTwoFAEnabled) }
-        set { UserDefaults.standard.set(newValue, forKey: kTwoFAEnabled) }
+        get { UserDefaults.standard.bool(forKey: kAppLockEnabled) }
+        set { UserDefaults.standard.set(newValue, forKey: kAppLockEnabled) }
+    }
+
+    private func migrateLegacyAppLockKeyIfNeeded(defaults d: UserDefaults) {
+        guard d.object(forKey: kAppLockEnabled) == nil,
+              d.object(forKey: kTwoFAEnabled) != nil
+        else { return }
+        d.set(d.bool(forKey: kTwoFAEnabled), forKey: kAppLockEnabled)
+        d.removeObject(forKey: kTwoFAEnabled)
     }
 
     func completeUnlock() {

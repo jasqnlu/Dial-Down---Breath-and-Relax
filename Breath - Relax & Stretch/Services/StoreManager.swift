@@ -24,6 +24,7 @@ final class StoreManager: ObservableObject {
 
     @Published private(set) var products: [Product] = []
     @Published private(set) var purchasedProductIDs: Set<String> = []
+    @Published var restoreError: String?
 
     private var updatesTask: Task<Void, Never>?
 
@@ -84,7 +85,13 @@ final class StoreManager: ObservableObject {
     }
 
     func restorePurchases() async {
-        try? await AppStore.sync()
+        do {
+            try await AppStore.sync()
+            restoreError = nil
+        } catch {
+            restoreError = error.localizedDescription
+            Logger(subsystem: "com.jasonlu.breath", category: "storeKit").warning("Purchase restore failed: \(error)")
+        }
         await refreshPurchasedProducts()
     }
 

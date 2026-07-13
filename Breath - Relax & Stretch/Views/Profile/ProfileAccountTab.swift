@@ -73,6 +73,8 @@ struct ProfileAccountTab: View {
                 .onChange(of: appLockOn) { _, val in auth.appLockEnabled = val }
             } header: {
                 Text("Security")
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             } footer: {
                 Text("Require Face ID, Touch ID, or your passcode to open the app.")
             }
@@ -108,6 +110,7 @@ struct ProfileAccountTab: View {
                 }
             }
         }
+        .listRowBackground(Color.luminaCardFill)
         .onAppear { appLockOn = auth.appLockEnabled }
         .sheet(isPresented: $showingPaywall) {
             PaywallView()

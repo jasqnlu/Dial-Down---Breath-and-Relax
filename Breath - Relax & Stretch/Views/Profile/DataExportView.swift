@@ -6,6 +6,8 @@ import UniformTypeIdentifiers
 
 struct DataExportView: View {
     @Query(sort: \Session.startedAt) private var sessions: [Session]
+    @Query private var routines: [Routine]
+    @Query private var profiles: [UserProfile]
 
     @State private var exportFormat: ExportFormat = .csv
     @State private var exportURL: URL?
@@ -21,12 +23,17 @@ struct DataExportView: View {
 
     var body: some View {
         List {
-            formatSection
-            summarySection
-            exportSection
+            Group {
+                formatSection
+                summarySection
+                exportSection
+            }
+            .listRowBackground(Color.luminaCardFill)
         }
         .listStyle(.insetGrouped)
-        .navigationTitle("Export My Data")
+        .scrollContentBackground(.hidden)
+        .background(Color.luminaSurface)
+        .navigationTitle("Export Data")
         .navigationBarTitleDisplayMode(.inline)
         .floatingTabBarClearance()
         .onChange(of: exportFormat) { _, _ in exportURL = nil }
@@ -67,6 +74,16 @@ struct DataExportView: View {
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
             }
+            LabeledContent("Routines Saved") {
+                Text("\(routines.count)")
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+            LabeledContent("Badges Earned") {
+                Text("\(profiles.first?.badges.count ?? 0)")
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
         }
     }
 
@@ -89,13 +106,13 @@ struct DataExportView: View {
                     )
                 }
             }
-            .disabled(isGenerating || sessions.isEmpty)
+            .disabled(isGenerating || !hasExportableData)
 
             // Share button — only shown once the file is ready
             if let url = exportURL {
                 ShareLink(
                     item: url,
-                    subject: Text("My Breath & Stretch Sessions"),
+                    subject: Text("My Breath & Stretch Data"),
                     message: Text("Exported from Breath: Relax & Stretch"),
                     preview: SharePreview(
                         url.lastPathComponent,
@@ -110,31 +127,38 @@ struct DataExportView: View {
                 }
             }
         } footer: {
-            if sessions.isEmpty {
-                Text("Complete at least one session to export your data.")
+            if !hasExportableData {
+                Text("Complete a session, save a routine, or set up your profile to export your data.")
                     .foregroundStyle(.secondary)
             }
         }
     }
 
+    /// True once there is at least one session, routine, or profile record to export.
+    private var hasExportableData: Bool {
+        !sessions.isEmpty || !routines.isEmpty || !profiles.isEmpty
+    }
+
     // MARK: Export generation
 
     private func buildExport() {
-        guard !sessions.isEmpty else { return }
+        guard hasExportableData else { return }
         isGenerating = true
         exportURL = nil
 
         // Snapshot everything on the main actor before leaving — SwiftData
         // models must not be read from a detached task.
-        let rows    = sessions.map { SessionExportRow($0) }
-        let format  = exportFormat
-        let fileExt = exportFormat.fileExtension   // capture before leaving actor
+        let rows        = sessions.map { SessionExportRow($0) }
+        let routineRows = routines.map { RoutineExportRow($0) }
+        let profileRow  = profiles.first.map { ProfileExportRow($0) }
+        let format      = exportFormat
+        let fileExt     = exportFormat.fileExtension   // capture before leaving actor
 
         Task.detached(priority: .userInitiated) {
             let content: String
             switch format {
-            case .csv:  content = DataExportView.makeCSV(from: rows)
-            case .json: content = DataExportView.makeJSON(from: rows)
+            case .csv:  content = DataExportView.makeCSV(sessions: rows, routines: routineRows, profile: profileRow)
+            case .json: content = DataExportView.makeJSON(sessions: rows, routines: routineRows, profile: profileRow)
             }
 
             let tag = {
@@ -142,7 +166,7 @@ struct DataExportView: View {
                 f.dateFormat = "yyyy-MM-dd"
                 return f.string(from: Date())
             }()
-            let filename = "breath_sessions_\(tag).\(fileExt)"
+            let filename = "breath_data_\(tag).\(fileExt)"
             let url = FileManager.default.temporaryDirectory
                 .appendingPathComponent(filename)
             try? content.write(to: url, atomically: true, encoding: .utf8)
@@ -156,11 +180,22 @@ struct DataExportView: View {
 
     // MARK: CSV builder
 
-    nonisolated private static func makeCSV(from rows: [SessionExportRow]) -> String {
+    /// Multi-section CSV: sessions / routines / profile each get their own
+    /// header + row block, separated by a blank line and a "# Section" marker
+    /// comment row. This keeps the export a single file (so the existing
+    /// single-item `ShareLink` above needs no changes) while still surfacing
+    /// every user-generated data type. Spreadsheet apps show the marker rows
+    /// as a one-cell comment, which is harmless.
+    nonisolated private static func makeCSV(
+        sessions rows: [SessionExportRow],
+        routines routineRows: [RoutineExportRow],
+        profile profileRow: ProfileExportRow?
+    ) -> String {
         let iso = ISO8601DateFormatter()
-        var lines = [
-            "id,routineID,startedAt,completedAt,durationMinutes,completionPercent,pointsEarned"
-        ]
+        var lines: [String] = []
+
+        lines.append("# Sessions")
+        lines.append("id,routineID,startedAt,completedAt,durationMinutes,completionPercent,pointsEarned")
         for r in rows {
             lines.append([
                 r.id,
@@ -172,14 +207,55 @@ struct DataExportView: View {
                 "\(r.pointsEarned)"
             ].joined(separator: ","))
         }
+
+        lines.append("")
+        lines.append("# Routines")
+        lines.append("id,name,exerciseIDs,authorID,authorName,borrowedFromID,isPublic,borrowCount,createdAt")
+        for r in routineRows {
+            lines.append([
+                r.id,
+                r.name,
+                r.exerciseIDs.joined(separator: ";"),
+                r.authorID ?? "",
+                r.authorName ?? "",
+                r.borrowedFromID ?? "",
+                "\(r.isPublic)",
+                "\(r.borrowCount)",
+                iso.string(from: r.createdAt)
+            ].joined(separator: ","))
+        }
+
+        lines.append("")
+        lines.append("# Profile")
+        lines.append("profileID,displayName,totalMinutes,totalPoints,streak,lastSessionDate,badges,streakFreezeTokens,sessionsTowardNextFreezeToken,pendingStreakBreak")
+        if let p = profileRow {
+            lines.append([
+                p.profileID,
+                p.displayName,
+                "\(p.totalMinutes)",
+                "\(p.totalPoints)",
+                "\(p.streak)",
+                p.lastSessionDate.map { iso.string(from: $0) } ?? "",
+                p.badges.joined(separator: ";"),
+                "\(p.streakFreezeTokens)",
+                "\(p.sessionsTowardNextFreezeToken)",
+                "\(p.pendingStreakBreak)"
+            ].joined(separator: ","))
+        }
+
         return lines.joined(separator: "\n")
     }
 
     // MARK: JSON builder
 
-    nonisolated private static func makeJSON(from rows: [SessionExportRow]) -> String {
+    nonisolated private static func makeJSON(
+        sessions rows: [SessionExportRow],
+        routines routineRows: [RoutineExportRow],
+        profile profileRow: ProfileExportRow?
+    ) -> String {
         let iso = ISO8601DateFormatter()
-        let arr: [[String: Any]] = rows.map { r in
+
+        let sessionsArr: [[String: Any]] = rows.map { r in
             var d: [String: Any] = [
                 "id":                r.id,
                 "routineID":         r.routineID,
@@ -191,14 +267,49 @@ struct DataExportView: View {
             if let c = r.completedAt { d["completedAt"] = iso.string(from: c) }
             return d
         }
+
+        let routinesArr: [[String: Any]] = routineRows.map { r in
+            var d: [String: Any] = [
+                "id":           r.id,
+                "name":         r.name,
+                "exerciseIDs":  r.exerciseIDs,
+                "isPublic":     r.isPublic,
+                "borrowCount":  r.borrowCount,
+                "createdAt":    iso.string(from: r.createdAt)
+            ]
+            if let a = r.authorID { d["authorID"] = a }
+            if let n = r.authorName { d["authorName"] = n }
+            if let b = r.borrowedFromID { d["borrowedFromID"] = b }
+            return d
+        }
+
+        var profileDict: Any = NSNull()
+        if let p = profileRow {
+            var d: [String: Any] = [
+                "profileID":                      p.profileID,
+                "displayName":                    p.displayName,
+                "totalMinutes":                   p.totalMinutes,
+                "totalPoints":                    p.totalPoints,
+                "streak":                         p.streak,
+                "badges":                         p.badges,
+                "streakFreezeTokens":             p.streakFreezeTokens,
+                "sessionsTowardNextFreezeToken":  p.sessionsTowardNextFreezeToken,
+                "pendingStreakBreak":             p.pendingStreakBreak
+            ]
+            if let last = p.lastSessionDate { d["lastSessionDate"] = iso.string(from: last) }
+            profileDict = d
+        }
+
         let root: [String: Any] = [
             "exportedAt": iso.string(from: Date()),
-            "sessions": arr
+            "profile":    profileDict,
+            "sessions":   sessionsArr,
+            "routines":   routinesArr
         ]
         guard let data = try? JSONSerialization.data(withJSONObject: root,
                                                       options: [.prettyPrinted, .sortedKeys]),
               let str = String(data: data, encoding: .utf8) else {
-            return #"{"sessions":[]}"#
+            return #"{"profile":null,"sessions":[],"routines":[]}"#
         }
         return str
     }
@@ -226,11 +337,61 @@ private struct SessionExportRow: Sendable {
     }
 }
 
+private struct RoutineExportRow: Sendable {
+    let id:             String
+    let name:           String
+    let exerciseIDs:    [String]
+    let authorID:       String?
+    let authorName:     String?
+    let borrowedFromID: String?
+    let isPublic:       Bool
+    let borrowCount:    Int
+    let createdAt:      Date
+
+    init(_ r: Routine) {
+        id             = r.uuid.uuidString
+        name           = r.name
+        exerciseIDs    = r.exerciseIDs.map { $0.uuidString }
+        authorID       = r.authorID
+        authorName     = r.authorName
+        borrowedFromID = r.borrowedFromID?.uuidString
+        isPublic       = r.isPublic
+        borrowCount    = r.borrowCount
+        createdAt      = r.createdAt
+    }
+}
+
+private struct ProfileExportRow: Sendable {
+    let profileID:                     String
+    let displayName:                   String
+    let totalMinutes:                  Int
+    let totalPoints:                   Int
+    let streak:                        Int
+    let lastSessionDate:               Date?
+    let badges:                        [String]
+    let streakFreezeTokens:            Int
+    let sessionsTowardNextFreezeToken: Int
+    let pendingStreakBreak:            Int
+
+    init(_ p: UserProfile) {
+        profileID                     = p.profileID
+        displayName                   = p.displayName
+        totalMinutes                  = p.totalMinutes
+        totalPoints                   = p.totalPoints
+        streak                        = p.streak
+        lastSessionDate               = p.lastSessionDate
+        badges                        = p.badges
+        streakFreezeTokens            = p.streakFreezeTokens
+        sessionsTowardNextFreezeToken = p.sessionsTowardNextFreezeToken
+        pendingStreakBreak            = p.pendingStreakBreak
+    }
+}
+
 // MARK: - Preview
 
 #Preview {
     NavigationStack {
         DataExportView()
-            .modelContainer(for: Session.self, inMemory: true)
+            .modelContainer(for: [Session.self, Routine.self, UserProfile.self], inMemory: true)
     }
 }

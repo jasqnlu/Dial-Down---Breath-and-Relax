@@ -37,15 +37,15 @@ struct BadgesView: View {
                 Image(systemName: badge.icon)
                     .font(.title2)
                     .frame(width: 36)
-                    .foregroundStyle(earned ? Color.yellow : Color.secondary.opacity(0.4))
+                    .foregroundStyle(earned ? Color.yellow : Color.luminaOnSurfaceVariant.opacity(0.4))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(badge.name)
-                        .font(.headline)
-                        .foregroundStyle(earned ? .primary : .secondary)
+                        .font(.luminaCardTitle)
+                        .foregroundStyle(earned ? Color.luminaOnSurface : Color.luminaOnSurfaceVariant)
                     Text(badge.description)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                 }
 
                 Spacer()
@@ -57,7 +57,11 @@ struct BadgesView: View {
             }
             .padding(.vertical, 6)
             .opacity(earned ? 1.0 : 0.5)
+            .listRowBackground(Color.luminaCardFill)
         }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .background(Color.luminaSurface)
         .navigationTitle("Badges")
         .floatingTabBarClearance()
     }

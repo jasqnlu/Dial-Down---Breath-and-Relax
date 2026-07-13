@@ -24,6 +24,7 @@ struct FlexibilityCheckInView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 ProgressView(value: Double(currentIndex), total: Double(tests.count))
+                    .tint(Color.luminaPrimary)
                     .padding(.horizontal)
                     .padding(.top, 8)
                     .accessibilityLabel("Test \(currentIndex + 1) of \(tests.count)")
@@ -32,22 +33,24 @@ struct FlexibilityCheckInView: View {
                     Section {
                         VStack(alignment: .leading, spacing: 12) {
                             Label(test.targetArea, systemImage: test.icon)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(Color.accentColor)
+                                .font(.luminaCardTitle)
+                                .foregroundStyle(Color.luminaPrimary)
                             ForEach(Array(test.instructions.enumerated()), id: \.offset) { i, step in
                                 HStack(alignment: .top, spacing: 10) {
                                     Text("\(i + 1)")
-                                        .font(.caption.weight(.bold))
-                                        .foregroundStyle(.secondary)
+                                        .font(.luminaCaption)
+                                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                                         .frame(width: 18, height: 18)
-                                        .background(Circle().fill(Color(.tertiarySystemFill)))
+                                        .background(Circle().fill(Color.luminaContainer))
                                     Text(step)
-                                        .font(.subheadline)
+                                        .font(.luminaSubheadline)
+                                        .foregroundStyle(Color.luminaOnSurface)
                                 }
                             }
                         }
                         .padding(.vertical, 4)
                     }
+                    .listRowBackground(Color.luminaCardFill)
 
                     Section("How far did you get?") {
                         ForEach(Array(test.levels.enumerated()), id: \.offset) { level, label in
@@ -56,29 +59,33 @@ struct FlexibilityCheckInView: View {
                             } label: {
                                 HStack {
                                     Text(label)
-                                        .foregroundStyle(.primary)
+                                        .font(.luminaBody)
+                                        .foregroundStyle(Color.luminaOnSurface)
                                     Spacer()
                                     if answers[test] == level {
                                         Image(systemName: "checkmark.circle.fill")
-                                            .foregroundStyle(Color.accentColor)
+                                            .foregroundStyle(Color.luminaPrimary)
                                     }
                                 }
                             }
                         }
                     }
+                    .listRowBackground(Color.luminaCardFill)
                 }
+                .scrollContentBackground(.hidden)
 
                 HStack(spacing: 12) {
                     Button("Skip") { advance() }
-                        .buttonStyle(.bordered)
+                        .buttonStyle(LuminaPillButtonStyle(kind: .ghost))
 
                     Button(isLastTest ? "Finish" : "Next") { advance() }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(LuminaPillButtonStyle())
                         .disabled(answers[test] == nil)
                         .frame(maxWidth: .infinity)
                 }
                 .padding()
             }
+            .background(Color.luminaSurface.ignoresSafeArea())
             .navigationTitle(test.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

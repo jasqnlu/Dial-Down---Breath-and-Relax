@@ -119,36 +119,28 @@ struct BodyFigureCanvas: View {
         }
         .padding(.horizontal, 28)
         .padding(.vertical, 6)
+        // Region name labels float at exact `.position(x:,y:)` coordinates
+        // on the silhouette (see the "Floating name label" comment below);
+        // Dynamic Type growth would push them off their marked region, so —
+        // like ExerciseGraphView's node labels — this canvas is pinned to
+        // the standard size.
+        .dynamicTypeSize(.large)
     }
 
     // MARK: - Gender-specific silhouette
-    //
-    // Skin stays a flat tinted silhouette; Muscle/Skeleton layer in the
-    // anatomical artwork on top, clipped to the same outline.
 
     @ViewBuilder
     private var silhouetteView: some View {
         if sex == "female" {
             ZStack {
                 FemaleSilhouetteShape().fill(layer.silhouetteFill)
-                anatomyOverlay.clipShape(FemaleSilhouetteShape())
                 FemaleSilhouetteShape().stroke(layer.accentColor.opacity(0.30), lineWidth: 1.2)
             }
         } else {
             ZStack {
                 MaleSilhouetteShape().fill(layer.silhouetteFill)
-                anatomyOverlay.clipShape(MaleSilhouetteShape())
                 MaleSilhouetteShape().stroke(layer.accentColor.opacity(0.30), lineWidth: 1.2)
             }
-        }
-    }
-
-    @ViewBuilder
-    private var anatomyOverlay: some View {
-        switch layer {
-        case .skin:     EmptyView()
-        case .muscle:   MuscleAnatomyCanvas(facing: facing)
-        case .skeleton: SkeletonAnatomyCanvas(facing: facing)
         }
     }
 

@@ -8,7 +8,7 @@ import SwiftData
 // MARK: - Shared preview helpers
 
 private func makeContainer() -> ModelContainer {
-    let schema = Schema([Exercise.self, Routine.self, Session.self, UserProfile.self, BodyPart.self])
+    let schema = Schema([Exercise.self, Routine.self, Session.self, UserProfile.self])
     return try! ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
 }
 

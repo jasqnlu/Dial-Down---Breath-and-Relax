@@ -17,34 +17,19 @@ import SceneKit
 // Confirmed empirically from the source OBJ (see decimation notes): Y is up,
 // the figure's face points toward +Z. Rotation 0 == front, π == back.
 
-/// Which anatomy model a rig renders. Each layer is a separate mesh exported
-/// from the Z-Anatomy Blender files (skin from the ZBrush OBJ, muscle/skeleton
-/// decimated from the .blend systems), normalised to the same height so all
-/// three share a footprint and the tap-region overlay lines up while marking.
-extension BodyLayer {
-    /// The 3D model style that renders this anatomy layer.
-    var modelStyle: BodyModelStyle {
-        switch self {
-        case .skin:     return .skin
-        case .muscle:   return .muscle
-        case .skeleton: return .skeleton
-        }
-    }
-}
-
+/// The 3D model style that renders the body. Skin is the only layer now —
+/// the mesh is exported from the Z-Anatomy Blender file's ZBrush OBJ.
 enum BodyModelStyle {
-    case skin, muscle, skeleton
+    case skin
 
     var resourceName: String {
         switch self {
-        case .skin:     return "BodyMale"
-        case .muscle:   return "BodyMuscle"
-        case .skeleton: return "BodySkeleton"
+        case .skin: return "BodyMale"
         }
     }
 
-    /// Programmatic PBR material — the meshes ship without textures, so colour
-    /// is applied in code (skin tone / anatomical red / bone off-white).
+    /// Programmatic PBR material — the mesh ships without textures, so colour
+    /// (skin tone) is applied in code.
     func makeMaterial() -> SCNMaterial {
         let m = SCNMaterial()
         m.lightingModel = .physicallyBased
@@ -54,14 +39,66 @@ enum BodyModelStyle {
         case .skin:
             m.diffuse.contents = UIColor(red: 0.89, green: 0.72, blue: 0.62, alpha: 1)
             m.roughness.contents = 0.7
-        case .muscle:
-            m.diffuse.contents = UIColor(red: 0.74, green: 0.17, blue: 0.15, alpha: 1)
-            m.roughness.contents = 0.55
-        case .skeleton:
-            m.diffuse.contents = UIColor(red: 0.90, green: 0.87, blue: 0.79, alpha: 1)
-            m.roughness.contents = 0.8
         }
         return m
+    }
+}
+
+/// Loads and caches the (multi-MB) body OBJ mesh off the main thread. An
+/// actor so concurrent loads — e.g. two `BodySceneView`s mounting at once, or
+/// a facing flip re-creating the rig mid-load — serialize on the shared
+/// template cache instead of racing.
+actor BodyMeshLoader {
+    static let shared = BodyMeshLoader()
+
+    private var cache: [String: SCNNode] = [:]
+
+    /// Returns the cached template node for `style`, parsing the bundled OBJ
+    /// on first use. Runs on the actor's background executor, never the
+    /// main thread — the OBJ parse + triangulation is the most expensive
+    /// thing BodySceneView does, so this keeps it off the UI.
+    func template(for style: BodyModelStyle) -> SCNNode? {
+        if let cached = cache[style.resourceName] { return cached }
+        guard let node = Self.makeTemplateBodyNode(for: style) else { return nil }
+        cache[style.resourceName] = node
+        return node
+    }
+
+    private static func makeTemplateBodyNode(for style: BodyModelStyle) -> SCNNode? {
+        guard let url = Bundle.main.url(forResource: style.resourceName, withExtension: "obj"),
+              let source = try? SCNScene(url: url, options: [.checkConsistency: true])
+        else {
+            return nil
+        }
+
+        let bodyNode = SCNNode()
+        for child in source.rootNode.childNodes {
+            bodyNode.addChildNode(child)
+        }
+
+        let (bmin, bmax) = bodyNode.boundingBox
+        let center = SCNVector3((bmin.x + bmax.x) / 2,
+                                 (bmin.y + bmax.y) / 2,
+                                 (bmin.z + bmax.z) / 2)
+        let height = CGFloat(bmax.y - bmin.y)
+        let scale = height > 0 ? Float(2.0 / height) : 1
+
+        // Recentre in LOCAL space via pivot (applied before scale), then scale —
+        // this avoids the order-of-operations trap of combining position+scale directly.
+        bodyNode.pivot = SCNMatrix4MakeTranslation(center.x, center.y, center.z)
+        bodyNode.scale = SCNVector3(scale, scale, scale)
+
+        applyMaterial(style.makeMaterial(), to: bodyNode)
+        return bodyNode
+    }
+
+    private static func applyMaterial(_ material: SCNMaterial, to node: SCNNode) {
+        if let geometry = node.geometry {
+            geometry.materials = [material]
+        }
+        for child in node.childNodes {
+            applyMaterial(material, to: child)
+        }
     }
 }
 
@@ -72,6 +109,9 @@ final class BodyRig {
     let style: BodyModelStyle
 
     private(set) var loadFailed = false
+    /// True once the (possibly cached) body mesh has been attached to
+    /// `rigNode`. `BodySceneView` shows a placeholder until this flips.
+    private(set) var isLoaded = false
 
     /// Current committed rotation (radians) — updated as the user drags / the
     /// facing picker snaps. Kept here (not just on the node) so gesture deltas
@@ -83,7 +123,9 @@ final class BodyRig {
         setUpCamera()
         setUpLights()
         scene.rootNode.addChildNode(rigNode)
-        loadBody()
+        // Mesh loading is kicked off asynchronously by BodySceneView (see
+        // `loadIfNeeded`) instead of here — parsing the OBJ is too heavy to
+        // do synchronously on the main thread during View init.
     }
 
     /// Distance that makes the (height-normalised-to-2.0) body fill ~94% of
@@ -150,68 +192,22 @@ final class BodyRig {
         scene.rootNode.addChildNode(ambientNode)
     }
 
-    /// Each layer's processed mesh, built exactly ONCE per process and cached
-    /// by resource name. SwiftUI reconstructs `BodyRig` on every
-    /// `BodySceneView` re-init (layer switches, facing flips, entering/leaving
-    /// Mark mode, every frame of a pinch while marking), and the OBJ read +
-    /// triangulation is by far the most expensive thing here. Caching the
-    /// finished node and cloning it per rig — clones share the underlying
-    /// geometry copy-on-write — keeps that parse off the main thread on re-init
-    /// instead of re-reading the multi-MB mesh each time.
-    private static var templateCache: [String: SCNNode] = [:]
-
-    private static func template(for style: BodyModelStyle) -> SCNNode? {
-        if let cached = templateCache[style.resourceName] { return cached }
-        guard let node = makeTemplateBodyNode(for: style) else { return nil }
-        templateCache[style.resourceName] = node
-        return node
-    }
-
-    private static func makeTemplateBodyNode(for style: BodyModelStyle) -> SCNNode? {
-        guard let url = Bundle.main.url(forResource: style.resourceName, withExtension: "obj"),
-              let source = try? SCNScene(url: url, options: [.checkConsistency: true])
-        else {
-            return nil
-        }
-
-        let bodyNode = SCNNode()
-        for child in source.rootNode.childNodes {
-            bodyNode.addChildNode(child)
-        }
-
-        let (bmin, bmax) = bodyNode.boundingBox
-        let center = SCNVector3((bmin.x + bmax.x) / 2,
-                                 (bmin.y + bmax.y) / 2,
-                                 (bmin.z + bmax.z) / 2)
-        let height = CGFloat(bmax.y - bmin.y)
-        let scale = height > 0 ? Float(2.0 / height) : 1
-
-        // Recentre in LOCAL space via pivot (applied before scale), then scale —
-        // this avoids the order-of-operations trap of combining position+scale directly.
-        bodyNode.pivot = SCNMatrix4MakeTranslation(center.x, center.y, center.z)
-        bodyNode.scale = SCNVector3(scale, scale, scale)
-
-        applyMaterial(style.makeMaterial(), to: bodyNode)
-        return bodyNode
-    }
-
-    private func loadBody() {
-        guard let template = BodyRig.template(for: style) else {
+    /// Parses/fetches the cached mesh on `BodyMeshLoader`'s background actor,
+    /// then attaches a clone (geometry is shared copy-on-write) to `rigNode`
+    /// on the main actor. Idempotent — safe to call every time
+    /// `BodySceneView` appears; only the first call per rig instance does
+    /// anything since `isLoaded`/`loadFailed` short-circuit the rest.
+    @MainActor
+    func loadIfNeeded() async {
+        guard !isLoaded, !loadFailed else { return }
+        guard let template = await BodyMeshLoader.shared.template(for: style) else {
             loadFailed = true
             return
         }
         // A node lives in one parent at a time, so each rig adds its own clone
         // of the shared template (geometry is shared, transforms are fresh).
         rigNode.addChildNode(template.clone())
-    }
-
-    private static func applyMaterial(_ material: SCNMaterial, to node: SCNNode) {
-        if let geometry = node.geometry {
-            geometry.materials = [material]
-        }
-        for child in node.childNodes {
-            applyMaterial(material, to: child)
-        }
+        isLoaded = true
     }
 
     // MARK: - Rotation
@@ -267,6 +263,11 @@ struct BodySceneView: View {
     @State private var dragActive = false
     @State private var cameraZ: CGFloat
     @State private var committedCameraZ: CGFloat
+    /// Mirrors `rig.isLoaded`/`rig.loadFailed` in @State so SwiftUI actually
+    /// re-renders once the background OBJ parse finishes — `rig` is a class,
+    /// so mutating its stored properties alone wouldn't invalidate the view.
+    @State private var isLoading = true
+    @Environment(\.colorScheme) private var colorScheme
 
     private let minCameraZ: CGFloat = BodyRig.defaultCameraDistance * 0.62         // closer  = zoomed in
     private let maxCameraZ: CGFloat = BodyRig.freeExploreCameraDistance * 1.25      // farther = zoomed out
@@ -285,7 +286,11 @@ struct BodySceneView: View {
 
     var body: some View {
         ZStack {
-            if rig.loadFailed {
+            if isLoading {
+                ProgressView("Loading 3D model…")
+                    .controlSize(.large)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if rig.loadFailed {
                 ContentUnavailableView(
                     "3D Model Unavailable",
                     systemImage: "figure.stand",
@@ -318,12 +323,31 @@ struct BodySceneView: View {
                 resetCamera()
             }
         }
+        .task(id: ObjectIdentifier(rig)) {
+            // Off the main thread inside BodyMeshLoader; hops back to the
+            // main actor only to attach the finished node. `id:` re-runs this
+            // if `rig` itself is ever replaced (it currently isn't post-init,
+            // but keeps this correct if that changes).
+            await rig.loadIfNeeded()
+            isLoading = false
+        }
         .onChange(of: facing) { _, newFacing in
             rig.snap(to: newFacing == .front ? 0 : .pi)
         }
         .onChange(of: interactive) { _, isInteractive in
             if !isInteractive { resetCamera() }
         }
+        .onAppear { applyBackground() }
+        .onChange(of: colorScheme) { _, _ in applyBackground() }
+    }
+
+    /// SCNScene renders opaque white behind the mesh by default, which reads
+    /// as a jarring flash of light content in dark mode — so this keys the
+    /// scene background to the same dynamic surface colour as the rest of
+    /// the screen and re-applies it whenever the app's colour scheme flips.
+    private func applyBackground() {
+        let trait = UITraitCollection(userInterfaceStyle: colorScheme == .dark ? .dark : .light)
+        rig.scene.background.contents = UIColor(Color.luminaSurface).resolvedColor(with: trait)
     }
 
     /// Restores the calibrated default framing — used whenever the locked
@@ -370,15 +394,5 @@ struct BodySceneView: View {
 
 #Preview("Skin") {
     BodySceneView(facing: .front, style: .skin)
-        .frame(height: 520)
-}
-
-#Preview("Muscle") {
-    BodySceneView(facing: .front, style: .muscle)
-        .frame(height: 520)
-}
-
-#Preview("Skeleton") {
-    BodySceneView(facing: .front, style: .skeleton)
         .frame(height: 520)
 }

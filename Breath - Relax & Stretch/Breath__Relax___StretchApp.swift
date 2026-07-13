@@ -7,9 +7,15 @@ struct BreathRelaxStretchApp: App {
     @StateObject private var auth = AuthManager.shared
     @StateObject private var deepLinkRouter = DeepLinkRouter()
 
+    /// Set (once, before any UI appears) when `sharedModelContainer` had to
+    /// fall back to an in-memory store below. Read from `body`'s `.onAppear`
+    /// to surface `showDataNotSavingAlert` instead of failing silently — the
+    /// fallback itself is still the right behavior (keeps the app launching)
+    /// but the user deserves to know this session's data won't persist.
+    private static var didFallBackToInMemoryStore = false
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            BodyPart.self,
             Exercise.self,
             FlexibilityCheckIn.self,
             Routine.self,
@@ -30,21 +36,43 @@ struct BreathRelaxStretchApp: App {
             // launches; the user will lose synced data for this session but can
             // reopen to get a fresh persistent store on the next cold start.
             Logger(subsystem: "com.jasonlu.breath", category: "modelContainer").warning("Failed to open persistent store, falling back to in-memory: \(error)")
+            didFallBackToInMemoryStore = true
             let fallback = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
             return (try? ModelContainer(for: schema, configurations: [fallback]))
                 ?? { fatalError("Could not create any ModelContainer: \(error)") }()
         }
     }()
 
+    // 0 = System, 1 = Light, 2 = Dark (set in Profile > Appearance). New
+    // installs default to Dark for a sleeker first impression; the picker
+    // there lets users opt back to System or Light.
+    @AppStorage("colorSchemeOverride") private var colorSchemeOverride = 2
+    private var resolvedColorScheme: ColorScheme? {
+        switch colorSchemeOverride {
+        case 1:  return .light
+        case 2:  return .dark
+        default: return nil
+        }
+    }
+
     @AppStorage("seedDataVersion") private var seedDataVersion: Int = 0
+    /// Highest seed version that added new exercises the user should be told
+    /// about. Later data-only migrations bump `seedDataVersion` past this.
+    private static let latestContentSeedVersion = 4
     @AppStorage("notifiedSeedVersion") private var notifiedSeedVersion: Int = 0
     @State private var showNewContentAlert = false
+    @State private var showDataNotSavingAlert = false
+
+    init() {
+        LuminaFonts.registerAll()
+    }
 
     var body: some Scene {
         WindowGroup {
             OnboardingGate {
                 RootView()
             }
+            .preferredColorScheme(resolvedColorScheme)
             .environmentObject(auth)
             .environmentObject(deepLinkRouter)
             .onAppear {
@@ -54,14 +82,25 @@ struct BreathRelaxStretchApp: App {
                     // A first-ever launch already has all the content — don't
                     // greet new users with a "New Content Added" alert.
                     notifiedSeedVersion = seedDataVersion
-                } else if notifiedSeedVersion < seedDataVersion {
+                } else if notifiedSeedVersion < Self.latestContentSeedVersion {
+                    // Only greet users about versions that actually added new
+                    // exercises. Data-only migrations (e.g. v5's isBilateral
+                    // flag) bump seedDataVersion but shouldn't pop the alert.
                     showNewContentAlert = true
+                }
+                if Self.didFallBackToInMemoryStore {
+                    showDataNotSavingAlert = true
                 }
             }
             .alert("New Content Added", isPresented: $showNewContentAlert) {
                 Button("Got it") { notifiedSeedVersion = seedDataVersion }
             } message: {
                 Text("New stretches were added covering every muscle group — find them in the Exercises tab.")
+            }
+            .alert("Changes Won't Be Saved", isPresented: $showDataNotSavingAlert) {
+                Button("OK") {}
+            } message: {
+                Text("Your saved data couldn't be opened, so this session is running in a temporary mode — anything you do now will be lost when you close the app. Reopening the app again may restore normal saving.")
             }
             .task { await syncRemoteCatalog() }
             .onOpenURL { url in
@@ -100,11 +139,16 @@ struct BreathRelaxStretchApp: App {
 
             let mediaURL = raw["mediaURL"] as? String
             let caution  = raw["caution"] as? String
+            // Missing key defaults to true — most stretches are bilateral;
+            // the seed only marks the one-side-at-a-time exercises false.
+            let isBilateral = raw["isBilateral"] as? Bool ?? true
             let exercise = Exercise(
                 name: name, type: type, targetBodyParts: parts,
                 durationSeconds: duration, difficulty: difficulty,
-                instructions: instructions, mediaURL: mediaURL, caution: caution
+                instructions: instructions, mediaURL: mediaURL, caution: caution,
+                isBilateral: isBilateral
             )
+            exercise.seedID = raw["id"] as? String
             exercise.localVideoName = raw["localVideoName"] as? String
             if let posesRaw = raw["poses"],
                let posesData = try? JSONSerialization.data(withJSONObject: posesRaw) {
@@ -121,155 +165,71 @@ struct BreathRelaxStretchApp: App {
     }
 
     // MARK: - Seed migration
-    // Backfills data added to the bundled seed after a user first installed:
-    //   v2 — pose keyframes for the stick-figure animation
-    //   v3 — video tutorial links (mediaURL) for select exercises
-    //   v4 — full muscle-group vocabulary (MuscleGroup) + full coverage seed
+    // Actual matching/migration logic lives in `SeedMigrator` (testable
+    // against an in-memory ModelContext); these are thin wrappers that load
+    // the bundle JSON, delegate, and advance `seedDataVersion`. See
+    // `SeedMigrator` for the version history and the rename-safety rationale.
 
     private func migrateSeedIfNeeded() {
         migrateSeedToV3IfNeeded()
         migrateSeedToV4IfNeeded()
+        migrateSeedToV5IfNeeded()
+        migrateSeedToV6IfNeeded()
+    }
+
+    /// Loads the bundled seed JSON's exercise array, or nil if unavailable.
+    private func loadSeedExercises() -> [[String: Any]]? {
+        guard
+            let url  = Bundle.main.url(forResource: "SeedData", withExtension: "json"),
+            let data = try? Data(contentsOf: url),
+            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let rawExercises = json["exercises"] as? [[String: Any]]
+        else { return nil }
+        return rawExercises
     }
 
     private func migrateSeedToV3IfNeeded() {
         guard seedDataVersion < 3 else { return }
-
-        guard
-            let url  = Bundle.main.url(forResource: "SeedData", withExtension: "json"),
-            let data = try? Data(contentsOf: url),
-            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-            let rawExercises = json["exercises"] as? [[String: Any]]
-        else {
-            seedDataVersion = 3
-            return
-        }
-
-        // Build name → (posesData, mediaURL) maps from the bundle seed. The
-        // v4 seed no longer ships poses/mediaURL, so this is a no-op for
-        // fresh-enough installs and only matters for very old (pre-v2/v3)
-        // installs upgrading through this step on their way to v4.
-        var posesByName: [String: Data] = [:]
-        var mediaByName: [String: String] = [:]
-        for raw in rawExercises {
-            guard let name = raw["name"] as? String else { continue }
-            if let posesRaw = raw["poses"],
-               let poseData = try? JSONSerialization.data(withJSONObject: posesRaw) {
-                posesByName[name] = poseData
+        if let rawExercises = loadSeedExercises() {
+            let context = sharedModelContainer.mainContext
+            if SeedMigrator.migrateV3(context: context, rawExercises: rawExercises) {
+                try? context.save()
             }
-            if let media = raw["mediaURL"] as? String, !media.isEmpty {
-                mediaByName[name] = media
-            }
-        }
-
-        let context = sharedModelContainer.mainContext
-        let existing = (try? context.fetch(FetchDescriptor<Exercise>())) ?? []
-        var changed = false
-        for exercise in existing {
-            if exercise.posesData.isEmpty, let poseData = posesByName[exercise.name] {
-                exercise.posesData = poseData
-                changed = true
-            }
-            // Only fill in a video when the exercise doesn't already have one,
-            // so we never clobber a link the user added themselves.
-            if (exercise.mediaURL ?? "").isEmpty, let media = mediaByName[exercise.name] {
-                exercise.mediaURL = media
-                changed = true
-            }
-        }
-
-        if changed {
-            try? context.save()
         }
         seedDataVersion = 3
     }
 
-    /// v4 — migrates the exercise vocabulary from the old coarse body-map
-    /// regions (e.g. "Left Leg", "Upper Back") to the full `MuscleGroup` set
-    /// (e.g. "Left Quadriceps", "Left Trapezius"/"Right Trapezius"), and adds
-    /// the new stretches needed for full muscle-group coverage.
     private func migrateSeedToV4IfNeeded() {
         guard seedDataVersion < 4 else { return }
-
-        guard
-            let url  = Bundle.main.url(forResource: "SeedData", withExtension: "json"),
-            let data = try? Data(contentsOf: url),
-            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-            let rawExercises = json["exercises"] as? [[String: Any]]
-        else {
-            seedDataVersion = 4
-            return
-        }
-
-        let context = sharedModelContainer.mainContext
-        let existing = (try? context.fetch(FetchDescriptor<Exercise>())) ?? []
-        var existingByName: [String: Exercise] = [:]
-        for exercise in existing { existingByName[exercise.name] = exercise }
-
-        var changed = false
-
-        for raw in rawExercises {
-            guard
-                let name         = raw["name"] as? String,
-                let typeStr      = raw["type"] as? String,
-                let type         = ExerciseType(rawValue: typeStr.capitalized),
-                let parts        = raw["targetBodyParts"] as? [String],
-                let duration     = raw["durationSeconds"] as? Int,
-                let difficulty   = raw["difficulty"] as? Int,
-                let instructions = raw["instructions"] as? [String]
-            else { continue }
-
-            if let exercise = existingByName[name] {
-                // Already-seeded exercise the user has — adopt the bundle's
-                // re-authored targets verbatim so upgrading users get the
-                // same anatomically-correct groups as fresh installs (a
-                // plain MuscleGroup.migrate of e.g. "Left Leg" would land
-                // hamstring stretches on Quadriceps).
-                if exercise.targetBodyParts != parts {
-                    exercise.targetBodyParts = parts
-                    changed = true
-                }
-            } else {
-                // Brand-new in v4 — insert it as-is.
-                let exercise = Exercise(
-                    name: name, type: type, targetBodyParts: parts,
-                    durationSeconds: duration, difficulty: difficulty,
-                    instructions: instructions,
-                    mediaURL: raw["mediaURL"] as? String,
-                    caution: raw["caution"] as? String
-                )
-                exercise.localVideoName = raw["localVideoName"] as? String
-                context.insert(exercise)
-                existingByName[name] = exercise
-                changed = true
+        if let rawExercises = loadSeedExercises() {
+            let context = sharedModelContainer.mainContext
+            if SeedMigrator.migrateV4(context: context, rawExercises: rawExercises) {
+                try? context.save()
             }
-        }
-
-        // User-created exercises (anything not named in the bundle seed)
-        // keep their own content but still need old region names mapped
-        // forward; unrecognized/custom names pass through unchanged.
-        let seedNames = Set(rawExercises.compactMap { $0["name"] as? String })
-        for exercise in existing where !seedNames.contains(exercise.name) {
-            let migrated = MuscleGroup.migrate(exercise.targetBodyParts)
-            if migrated != exercise.targetBodyParts {
-                exercise.targetBodyParts = migrated
-                changed = true
-            }
-        }
-
-        // Body-map marks saved from the old region set need the same
-        // one-time vocabulary migration.
-        let defaults = UserDefaults.standard
-        if let markedRegions = defaults.stringArray(forKey: "bodymap.markedRegions") {
-            let migratedRegions = MuscleGroup.migrate(markedRegions)
-            if migratedRegions != markedRegions {
-                defaults.set(migratedRegions, forKey: "bodymap.markedRegions")
-            }
-        }
-
-        if changed {
-            try? context.save()
         }
         seedDataVersion = 4
+    }
+
+    private func migrateSeedToV5IfNeeded() {
+        guard seedDataVersion < 5 else { return }
+        if let rawExercises = loadSeedExercises() {
+            let context = sharedModelContainer.mainContext
+            if SeedMigrator.migrateV5(context: context, rawExercises: rawExercises) {
+                try? context.save()
+            }
+        }
+        seedDataVersion = 5
+    }
+
+    private func migrateSeedToV6IfNeeded() {
+        guard seedDataVersion < 6 else { return }
+        if let rawExercises = loadSeedExercises() {
+            let context = sharedModelContainer.mainContext
+            if SeedMigrator.migrateV6(context: context, rawExercises: rawExercises) {
+                try? context.save()
+            }
+        }
+        seedDataVersion = 6
     }
 
     // MARK: - Remote catalog sync (best-effort, offline-first)
