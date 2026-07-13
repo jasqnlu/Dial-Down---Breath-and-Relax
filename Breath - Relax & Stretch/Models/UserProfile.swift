@@ -19,4 +19,37 @@ final class UserProfile {
         self.profileID = profileID
         self.displayName = displayName
     }
+
+    /// SwiftData can't enforce `.unique` on `profileID` once a CloudKit
+    /// container is configured, so if sync ever produces two rows before a
+    /// merge resolves, code that reads "the" profile via `.first` would
+    /// non-deterministically split a user's stats across two rows. Call this
+    /// once on launch to fold any duplicates into a single surviving row.
+    static func dedupe(in context: ModelContext) {
+        let all = (try? context.fetch(FetchDescriptor<UserProfile>())) ?? []
+        guard all.count > 1 else { return }
+
+        let survivor = all[0]
+        for duplicate in all.dropFirst() {
+            survivor.totalPoints += duplicate.totalPoints
+            survivor.totalMinutes += duplicate.totalMinutes
+            survivor.streak = max(survivor.streak, duplicate.streak)
+            for badge in duplicate.badges where !survivor.badges.contains(badge) {
+                survivor.badges.append(badge)
+            }
+            if let dupDate = duplicate.lastSessionDate,
+               dupDate > (survivor.lastSessionDate ?? .distantPast) {
+                survivor.lastSessionDate = dupDate
+            }
+            context.delete(duplicate)
+        }
+
+        do {
+            try context.save()
+        } catch {
+            #if DEBUG
+            print("⚠️ SwiftData save failed in UserProfile.dedupe: \(error)")
+            #endif
+        }
+    }
 }
