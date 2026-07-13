@@ -293,6 +293,17 @@ struct ProfileSettingsTab: View {
         .sheet(isPresented: $showingAppGuide) {
             AppGuideView()
         }
+        .task {
+            // Reconcile against the real OS permission — e.g. if the user
+            // revoked notification access from iOS Settings directly, the
+            // toggle would otherwise keep showing "on" with nothing actually
+            // being delivered.
+            guard notificationsEnabled else { return }
+            let status = await NotificationService.shared.authorizationStatus()
+            if status == .denied {
+                notificationsEnabled = false
+            }
+        }
     }
 
     // MARK: Helpers
