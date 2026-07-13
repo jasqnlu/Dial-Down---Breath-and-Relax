@@ -28,6 +28,10 @@ struct SessionPlayerView: View {
     @State private var totalPointsEarned = 0
     @State private var sessionStarted = Date()
     @State private var shouldRequestReview = false
+    @State private var showingExitConfirmation = false
+    /// Each exercise's own completion fraction, so the session's overall
+    /// completionPercent reflects everything done, not just the last exercise.
+    @State private var exerciseCompletions: [Double] = []
 
     // Big countdown numerals aren't inside any fixed-size container here (just
     // a plain VStack with Spacers), so unlike the breathing circle / graph
@@ -171,6 +175,16 @@ struct SessionPlayerView: View {
                 shouldRequestReview = false
             }
         }
+        .confirmationDialog(
+            "End session?",
+            isPresented: $showingExitConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("End Session", role: .destructive) { dismiss() }
+            Button("Keep Going", role: .cancel) {}
+        } message: {
+            Text("Your progress on this session won't be saved.")
+        }
     }
 
     // MARK: - Player UI
@@ -181,7 +195,7 @@ struct SessionPlayerView: View {
 
             // Top bar
             HStack {
-                Button { dismiss() } label: {
+                Button { requestExit() } label: {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title2)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
@@ -245,7 +259,7 @@ struct SessionPlayerView: View {
             HStack(spacing: 48) {
                 Button {
                     impactLight.impactOccurred()
-                    advanceToNext(completion: 0.5)
+                    advanceToNext(completion: skipCompletion())
                 } label: {
                     Image(systemName: "forward.skip")
                         .font(.title)
@@ -368,6 +382,21 @@ struct SessionPlayerView: View {
         startExercise()
     }
 
+    /// Dismisses immediately if nothing has been done yet; otherwise confirms
+    /// first so an accidental tap mid-routine doesn't silently discard progress.
+    private func requestExit() {
+        if currentIndex > 0 {
+            showingExitConfirmation = true
+        } else {
+            dismiss()
+        }
+    }
+
+    private func skipCompletion() -> Double {
+        guard let duration = currentExercise?.durationSeconds else { return 0.5 }
+        return GamificationService.skipCompletion(elapsedSeconds: duration - secondsRemaining, durationSeconds: duration)
+    }
+
     private func startExercise() {
         let baseDuration = currentExercise?.durationSeconds ?? 60
         let duration = Self.scaledDuration(base: baseDuration, multiplier: durationMultiplier)
@@ -422,6 +451,7 @@ struct SessionPlayerView: View {
 
     private func advanceToNext(completion: Double, showGetReady: Bool = true) {
         totalPointsEarned += GamificationService.points(for: currentExercise, completion: completion)
+        exerciseCompletions.append(completion)
 
         if currentIndex + 1 < exercises.count {
             impactMedium.impactOccurred()
@@ -437,14 +467,14 @@ struct SessionPlayerView: View {
             // Session complete
             notifySuccess.notificationOccurred(.success)
             AudioServicesPlaySystemSound(soundComplete)
-            saveSession(completion: completion)
+            saveSession()
             showingSummary = true
         }
     }
 
     // MARK: - Persistence
 
-    private func saveSession(completion: Double) {
+    private func saveSession() {
         let completedAt = Date()
         let bodyPartsCovered = Set(exercises.flatMap { $0.targetBodyParts })
         let exerciseNames = exercises.map { $0.name }.joined(separator: ", ")
@@ -455,7 +485,7 @@ struct SessionPlayerView: View {
                 routineID: routineID,
                 startedAt: sessionStarted,
                 completedAt: completedAt,
-                completionPercent: completion,
+                completionPercent: GamificationService.aggregateCompletion(exerciseCompletions),
                 pointsEarned: totalPointsEarned,
                 exerciseIDs: exercises.map { $0.uuid },
                 bodyPartsCovered: bodyPartsCovered,
