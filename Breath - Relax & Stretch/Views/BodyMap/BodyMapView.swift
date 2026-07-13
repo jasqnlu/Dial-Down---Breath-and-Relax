@@ -6,19 +6,14 @@ import SwiftData
 struct BodyMapView: View {
     @AppStorage("bodyMapSex") private var bodyMapSex = "male"
 
-    @State private var currentLayer: BodyLayer
+    // Skin is the only body layer now — marking region colours still key off
+    // BodyLayer, so this stays as the single source of truth for those tokens.
+    private let currentLayer: BodyLayer = .skin
     @State private var facing: BodyFacing = .front
-
-    init() {
-        // Overridable per-launch (-debugBodyLayer Muscle|Skeleton) so UI
-        // verification can land on any layer directly — no synthetic taps.
-        let raw = UserDefaults.standard.string(forKey: "debugBodyLayer") ?? ""
-        _currentLayer = State(initialValue: BodyLayer(rawValue: raw) ?? .skin)
-    }
 
     // Regions the user has marked (by drawing on them or tapping them).
     // This is the single source of truth for "areas to train on".
-    @State private var markedRegions: Set<String> = []
+    @State private var markedRegions: Set<String> = BodyMapLaunchState.initialMarkedRegions()
     @State private var showMarkedExercises = false
 
     // Annotation state
@@ -53,8 +48,7 @@ struct BodyMapView: View {
                         .background(.regularMaterial)
                 } else {
                     HStack(spacing: 8) {
-                        layerPickerRow
-                        Spacer(minLength: 8)
+                        Spacer(minLength: 0)
                         facingToggleButton
                     }
                     .padding(.horizontal, 16)
@@ -69,7 +63,7 @@ struct BodyMapView: View {
                 // calibrated to the same footprint regardless of layer.
                 Group {
                     if !annotationMode {
-                        BodySceneView(facing: facing, style: currentLayer.modelStyle)
+                        BodySceneView(facing: facing, style: .skin)
                     } else {
                         GeometryReader { geo in
                             ZStack {
@@ -77,7 +71,7 @@ struct BodyMapView: View {
                                 // padding so the 3D render and the region grid it
                                 // carries land in the same box.
                                 BodySceneView(facing: facing,
-                                              style: currentLayer.modelStyle,
+                                              style: .skin,
                                               interactive: false)
                                     .padding(.horizontal, 28)
                                     .padding(.vertical, 6)
@@ -135,10 +129,10 @@ struct BodyMapView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
+            .background(Color.luminaSurface.ignoresSafeArea())
             .floatingTabBarClearance()
-            .navigationTitle(annotationMode ? "Mark Your Body" : "Body Map")
+            .navigationTitle(annotationMode ? "Mark Areas" : "Body Map")
             .navigationBarTitleDisplayMode(.inline)
-            .animation(.easeInOut(duration: 0.25), value: currentLayer)
             .animation(.easeInOut(duration: 0.25), value: facing)
             .animation(.easeInOut(duration: 0.2),  value: markedRegions.isEmpty)
             .animation(.easeInOut(duration: 0.2),  value: annotationMode)
@@ -164,45 +158,19 @@ struct BodyMapView: View {
             }
             .sheet(isPresented: $showLegend) { LegendSheet() }
             .onAppear {
-                if let saved = UserDefaults.standard.stringArray(forKey: "bodymap.markedRegions") {
-                    markedRegions = markedRegions.union(saved)
-                }
-            }
-            .onChange(of: markedRegions) { _, regions in
-                UserDefaults.standard.set(Array(regions), forKey: "bodymap.markedRegions")
+                markedRegions = BodyMapLaunchState.initialMarkedRegions(
+                    savedRegions: UserDefaults.standard.stringArray(forKey: "bodymap.markedRegions")
+                )
             }
         }
     }
 
-    // MARK: - Layer + facing controls
+    // MARK: - Facing control
 
-    private var layerPickerRow: some View {
-        HStack(spacing: 6) {
-            ForEach(BodyLayer.allCases, id: \.self) { layer in
-                let isActive = currentLayer == layer
-                Button {
-                    withAnimation(.spring(response: 0.28, dampingFraction: 0.76)) {
-                        currentLayer = layer
-                    }
-                } label: {
-                    Text(layer.rawValue)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(isActive ? .white : .secondary)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 7)
-                        .background {
-                            Capsule()
-                                .fill(isActive ? layer.accentColor : Color(.tertiarySystemFill))
-                        }
-                }
-                .buttonStyle(.plain)
-                .animation(.spring(response: 0.28, dampingFraction: 0.76), value: currentLayer)
-                .accessibilityLabel("\(layer.rawValue) layer")
-                .accessibilityAddTraits(isActive ? .isSelected : [])
-            }
-        }
-    }
-
+    // Not a multi-option picker — a single toggle
+    // between Front/Back — so it keeps its directional icon, restyled with
+    // the same chip tokens (unselected LuminaChip look) rather than wrapped
+    // in LuminaChip itself (which is text-only).
     private var facingToggleButton: some View {
         Button {
             withAnimation(.easeInOut(duration: 0.28)) {
@@ -213,12 +181,12 @@ struct BodyMapView: View {
                 Image(systemName: "arrow.left.arrow.right")
                     .font(.system(size: 10, weight: .medium))
                 Text(facing.rawValue)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.luminaLabel)
             }
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
-            .background(Color(.tertiarySystemFill), in: Capsule())
+            .foregroundStyle(Color.luminaOnSurfaceVariant)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 9)
+            .background(Color.luminaContainer, in: Capsule())
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Toggle body facing — currently \(facing.rawValue)")
@@ -284,8 +252,8 @@ struct BodyMapView: View {
             }
         }
         .frame(width: 38)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color(.systemGray4), lineWidth: 0.5))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: LuminaRadius.chip))
+        .overlay(RoundedRectangle(cornerRadius: LuminaRadius.chip).strokeBorder(Color(.systemGray4), lineWidth: 0.5))
         .shadow(color: .black.opacity(0.12), radius: 5, y: 2)
     }
 
@@ -316,13 +284,13 @@ struct BodyMapView: View {
                             .frame(width: 40, height: 36)
                             .foregroundStyle(selectedTool == tool ? .white : .primary)
                             .background(selectedTool == tool ? Color.accentColor : Color.clear)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.tag))
                     }
                     .accessibilityLabel(tool.label)
                 }
             }
-            .background(Color(.secondarySystemFill),
-                        in: RoundedRectangle(cornerRadius: 10))
+            .background(Color.luminaContainer,
+                        in: RoundedRectangle(cornerRadius: LuminaRadius.badge))
 
             Spacer()
 

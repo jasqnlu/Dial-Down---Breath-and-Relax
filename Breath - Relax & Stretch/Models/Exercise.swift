@@ -19,7 +19,21 @@ final class Exercise {
     var instructions: [String] = []
     var mediaURL: String? = nil
     var caution: String? = nil
+    /// Whether the exercise is performed on both sides at once / inherently
+    /// bilateral (true) vs. one side at a time (false). Unilateral exercises
+    /// get a mid-duration "switch sides" cue in the session player.
+    /// Defaults to true — most stretches are bilateral — so the seed JSON only
+    /// needs to specify `false` for the one-side-at-a-time exercises.
+    var isBilateral: Bool = true
     var posesData: Data = Data()
+
+    /// Stable identifier tying this row back to its entry in the bundled
+    /// `SeedData.json` (the `"id"` field there), independent of `name`.
+    /// Seed migrations key off this instead of `name` so renaming an
+    /// exercise in the seed catalog doesn't orphan/duplicate installed
+    /// users' rows. `nil` for user-created exercises and for rows seeded
+    /// before this field existed (backfilled by `migrateSeedToV5IfNeeded`).
+    var seedID: String? = nil
 
     /// Decoded pose keyframes for the stick-figure animation.
     var poses: [ExercisePose] {
@@ -57,7 +71,8 @@ final class Exercise {
         difficulty: Int,
         instructions: [String],
         mediaURL: String? = nil,
-        caution: String? = nil
+        caution: String? = nil,
+        isBilateral: Bool = true
     ) {
         self.uuid = uuid
         self.name = name
@@ -68,5 +83,6 @@ final class Exercise {
         self.instructions = instructions
         self.mediaURL = mediaURL
         self.caution = caution
+        self.isBilateral = isBilateral
     }
 }

@@ -62,22 +62,5 @@ struct RemoteProfile: Codable, Sendable, Identifiable {
     }
 }
 
-struct RemoteSession: Codable, Sendable {
-    let id: String
-    let userID: String
-    let routineID: String
-    let startedAt: String
-    let completedAt: String?
-    let completionPercent: Double
-    let pointsEarned: Int
-
-    enum CodingKeys: String, CodingKey {
-        case id
-        case userID            = "user_id"
-        case routineID         = "routine_id"
-        case startedAt         = "started_at"
-        case completedAt       = "completed_at"
-        case completionPercent = "completion_percent"
-        case pointsEarned      = "points_earned"
-    }
-}
+// RemoteSession was removed along with SupabaseService.uploadSession() — it
+// existed solely to support that dead write path (no in-app caller).

@@ -26,13 +26,14 @@ struct GoalPickerPage: View {
                 Spacer(minLength: 60)
 
                 Text("What brings you here?")
-                    .font(.largeTitle.bold())
+                    .font(.luminaDisplay)
+                    .foregroundStyle(Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
 
                 Text("We'll personalise your experience.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
+                    .font(.luminaBody)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
                     .padding(.top, 10)
@@ -79,24 +80,23 @@ struct GoalCard: View {
             VStack(spacing: 14) {
                 Image(systemName: icon)
                     .font(.system(size: 36))
-                    .foregroundStyle(isSelected ? Color.accentColor : .secondary)
+                    .foregroundStyle(isSelected ? Color.luminaPrimary : Color.luminaOnSurfaceVariant)
 
                 Text(label)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(isSelected ? Color.accentColor : .primary)
+                    .font(.luminaCardTitle)
+                    .foregroundStyle(isSelected ? Color.luminaPrimary : Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 28)
             .background(
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(isSelected
-                          ? Color.accentColor.opacity(0.10)
-                          : Color(.secondarySystemBackground))
+                RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
+                    .fill(isSelected ? Color.luminaMintTint : Color.luminaCardFill)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 18)
-                    .strokeBorder(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
+                RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
+                    .strokeBorder(isSelected ? Color.luminaPrimary : Color.luminaOutline,
+                                  lineWidth: isSelected ? 2 : 1)
             )
         }
         .buttonStyle(.plain)
@@ -105,11 +105,136 @@ struct GoalCard: View {
     }
 }
 
+// MARK: - Focus Area Picker Page
+//
+// Signup step where the user chooses which body areas they want to train.
+// Stored (by the parent, as category raw values) in `onboardingAreas` and
+// used to personalise the Home "Recommended" carousel. Colour-coded to match
+// the Exercises tab's node graph so the areas read as the same vocabulary.
+
+struct FocusAreaPickerPage: View {
+    @Binding var selectedAreas: Set<String>
+
+    private let columns = [GridItem(.flexible()), GridItem(.flexible())]
+
+    private static let icons: [ExerciseCategory: String] = [
+        .neck: "figure.stand",
+        .shoulders: "figure.arms.open",
+        .chest: "lungs.fill",
+        .back: "figure.walk",
+        .core: "figure.core.training",
+        .arms: "figure.strengthtraining.traditional",
+        .hipsGlutes: "figure.flexibility",
+        .legs: "figure.run",
+    ]
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                Spacer(minLength: 60)
+
+                Text("Where do you want to focus?")
+                    .font(.luminaDisplay)
+                    .foregroundStyle(Color.luminaOnSurface)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+
+                Text("Pick the areas you'd like to train. We'll recommend exercises for them.")
+                    .font(.luminaBody)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+                    .padding(.top, 10)
+
+                LazyVGrid(columns: columns, spacing: 14) {
+                    ForEach(ExerciseCategory.allCases) { area in
+                        FocusAreaCard(
+                            title: area.rawValue,
+                            icon: Self.icons[area] ?? "figure.mind.and.body",
+                            accent: area.accentColor,
+                            isSelected: selectedAreas.contains(area.rawValue)
+                        ) {
+                            toggle(area.rawValue)
+                        }
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 32)
+
+                Spacer(minLength: 160)
+            }
+        }
+        .scrollBounceBehavior(.basedOnSize)
+    }
+
+    private func toggle(_ id: String) {
+        if selectedAreas.contains(id) {
+            selectedAreas.remove(id)
+        } else {
+            selectedAreas.insert(id)
+        }
+    }
+}
+
+// MARK: - Focus Area Card
+
+struct FocusAreaCard: View {
+    let title: String
+    let icon: String
+    let accent: Color
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 22))
+                    .foregroundStyle(isSelected ? Color.white : accent)
+                    .frame(width: 42, height: 42)
+                    .background(
+                        Circle().fill(isSelected ? accent : accent.opacity(0.16))
+                    )
+
+                Text(title)
+                    .font(.luminaCardTitle)
+                    .foregroundStyle(isSelected ? Color.luminaPrimary : Color.luminaOnSurface)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+
+                Spacer(minLength: 0)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: LuminaRadius.control, style: .continuous)
+                    .fill(isSelected ? Color.luminaMintTint : Color.luminaCardFill)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: LuminaRadius.control, style: .continuous)
+                    .strokeBorder(isSelected ? Color.luminaPrimary : Color.luminaOutline,
+                                  lineWidth: isSelected ? 2 : 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isSelected)
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+        .accessibilityLabel(title)
+    }
+}
+
 // MARK: - Preview
 
 #Preview("Goal Picker") {
     StatefulPreviewWrapper(Set<String>()) { binding in
         GoalPickerPage(selectedGoals: binding)
+    }
+}
+
+#Preview("Focus Area Picker") {
+    StatefulPreviewWrapper(Set<String>()) { binding in
+        FocusAreaPickerPage(selectedAreas: binding)
     }
 }
 

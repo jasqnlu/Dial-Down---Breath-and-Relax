@@ -1,117 +1,5 @@
 import SwiftUI
-
-// MARK: - For You Section
-
-struct ForYouSection: View {
-    let allExercises: [Exercise]
-
-    @AppStorage("onboardingGoals") private var goalsStr = ""
-    @State private var showingSession = false
-
-    private var activeGoals: [GoalMeta] {
-        let ids = Set(goalsStr.split(separator: ",").map(String.init))
-        return GoalMeta.all.filter { ids.contains($0.id) }
-    }
-
-    private var recommendedExercises: [Exercise] {
-        GoalMeta.recommend(from: allExercises, activeGoalIDs: Set(goalsStr.split(separator: ",").map(String.init)), limit: 8)
-    }
-
-    private var sessionExercises: [Exercise] {
-        Array(recommendedExercises.prefix(4))
-    }
-
-    var body: some View {
-        if !activeGoals.isEmpty, !recommendedExercises.isEmpty {
-            VStack(alignment: .leading, spacing: 0) {
-                headerRow
-                    .padding(.horizontal)
-                    .padding(.top, 12)
-                    .padding(.bottom, 10)
-
-                exerciseCards
-
-                if !sessionExercises.isEmpty {
-                    quickSessionButton
-                        .padding(.horizontal)
-                        .padding(.top, 12)
-                }
-
-                Divider()
-                    .padding(.horizontal)
-                    .padding(.top, 16)
-                    .padding(.bottom, 4)
-            }
-            .sheet(isPresented: $showingSession) {
-                SessionPlayerView(exercises: sessionExercises)
-            }
-        }
-    }
-
-    // MARK: Header
-
-    private var headerRow: some View {
-        HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("For You")
-                    .font(.title2.bold())
-                Text(activeGoals.map(\.displayName).joined(separator: " · "))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-        }
-    }
-
-    // MARK: Cards
-
-    private var exerciseCards: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(alignment: .top, spacing: 12) {
-                ForEach(recommendedExercises) { exercise in
-                    NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
-                        ForYouCard(exercise: exercise)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal)
-            .padding(.vertical, 2)
-        }
-    }
-
-    // MARK: Quick session
-
-    private var quickSessionButton: some View {
-        let totalSecs = sessionExercises.reduce(0) { $0 + $1.durationSeconds }
-        let mins = max(1, totalSecs / 60)
-
-        return Button {
-            showingSession = true
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "play.fill")
-                    .font(.subheadline)
-
-                Text("Quick Session")
-                    .fontWeight(.semibold)
-
-                Spacer()
-
-                Text("\(sessionExercises.count) exercises · \(mins)m")
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.8))
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .background(Color.accentColor)
-            .foregroundStyle(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Quick session: \(sessionExercises.count) exercises, \(mins) minutes")
-    }
-}
+import Combine
 
 // MARK: - Exercise card
 
@@ -122,24 +10,129 @@ struct ForYouCard: View {
         VStack(alignment: .leading, spacing: 6) {
             Image(systemName: exercise.type == .breath ? "wind" : "figure.mind.and.body")
                 .font(.system(size: 40))
-                .foregroundStyle(Color.accentColor.opacity(0.55))
+                .foregroundStyle(Color.luminaPrimary.opacity(0.55))
                 .frame(maxWidth: .infinity)
                 .frame(height: 110)
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .background(Color.luminaMintTint)
+                .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.panel, style: .continuous))
 
             Text(exercise.name)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.primary)
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurface)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
 
             Text("\(exercise.durationFormatted) · \(exercise.type.rawValue)")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .font(.luminaCaption)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
         }
         .frame(width: 128)
+        .padding(8)
+        .luminaCard(padding: 0)
+    }
+}
+
+// MARK: - Recommended carousel
+//
+// A rotating carousel of specific exercises drawn from the user's chosen
+// focus areas (picked at signup), each card tagged with its category. Auto-
+// advances unless Reduce Motion is on, and can be swiped by hand.
+
+struct RecommendedCarousel: View {
+    let items: [RecommendedExercise]
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var index = 0
+    private let advance = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        VStack(spacing: 10) {
+            TabView(selection: $index) {
+                ForEach(Array(items.enumerated()), id: \.element.id) { offset, item in
+                    NavigationLink(destination: ExerciseDetailView(exercise: item.exercise)) {
+                        RecommendedCard(item: item)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 2)
+                    .tag(offset)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: 132)
+
+            if items.count > 1 {
+                HStack(spacing: 6) {
+                    ForEach(items.indices, id: \.self) { i in
+                        Capsule()
+                            .fill(i == index ? Color.luminaPrimary : Color.luminaOutline)
+                            .frame(width: i == index ? 18 : 6, height: 6)
+                    }
+                }
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: index)
+            }
+        }
+        .onReceive(advance) { _ in
+            guard !reduceMotion, items.count > 1 else { return }
+            withAnimation(.easeInOut(duration: 0.5)) {
+                index = (index + 1) % items.count
+            }
+        }
+        .onChange(of: items.count) { _, newCount in
+            if index >= newCount { index = 0 }
+        }
+    }
+}
+
+private struct RecommendedCard: View {
+    let item: RecommendedExercise
+
+    private var icon: String {
+        item.exercise.type == .breath ? "wind" : "figure.mind.and.body"
+    }
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: icon)
+                .font(.system(size: 30))
+                .foregroundStyle(item.category.accentColor)
+                .frame(width: 60, height: 60)
+                .background(
+                    RoundedRectangle(cornerRadius: LuminaRadius.chip, style: .continuous)
+                        .fill(item.category.accentColor.opacity(0.16))
+                )
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(item.category.rawValue.uppercased())
+                    .font(.luminaCaption)
+                    .foregroundStyle(item.category.accentColor)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(item.category.accentColor.opacity(0.14), in: Capsule())
+
+                Text(item.exercise.name)
+                    .font(.luminaCardTitle)
+                    .foregroundStyle(Color.luminaOnSurface)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text("\(item.exercise.durationFormatted) · \(item.exercise.type.rawValue)")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
+
+            Spacer(minLength: 0)
+
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .luminaCard(padding: 14)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(item.category.rawValue): \(item.exercise.name), \(item.exercise.durationFormatted)")
     }
 }
 

@@ -33,7 +33,7 @@ struct AppLockView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [Color(.systemIndigo).opacity(0.45), Color(.systemTeal).opacity(0.3)],
+                colors: [Color.luminaGradientStart, Color.luminaGradientEnd],
                 startPoint: .topLeading, endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
@@ -48,23 +48,24 @@ struct AppLockView: View {
                         .frame(width: 110, height: 110)
                     Image(systemName: biometricIcon)
                         .font(.system(size: 48, weight: .light))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(.white)
                 }
 
                 // Text
                 VStack(spacing: 10) {
                     Text("App Locked")
-                        .font(.title2.bold())
+                        .font(.luminaHeadline)
+                        .foregroundStyle(.white)
                     Text("Use \(biometricLabel) to unlock the app.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.luminaSubheadline)
+                        .foregroundStyle(.white.opacity(0.8))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                 }
 
                 if failed {
                     Text("Couldn't unlock. Try again.")
-                        .font(.footnote)
+                        .font(.luminaLabel)
                         .foregroundStyle(.red)
                 }
 
@@ -74,17 +75,16 @@ struct AppLockView: View {
                 } label: {
                     HStack(spacing: 8) {
                         if isAuthenticating {
-                            ProgressView().tint(.white)
+                            ProgressView().tint(Color.luminaBlue)
                         } else {
                             Image(systemName: biometricIcon)
                             Text("Unlock with \(biometricLabel)")
-                                .fontWeight(.semibold)
                         }
                     }
-                    .foregroundStyle(.white)
+                    .font(.luminaCardTitle)
+                    .foregroundStyle(Color.luminaBlue)
                     .frame(width: 260, height: 52)
-                    .background(.tint)
-                    .cornerRadius(14)
+                    .background(.white, in: Capsule())
                 }
                 .disabled(isAuthenticating)
 
@@ -92,8 +92,8 @@ struct AppLockView: View {
                 Button("Sign out instead") {
                     auth.signOut()
                 }
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                .font(.luminaLabel)
+                .foregroundStyle(.white.opacity(0.7))
 
                 Spacer()
             }

@@ -24,12 +24,13 @@ struct EmailAuthView: View {
                     VStack(spacing: 6) {
                         Image(systemName: "envelope.circle.fill")
                             .font(.system(size: 52))
-                            .foregroundStyle(.tint)
+                            .foregroundStyle(Color.luminaPrimary)
                         Text(isSignUp ? "Create Account" : "Welcome Back")
-                            .font(.title2.bold())
+                            .font(.luminaTitle)
+                            .foregroundStyle(Color.luminaOnSurface)
                         Text(isSignUp ? "Sign up with your email address." : "Sign in to your account.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .font(.luminaSubheadline)
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
                     }
                     .padding(.top, 8)
 
@@ -72,28 +73,24 @@ struct EmailAuthView: View {
                             Image(systemName: "exclamationmark.triangle.fill")
                             Text(err)
                         }
-                        .font(.footnote)
+                        .font(.luminaLabel)
                         .foregroundStyle(.red)
                         .padding(10)
-                        .background(.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                        .background(.red.opacity(0.08), in: RoundedRectangle(cornerRadius: LuminaRadius.badge))
                     }
 
                     // Primary action
                     Button { submit() } label: {
                         Group {
                             if isLoading {
-                                ProgressView().tint(.white)
+                                ProgressView().tint(Color.luminaOnPrimary)
                             } else {
                                 Text(isSignUp ? "Create Account" : "Sign In")
-                                    .font(.headline)
-                                    .foregroundStyle(.white)
                             }
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 52)
-                        .background(.tint)
-                        .cornerRadius(14)
                     }
+                    .buttonStyle(LuminaPillButtonStyle())
                     .disabled(isLoading)
 
                     // Toggle sign in / sign up
@@ -106,12 +103,11 @@ struct EmailAuthView: View {
                     } label: {
                         HStack(spacing: 4) {
                             Text(isSignUp ? "Already have an account?" : "Don't have an account?")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.luminaOnSurfaceVariant)
                             Text(isSignUp ? "Sign In" : "Sign Up")
-                                .foregroundStyle(.tint)
-                                .fontWeight(.semibold)
+                                .foregroundStyle(Color.luminaPrimary)
                         }
-                        .font(.footnote)
+                        .font(.luminaLabel)
                     }
 
                     Spacer(minLength: 0)
@@ -119,6 +115,7 @@ struct EmailAuthView: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
             }
+            .background(Color.luminaSurface.ignoresSafeArea())
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -207,12 +204,12 @@ private struct PasswordStrengthBar: View {
             }
             HStack(spacing: 0) {
                 Text("Password strength: ")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
                 Text(label)
                     .foregroundStyle(color)
                     .fontWeight(.semibold)
             }
-            .font(.caption2)
+            .font(.luminaCaption)
             .animation(.easeInOut(duration: 0.2), value: label)
         }
         .padding(.horizontal, 4)
@@ -232,7 +229,7 @@ private struct AuthField: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
                 .frame(width: 20)
 
             if isSecure {
@@ -249,10 +246,11 @@ private struct AuthField: View {
                     .autocorrectionDisabled()
             }
         }
+        .font(.luminaBody)
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .background(Color(.secondarySystemBackground),
-                    in: RoundedRectangle(cornerRadius: 12))
+        .background(Color.luminaContainer,
+                    in: RoundedRectangle(cornerRadius: LuminaRadius.tag))
     }
 }
 

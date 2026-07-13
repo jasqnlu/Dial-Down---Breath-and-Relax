@@ -68,6 +68,9 @@ struct CreateExerciseView: View {
                 instructionsSection
                 cautionSection
             }
+            .listRowBackground(Color.luminaCardFill)
+            .scrollContentBackground(.hidden)
+            .background(Color.luminaSurface.ignoresSafeArea())
             .navigationTitle("New Exercise")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -89,8 +92,9 @@ struct CreateExerciseView: View {
     // MARK: - Sections
 
     private var basicInfoSection: some View {
-        Section("Basic Info") {
+        Section {
             TextField("Exercise name", text: $name)
+                .font(.luminaBody)
                 .textInputAutocapitalization(.words)
 
             Picker("Type", selection: $exerciseType) {
@@ -98,11 +102,15 @@ struct CreateExerciseView: View {
                     Text(type.rawValue).tag(type)
                 }
             }
+        } header: {
+            Text("Basic Info")
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
         }
     }
 
     private var durationDifficultySection: some View {
-        Section("Duration & Difficulty") {
+        Section {
             Stepper(
                 value: $durationSeconds,
                 in: 15...600,
@@ -110,16 +118,19 @@ struct CreateExerciseView: View {
             ) {
                 HStack {
                     Text("Duration")
+                        .font(.luminaBody)
                     Spacer()
                     Text(formattedDuration(durationSeconds))
-                        .foregroundStyle(.secondary)
+                        .font(.luminaBody)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                         .monospacedDigit()
                 }
             }
 
             VStack(alignment: .leading, spacing: 8) {
                 Text("Difficulty")
-                    .font(.body)
+                    .font(.luminaSubheadline)
+                    .foregroundStyle(Color.luminaOnSurface)
                 Picker("Difficulty", selection: $difficulty) {
                     Text("Easy").tag(1)
                     Text("Medium").tag(2)
@@ -128,6 +139,10 @@ struct CreateExerciseView: View {
                 .pickerStyle(.segmented)
             }
             .padding(.vertical, 4)
+        } header: {
+            Text("Duration & Difficulty")
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
         }
     }
 
@@ -143,11 +158,12 @@ struct CreateExerciseView: View {
                 } label: {
                     HStack {
                         Text(part)
-                            .foregroundStyle(.primary)
+                            .font(.luminaBody)
+                            .foregroundStyle(Color.luminaOnSurface)
                         Spacer()
                         if selectedBodyParts.contains(part) {
                             Image(systemName: "checkmark")
-                                .foregroundStyle(Color.accentColor)
+                                .foregroundStyle(Color.luminaPrimary)
                                 .fontWeight(.semibold)
                         }
                     }
@@ -156,9 +172,12 @@ struct CreateExerciseView: View {
             }
         } header: {
             Text("Target Body Parts")
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
         } footer: {
             if selectedBodyParts.isEmpty {
                 Text("Select at least one body part.")
+                    .font(.luminaCaption)
                     .foregroundStyle(.red)
             }
         }
@@ -169,15 +188,16 @@ struct CreateExerciseView: View {
             ForEach(steps.indices, id: \.self) { index in
                 HStack(alignment: .top, spacing: 10) {
                     Text("\(index + 1)")
-                        .font(.caption)
+                        .font(.luminaCaption)
                         .fontWeight(.semibold)
                         .frame(width: 24, height: 24)
-                        .background(Color.accentColor.opacity(0.12))
-                        .foregroundStyle(Color.accentColor)
+                        .background(Color.luminaPrimary.opacity(0.12))
+                        .foregroundStyle(Color.luminaPrimary)
                         .clipShape(Circle())
                         .padding(.top, 8)
 
                     TextField("Step \(index + 1)", text: $steps[index], axis: .vertical)
+                        .font(.luminaBody)
                         .lineLimit(2...5)
                 }
             }
@@ -192,15 +212,20 @@ struct CreateExerciseView: View {
                 steps.append("")
             } label: {
                 Label("Add Step", systemImage: "plus.circle")
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaPrimary)
             }
         } header: {
             Text("Instructions")
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
         } footer: {
             let hasContent = steps.contains {
                 !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             }
             if !hasContent {
                 Text("At least one instruction step is required.")
+                    .font(.luminaCaption)
                     .foregroundStyle(.red)
             }
         }
@@ -209,12 +234,17 @@ struct CreateExerciseView: View {
     private var cautionSection: some View {
         Section {
             TextField("e.g. Avoid if you have lower-back pain.", text: $caution, axis: .vertical)
+                .font(.luminaBody)
                 .lineLimit(2...4)
                 .textInputAutocapitalization(.sentences)
         } header: {
             Text("Safety caution (optional)")
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
         } footer: {
             Text("Shown as a warning card on the exercise detail screen.")
+                .font(.luminaCaption)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
         }
     }
 

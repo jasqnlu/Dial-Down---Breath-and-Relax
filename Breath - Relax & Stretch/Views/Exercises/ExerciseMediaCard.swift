@@ -1,8 +1,8 @@
 import SwiftUI
 import AVKit
 
-/// Hero media slot: looping local video when available, otherwise a
-/// "coming soon" placeholder. Never renders a broken player.
+/// Hero media slot: looping local video when available. Missing media renders
+/// nothing so exercise detail screens do not reserve a blank placeholder.
 struct ExerciseMediaCard: View {
     let exercise: Exercise
     @State private var player: AVPlayer?
@@ -35,23 +35,9 @@ struct ExerciseMediaCard: View {
                         player = nil
                         loopObserver = nil
                     }
-            } else {
-                VStack(spacing: 10) {
-                    Image(systemName: "video.badge.waveform")
-                        .font(.system(size: 34, weight: .light))
-                        .foregroundStyle(Color.accentColor)
-                    Text("Video coming soon")
-                        .font(.subheadline.weight(.semibold))
-                    Text("Follow the steps below in the meantime.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .aspectRatio(16/9, contentMode: .fit)
-                .background(Color(.secondarySystemBackground))
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.panel))
         .padding(.horizontal)
     }
 }

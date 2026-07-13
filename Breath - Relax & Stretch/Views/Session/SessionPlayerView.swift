@@ -18,8 +18,8 @@ struct SessionPlayerView: View {
     @AppStorage("totalSessionsCompleted") private var totalSessionsCompleted = 0
     @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
     @AppStorage("hasSeenInitialPaywall") private var hasSeenInitialPaywall = false
+    @AppStorage("pendingInitialPaywall") private var pendingInitialPaywall = false
     @AppStorage("sessionDurationMultiplier") private var durationMultiplier: Double = 1.0
-    @State private var shouldShowPaywall = false
 
     @State private var currentIndex = 0
     @State private var secondsRemaining = 0
@@ -28,6 +28,12 @@ struct SessionPlayerView: View {
     @State private var totalPointsEarned = 0
     @State private var sessionStarted = Date()
     @State private var shouldRequestReview = false
+
+    // Big countdown numerals aren't inside any fixed-size container here (just
+    // a plain VStack with Spacers), so unlike the breathing circle / graph
+    // node labels there's no overflow risk in letting these scale.
+    @ScaledMetric(relativeTo: .largeTitle) private var exerciseTimerSize: CGFloat = 64
+    @ScaledMetric(relativeTo: .largeTitle) private var getReadyCountSize: CGFloat = 72
 
     // Wall-clock end of the current exercise's countdown. `secondsRemaining` is
     // a display value derived from this each tick, so backgrounding the app
@@ -41,6 +47,13 @@ struct SessionPlayerView: View {
     @State private var getReadyExerciseName = ""
     @State private var getReadyCount = 3
     @State private var getReadyTask: Task<Void, Never>? = nil
+
+    // Side-switch cue for unilateral (one-side-at-a-time) stretches. The switch
+    // point is anchored to `phaseEndDate` (via a lead offset) rather than a
+    // fixed wall-clock date, so it survives pause/resume and background
+    // catch-up, which already restore `phaseEndDate` as the source of truth.
+    @State private var sideSwitchPending = false
+    @State private var sideSwitchLeadFromEnd: TimeInterval = 0
 
     // Haptics
     private let impactLight   = UIImpactFeedbackGenerator(style: .light)
@@ -58,19 +71,51 @@ struct SessionPlayerView: View {
         return exercises[currentIndex]
     }
 
+    private var totalSessionSeconds: Int {
+        exercises.reduce(0) { total, exercise in
+            total + Self.scaledDuration(base: exercise.durationSeconds, multiplier: durationMultiplier)
+        }
+    }
+
+    private var elapsedSessionSeconds: Int {
+        guard currentIndex < exercises.count else { return totalSessionSeconds }
+
+        let completed = exercises.prefix(currentIndex).reduce(0) { total, exercise in
+            total + Self.scaledDuration(base: exercise.durationSeconds, multiplier: durationMultiplier)
+        }
+        let currentDuration = Self.scaledDuration(base: exercises[currentIndex].durationSeconds, multiplier: durationMultiplier)
+        let currentElapsed = max(0, min(currentDuration, currentDuration - secondsRemaining))
+        return completed + currentElapsed
+    }
+
+    private var sessionProgress: Double {
+        guard totalSessionSeconds > 0 else { return 0 }
+        return min(1, Double(elapsedSessionSeconds) / Double(totalSessionSeconds))
+    }
+
     var body: some View {
         Group {
             if showingSummary {
                 SessionSummaryView(pointsEarned: totalPointsEarned) {
                     onComplete?(totalPointsEarned)
                     dismiss()
+                    requestDeferredPaywallIfNeeded()
                 }
             } else if exercises.isEmpty {
-                ContentUnavailableView(
-                    "No Exercises",
-                    systemImage: "figure.mind.and.body",
-                    description: Text("There are no exercises to play.")
-                )
+                ContentUnavailableView {
+                    Label("No Exercises", systemImage: "figure.mind.and.body")
+                } description: {
+                    Text("There are no exercises to play.")
+                } actions: {
+                    Button {
+                        dismiss()
+                        NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
+                    } label: {
+                        Label("Browse Exercises", systemImage: "list.bullet")
+                    }
+                    .buttonStyle(LuminaPillButtonStyle())
+                }
+                .background(Color.luminaSurface.ignoresSafeArea())
                 .overlay(alignment: .topLeading) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark.circle.fill")
@@ -106,6 +151,7 @@ struct SessionPlayerView: View {
                 let remaining = Int(phaseEndDate.timeIntervalSinceNow.rounded(.up))
                 if remaining > 0 {
                     secondsRemaining = remaining
+                    checkSideSwitch()
                     breathTick += 1
                     if breathTick % 4 == 0 { AudioServicesPlaySystemSound(soundTick) }
                 } else {
@@ -125,9 +171,6 @@ struct SessionPlayerView: View {
                 shouldRequestReview = false
             }
         }
-        .sheet(isPresented: $shouldShowPaywall) {
-            PaywallView()
-        }
     }
 
     // MARK: - Player UI
@@ -141,7 +184,7 @@ struct SessionPlayerView: View {
                 Button { dismiss() } label: {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                 }
                 Spacer()
                 Picker("Speed", selection: $durationMultiplier) {
@@ -154,25 +197,30 @@ struct SessionPlayerView: View {
                 .accessibilityLabel("Exercise duration speed")
                 Spacer()
                 Text("\(currentIndex + 1) / \(exercises.count)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
             .padding()
 
-            ProgressView(value: Double(currentIndex), total: Double(exercises.count))
+            ProgressView(value: sessionProgress)
+                .tint(Color.luminaPrimary)
                 .padding(.horizontal)
+                .animation(.linear(duration: 1), value: sessionProgress)
+                .accessibilityLabel("Session progress")
+                .accessibilityValue("\(Int((sessionProgress * 100).rounded())) percent")
 
             Spacer()
 
             Text(exercise.name)
-                .font(.largeTitle)
-                .fontWeight(.bold)
+                .font(.luminaDisplay)
+                .foregroundStyle(Color.luminaOnSurface)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
             Text(exercise.type.rawValue)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.luminaLabel)
+                .textCase(.uppercase)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
                 .padding(.top, 4)
 
             Spacer()
@@ -180,13 +228,17 @@ struct SessionPlayerView: View {
             if exercise.type != .breath {
                 ExerciseMediaCard(exercise: exercise)
             } else {
-                BreathingCircle(isPaused: isPaused)
+                BreathingCircle(
+                    isPaused: isPaused,
+                    cycleDuration: breathingCycleDuration(for: exercise)
+                )
                     .padding()
             }
 
             Text(timeString(secondsRemaining))
-                .font(.system(size: 64, weight: .thin, design: .rounded))
+                .font(.system(size: exerciseTimerSize, weight: .thin, design: .rounded))
                 .monospacedDigit()
+                .foregroundStyle(Color.luminaOnSurface)
 
             Spacer()
 
@@ -197,7 +249,7 @@ struct SessionPlayerView: View {
                 } label: {
                     Image(systemName: "forward.skip")
                         .font(.title)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                 }
                 .accessibilityLabel("Skip exercise")
 
@@ -213,7 +265,8 @@ struct SessionPlayerView: View {
                 } label: {
                     Image(systemName: isPaused ? "play.circle.fill" : "pause.circle.fill")
                         .font(.system(size: 72))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Color.luminaPrimary)
+                        .shadow(color: Color.luminaPrimary.opacity(0.25), radius: 10, y: 5)
                 }
                 .accessibilityLabel(isPaused ? "Resume session" : "Pause session")
 
@@ -223,6 +276,7 @@ struct SessionPlayerView: View {
             }
             .padding(.bottom, 48)
         }
+        .background(Color.luminaSurface.ignoresSafeArea())
     }
 
     @ViewBuilder
@@ -230,20 +284,32 @@ struct SessionPlayerView: View {
         VStack(spacing: 24) {
             Spacer()
             Text("Get Ready")
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .font(.luminaLabel)
+                .textCase(.uppercase)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
             Text(name)
-                .font(.largeTitle.weight(.bold))
+                .font(.luminaHeadline)
+                .foregroundStyle(Color.luminaOnSurface)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
             Text("\(getReadyCount)")
-                .font(.system(size: 72, weight: .thin, design: .rounded))
+                .font(.system(size: getReadyCountSize, weight: .thin, design: .rounded))
                 .monospacedDigit()
+                .foregroundStyle(Color.luminaPrimary)
+            // Surface the exercise's safety caution here — this is the only
+            // screen every session-launch path passes through, so users who
+            // start a Quick / For You / guided-program session (skipping the
+            // exercise detail page) still see it before the exercise begins.
+            if let caution = currentExercise?.caution, !caution.isEmpty {
+                CautionCard(text: caution)
+                    .padding(.horizontal)
+            }
             Spacer()
             Button("Skip") { skipGetReady() }
-                .buttonStyle(.bordered)
+                .buttonStyle(LuminaPillButtonStyle(kind: .ghost, compact: true))
         }
         .padding()
+        .background(Color.luminaSurface.ignoresSafeArea())
         .contentShape(Rectangle())
         .onTapGesture { skipGetReady() }
         .accessibilityLabel("Get ready for \(name), starting in \(getReadyCount)")
@@ -256,8 +322,23 @@ struct SessionPlayerView: View {
         max(1, Int(Double(base) * multiplier))
     }
 
+    private func breathingCycleDuration(for exercise: Exercise) -> Double {
+        let scaled = Self.scaledDuration(base: exercise.durationSeconds, multiplier: durationMultiplier)
+        // Breath exercises in the stretch player do not carry a phase model,
+        // so tie the visual cadence to the exercise length instead of a fixed
+        // 4s pulse. Longer holds breathe more slowly; short drills stay lively.
+        return min(8, max(3, Double(scaled) / 10))
+    }
+
     private func beginNextExercise() {
-        guard !autoSkipGetReadyCountdown, let exercise = currentExercise else {
+        guard let exercise = currentExercise else {
+            startExercise()
+            return
+        }
+        // Auto-skip is a convenience preference for the get-ready countdown,
+        // but we never skip it for an exercise that carries a safety caution —
+        // the get-ready screen is the slot where that caution is surfaced.
+        if autoSkipGetReadyCountdown && (exercise.caution ?? "").isEmpty {
             startExercise()
             return
         }
@@ -294,9 +375,30 @@ struct SessionPlayerView: View {
         phaseEndDate = Date().addingTimeInterval(TimeInterval(duration))
         pausedRemaining = nil
         isPaused = false
+        // Unilateral stretches: cue a side switch at the halfway point, then
+        // let the same exercise run the second half before advancing.
+        if let exercise = currentExercise, exercise.isBilateral == false {
+            sideSwitchPending = true
+            sideSwitchLeadFromEnd = TimeInterval(duration) / 2
+        } else {
+            sideSwitchPending = false
+            sideSwitchLeadFromEnd = 0
+        }
         if let exercise = currentExercise {
             VoiceCueService.shared.speak(exercise.name)
         }
+    }
+
+    /// Fires the "switch sides" haptic + voice cue once, when the current
+    /// unilateral exercise passes its halfway point. Anchored to
+    /// `phaseEndDate` so pause/resume and background catch-up stay correct.
+    private func checkSideSwitch() {
+        guard sideSwitchPending else { return }
+        let switchDate = phaseEndDate.addingTimeInterval(-sideSwitchLeadFromEnd)
+        guard Date() >= switchDate else { return }
+        sideSwitchPending = false
+        impactMedium.impactOccurred()
+        VoiceCueService.shared.speak("Switch sides")
     }
 
     /// Called when the app returns to the foreground. `Timer.publish` doesn't
@@ -309,6 +411,9 @@ struct SessionPlayerView: View {
             let remaining = phaseEndDate.timeIntervalSinceNow
             if remaining > 0 {
                 secondsRemaining = Int(remaining.rounded(.up))
+                // If the halfway switch point elapsed while backgrounded, fire
+                // the cue now (once) so the user isn't left on the wrong side.
+                checkSideSwitch()
                 break
             }
             advanceToNext(completion: 1.0, showGetReady: false)
@@ -365,7 +470,7 @@ struct SessionPlayerView: View {
 
         if totalSessionsCompleted == 3 && !hasSeenInitialPaywall {
             hasSeenInitialPaywall = true
-            shouldShowPaywall = true
+            pendingInitialPaywall = true
         } else {
             let reviewMilestones: Set<Int> = [10, 25]
             if reviewMilestones.contains(totalSessionsCompleted) {
@@ -377,31 +482,45 @@ struct SessionPlayerView: View {
     private func timeString(_ seconds: Int) -> String {
         String(format: "%d:%02d", seconds / 60, seconds % 60)
     }
+
+    private func requestDeferredPaywallIfNeeded() {
+        guard pendingInitialPaywall else { return }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(350))
+            NotificationCenter.default.post(name: .deferredPaywallRequested, object: nil)
+        }
+    }
 }
 
 // MARK: - Breathing animation
 
 struct BreathingCircle: View {
     let isPaused: Bool
+    let cycleDuration: Double
     @State private var scale: CGFloat = 1.0
 
     var body: some View {
         ZStack {
             Circle()
-                .fill(Color.accentColor.opacity(0.08))
+                .fill(Color.luminaGradientStart.opacity(0.10))
                 .frame(width: 160, height: 160)
                 .scaleEffect(scale * 1.2)
 
             Circle()
-                .fill(Color.accentColor.opacity(0.15))
+                .fill(Color.luminaPrimary.opacity(0.15))
                 .frame(width: 160, height: 160)
                 .scaleEffect(scale)
 
             Circle()
-                .fill(Color.accentColor.opacity(0.25))
+                .fill(Color.luminaPrimary.opacity(0.25))
                 .frame(width: 100, height: 100)
         }
         .onAppear { animate() }
+        .onChange(of: cycleDuration) { _, _ in
+            guard !isPaused else { return }
+            scale = 1.0
+            animate()
+        }
         .onChange(of: isPaused) { _, paused in
             if paused {
                 withAnimation(.easeOut(duration: 0.3)) { scale = 1.0 }
@@ -412,7 +531,7 @@ struct BreathingCircle: View {
     }
 
     private func animate() {
-        withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
+        withAnimation(.easeInOut(duration: cycleDuration).repeatForever(autoreverses: true)) {
             scale = 1.35
         }
     }

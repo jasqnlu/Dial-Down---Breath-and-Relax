@@ -35,6 +35,11 @@ struct ProfileView: View {
     @AppStorage("accentColorName")  private var accentColorName = "Blue"
     @AppStorage("showStreakEmoji") private var showStreakEmoji = true
 
+    // Icon/label pair in the 3-segment tab bar below, kept in proportion the
+    // same way CustomTabBar does.
+    @ScaledMetric(relativeTo: .caption) private var tabBarIconSize: CGFloat = 18
+    @ScaledMetric(relativeTo: .caption) private var tabBarLabelSize: CGFloat = 11
+
     private let accentOptions: [(name: String, color: Color)] = [
         ("Blue", .blue), ("Purple", .purple), ("Pink", .pink),
         ("Red",  .red),  ("Orange", .orange), ("Green", .green),
@@ -51,7 +56,7 @@ struct ProfileView: View {
                 profileHeader
                     .padding(.horizontal, 20)
                     .padding(.vertical, 16)
-                    .background(.regularMaterial)
+                    .background(Color.luminaSurface)
 
                 Divider()
 
@@ -59,7 +64,7 @@ struct ProfileView: View {
                 tabBar
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                    .background(.regularMaterial)
+                    .background(Color.luminaSurface)
 
                 Divider()
 
@@ -76,6 +81,8 @@ struct ProfileView: View {
                     }
                 }
                 .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
+                .background(Color.luminaSurface)
                 .animation(.easeInOut(duration: 0.2), value: selectedTab)
             }
             .navigationTitle("Profile")
@@ -127,17 +134,17 @@ struct ProfileView: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(profile?.displayName ?? auth.displayName)
-                    .font(.title3.bold())
+                    .font(.luminaTitle)
                 if !auth.userEmail.isEmpty {
                     Text(auth.userEmail)
-                        .font(.caption)
+                        .font(.luminaCaption)
                         .foregroundStyle(.secondary)
                 }
                 if let profile {
                     HStack(spacing: 4) {
                         if showStreakEmoji { Text("🔥") }
                         Text("\(profile.streak) day streak · \(profile.totalPoints) pts")
-                            .font(.caption)
+                            .font(.luminaCaption)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -175,18 +182,18 @@ struct ProfileView: View {
                 } label: {
                     VStack(spacing: 4) {
                         Image(systemName: tab.icon)
-                            .font(.system(size: 18,
+                            .font(.system(size: tabBarIconSize,
                                           weight: selectedTab == tab ? .semibold : .regular))
                         Text(tab.rawValue)
-                            .font(.system(size: 11,
+                            .font(.system(size: tabBarLabelSize,
                                           weight: selectedTab == tab ? .semibold : .regular))
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-                    .foregroundStyle(selectedTab == tab ? accentColor : .secondary)
+                    .foregroundStyle(selectedTab == tab ? Color.luminaPrimary : Color.luminaOnSurfaceVariant)
                     .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(selectedTab == tab ? accentColor.opacity(0.12) : Color.clear)
+                        RoundedRectangle(cornerRadius: LuminaRadius.chip)
+                            .fill(selectedTab == tab ? Color.luminaCardFill : Color.clear)
                     )
                 }
                 .buttonStyle(.plain)
@@ -194,7 +201,8 @@ struct ProfileView: View {
                 .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
             }
         }
-        .background(Color(.secondarySystemFill), in: RoundedRectangle(cornerRadius: 12))
+        .padding(4)
+        .background(Color.luminaContainer, in: RoundedRectangle(cornerRadius: LuminaRadius.panel))
     }
 
     // MARK: - Profile photo helpers

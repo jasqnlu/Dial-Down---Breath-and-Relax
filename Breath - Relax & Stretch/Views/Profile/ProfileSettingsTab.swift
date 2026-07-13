@@ -83,10 +83,10 @@ struct ProfileSettingsTab: View {
                                 selected
                                     ? Color.accentColor.opacity(0.10)
                                     : Color(.secondarySystemFill),
-                                in: RoundedRectangle(cornerRadius: 10)
+                                in: RoundedRectangle(cornerRadius: LuminaRadius.badge)
                             )
                             .overlay(
-                                RoundedRectangle(cornerRadius: 10)
+                                RoundedRectangle(cornerRadius: LuminaRadius.badge)
                                     .strokeBorder(selected ? Color.accentColor : Color.clear, lineWidth: 1.5)
                             )
                         }
@@ -97,17 +97,25 @@ struct ProfileSettingsTab: View {
                 .padding(.vertical, 4)
             } header: {
                 Text("My Goals")
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             } footer: {
                 Text("Shapes the \"For You\" exercises in the Exercises tab.")
             }
 
             // Body Map
-            Section("Body Map") {
+            Section {
                 Picker("Body Type", selection: $bodyMapSex) {
                     Text("Male").tag("male")
-                    Text("Female").tag("female")
+                    Text("Female (coming soon)").tag("female")
                 }
                 .pickerStyle(.segmented)
+            } header: {
+                Text("Body Map")
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            } footer: {
+                Text("Female body model currently uses the same anatomy as male for muscle targeting—dedicated female model is coming soon.")
             }
 
             // Session
@@ -120,6 +128,8 @@ struct ProfileSettingsTab: View {
                 }
             } header: {
                 Text("Session")
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             } footer: {
                 Text("Announces exercise names and breathing phases aloud during sessions. Auto-skip jumps straight into each exercise without the 3-2-1 countdown.")
             }
@@ -207,6 +217,8 @@ struct ProfileSettingsTab: View {
                 }
             } header: {
                 Text("Integrations")
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             } footer: {
                 Text("Logs stretch sessions as Flexibility workouts and breathing sessions as Mindful Minutes, and reads last night's sleep to suggest a gentler routine when you're under-rested. Google Health and other apps that sync with Apple Health will receive the data automatically. Calendar sync adds a same-time event for each completed session and suggests a free slot for your next one.")
             }
@@ -214,13 +226,13 @@ struct ProfileSettingsTab: View {
             // Data
             Section("Data") {
                 NavigationLink(destination: DataExportView()) {
-                    Label("Export My Data", systemImage: "square.and.arrow.up")
+                    Label("Export Data", systemImage: "square.and.arrow.up")
                 }
                 NavigationLink {
                     ContentUnavailableView(
                         "Privacy Policy",
                         systemImage: "hand.raised.fill",
-                        description: Text("Your data is stored locally on your device and synced to your private Supabase instance.")
+                        description: Text("Your session history and settings are stored locally on your device. If you opt into community features or supported sign-in, the app may send only the profile and authentication data needed for those features.")
                     )
                     .navigationTitle("Privacy & Data")
                 } label: {
@@ -262,7 +274,7 @@ struct ProfileSettingsTab: View {
                 Button {
                     showingAppGuide = true
                 } label: {
-                    Label("Replay App Tour", systemImage: "questionmark.circle")
+                    Label("Restart App Tutorial", systemImage: "questionmark.circle")
                 }
             }
 
@@ -277,6 +289,7 @@ struct ProfileSettingsTab: View {
                 }
             }
         }
+        .listRowBackground(Color.luminaCardFill)
         .sheet(isPresented: $showingAppGuide) {
             AppGuideView()
         }

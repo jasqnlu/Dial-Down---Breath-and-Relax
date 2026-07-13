@@ -14,11 +14,12 @@ struct AuthView: View {
     @State private var appleError: String?
     @State private var googleError: String?
     @State private var isBreathingIn = false
+    @State private var legalDocument: LegalDocument?
 
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [Color(.systemTeal).opacity(0.35), Color(.systemIndigo).opacity(0.55)],
+                colors: [Color.luminaGradientStart, Color.luminaGradientEnd],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -32,11 +33,11 @@ struct AuthView: View {
                     breathingHalo
 
                     Text("Breath")
-                        .font(.system(size: 42, weight: .bold, design: .rounded))
+                        .font(.custom("ManropeExtraLight-ExtraBold", size: 42, relativeTo: .largeTitle))
                         .foregroundStyle(.white)
 
                     Text("Relax. Stretch. Breathe.")
-                        .font(.subheadline)
+                        .font(.luminaSubheadline)
                         .foregroundStyle(.white.opacity(0.8))
                 }
 
@@ -51,19 +52,18 @@ struct AuthView: View {
                             auth.continueAsGuest()
                         } label: {
                             Text("Start breathing")
-                                .font(.system(size: 18, weight: .semibold, design: .rounded))
-                                .foregroundStyle(Color(.systemIndigo))
+                                .font(.custom("ManropeExtraLight-SemiBold", size: 18, relativeTo: .headline))
+                                .foregroundStyle(Color.luminaBlue)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 56)
-                                .background(.white)
-                                .cornerRadius(16)
+                                .background(.white, in: Capsule())
                         }
 
                         // MARK: Divider
                         HStack(spacing: 12) {
                             line
                             Text("or save your progress")
-                                .font(.caption)
+                                .font(.luminaCaption)
                                 .foregroundStyle(.white.opacity(0.7))
                                 .fixedSize()
                             line
@@ -90,7 +90,7 @@ struct AuthView: View {
                     }
                     .signInWithAppleButtonStyle(.white)
                     .frame(height: 48)
-                    .cornerRadius(14)
+                    .cornerRadius(24)
 
                     HStack(spacing: 12) {
                         secondaryButton(
@@ -108,7 +108,7 @@ struct AuthView: View {
 
                     if let err = appleError ?? googleError {
                         Text(err)
-                            .font(.caption)
+                            .font(.luminaCaption)
                             .foregroundStyle(.red)
                             .multilineTextAlignment(.center)
                     }
@@ -116,18 +116,29 @@ struct AuthView: View {
                 .padding(.horizontal, 28)
 
                 // MARK: Legal
-                Text("By continuing you agree to our Terms of Service and Privacy Policy.")
-                    .font(.caption2)
-                    .foregroundStyle(.white.opacity(0.55))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 40)
-                    .padding(.top, 18)
-                    .padding(.bottom, 40)
+                HStack(spacing: 4) {
+                    Text("By continuing you agree to our")
+                        .foregroundStyle(.white.opacity(0.55))
+                    Button("Terms of Use") { legalDocument = .termsOfUse }
+                        .underline()
+                    Text("and")
+                        .foregroundStyle(.white.opacity(0.55))
+                    Button("Privacy Policy") { legalDocument = .privacyPolicy }
+                        .underline()
+                }
+                .font(.luminaCaption)
+                .foregroundStyle(.white.opacity(0.85))
+                .padding(.horizontal, 20)
+                .padding(.top, 18)
+                .padding(.bottom, 40)
             }
         }
         .sheet(isPresented: $showEmailAuth) {
             EmailAuthView()
                 .environmentObject(auth)
+        }
+        .sheet(item: $legalDocument) { document in
+            LegalDocumentView(document: document)
         }
         // When shown as a sheet over a guest session, close once the guest
         // upgrades to a real provider. (At the root this view is swapped out
@@ -179,15 +190,14 @@ struct AuthView: View {
                 Image(systemName: icon)
                     .font(.body)
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.luminaCardTitle)
             }
             .foregroundStyle(.white.opacity(enabled ? 1 : 0.45))
             .frame(maxWidth: .infinity)
             .frame(height: 48)
-            .background(.white.opacity(0.16))
-            .cornerRadius(14)
+            .background(.white.opacity(0.16), in: Capsule())
             .overlay(
-                RoundedRectangle(cornerRadius: 14)
+                Capsule()
                     .stroke(.white.opacity(0.35), lineWidth: 1)
             )
         }

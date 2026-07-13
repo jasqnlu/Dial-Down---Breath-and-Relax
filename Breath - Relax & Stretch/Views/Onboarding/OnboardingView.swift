@@ -35,9 +35,10 @@ struct OnboardingGate<Content: View>: View {
 struct OnboardingView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @AppStorage("onboardingGoals")        private var onboardingGoals = ""
+    @AppStorage("onboardingAreas")        private var onboardingAreas = ""
 
     @State private var currentPage = 0
-    private let totalPages = 5
+    private let totalPages = 6
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -51,38 +52,38 @@ struct OnboardingView: View {
                 GoalPickerPage(selectedGoals: onboardingGoalsBinding)
                     .tag(2)
 
-                BodyMapIntroPage()
+                FocusAreaPickerPage(selectedAreas: onboardingAreasBinding)
                     .tag(3)
 
-                NotificationsPage(onComplete: completeOnboarding)
+                BodyMapIntroPage()
                     .tag(4)
+
+                NotificationsPage(onComplete: completeOnboarding)
+                    .tag(5)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.easeInOut, value: currentPage)
 
-            // Bottom overlay: dots + Next button (pages 0-3);
-            // page 4 provides its own action buttons.
-            if currentPage < 4 {
+            // Bottom overlay: dots + Next button (pages 0-4);
+            // the last page provides its own action buttons.
+            if currentPage < totalPages - 1 {
                 VStack(spacing: 20) {
                     PageDotsIndicator(total: totalPages, current: currentPage)
 
                     Button(action: advancePage) {
                         HStack(spacing: 6) {
-                            Text("Next").fontWeight(.semibold)
+                            Text("Next")
                             Image(systemName: "arrow.right")
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.accentColor)
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
+                    .buttonStyle(LuminaPillButtonStyle())
                     .padding(.horizontal, 28)
                 }
                 .padding(.bottom, 44)
                 .background(
                     LinearGradient(
-                        colors: [Color(.systemBackground).opacity(0), Color(.systemBackground)],
+                        colors: [Color.luminaSurface.opacity(0), Color.luminaSurface],
                         startPoint: .top, endPoint: .bottom
                     )
                     .frame(height: 160)
@@ -92,6 +93,7 @@ struct OnboardingView: View {
                 .transition(.opacity)
             }
         }
+        .background(Color.luminaSurface.ignoresSafeArea())
         .ignoresSafeArea(edges: .bottom)
     }
 
@@ -106,6 +108,19 @@ struct OnboardingView: View {
                 return Set(trimmed.split(separator: ",").map(String.init))
             },
             set: { onboardingGoals = $0.sorted().joined(separator: ",") }
+        )
+    }
+
+    /// Converts comma-separated `onboardingAreas` AppStorage string ↔ Set of
+    /// `ExerciseCategory` raw values (the Focus-area picker's selection).
+    private var onboardingAreasBinding: Binding<Set<String>> {
+        Binding(
+            get: {
+                let trimmed = onboardingAreas.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.isEmpty else { return [] }
+                return Set(trimmed.split(separator: ",").map(String.init))
+            },
+            set: { onboardingAreas = $0.sorted().joined(separator: ",") }
         )
     }
 
@@ -128,7 +143,7 @@ struct PageDotsIndicator: View {
         HStack(spacing: 8) {
             ForEach(0..<total, id: \.self) { index in
                 Capsule()
-                    .fill(index == current ? Color.accentColor : Color.secondary.opacity(0.35))
+                    .fill(index == current ? Color.luminaPrimary : Color.luminaOutline)
                     .frame(width: index == current ? 22 : 8, height: 8)
                     .animation(.spring(response: 0.3, dampingFraction: 0.7), value: current)
             }

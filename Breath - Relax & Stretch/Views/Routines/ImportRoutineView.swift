@@ -26,43 +26,45 @@ struct ImportRoutineView: View {
             VStack(spacing: 20) {
                 Image(systemName: "square.and.arrow.down.on.square.fill")
                     .font(.system(size: 56))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Color.luminaPrimary)
                     .padding(.top, 24)
 
                 Text(payload.name)
-                    .font(.title2.bold())
+                    .font(.luminaTitle)
+                    .foregroundStyle(Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
 
                 Text("\(matched.count) of \(payload.exerciseNames.count) exercises found on your device")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.luminaSubheadline)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
 
                 if missingCount > 0 {
                     Text("\(missingCount) exercise\(missingCount == 1 ? "" : "s") couldn't be matched and will be skipped.")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOrange)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
 
                 List(matched) { exercise in
                     Text(exercise.name)
+                        .font(.luminaBody)
+                        .foregroundStyle(Color.luminaOnSurface)
+                        .listRowBackground(Color.luminaCardFill)
                 }
                 .listStyle(.plain)
+                .scrollContentBackground(.hidden)
 
                 Button(action: saveRoutine) {
                     Text("Add to My Routines")
-                        .font(.headline)
                         .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(matched.isEmpty ? Color.gray : Color.accentColor)
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
+                .buttonStyle(LuminaPillButtonStyle())
                 .disabled(matched.isEmpty)
                 .padding(.horizontal)
                 .padding(.bottom, 24)
             }
+            .background(Color.luminaSurface.ignoresSafeArea())
             .navigationTitle("Shared Routine")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

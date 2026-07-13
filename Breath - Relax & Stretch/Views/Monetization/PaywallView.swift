@@ -11,16 +11,7 @@ struct PaywallView: View {
     @State private var isPurchasing = false
     @State private var errorMessage: String?
 
-    /// Shows "compare at" strikethrough pricing during the launch promo window
-    /// (first 90 days after App Store approval). The real charged price always
-    /// comes live from StoreKit regardless of this flag.
-    private var isLaunchPeriod: Bool {
-        // App Store review approval date — update this to the actual date once
-        // the first version ships.
-        let launchDate = ISO8601DateFormatter().date(from: "2026-06-28T00:00:00Z") ?? Date()
-        let windowEnd = Calendar.current.date(byAdding: .day, value: 90, to: launchDate) ?? .distantFuture
-        return Date() < windowEnd
-    }
+    @State private var legalDocument: LegalDocument?
 
     enum PlanOption { case monthly, annual, lifetime }
 
@@ -35,7 +26,7 @@ struct PaywallView: View {
 
                     if let errorMessage {
                         Text(errorMessage)
-                            .font(.caption)
+                            .font(.luminaCaption)
                             .foregroundStyle(.red)
                             .multilineTextAlignment(.center)
                     }
@@ -44,12 +35,18 @@ struct PaywallView: View {
                 }
                 .padding()
             }
+            .background(Color.luminaSurface.ignoresSafeArea())
             .navigationTitle("Breath Pro")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Not Now") { dismiss() }
                 }
+            }
+            .alert("Restore Failed", isPresented: .constant(store.restoreError != nil)) {
+                Button("OK") { store.restoreError = nil }
+            } message: {
+                Text(store.restoreError ?? "")
             }
         }
     }
@@ -60,12 +57,13 @@ struct PaywallView: View {
         VStack(spacing: 10) {
             Image(systemName: "figure.mind.and.body")
                 .font(.system(size: 48))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Color.luminaPrimary)
             Text("Unlock Breath Pro")
-                .font(.title2.bold())
+                .font(.luminaTitle)
+                .foregroundStyle(Color.luminaOnSurface)
             Text("Guided programs, bonus content, and the full experience.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.luminaSubheadline)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
                 .multilineTextAlignment(.center)
         }
     }
@@ -79,17 +77,17 @@ struct PaywallView: View {
             featureRow(icon: "heart.fill", text: "Support independent, ad-free development")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
+        .luminaCard()
     }
 
     private func featureRow(icon: String, text: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Color.luminaPrimary)
                 .frame(width: 24)
             Text(text)
-                .font(.subheadline)
+                .font(.luminaSubheadline)
+                .foregroundStyle(Color.luminaOnSurface)
             Spacer(minLength: 0)
         }
     }
@@ -103,7 +101,6 @@ struct PaywallView: View {
                 productID: StoreManager.ProductID.annual,
                 title: "Annual",
                 badge: annualSavingsPercent.map { "Save \($0)%" } ?? "Best Value",
-                comparePrice: "39.99",
                 period: "/year"
             )
             planCard(
@@ -111,7 +108,6 @@ struct PaywallView: View {
                 productID: StoreManager.ProductID.monthly,
                 title: "Monthly",
                 badge: nil,
-                comparePrice: "5.99",
                 period: "/month"
             )
             planCard(
@@ -119,7 +115,6 @@ struct PaywallView: View {
                 productID: StoreManager.ProductID.lifetime,
                 title: "Lifetime",
                 badge: "One payment, yours forever",
-                comparePrice: "89.99",
                 period: nil
             )
         }
@@ -127,7 +122,7 @@ struct PaywallView: View {
 
     private func planCard(
         plan: PlanOption, productID: String, title: String,
-        badge: String?, comparePrice: String, period: String?
+        badge: String?, period: String?
     ) -> some View {
         let isSelected = selectedPlan == plan
         let product = store.product(for: productID)
@@ -139,44 +134,41 @@ struct PaywallView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(title)
-                            .font(.headline)
+                            .font(.luminaCardTitle)
+                            .foregroundStyle(Color.luminaOnSurface)
                         if let badge {
                             Text(badge)
-                                .font(.caption2.weight(.semibold))
+                                .font(.luminaCaption)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 3)
-                                .background(Color.accentColor.opacity(0.15), in: Capsule())
-                                .foregroundStyle(Color.accentColor)
+                                .background(Color.luminaOrange, in: Capsule())
+                                .foregroundStyle(Color.luminaOnOrange)
                         }
                     }
-                    if plan != .lifetime {
-                        Text("7-day free trial included")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                    if let trialText = Self.trialDescription(for: product) {
+                        Text("\(trialText) included")
+                            .font(.luminaCaption)
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
                     }
                 }
 
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 2) {
-                    if isLaunchPeriod {
-                        Text("$\(comparePrice)\(period ?? "")")
-                            .font(.caption)
-                            .strikethrough()
-                            .foregroundStyle(.secondary)
-                    }
                     Text((product?.displayPrice ?? "—") + (period ?? ""))
-                        .font(.subheadline.weight(.semibold))
+                        .font(.luminaCardTitle)
+                        .foregroundStyle(Color.luminaOnSurface)
                 }
             }
             .padding()
             .background(
-                isSelected ? Color.accentColor.opacity(0.10) : Color(.secondarySystemBackground),
-                in: RoundedRectangle(cornerRadius: 14)
+                isSelected ? Color.luminaMintTint : Color.luminaCardFill,
+                in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
+                RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
+                    .strokeBorder(isSelected ? Color.luminaPrimary : Color.luminaOutline,
+                                  lineWidth: isSelected ? 2 : 1)
             )
         }
         .buttonStyle(.plain)
@@ -195,24 +187,49 @@ struct PaywallView: View {
         return NSDecimalNumber(decimal: savings).intValue
     }
 
+    /// Builds a free-trial description directly from the product's StoreKit
+    /// introductory offer, e.g. "7-Day Free Trial". Returns nil when the
+    /// product has no introductory offer or the offer isn't a free trial —
+    /// no copy should be shown in that case.
+    private static func trialDescription(for product: Product?) -> String? {
+        guard let offer = product?.subscription?.introductoryOffer,
+              offer.paymentMode == .freeTrial
+        else { return nil }
+
+        let count = offer.period.value
+        let unit: String
+        switch offer.period.unit {
+        case .day:   unit = "Day"
+        case .week:  unit = "Week"
+        case .month: unit = "Month"
+        case .year:  unit = "Year"
+        @unknown default: unit = "Day"
+        }
+        return "\(count)-\(unit) Free Trial"
+    }
+
     // MARK: CTA
 
     private var ctaButton: some View {
         Button(action: purchaseSelected) {
             HStack {
                 if isPurchasing {
-                    ProgressView().tint(.white)
+                    ProgressView().tint(Color.luminaOnPrimary)
                 }
-                Text(selectedPlan == .lifetime ? "Unlock Lifetime" : "Start 7-Day Free Trial")
-                    .font(.headline)
+                Text(ctaTitle)
             }
             .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.accentColor)
-            .foregroundStyle(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 14))
         }
+        .buttonStyle(LuminaPillButtonStyle())
         .disabled(isPurchasing || selectedProduct == nil)
+    }
+
+    private var ctaTitle: String {
+        if selectedPlan == .lifetime { return "Unlock Lifetime" }
+        if let trialText = Self.trialDescription(for: selectedProduct) {
+            return "Start \(trialText)"
+        }
+        return "Subscribe"
     }
 
     private var selectedProduct: Product? {
@@ -246,12 +263,24 @@ struct PaywallView: View {
             Button("Restore Purchases") {
                 Task { await store.restorePurchases() }
             }
-            .font(.footnote)
+            .font(.luminaLabel)
+            .foregroundStyle(Color.luminaPrimary)
 
             Text("Cancel anytime in Settings. Subscriptions auto-renew until cancelled.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .font(.luminaCaption)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
                 .multilineTextAlignment(.center)
+
+            HStack(spacing: 6) {
+                Button("Terms of Use") { legalDocument = .termsOfUse }
+                Text("·").foregroundStyle(Color.luminaOnSurfaceVariant)
+                Button("Privacy Policy") { legalDocument = .privacyPolicy }
+            }
+            .font(.luminaCaption)
+            .foregroundStyle(Color.luminaPrimary)
+        }
+        .sheet(item: $legalDocument) { document in
+            LegalDocumentView(document: document)
         }
     }
 }

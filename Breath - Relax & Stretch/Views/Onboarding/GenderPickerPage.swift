@@ -11,12 +11,13 @@ struct GenderPickerPage: View {
 
             VStack(spacing: 12) {
                 Text("Your Body Map")
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .font(.luminaDisplay)
+                    .foregroundStyle(Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
 
                 Text("Choose a body type so we can show you the right map.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
+                    .font(.luminaBody)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
             }
@@ -31,7 +32,7 @@ struct GenderPickerPage: View {
                 }
 
                 GenderCard(sex: "female",
-                           label: "Female",
+                           label: "Female (coming soon)",
                            isSelected: bodyMapSex == "female") {
                     withAnimation(.easeInOut(duration: 0.18)) { bodyMapSex = "female" }
                 }
@@ -57,15 +58,15 @@ private struct GenderCard: View {
     private var silhouetteFill: LinearGradient {
         sex == "male"
             ? LinearGradient(
-                colors: [Color(.systemBlue).opacity(0.28), Color(.systemCyan).opacity(0.12)],
+                colors: [Color.luminaBlue.opacity(0.28), Color.luminaGradientStart.opacity(0.12)],
                 startPoint: .top, endPoint: .bottom)
             : LinearGradient(
-                colors: [Color(.systemPink).opacity(0.28), Color(.systemOrange).opacity(0.12)],
+                colors: [Color.luminaOrange.opacity(0.28), Color.luminaGradientEnd.opacity(0.12)],
                 startPoint: .top, endPoint: .bottom)
     }
 
     private var borderColor: Color {
-        isSelected ? .accentColor : Color(.systemGray5)
+        isSelected ? .luminaPrimary : .luminaOutline
     }
 
     var body: some View {
@@ -93,12 +94,12 @@ private struct GenderCard: View {
 
                 HStack(spacing: 6) {
                     Text(label)
-                        .font(.headline)
-                        .foregroundStyle(isSelected ? Color.accentColor : .primary)
+                        .font(.luminaCardTitle)
+                        .foregroundStyle(isSelected ? Color.luminaPrimary : Color.luminaOnSurface)
 
                     if isSelected {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(Color.luminaPrimary)
                             .transition(.scale.combined(with: .opacity))
                     }
                 }
@@ -107,11 +108,11 @@ private struct GenderCard: View {
             .padding(16)
             .frame(maxWidth: .infinity)
             .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(.secondarySystemBackground))
+                RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
+                    .fill(Color.luminaCardFill)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 20)
+                RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
                     .strokeBorder(borderColor, lineWidth: isSelected ? 2 : 1)
             )
         }

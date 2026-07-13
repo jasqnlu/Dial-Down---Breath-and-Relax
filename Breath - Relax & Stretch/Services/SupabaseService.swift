@@ -16,6 +16,11 @@ actor SupabaseService {
     // page URL. Dashboard → Settings → API → Project URL.
     // Static lets on an actor are nonisolated — no @MainActor contamination.
     private static let supabaseURL     = "https://wmsutfittuxrvcwuywrk.supabase.co"
+    // Decision (open question closed, do not reopen): committing this anon key is
+    // intentional, not a leak — Supabase anon/publishable keys are designed to be
+    // client-embedded, RLS policies are the actual security boundary, and every
+    // Supabase quick-start ships this way. Move it to a config file only if that
+    // ever changes.
     private static let supabaseAnonKey = "sb_publishable_fpbIp20MIAf3OV1Two6DhQ_MpZvy2Dc"
 
     /// True once real credentials are filled in above. While false, the app
@@ -96,25 +101,9 @@ actor SupabaseService {
         return try JSONDecoder().decode([RemoteRoutine].self, from: data)
     }
 
-    /// Upserts a routine to the remote database. `authorID` must be the
-    /// anonymous UUID (AuthManager.anonymousID) — never an email; the table
-    /// is publicly readable.
-    func uploadRoutine(_ routine: Routine, authorID: String) async throws {
-        let body = RemoteRoutine(
-            id:             routine.uuid.uuidString,
-            name:           routine.name,
-            exerciseIDs:    routine.exerciseIDs.map { $0.uuidString },
-            authorID:       authorID,
-            authorName:     routine.authorName,
-            borrowedFromID: routine.borrowedFromID?.uuidString,
-            isPublic:       routine.isPublic,
-            borrowCount:    routine.borrowCount
-        )
-        // RemoteRoutine.encode(to:) is @MainActor-isolated (Swift 6 inference);
-        // hop to main actor for the encode, then continue in the actor.
-        let data = try await MainActor.run { try JSONEncoder().encode(body) }
-        try await post(path: "/rest/v1/routines", body: data, upsert: true)
-    }
+    // Note: the write-side counterpart of this fetch (uploadRoutine) was
+    // removed as dead code — nothing in the app called it. See
+    // supabase_schema.sql for the matching RLS policy removal.
 
     // MARK: - Community (leaderboard / public profile)
 
@@ -151,25 +140,9 @@ actor SupabaseService {
         return try JSONDecoder().decode([RemoteProfile].self, from: data)
     }
 
-    // MARK: - Sessions
-
-    /// Inserts a completed session to the remote database. `userID` must be
-    /// the anonymous UUID (AuthManager.anonymousID) — never an email.
-    func uploadSession(_ session: Session, userID: String) async throws {
-        let formatter = ISO8601DateFormatter()
-        let body = RemoteSession(
-            id:                session.uuid.uuidString,
-            userID:            userID,
-            routineID:         session.routineID.uuidString,
-            startedAt:         formatter.string(from: session.startedAt),
-            completedAt:       session.completedAt.map { formatter.string(from: $0) },
-            completionPercent: session.completionPercent * 100,
-            pointsEarned:      session.pointsEarned
-        )
-        // Same @MainActor isolation reason as uploadRoutine above.
-        let data = try await MainActor.run { try JSONEncoder().encode(body) }
-        try await post(path: "/rest/v1/sessions", body: data, upsert: false)
-    }
+    // Note: sessions had a write path (uploadSession) that was removed as
+    // dead code — nothing in the app called it. See supabase_schema.sql for
+    // the matching RLS policy removal.
 
     // MARK: - Auth
 

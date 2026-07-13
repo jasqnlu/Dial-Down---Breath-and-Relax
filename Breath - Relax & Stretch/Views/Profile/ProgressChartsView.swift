@@ -40,7 +40,7 @@ struct ProgressChartsView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 20)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color.luminaSurface)
         .navigationTitle("Progress")
         .navigationBarTitleDisplayMode(.large)
         .floatingTabBarClearance()
@@ -96,7 +96,7 @@ struct ProgressChartsView: View {
                         x: .value("Day", point.label),
                         y: .value("Minutes", point.minutes)
                     )
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Color.luminaPrimary)
                     .cornerRadius(4)
                 }
                 .chartXAxis {
@@ -166,8 +166,8 @@ struct ProgressChartsView: View {
                         showingCheckIn = true
                     } label: {
                         Label("Check In", systemImage: "checklist")
-                            .font(.subheadline.weight(.semibold))
                     }
+                    .buttonStyle(LuminaPillButtonStyle(kind: .ghost, compact: true))
                 }
             }
 
@@ -178,7 +178,7 @@ struct ProgressChartsView: View {
                     Text("Test how far you can reach every couple of weeks and watch your range grow.")
                 } actions: {
                     Button("Start First Check-In") { showingCheckIn = true }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(LuminaPillButtonStyle())
                 }
                 .frame(height: 220)
                 .cardStyle()
@@ -187,22 +187,23 @@ struct ProgressChartsView: View {
                     if FlexibilityStats.isDue(checkIns) {
                         Label("It's been a couple of weeks — time for a new check-in.",
                               systemImage: "clock.badge.exclamationmark")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
+                            .font(.luminaCaption)
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
                     }
 
                     ForEach(FlexibilityTest.allCases) { test in
                         if let latest = FlexibilityStats.latest(checkIns, for: test) {
                             HStack(spacing: 10) {
                                 Image(systemName: test.icon)
-                                    .foregroundStyle(Self.testColors[test] ?? Color.accentColor)
+                                    .foregroundStyle(Self.testColors[test] ?? Color.luminaPrimary)
                                     .frame(width: 26)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(test.name)
-                                        .font(.subheadline.weight(.medium))
+                                        .font(.luminaCardTitle)
+                                        .foregroundStyle(Color.luminaOnSurface)
                                     Text(test.levels[min(latest.level, test.levels.count - 1)])
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .font(.luminaCaption)
+                                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                                 }
                                 Spacer()
                                 if let delta = FlexibilityStats.delta(checkIns, for: test) {
@@ -228,11 +229,11 @@ struct ProgressChartsView: View {
     private func deltaBadge(_ delta: Int) -> some View {
         HStack(spacing: 3) {
             Image(systemName: delta > 0 ? "arrow.up.right" : delta < 0 ? "arrow.down.right" : "equal")
-                .font(.caption2.weight(.bold))
+                .font(.luminaCaption)
             Text(delta == 0 ? "steady" : "\(abs(delta)) \(abs(delta) == 1 ? "level" : "levels")")
-                .font(.caption)
+                .font(.luminaCaption)
         }
-        .foregroundStyle(.secondary)
+        .foregroundStyle(Color.luminaOnSurfaceVariant)
         .accessibilityLabel(
             delta == 0 ? "No change since first check-in"
                        : "\(delta > 0 ? "Up" : "Down") \(abs(delta)) levels since first check-in"
@@ -296,16 +297,16 @@ struct ProgressChartsView: View {
             VStack(alignment: .leading, spacing: 10) {
                 // Month label
                 Text(currentMonthLabel)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .font(.luminaCardTitle)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
 
                 // Day-of-week header
                 let dayLabels = ["S", "M", "T", "W", "T", "F", "S"]
                 HStack(spacing: 6) {
                     ForEach(Array(dayLabels.enumerated()), id: \.offset) { _, label in
                         Text(label)
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(.secondary)
+                            .font(.luminaCaption)
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
                             .frame(maxWidth: .infinity)
                     }
                 }
@@ -319,13 +320,13 @@ struct ProgressChartsView: View {
                     ) {
                         ForEach(grid) { cell in
                             RoundedRectangle(cornerRadius: 6)
-                                .fill(cell.hasSession ? Color.accentColor : Color(.systemFill))
+                                .fill(cell.hasSession ? Color.luminaPrimary : Color.luminaContainer)
                                 .frame(width: 32, height: 32)
                                 .overlay {
                                     if let day = cell.day {
                                         Text("\(day)")
-                                            .font(.caption2)
-                                            .foregroundStyle(cell.hasSession ? .white : .secondary)
+                                            .font(.luminaCaption)
+                                            .foregroundStyle(cell.hasSession ? Color.luminaOnPrimary : Color.luminaOnSurfaceVariant)
                                     }
                                 }
                                 .onTapGesture {
@@ -378,16 +379,16 @@ struct ProgressChartsView: View {
 
                 HStack(spacing: 4) {
                     Text("Less")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                     ForEach([0, 1, 2, 3], id: \.self) { level in
                         RoundedRectangle(cornerRadius: 2)
                             .fill(heatColor(for: level, isFuture: false))
                             .frame(width: 10, height: 10)
                     }
                     Text("More")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
                 }
             }
             .padding()
@@ -403,10 +404,10 @@ struct ProgressChartsView: View {
     private func heatColor(for count: Int, isFuture: Bool) -> Color {
         if isFuture { return Color.clear }
         switch count {
-        case 0:  return Color(.systemFill)
-        case 1:  return Color.accentColor.opacity(0.35)
-        case 2:  return Color.accentColor.opacity(0.65)
-        default: return Color.accentColor
+        case 0:  return Color.luminaContainer
+        case 1:  return Color.luminaPrimary.opacity(0.35)
+        case 2:  return Color.luminaPrimary.opacity(0.65)
+        default: return Color.luminaPrimary
         }
     }
 
@@ -457,7 +458,7 @@ struct ProgressChartsView: View {
                         x: .value("Date", point.date),
                         y: .value("Points", point.cumulativePoints)
                     )
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Color.luminaPrimary)
                     .interpolationMethod(.catmullRom)
 
                     AreaMark(
@@ -466,7 +467,7 @@ struct ProgressChartsView: View {
                     )
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color.accentColor.opacity(0.3), Color.accentColor.opacity(0.0)],
+                            colors: [Color.luminaPrimary.opacity(0.3), Color.luminaPrimary.opacity(0.0)],
                             startPoint: .top,
                             endPoint: .bottom
                         )
@@ -599,19 +600,21 @@ struct ProgressChartsView: View {
 
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
-            .font(.title3.bold())
+            .font(.luminaTitle)
+            .foregroundStyle(Color.luminaOnSurface)
     }
 
     private func statCard(value: String, label: String, icon: String) -> some View {
         VStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.title3)
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Color.luminaPrimary)
             Text(value)
-                .font(.title2.bold())
+                .font(.luminaHeadline)
+                .foregroundStyle(Color.luminaOnSurface)
             Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.luminaCaption)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
@@ -646,8 +649,8 @@ private struct FlexibilityPoint: Identifiable {
 private extension View {
     func cardStyle() -> some View {
         self
-            .background(Color(.secondarySystemGroupedBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
+            .shadow(color: .black.opacity(0.05), radius: 10, y: 4)
     }
 }
 
