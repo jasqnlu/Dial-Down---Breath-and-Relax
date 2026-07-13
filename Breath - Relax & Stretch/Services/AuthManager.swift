@@ -295,8 +295,15 @@ final class AuthManager: ObservableObject {
 
     // MARK: - Email / Password
 
+    /// Lowercases and trims an email so it's stable as a Keychain account key
+    /// regardless of how the user capitalized it at sign-up vs. sign-in.
+    private func normalizedEmail(_ email: String) -> String {
+        email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
     /// Returns nil on success, error string on failure.
     func signUp(name: String, email: String, password: String) -> String? {
+        let email = normalizedEmail(email)
         guard !name.isEmpty        else { return "Name is required." }
         guard email.contains("@") else { return "Enter a valid email address." }
         guard password.count >= 8 else { return "Password must be at least 8 characters." }
@@ -315,6 +322,7 @@ final class AuthManager: ObservableObject {
     }
 
     func signIn(email: String, password: String) -> String? {
+        let email = normalizedEmail(email)
         guard let stored = keychain.loadCredential(account: email) else {
             return "No account found for this email."
         }
@@ -339,7 +347,11 @@ final class AuthManager: ObservableObject {
     }
 
     private func clearLocalSignIn() {
-        UserDefaults.standard.set(false, forKey: kIsSignedIn)
+        let d = UserDefaults.standard
+        d.removeObject(forKey: kIsSignedIn)
+        d.removeObject(forKey: kDisplayName)
+        d.removeObject(forKey: kEmail)
+        d.removeObject(forKey: kProvider)
         isSignedIn  = false
         needsUnlock = false
         displayName = ""
