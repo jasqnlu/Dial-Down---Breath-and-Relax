@@ -10,7 +10,9 @@ import Foundation
 struct CuratedContentIntegrityTests {
 
     private func seedExerciseNames() throws -> Set<String> {
-        let url = try #require(Bundle.main.url(forResource: "SeedData", withExtension: "json"))
+        let url = try #require(Bundle(for: BundleToken.self)
+            .url(forResource: "SeedData", withExtension: "json")
+            ?? Bundle.main.url(forResource: "SeedData", withExtension: "json"))
         let data = try Data(contentsOf: url)
         let json = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
         let exercises = try #require(json["exercises"] as? [[String: Any]])
@@ -54,3 +56,5 @@ struct CuratedContentIntegrityTests {
         }
     }
 }
+
+private final class BundleToken {}
