@@ -182,24 +182,15 @@ for n in unmatched_muscle_like[:40]:
 
 # Union boxes per group and write final output matching MuscleGroups.swift.
 #
-# LEFT/RIGHT SWAP: RULES above uses Z-Anatomy's own ".l"/".r" suffixes, which
-# follow the universal anatomical-atlas convention (the MODEL's own left,
-# e.g. its left hand). The app's MuscleGroup/BodyRegion convention is
-# explicitly the opposite: SCREEN-left (see HumanFigureView.swift:35,
-# "'Left'/'Right' follow the on-screen side"). Since the app's camera sits at
-# world +Z looking toward the origin and the figure faces +Z (toward the
-# camera) at rotation 0 = "front" (BodySceneView.swift:18), the figure is
-# facing the viewer — mirror rules apply, so the model's own left hand
-# renders on the viewer's screen-RIGHT. World +X renders screen-right
-# (standard right-handed camera, confirmed against BodyRig's unrotated
-# camera setup). Net result: Z-Anatomy .l (anatomical left, world +X) is the
-# app's "Right", and .r is the app's "Left" — everything must be swapped
-# here, not left as Z-Anatomy's own labels.
+# LEFT/RIGHT CONVENTION: Z-Anatomy's ".l"/".r" suffixes are anatomical (the
+# model's own left/right) — and since the 3D marking redesign
+# (docs/superpowers/specs/2026-07-15-3d-muscle-tap-marking-design.md) the app
+# uses the SAME anatomical convention: "Left Biceps" is the figure's own left
+# arm (world +X, since the model faces +Z) at every camera angle. The old 2D
+# body map used screen-side ("mirror") naming and this function used to swap
+# sides to match it; that swap is deliberately gone. Do not reintroduce it —
+# HitboxDataTests pins Left = positive-x.
 def app_side_swap(group_name: str) -> str:
-    if group_name.startswith("Left "):
-        return "Right " + group_name[len("Left "):]
-    if group_name.startswith("Right "):
-        return "Left " + group_name[len("Right "):]
     return group_name
 
 final = {}
