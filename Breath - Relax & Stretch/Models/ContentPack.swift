@@ -53,5 +53,45 @@ struct ContentPack: Identifiable {
                 "4-7-8 Breathing",
             ]
         ),
+        ContentPack(
+            id: StoreManager.ProductID.bedtimePack,
+            title: "Better Sleep & Breathing Pack",
+            summary: "Wind-down breathing techniques and gentle stretches to help you fall asleep faster.",
+            icon: "moon.stars.fill",
+            exerciseNames: [
+                "Extended Exhale Breathing",
+                "Counting Down Sleep Breath",
+                "Cooling Sitali Breath",
+                "Three-Part Breath (Dirga Pranayama)",
+                "Body Scan Breathing",
+                "Segmented Exhale Breathing (Viloma)",
+                "Progressive Relaxation Breath",
+                "Left-Nostril Calming Breath (Chandra Bhedana)",
+                "Legs Up the Wall",
+                "Child's Pose",
+                "Cat-Cow Flow",
+            ]
+        ),
+        ContentPack(
+            id: StoreManager.ProductID.runnerPack,
+            title: "Runner's Warm-Up & Cooldown Pack",
+            summary: "Dynamic mobility to open up before a run, plus targeted stretches to cool down after.",
+            icon: "figure.run.circle.fill",
+            exerciseNames: [
+                "Standing IT Band Side Stretch (Left)",
+                "Standing IT Band Side Stretch (Right)",
+                "Dynamic Standing Leg Swings",
+                "Standing Hip Circles",
+                "Runner's Lunge with Rotation (Left)",
+                "Runner's Lunge with Rotation (Right)",
+                "Standing Ankle Dorsiflexion Stretch (Left)",
+                "Standing Ankle Dorsiflexion Stretch (Right)",
+                "Runner's Calf Stretch (Staggered Stance)",
+                "Ankle Alphabet",
+                "Standing Hamstring Stretch",
+                "Left Standing Quad Stretch",
+                "Right Standing Quad Stretch",
+            ]
+        ),
     ]
 }

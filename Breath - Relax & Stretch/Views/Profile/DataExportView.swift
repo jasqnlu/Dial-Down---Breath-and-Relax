@@ -169,7 +169,10 @@ struct DataExportView: View {
             let filename = "breath_data_\(tag).\(fileExt)"
             let url = FileManager.default.temporaryDirectory
                 .appendingPathComponent(filename)
-            try? content.write(to: url, atomically: true, encoding: .utf8)
+            // .completeFileProtection: the export bundles the user's entire
+            // history, and tmp files can linger until the system purges them —
+            // keep the file encrypted whenever the device is locked.
+            try? Data(content.utf8).write(to: url, options: [.atomic, .completeFileProtection])
 
             await MainActor.run {
                 exportURL = url
@@ -179,6 +182,24 @@ struct DataExportView: View {
     }
 
     // MARK: CSV builder
+
+    /// Escapes one CSV field per RFC 4180 and neutralizes spreadsheet formula
+    /// injection. User-controlled strings (routine names, display names) must
+    /// pass through this before being joined into a row: a name containing a
+    /// comma would otherwise shift every following column, and a name starting
+    /// with `=`/`+`/`-`/`@` becomes a live formula when the exported file is
+    /// opened in Excel or Numbers. `internal` (not `private`) so tests can
+    /// exercise it directly.
+    nonisolated static func csvField(_ raw: String) -> String {
+        var field = raw
+        if let first = field.first, "=+-@\t\r".contains(first) {
+            field = "'" + field
+        }
+        if field.contains(where: { $0 == "," || $0 == "\"" || $0 == "\n" || $0 == "\r" }) {
+            field = "\"" + field.replacingOccurrences(of: "\"", with: "\"\"") + "\""
+        }
+        return field
+    }
 
     /// Multi-section CSV: sessions / routines / profile each get their own
     /// header + row block, separated by a blank line and a "# Section" marker
@@ -214,10 +235,10 @@ struct DataExportView: View {
         for r in routineRows {
             lines.append([
                 r.id,
-                r.name,
+                csvField(r.name),
                 r.exerciseIDs.joined(separator: ";"),
                 r.authorID ?? "",
-                r.authorName ?? "",
+                csvField(r.authorName ?? ""),
                 r.borrowedFromID ?? "",
                 "\(r.isPublic)",
                 "\(r.borrowCount)",
@@ -231,7 +252,7 @@ struct DataExportView: View {
         if let p = profileRow {
             lines.append([
                 p.profileID,
-                p.displayName,
+                csvField(p.displayName),
                 "\(p.totalMinutes)",
                 "\(p.totalPoints)",
                 "\(p.streak)",

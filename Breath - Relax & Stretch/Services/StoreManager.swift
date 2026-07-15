@@ -19,7 +19,9 @@ final class StoreManager: ObservableObject {
         static let lifetime = "pro_lifetime"
         static let deskWorkerPack = "pack_deskworker"
         static let athleteRecoveryPack = "pack_athlete_recovery"
-        static let all = [monthly, annual, lifetime, deskWorkerPack, athleteRecoveryPack]
+        static let bedtimePack = "pack_bettersleep"
+        static let runnerPack = "pack_runner"
+        static let all = [monthly, annual, lifetime, deskWorkerPack, athleteRecoveryPack, bedtimePack, runnerPack]
     }
 
     @Published private(set) var products: [Product] = []
