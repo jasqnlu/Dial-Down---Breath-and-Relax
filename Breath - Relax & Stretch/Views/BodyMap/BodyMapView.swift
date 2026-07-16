@@ -71,8 +71,7 @@ struct BodyMapView: View {
                                 // padding so the 3D render and the region grid it
                                 // carries land in the same box.
                                 BodySceneView(facing: facing,
-                                              style: .skin,
-                                              interactive: false)
+                                              style: .skin)
                                     .padding(.horizontal, 28)
                                     .padding(.vertical, 6)
                                 BodyFigureCanvas(layer: currentLayer,

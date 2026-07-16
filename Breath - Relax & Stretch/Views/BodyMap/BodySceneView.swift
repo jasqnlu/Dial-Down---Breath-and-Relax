@@ -1,5 +1,6 @@
 import SwiftUI
 import SceneKit
+import simd
 
 // MARK: - Body Rig
 //
@@ -8,7 +9,8 @@ import SceneKit
 //     ├─ cameraNode        (static — never rotates)
 //     ├─ keyLight / fillLight / ambientLight  (static, world-fixed)
 //     └─ rigNode           (rotates around Y for the turntable effect)
-//          └─ bodyNode     (the loaded mesh, pre-centred + pre-scaled)
+//          ├─ bodyNode     (the loaded mesh, pre-centred + pre-scaled)
+//          └─ marksNode    (marker-dot spheres, normalized-space coords)
 //
 // The mesh ships at native ZBrush export scale with no material/texture, so
 // this also recentres it (pivot = bounding-box centre), uniform-scales it to
@@ -16,6 +18,7 @@ import SceneKit
 //
 // Confirmed empirically from the source OBJ (see decimation notes): Y is up,
 // the figure's face points toward +Z. Rotation 0 == front, π == back.
+// Anatomical left = world +X (the marking system's L/R convention).
 
 /// The 3D model style that renders the body. Skin is the only layer now —
 /// the mesh is exported from the Z-Anatomy Blender file's ZBrush OBJ.
@@ -106,6 +109,10 @@ final class BodyRig {
     let scene = SCNScene()
     let cameraNode = SCNNode()
     let rigNode = SCNNode()
+    /// Marker dots live under the rig (NOT bodyNode: bodyNode's children
+    /// inherit its raw-OBJ pivot/scale; rigNode children take
+    /// normalized-space coordinates directly and still rotate with the body).
+    let marksNode = SCNNode()
     let style: BodyModelStyle
 
     private(set) var loadFailed = false
@@ -123,23 +130,17 @@ final class BodyRig {
         setUpCamera()
         setUpLights()
         scene.rootNode.addChildNode(rigNode)
+        rigNode.addChildNode(marksNode)
         // Mesh loading is kicked off asynchronously by BodySceneView (see
         // `loadIfNeeded`) instead of here — parsing the OBJ is too heavy to
         // do synchronously on the main thread during View init.
     }
 
-    /// Distance that makes the (height-normalised-to-2.0) body fill ~94% of
-    /// the vertical frame — matching SilhouetteShape's own near-edge-to-edge
-    /// fill, so BodyRegion's normalised rects (tuned for the 2D silhouette)
-    /// land in roughly the right place when overlaid on this 3D render.
-    /// **Load-bearing** for tap-region alignment: only used while marking
-    /// (rotation locked, overlay shown). Free-rotate uses the larger distance
-    /// below so the figure sits a little smaller in the frame.
+    /// Base camera distance for the (height-normalised-to-2.0) body.
     static let defaultCameraDistance: CGFloat = 2.28
 
-    /// Default framing when freely rotating (no tap-region overlay). Pulled
-    /// ~18% further back than the aligned distance so the model doesn't crowd
-    /// the frame / floating tab bar. Safe to change — no overlay depends on it.
+    /// Default framing — pulled ~18% back from the base distance so the
+    /// model doesn't crowd the frame / floating tab bar.
     static let freeExploreCameraDistance: CGFloat = defaultCameraDistance * 1.18
 
     private func setUpCamera() {
@@ -210,6 +211,47 @@ final class BodyRig {
         isLoaded = true
     }
 
+    // MARK: - Marker dots
+
+    /// Rebuilds the marker-dot spheres from the mark set. Cheap for the
+    /// handful of marks a body carries; called on every mark change.
+    func updateMarks(_ marks: [String: BodyMark]) {
+        marksNode.childNodes.forEach { $0.removeFromParentNode() }
+        for (region, mark) in marks {
+            let sphere = SCNSphere(radius: 0.028)
+            let color = UIColor(sensationColors.first { $0.id == mark.sensationID }?.color ?? .red)
+            let material = SCNMaterial()
+            material.diffuse.contents = color
+            material.emission.contents = color
+            sphere.materials = [material]
+            let node = SCNNode(geometry: sphere)
+            node.name = region
+            node.position = SCNVector3(mark.point.x, mark.point.y, mark.point.z)
+            marksNode.addChildNode(node)
+        }
+    }
+
+    /// Debug: launch with `-debugHitboxes YES` to render every hit volume as
+    /// a translucent box over the skin — verifies box↔mesh alignment and the
+    /// anatomical L/R relabel (at front view, "Left Biceps" must sit on the
+    /// VIEWER'S RIGHT).
+    func addDebugHitboxesIfEnabled() {
+        guard UserDefaults.standard.bool(forKey: "debugHitboxes") else { return }
+        for volume in BodyHitVolumes.all {
+            let size = volume.maxBound - volume.minBound
+            let box = SCNBox(width: CGFloat(size.x), height: CGFloat(size.y),
+                             length: CGFloat(size.z), chamferRadius: 0)
+            let material = SCNMaterial()
+            material.diffuse.contents = UIColor.systemBlue.withAlphaComponent(0.18)
+            material.isDoubleSided = true
+            box.materials = [material]
+            let node = SCNNode(geometry: box)
+            node.name = volume.name
+            node.position = SCNVector3(volume.center.x, volume.center.y, volume.center.z)
+            rigNode.addChildNode(node)
+        }
+    }
+
     // MARK: - Rotation
 
     func applyDragRotation(deltaX: CGFloat) {
@@ -245,19 +287,67 @@ final class BodyRig {
     }
 }
 
+// MARK: - SceneKit host
+
+/// SwiftUI's SceneView hides its SCNView, which we need for hitTest — so the
+/// scene is hosted directly. SwiftUI drag/magnify gestures still attach on
+/// top; the tap recognizer fails automatically once a pan starts.
+private struct SceneKitContainer: UIViewRepresentable {
+    let scene: SCNScene
+    let pointOfView: SCNNode
+    var onTap: ((CGPoint, SCNView) -> Void)?
+
+    func makeUIView(context: Context) -> SCNView {
+        let view = SCNView()
+        view.scene = scene
+        view.pointOfView = pointOfView
+        view.rendersContinuously = true
+        view.antialiasingMode = .multisampling4X
+        view.backgroundColor = .clear
+        let tap = UITapGestureRecognizer(target: context.coordinator,
+                                         action: #selector(Coordinator.handleTap(_:)))
+        view.addGestureRecognizer(tap)
+        return view
+    }
+
+    func updateUIView(_ view: SCNView, context: Context) {
+        context.coordinator.onTap = onTap
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(onTap: onTap) }
+
+    final class Coordinator: NSObject {
+        var onTap: ((CGPoint, SCNView) -> Void)?
+        init(onTap: ((CGPoint, SCNView) -> Void)?) { self.onTap = onTap }
+
+        @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
+            guard let view = recognizer.view as? SCNView else { return }
+            onTap?(recognizer.location(in: view), view)
+        }
+    }
+}
+
 // MARK: - Body Scene View
+
+private extension BodyFacing {
+    /// Rig Y-rotation for this facing (0 = front, π = back).
+    var rotationY: CGFloat { self == .front ? 0 : .pi }
+}
 
 struct BodySceneView: View {
     let facing: BodyFacing
 
-    /// Which anatomy layer to render. Skin, muscle, and skeleton are all real
-    /// rotatable 3D models now; only the loaded mesh + material differ.
+    /// Which anatomy layer to render. Skin is the only layer.
     var style: BodyModelStyle = .skin
 
-    /// False while marking: rotation locks to the current facing (front/back)
-    /// so the overlaid tap-region grid stays aligned, and the outer 2D
-    /// pinch/pan system takes over zoom instead.
-    var interactive: Bool = true
+    /// Current marks, rendered as marker-dot spheres on the body.
+    var marks: [String: BodyMark] = [:]
+
+    /// When set, tapping the body resolves the tapped surface point to a
+    /// region name (see `MuscleHitResolver`) and calls back with the name and
+    /// the point in normalized model space. Rotation stays free — hit-testing
+    /// works at any camera angle.
+    var onRegionTap: ((String, SIMD3<Float>) -> Void)? = nil
 
     @State private var rig: BodyRig
     @State private var dragActive = false
@@ -272,16 +362,17 @@ struct BodySceneView: View {
     private let minCameraZ: CGFloat = BodyRig.defaultCameraDistance * 0.62         // closer  = zoomed in
     private let maxCameraZ: CGFloat = BodyRig.freeExploreCameraDistance * 1.25      // farther = zoomed out
 
-    init(facing: BodyFacing, style: BodyModelStyle = .skin, interactive: Bool = true) {
+    init(facing: BodyFacing,
+         style: BodyModelStyle = .skin,
+         marks: [String: BodyMark] = [:],
+         onRegionTap: ((String, SIMD3<Float>) -> Void)? = nil) {
         self.facing = facing
         self.style = style
-        self.interactive = interactive
+        self.marks = marks
+        self.onRegionTap = onRegionTap
         _rig = State(initialValue: BodyRig(style: style))
-        // Marking starts at the alignment-calibrated distance; free-rotate
-        // starts pulled back so the figure sits a touch smaller in frame.
-        let start = interactive ? BodyRig.freeExploreCameraDistance : BodyRig.defaultCameraDistance
-        _cameraZ = State(initialValue: start)
-        _committedCameraZ = State(initialValue: start)
+        _cameraZ = State(initialValue: BodyRig.freeExploreCameraDistance)
+        _committedCameraZ = State(initialValue: BodyRig.freeExploreCameraDistance)
     }
 
     var body: some View {
@@ -297,31 +388,24 @@ struct BodySceneView: View {
                     description: Text("The body model couldn't be loaded.")
                 )
             } else {
-                SceneView(scene: rig.scene, pointOfView: rig.cameraNode, options: [.rendersContinuously])
+                SceneKitContainer(scene: rig.scene, pointOfView: rig.cameraNode,
+                                  onTap: tapHandler)
                     .gesture(rotationGesture)
                     .simultaneousGesture(zoomGesture)
                     .overlay(alignment: .top) {
-                        if interactive {
-                            Text("Drag to rotate")
-                                .font(.caption2.weight(.medium))
-                                .padding(.horizontal, 10).padding(.vertical, 5)
-                                .background(.regularMaterial, in: Capsule())
-                                .padding(.top, 6)
-                                .opacity(dragActive ? 0 : 0.85)
-                                .animation(.easeInOut(duration: 0.2), value: dragActive)
-                        }
+                        Text("Drag to rotate")
+                            .font(.caption2.weight(.medium))
+                            .padding(.horizontal, 10).padding(.vertical, 5)
+                            .background(.regularMaterial, in: Capsule())
+                            .padding(.top, 6)
+                            .opacity(dragActive ? 0 : 0.85)
+                            .animation(.easeInOut(duration: 0.2), value: dragActive)
                     }
             }
         }
         .onAppear {
-            rig.snap(to: facing == .front ? 0 : .pi)
-            // Push the starting distance onto the camera node: the rig builds
-            // its camera at the aligned distance, so free-rotate must move it.
-            if interactive {
-                rig.cameraNode.position.z = Float(cameraZ)
-            } else {
-                resetCamera()
-            }
+            rig.snap(to: facing.rotationY)
+            rig.cameraNode.position.z = Float(cameraZ)
         }
         .task(id: ObjectIdentifier(rig)) {
             // Off the main thread inside BodyMeshLoader; hops back to the
@@ -329,13 +413,15 @@ struct BodySceneView: View {
             // if `rig` itself is ever replaced (it currently isn't post-init,
             // but keeps this correct if that changes).
             await rig.loadIfNeeded()
+            rig.updateMarks(marks)          // persisted marks show on first load
+            rig.addDebugHitboxesIfEnabled()
             isLoading = false
         }
         .onChange(of: facing) { _, newFacing in
-            rig.snap(to: newFacing == .front ? 0 : .pi)
+            rig.snap(to: newFacing.rotationY)
         }
-        .onChange(of: interactive) { _, isInteractive in
-            if !isInteractive { resetCamera() }
+        .onChange(of: marks) { _, newMarks in
+            rig.updateMarks(newMarks)
         }
         .onAppear { applyBackground() }
         .onChange(of: colorScheme) { _, _ in applyBackground() }
@@ -350,25 +436,43 @@ struct BodySceneView: View {
         rig.scene.background.contents = UIColor(Color.luminaSurface).resolvedColor(with: trait)
     }
 
-    /// Restores the calibrated default framing — used whenever the locked
-    /// (non-interactive, tap-region-overlay) mode engages, so the body's
-    /// on-screen footprint always matches what BodyRegion's rects expect,
-    /// regardless of how far the user had pinch-zoomed beforehand.
-    private func resetCamera() {
-        cameraZ = BodyRig.defaultCameraDistance
-        committedCameraZ = BodyRig.defaultCameraDistance
-        rig.cameraNode.position.z = Float(BodyRig.defaultCameraDistance)
+    // MARK: - Tap → region resolution
+
+    /// Non-nil only when a region-tap callback is installed, so plain
+    /// viewing never pays for hit-testing.
+    private var tapHandler: ((CGPoint, SCNView) -> Void)? {
+        guard onRegionTap != nil else { return nil }
+        return { point, view in handleTap(at: point, in: view) }
     }
+
+    /// Stage 1: raycast the skin mesh (marker dots are excluded explicitly,
+    /// so the first non-marker hit is the occlusion-correct surface point).
+    /// Stage 2: convert the world hit point to rigNode-local (normalized
+    /// model space, rotation factored out) and resolve it with pure math.
+    private func handleTap(at point: CGPoint, in view: SCNView) {
+        guard let onRegionTap else { return }
+        let hits = view.hitTest(point, options: [.searchMode: SCNHitTestSearchMode.all.rawValue as NSNumber])
+        guard let hit = hits.first(where: { !isMarkerNode($0.node) }) else { return }
+        let local = rig.rigNode.convertPosition(hit.worldCoordinates, from: nil)
+        let normalized = SIMD3(Float(local.x), Float(local.y), Float(local.z))
+        if let region = MuscleHitResolver.regionName(at: normalized, in: BodyHitVolumes.all) {
+            onRegionTap(region, normalized)
+        }
+    }
+
+    private func isMarkerNode(_ node: SCNNode) -> Bool {
+        sequence(first: node, next: \.parent).contains(rig.marksNode)
+    }
+
+    // MARK: - Gestures
 
     private var rotationGesture: some Gesture {
         DragGesture(minimumDistance: 2)
             .onChanged { value in
-                guard interactive else { return }
                 dragActive = true
                 rig.applyDragRotation(deltaX: value.translation.width)
             }
             .onEnded { value in
-                guard interactive else { return }
                 dragActive = false
                 rig.commitDragRotation(deltaX: value.translation.width)
             }
@@ -377,14 +481,12 @@ struct BodySceneView: View {
     private var zoomGesture: some Gesture {
         MagnifyGesture()
             .onChanged { value in
-                guard interactive else { return }
                 // magnification > 1 = pinch out (zoom in) -> move camera closer.
                 let proposed = committedCameraZ / value.magnification
                 cameraZ = min(max(proposed, minCameraZ), maxCameraZ)
                 rig.cameraNode.position.z = Float(cameraZ)
             }
             .onEnded { _ in
-                guard interactive else { return }
                 committedCameraZ = cameraZ
             }
     }
