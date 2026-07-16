@@ -1,24 +1,9 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Region → exercise search expansion
-//
-// Most regions search by their own name, but the fine-grained finger regions
-// have no dedicated exercises, so they fall back to the hand / forearm.
-
-private let fingerNames = ["Thumb", "Index", "Middle", "Ring", "Pinky"]
-
-func exerciseSearchTerms(for region: String) -> [String] {
-    if fingerNames.contains(where: { region.contains($0) }) {
-        let side = region.hasPrefix("Left") ? "Left" : "Right"
-        return [region, "\(side) Hand", "\(side) Forearm", "Hand"]
-    }
-    return [region]
-}
-
 // MARK: - Marked-areas banner
 //
-// Appears once the user has marked one or more regions (by drawing or tapping).
+// Appears once the user has marked one or more regions by tapping the 3D body.
 // Summarises what's marked and lets them jump to a combined exercise list.
 
 struct MarkedAreasBanner: View {
@@ -91,10 +76,9 @@ struct RegionExerciseResolver {
     let related: [Exercise]
 
     init(regions: [String], exercises: [Exercise]) {
-        // Expand fingers/toes to their parent (no "ring finger" stretches, but
-        // hand/forearm ones), then migrate coarse region names to fine ones.
-        let expanded = regions.flatMap { exerciseSearchTerms(for: $0) }
-        let fineNames = MuscleGroup.migrate(expanded)
+        // Migrate coarse/joint region names ("Left Knee") to the fine
+        // muscle-group names exercises target ("Left Quadriceps", …).
+        let fineNames = MuscleGroup.migrate(regions)
         let fineSet = Set(fineNames.map { $0.lowercased() })
         let categories = ExerciseCategory.categories(for: fineNames)
 

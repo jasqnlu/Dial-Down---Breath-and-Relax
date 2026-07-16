@@ -1,6 +1,5 @@
 import SwiftUI
 import SceneKit
-import simd
 
 // MARK: - Body Rig
 //
