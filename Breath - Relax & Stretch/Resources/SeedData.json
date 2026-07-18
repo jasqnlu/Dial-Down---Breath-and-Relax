@@ -182,7 +182,8 @@
       "name": "Eye Palming",
       "type": "breath",
       "targetBodyParts": [
-        "Head"
+        "Left Eye",
+        "Right Eye"
       ],
       "durationSeconds": 60,
       "difficulty": 1,
@@ -2867,6 +2868,1006 @@
         "Pause briefly, then repeat 3-5 times to quickly calm your nervous system."
       ],
       "id": "9eb02d66-cd72-57b6-80bc-be0cb249d5c4"
+    },
+    {
+      "name": "Left Half-Kneeling Rear-Foot Instep Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Tibialis"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 2,
+      "instructions": [
+        "Start in a half-kneeling lunge with your working-side leg back, its knee on the floor (use a cushion under the knee if needed).",
+        "Flatten the top of your back foot against the floor, toes pointing straight behind you, so your ankle is fully pointed.",
+        "Keeping your torso tall, gently sink your hips down and slightly forward over your front knee.",
+        "Hold, feeling the stretch travel up the front of your back shin, then rise and switch legs on another round."
+      ],
+      "caution": "Use a folded towel under the back knee if the floor is hard, and ease off if you feel pinching at the front of the ankle rather than a stretch.",
+      "id": "cc6dcec1-c54f-48c3-b8c6-a64741a29faf"
+    },
+    {
+      "name": "Right Half-Kneeling Rear-Foot Instep Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Right Tibialis"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 2,
+      "instructions": [
+        "Start in a half-kneeling lunge with your working-side leg back, its knee on the floor (use a cushion under the knee if needed).",
+        "Flatten the top of your back foot against the floor, toes pointing straight behind you, so your ankle is fully pointed.",
+        "Keeping your torso tall, gently sink your hips down and slightly forward over your front knee.",
+        "Hold, feeling the stretch travel up the front of your back shin, then rise and switch legs on another round."
+      ],
+      "caution": "Use a folded towel under the back knee if the floor is hard, and ease off if you feel pinching at the front of the ankle rather than a stretch.",
+      "id": "6bd1e797-c0f0-4d8b-9024-7b40bacaea85"
+    },
+    {
+      "name": "Left Seated Behind-Hip Bicep Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Biceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit tall on the floor or a bench with your legs extended in front of you.",
+        "Place your left hand flat on the floor just behind your left hip, fingers pointing away from your body.",
+        "Keeping that elbow straight, slowly lean your torso slightly forward and away from the planted hand.",
+        "Hold, feeling a stretch through the front of your upper arm and wrist, then release slowly."
+      ],
+      "id": "ba874d42-727e-4c7a-889a-a3547fba2ddd"
+    },
+    {
+      "name": "Right Seated Behind-Hip Bicep Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Right Biceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit tall on the floor or a bench with your legs extended in front of you.",
+        "Place your right hand flat on the floor just behind your right hip, fingers pointing away from your body.",
+        "Keeping that elbow straight, slowly lean your torso slightly forward and away from the planted hand.",
+        "Hold, feeling a stretch through the front of your upper arm and wrist, then release slowly."
+      ],
+      "id": "a7c6db16-df4a-4919-a4b1-cf3673896a2e"
+    },
+    {
+      "name": "Left Wall-Assisted Overhead Triceps Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Triceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand an arm's length in front of a wall, facing away from it.",
+        "Raise your left arm overhead and bend the elbow so your left palm drops down between your shoulder blades.",
+        "Reach back and rest your elbow lightly against the wall, using its gentle resistance to ease the elbow into a deeper bend.",
+        "Hold, feeling the stretch through the back of your upper arm, then lower slowly and switch sides on another round."
+      ],
+      "id": "7050babc-0363-4c87-ad88-117caa284084"
+    },
+    {
+      "name": "Right Wall-Assisted Overhead Triceps Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Right Triceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand an arm's length in front of a wall, facing away from it.",
+        "Raise your right arm overhead and bend the elbow so your right palm drops down between your shoulder blades.",
+        "Reach back and rest your elbow lightly against the wall, using its gentle resistance to ease the elbow into a deeper bend.",
+        "Hold, feeling the stretch through the back of your upper arm, then lower slowly and switch sides on another round."
+      ],
+      "id": "47bf2bc5-7c2a-45a2-83d5-3c5235df753e"
+    },
+    {
+      "name": "Left Step-Edge Calf Drop Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Calves"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Stand on the edge of a sturdy step or curb with the ball of your working foot on the edge and your heel hanging off, holding a railing or wall for balance.",
+        "Shift your weight onto your left leg, keeping the knee nearly straight.",
+        "Slowly let that heel drop down below the level of the step until you feel a stretch through your calf.",
+        "Hold gently, then rise back to the step edge and switch legs on another round."
+      ],
+      "caution": "Hold a railing or wall the whole time and move slowly \u2014 don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
+      "id": "ca88ac04-f55d-45c9-9693-19f6829c6283"
+    },
+    {
+      "name": "Right Step-Edge Calf Drop Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Right Calves"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Stand on the edge of a sturdy step or curb with the ball of your working foot on the edge and your heel hanging off, holding a railing or wall for balance.",
+        "Shift your weight onto your right leg, keeping the knee nearly straight.",
+        "Slowly let that heel drop down below the level of the step until you feel a stretch through your calf.",
+        "Hold gently, then rise back to the step edge and switch legs on another round."
+      ],
+      "caution": "Hold a railing or wall the whole time and move slowly \u2014 don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
+      "id": "2fc19eb8-63ab-4f73-859b-b5b6fad04ac8"
+    },
+    {
+      "name": "Left Scalene Neck Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Front Neck"
+      ],
+      "durationSeconds": 20,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or stand tall and place your left hand flat just below your left collarbone, pressing down gently to anchor your shoulder.",
+        "Tilt your head to the right, bringing your right ear toward your right shoulder.",
+        "Rotate your chin slightly upward and toward the right side.",
+        "Hold, feeling a light stretch along the left side of your neck, then release the anchor hand and return to center."
+      ],
+      "caution": "Keep the pull light and slow. Stop if you feel tingling, numbness, or sharp pain, which can signal nerve irritation rather than a muscle stretch.",
+      "id": "936cedc6-136d-4ede-9f68-b4177ef3e2ec"
+    },
+    {
+      "name": "Right Scalene Neck Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Front Neck"
+      ],
+      "durationSeconds": 20,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or stand tall and place your right hand flat just below your right collarbone, pressing down gently to anchor your shoulder.",
+        "Tilt your head to the left, bringing your left ear toward your left shoulder.",
+        "Rotate your chin slightly upward and toward the left side.",
+        "Hold, feeling a light stretch along the right side of your neck, then release the anchor hand and return to center."
+      ],
+      "caution": "Keep the pull light and slow. Stop if you feel tingling, numbness, or sharp pain, which can signal nerve irritation rather than a muscle stretch.",
+      "id": "bc22ed01-77ea-45dd-9d8e-69a562a4169f"
+    },
+    {
+      "name": "Temporalis Release",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Temple",
+        "Right Temple"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Place two fingers on the soft spot at each temple.",
+        "Make slow, small circles with light, comfortable pressure.",
+        "Let your jaw relax and your teeth part slightly as you work.",
+        "Keep breathing slowly and evenly throughout.",
+        "Continue gently for the full duration, then rest."
+      ],
+      "caution": "Use gentle pressure only. Skip if you have a headache disorder that worsens with touch or any scalp or skin condition.",
+      "id": "008d30f4-7e6f-4d97-a004-d2d585360f10"
+    },
+    {
+      "name": "Brow & Forehead Smoother",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Forehead"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Rest the pads of your fingers flat across your forehead.",
+        "Glide them slowly outward from the centre toward the temples.",
+        "Use light, even pressure — smoothing, not pressing hard.",
+        "Let your brow relax down as you breathe out.",
+        "Repeat the slow glide for the full duration."
+      ],
+      "caution": "Use light pressure only. Avoid if you have a skin condition or injury on the forehead.",
+      "id": "99a1c308-1e1e-4462-b2eb-f35e79cc3afd"
+    },
+    {
+      "name": "Wrist Flexor Prayer Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Hand",
+        "Right Hand",
+        "Left Forearm",
+        "Right Forearm"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Bring your palms together in front of your chest in a prayer position, fingers pointing up.",
+        "Slowly lower your hands toward your waist while keeping your palms pressed together.",
+        "Stop once you feel a stretch along the inside of your forearms and wrists, keeping your elbows lifted and shoulders relaxed.",
+        "Hold, breathing evenly, then release."
+      ],
+      "id": "4ee1b851-84cd-4e92-b1b4-b2c182d00840"
+    },
+    {
+      "name": "Wrist Extensor Reverse-Prayer Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Hand",
+        "Right Hand",
+        "Left Forearm",
+        "Right Forearm"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Bring the backs of your hands together in front of your torso with your fingers pointing downward.",
+        "Press the backs of your hands together and slowly raise them toward your chest, keeping contact the whole way.",
+        "Stop once you feel a stretch along the top of your forearms and wrists.",
+        "Hold, breathing evenly, then release."
+      ],
+      "id": "83583f01-6ec5-413b-a4c7-34e4f03b4e22"
+    },
+    {
+      "name": "Left Plantar Fascia Stretch (Toe Raise)",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Foot"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit in a chair and cross your left ankle over your opposite knee.",
+        "Reach down and gently pull your left toes back toward your shin with your hand.",
+        "Hold, feeling a stretch along the sole and arch of your foot.",
+        "Release slowly, then repeat on the other side on another round."
+      ],
+      "id": "8193d6e7-e24e-4c4c-bb03-3bdaa2be18d5"
+    },
+    {
+      "name": "Right Plantar Fascia Stretch (Toe Raise)",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Right Foot"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit in a chair and cross your right ankle over your opposite knee.",
+        "Reach down and gently pull your right toes back toward your shin with your hand.",
+        "Hold, feeling a stretch along the sole and arch of your foot.",
+        "Release slowly, then repeat on the other side on another round."
+      ],
+      "id": "3966e57e-0f8d-42a8-bbb3-0eed3813ddf3"
+    },
+    {
+      "name": "Left Standing Crescent Moon Side Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Obliques",
+        "Left Lats"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand tall with feet hip-width apart and raise both arms overhead, clasping your left wrist with your other hand.",
+        "Keeping your hips square and both feet grounded, gently lean your torso to the right.",
+        "Hold, feeling a long stretch down your left side from armpit to hip.",
+        "Return to center slowly and repeat on the other side on another round."
+      ],
+      "id": "9397f4c9-13ac-408a-bc19-6d4ef78018e8"
+    },
+    {
+      "name": "Right Standing Crescent Moon Side Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Right Obliques",
+        "Right Lats"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand tall with feet hip-width apart and raise both arms overhead, clasping your right wrist with your other hand.",
+        "Keeping your hips square and both feet grounded, gently lean your torso to the left.",
+        "Hold, feeling a long stretch down your right side from armpit to hip.",
+        "Return to center slowly and repeat on the other side on another round."
+      ],
+      "id": "889853fe-0107-4036-b706-bdb094f0e595"
+    },
+    {
+      "name": "Left Cow-Face Arm Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Triceps",
+        "Left Shoulder"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Reach your left arm straight overhead, then bend the elbow so your left palm drops down between your shoulder blades.",
+        "Reach your other arm down and behind your back, bending that elbow so the back of your hand rests against your lower back.",
+        "Try to walk your fingers toward each other behind your back, using a towel bridged between your hands if they don't meet.",
+        "Hold, feeling a stretch through the back of your left upper arm, shoulder, and upper back, then release and switch sides on another round."
+      ],
+      "caution": "Ease off or skip if you have a shoulder injury \u2014 don't force the hands to meet, a towel gap is fine.",
+      "id": "8143f5d1-d84e-4265-8134-e92dd1dce26e"
+    },
+    {
+      "name": "Right Cow-Face Arm Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Right Triceps",
+        "Right Shoulder"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Reach your right arm straight overhead, then bend the elbow so your right palm drops down between your shoulder blades.",
+        "Reach your other arm down and behind your back, bending that elbow so the back of your hand rests against your lower back.",
+        "Try to walk your fingers toward each other behind your back, using a towel bridged between your hands if they don't meet.",
+        "Hold, feeling a stretch through the back of your right upper arm, shoulder, and upper back, then release and switch sides on another round."
+      ],
+      "caution": "Ease off or skip if you have a shoulder injury \u2014 don't force the hands to meet, a towel gap is fine.",
+      "id": "a306395b-08bf-4304-a785-d12d032dd445"
+    },
+    {
+      "name": "Suboccipital Release (Finger Press)",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Back Neck",
+        "Head"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or lie on your back and bring both hands behind your head.",
+        "Place your thumbs or fingertips into the small hollow at the base of your skull, on either side of your spine.",
+        "Apply gentle, steady pressure and slowly nod your chin down and up a few times under your fingers.",
+        "Hold the pressure and let the muscles at the base of your skull soften and release for the full duration."
+      ],
+      "id": "9c8783e6-ca3b-47ca-8afb-ebd6c8e44c91"
+    },
+    {
+      "name": "Prone Neck Retraction",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Back Neck",
+        "Front Neck"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Lie face-down with your forehead resting on your stacked hands or a small towel.",
+        "Without lifting your head, glide your chin straight back, lengthening the back of your neck.",
+        "Hold the retracted position for a couple of seconds, feeling a gentle stretch, then release slightly.",
+        "Repeat the glide-and-release rhythm slowly for the full duration."
+      ],
+      "id": "c18e7619-bbe4-4a01-a718-7ca0a1bcd12a"
+    },
+    {
+      "name": "Left Isometric Neck Side Press",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Front Neck",
+        "Left Trapezius"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Sit or stand tall and place your left palm flat against the left side of your head, just above your ear.",
+        "Gently press your head into your hand while your hand resists, so your head doesn't actually move.",
+        "Hold the resisted press for a few seconds, breathing steadily, then ease off completely.",
+        "Repeat the press-and-release for the full duration, then switch sides on another round."
+      ],
+      "caution": "Use only mild, steady pressure \u2014 this is a gentle isometric hold, not a maximal push.",
+      "id": "b7721974-7206-4913-b9d2-8d4f41db1034"
+    },
+    {
+      "name": "Right Isometric Neck Side Press",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Front Neck",
+        "Right Trapezius"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Sit or stand tall and place your right palm flat against the right side of your head, just above your ear.",
+        "Gently press your head into your hand while your hand resists, so your head doesn't actually move.",
+        "Hold the resisted press for a few seconds, breathing steadily, then ease off completely.",
+        "Repeat the press-and-release for the full duration, then switch sides on another round."
+      ],
+      "caution": "Use only mild, steady pressure \u2014 this is a gentle isometric hold, not a maximal push.",
+      "id": "4a1b7329-be46-4b36-a2b5-4d0f06c15b78"
+    },
+    {
+      "name": "Standing Chest Expansion Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Chest",
+        "Right Chest"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand tall with your feet hip-width apart and clasp your hands behind your lower back.",
+        "Straighten your arms and gently lift your clasped hands away from your body.",
+        "Roll your shoulders back and down while lifting your chest toward the ceiling.",
+        "Hold, feeling the stretch open across your chest and shoulders, then release slowly."
+      ],
+      "id": "6d280825-f268-470f-bc47-d703dc77c490"
+    },
+    {
+      "name": "Kneeling Chest Stretch on Chair",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Chest",
+        "Right Chest",
+        "Left Shoulder",
+        "Right Shoulder"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 2,
+      "instructions": [
+        "Kneel in front of a sturdy chair seat with your hips stacked over your knees.",
+        "Rest your forearms on the chair seat and walk your knees back slightly so your chest lowers toward the floor.",
+        "Let your chest sink between your arms while keeping your hips lifted, feeling the stretch across your chest and armpits.",
+        "Hold, breathing deeply into your ribcage, then press back up slowly."
+      ],
+      "caution": "Skip if you have knee or shoulder pain that kneeling or overhead reaching aggravates.",
+      "id": "be4ec598-b553-4d09-b4af-ff3721e3765a"
+    },
+    {
+      "name": "Doorway Overhead Chest Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Chest",
+        "Right Chest"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Stand in a doorway and raise both forearms to the top corners of the frame, elbows bent near shoulder height.",
+        "Step one foot through the doorway and shift your weight forward slowly.",
+        "Keep your chest lifted and core braced as you feel the stretch across the upper chest.",
+        "Hold, then step back to release and reset your stance before repeating."
+      ],
+      "caution": "Stop if you feel pinching in the front of the shoulder rather than a stretch in the chest.",
+      "id": "c32f1227-61c8-4943-b021-9c6cfb607dae"
+    },
+    {
+      "name": "Seated Thoracic Extension Over Chair Back",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Chest",
+        "Right Chest",
+        "Spinal Erectors"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Sit toward the front edge of a sturdy chair with a low or mid-height backrest.",
+        "Place your hands behind your head and gently arch your upper back over the top of the chair back.",
+        "Let your chest open and your head tip back slightly, keeping your lower back neutral.",
+        "Hold for a few breaths, feeling the stretch across your chest and upper spine, then curl back up slowly."
+      ],
+      "caution": "Move into the extension gradually and stop if you feel any sharp pain in your lower back.",
+      "id": "0f135f8f-fcbc-4894-b8cf-a0fc94b2f9c4"
+    },
+    {
+      "name": "Left Pigeon Pose Hip Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Glutes",
+        "Left Hip Flexors"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 3,
+      "instructions": [
+        "From all fours, bring your left knee forward behind your left wrist and angle your left shin toward the right.",
+        "Slide your right leg straight back behind you, keeping your hips as square to the floor as possible.",
+        "Lower your hips toward the floor and walk your hands forward, folding over your front leg if it's comfortable.",
+        "Hold, breathing into the stretch through your left glute and the front of your right hip, then rise slowly and switch sides on another round."
+      ],
+      "caution": "Skip or use a cushion under the front hip if you have knee pain \u2014 this is a deep hip-opener, not a beginner stretch.",
+      "id": "75c79a3b-c5d0-42b1-9c20-83f6efee0783"
+    },
+    {
+      "name": "Right Pigeon Pose Hip Stretch",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Right Glutes",
+        "Right Hip Flexors"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 3,
+      "instructions": [
+        "From all fours, bring your right knee forward behind your right wrist and angle your right shin toward the left.",
+        "Slide your left leg straight back behind you, keeping your hips as square to the floor as possible.",
+        "Lower your hips toward the floor and walk your hands forward, folding over your front leg if it's comfortable.",
+        "Hold, breathing into the stretch through your right glute and the front of your left hip, then rise slowly and switch sides on another round."
+      ],
+      "caution": "Skip or use a cushion under the front hip if you have knee pain \u2014 this is a deep hip-opener, not a beginner stretch.",
+      "id": "42440164-bfff-4ca0-a0f6-f481181865d5"
+    },
+    {
+      "name": "Bridge Pose",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Abs",
+        "Left Hip Flexors",
+        "Right Hip Flexors",
+        "Left Chest",
+        "Right Chest"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 3,
+      "instructions": [
+        "Lie on your back with your knees bent, feet flat on the floor hip-width apart, close to your hips.",
+        "Press through your feet and lift your hips toward the ceiling, squeezing your glutes as you rise.",
+        "Clasp your hands underneath you and roll your shoulders in to open your chest, or keep arms flat by your sides.",
+        "Hold, feeling the stretch across your hip flexors and chest, then lower your spine back down slowly, one vertebra at a time."
+      ],
+      "caution": "Skip if you have neck or lower-back issues \u2014 keep the neck neutral and avoid turning your head while lifted.",
+      "id": "abe45c7a-3b15-412e-856e-bc76e65d4eb2"
+    },
+    {
+      "name": "Standing Split Prep Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Hamstrings",
+        "Right Hamstrings"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 3,
+      "instructions": [
+        "Stand facing a wall or sturdy chair for balance and hinge forward from your hips, hands on the support.",
+        "Shift your weight onto your left leg and lift your right leg straight up behind you as high as comfortably possible.",
+        "Keep both legs as straight as you can and square your hips toward the floor.",
+        "Hold, feeling the stretch through the standing leg's hamstring, then lower slowly and switch sides on another round."
+      ],
+      "caution": "Only lift as high as you can while keeping the standing leg straight and controlled \u2014 use a wall for balance.",
+      "id": "1bed1844-6818-410c-a8b3-e1079f857bbd"
+    },
+    {
+      "name": "Extended Exhale Breathing",
+      "type": "breath",
+      "targetBodyParts": [
+        "Abs",
+        "Left Chest",
+        "Right Chest"
+      ],
+      "durationSeconds": 120,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or lie down in a comfortable position and relax your shoulders.",
+        "Inhale gently through your nose for 4 counts.",
+        "Exhale slowly through your nose or pursed lips for 8 counts, twice as long as your inhale.",
+        "Repeat for the full duration, letting your body settle deeper with each exhale."
+      ],
+      "id": "0e81758c-d768-4a7a-896e-4a9a7ddd0c56"
+    },
+    {
+      "name": "Counting Down Sleep Breath",
+      "type": "breath",
+      "targetBodyParts": [
+        "Abs"
+      ],
+      "durationSeconds": 180,
+      "difficulty": 1,
+      "instructions": [
+        "Lie down in bed or a comfortable reclined position and close your eyes.",
+        "Inhale slowly through your nose, then exhale while silently counting 'ten.'",
+        "Inhale again, then exhale while counting 'nine,' continuing to count down with each exhale.",
+        "If you lose track, simply restart from ten \u2014 the goal is a slow, wandering mind, not a perfect count."
+      ],
+      "id": "cb84490b-b29c-433b-8115-3bef0cd12b30"
+    },
+    {
+      "name": "Cooling Sitali Breath",
+      "type": "breath",
+      "targetBodyParts": [
+        "Abs"
+      ],
+      "durationSeconds": 90,
+      "difficulty": 2,
+      "instructions": [
+        "Sit comfortably and curl the sides of your tongue inward to form a tube, then stick it slightly past your lips.",
+        "Inhale slowly through the curled tongue, feeling a cool sensation on your tongue.",
+        "Close your mouth and exhale slowly through your nose.",
+        "Repeat for the full duration to help cool the body and calm the mind."
+      ],
+      "caution": "If you can't curl your tongue, sip air through slightly parted, pursed lips instead.",
+      "id": "aa78230a-315e-4660-a3df-a2c2db01157e"
+    },
+    {
+      "name": "Three-Part Breath (Dirga Pranayama)",
+      "type": "breath",
+      "targetBodyParts": [
+        "Abs",
+        "Left Chest",
+        "Right Chest"
+      ],
+      "durationSeconds": 150,
+      "difficulty": 1,
+      "instructions": [
+        "Lie down or sit tall and place one hand on your belly and one on your chest.",
+        "Inhale slowly, filling your belly first, then your ribcage, then your upper chest.",
+        "Exhale slowly in reverse order, releasing your chest first, then ribs, then belly.",
+        "Continue this three-part wave of breath, moving slowly and smoothly for the full duration."
+      ],
+      "id": "043eaace-956a-4146-888a-5c0bf168b879"
+    },
+    {
+      "name": "Body Scan Breathing",
+      "type": "breath",
+      "targetBodyParts": [
+        "Abs"
+      ],
+      "durationSeconds": 180,
+      "difficulty": 1,
+      "instructions": [
+        "Lie down comfortably and take a few natural breaths to settle in.",
+        "With each inhale, bring your attention to a new part of your body, starting at your feet.",
+        "With each exhale, consciously relax that body part before moving your attention upward on the next inhale.",
+        "Continue scanning up through your legs, torso, arms, and head until the timer ends."
+      ],
+      "id": "1f95f1c0-00d1-4c18-b170-9ab0b5e76534"
+    },
+    {
+      "name": "Segmented Exhale Breathing (Viloma)",
+      "type": "breath",
+      "targetBodyParts": [
+        "Abs",
+        "Left Chest",
+        "Right Chest"
+      ],
+      "durationSeconds": 120,
+      "difficulty": 2,
+      "instructions": [
+        "Sit or lie down comfortably and take one full inhale through your nose.",
+        "Exhale slowly, but pause briefly two or three times partway through the exhale instead of releasing it all at once.",
+        "Resume the exhale after each pause until your lungs feel empty, then inhale normally.",
+        "Repeat the segmented exhale for the full duration."
+      ],
+      "id": "8efc4170-8093-48e0-a6a0-7e2f920660e9"
+    },
+    {
+      "name": "Progressive Relaxation Breath",
+      "type": "breath",
+      "targetBodyParts": [
+        "Abs",
+        "Left Quadriceps",
+        "Right Quadriceps"
+      ],
+      "durationSeconds": 180,
+      "difficulty": 1,
+      "instructions": [
+        "Lie down comfortably and take a slow breath in while gently tensing your feet and calves.",
+        "Exhale fully while releasing that tension completely, feeling the muscles go heavy.",
+        "Inhale again, tensing the next muscle group up (thighs, then glutes, then abs, and so on), and exhale to release.",
+        "Work your way up your whole body, pairing each tense-and-release with one slow breath cycle."
+      ],
+      "id": "b2867133-6dd8-4ffd-a360-f19496749fc6"
+    },
+    {
+      "name": "Left-Nostril Calming Breath (Chandra Bhedana)",
+      "type": "breath",
+      "targetBodyParts": [
+        "Abs"
+      ],
+      "durationSeconds": 120,
+      "difficulty": 2,
+      "instructions": [
+        "Sit comfortably and bring your right hand up, folding your index and middle fingers into your palm.",
+        "Close your right nostril gently with your right thumb and inhale slowly through your left nostril only.",
+        "Close your left nostril with your ring finger, release your thumb, and exhale slowly through your right nostril.",
+        "Continue inhaling only through the left and exhaling only through the right for the full duration \u2014 this pattern is traditionally used to calm and cool the body before rest."
+      ],
+      "id": "668913b8-bdb7-40a1-ae32-1b70a16afe26"
+    },
+    {
+      "name": "Standing IT Band Side Stretch (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Quadriceps",
+        "Left Hip Flexors"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Stand tall next to a wall for balance and cross your left leg behind your right leg.",
+        "Reach your left arm overhead and lean your torso to the right, away from your left hip.",
+        "Push your left hip out to the side as you lean, feeling the stretch along the outside of your left thigh.",
+        "Hold, then return to center slowly and switch sides on another round."
+      ],
+      "id": "a345946b-9db3-47f8-a748-0d3373745993"
+    },
+    {
+      "name": "Standing IT Band Side Stretch (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Right Quadriceps",
+        "Right Hip Flexors"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Stand tall next to a wall for balance and cross your right leg behind your left leg.",
+        "Reach your right arm overhead and lean your torso to the left, away from your right hip.",
+        "Push your right hip out to the side as you lean, feeling the stretch along the outside of your right thigh.",
+        "Hold, then return to center slowly and switch sides on another round."
+      ],
+      "id": "6f1b97a9-e7f2-418b-a622-0501e6c3cb13"
+    },
+    {
+      "name": "Dynamic Standing Leg Swings",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Hip Flexors",
+        "Right Hip Flexors",
+        "Left Hamstrings",
+        "Right Hamstrings"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 2,
+      "instructions": [
+        "Stand next to a wall or sturdy support and hold on lightly with one hand.",
+        "Swing your outside leg forward and backward in a smooth, controlled pendulum motion, keeping your knee soft.",
+        "Let the swing grow gradually taller as your hips loosen, without forcing the range of motion.",
+        "After the set time, turn around and repeat with the other leg."
+      ],
+      "caution": "Keep the motion controlled, not kicking \u2014 this is a warm-up mobilizer, not a max-range stretch.",
+      "id": "e80fc7d8-0c6f-433f-9335-c2f26d5477b5"
+    },
+    {
+      "name": "Standing Hip Circles",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Hip Flexors",
+        "Right Hip Flexors",
+        "Left Adductors",
+        "Right Adductors"
+      ],
+      "durationSeconds": 40,
+      "difficulty": 1,
+      "instructions": [
+        "Stand with your hands on your hips, feet a little wider than shoulder-width apart.",
+        "Shift your hips in a slow, wide circle, first tracing several circles clockwise.",
+        "Keep your upper body relatively still and let the movement come from your hips.",
+        "Reverse direction and circle counter-clockwise for the remaining time."
+      ],
+      "id": "0510c366-18e8-4ff1-a341-6a19976e50a4"
+    },
+    {
+      "name": "Runner's Lunge with Rotation (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Hip Flexors",
+        "Left Quadriceps",
+        "Left Obliques"
+      ],
+      "durationSeconds": 40,
+      "difficulty": 2,
+      "instructions": [
+        "Step your left foot forward into a deep lunge, back leg straight and back heel lifted.",
+        "Place your right hand on the floor or a block inside your left foot for support.",
+        "Reach your left arm up toward the ceiling, rotating your chest open to the left.",
+        "Hold, feeling the stretch through your right hip flexor and your rotated torso, then release and switch sides on another round."
+      ],
+      "id": "38c62e1d-7a1c-4d54-b016-620468832857"
+    },
+    {
+      "name": "Runner's Lunge with Rotation (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Right Hip Flexors",
+        "Right Quadriceps",
+        "Right Obliques"
+      ],
+      "durationSeconds": 40,
+      "difficulty": 2,
+      "instructions": [
+        "Step your right foot forward into a deep lunge, back leg straight and back heel lifted.",
+        "Place your left hand on the floor or a block inside your right foot for support.",
+        "Reach your right arm up toward the ceiling, rotating your chest open to the right.",
+        "Hold, feeling the stretch through your left hip flexor and your rotated torso, then release and switch sides on another round."
+      ],
+      "id": "bb664111-a1ba-4c92-bd9a-b44ee97d3e2a"
+    },
+    {
+      "name": "Standing Ankle Dorsiflexion Stretch (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Tibialis",
+        "Left Calves"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand facing a wall, about a foot away, with your left foot planted flat behind you.",
+        "Keeping your left heel on the ground, bend your left knee forward toward the wall.",
+        "Ease your knee forward until you feel a stretch through the front of your ankle and up your shin.",
+        "Hold, then release and switch sides on another round."
+      ],
+      "id": "bab80254-c9e0-472a-9dfd-f369a0b4232e"
+    },
+    {
+      "name": "Standing Ankle Dorsiflexion Stretch (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "targetBodyParts": [
+        "Right Tibialis",
+        "Right Calves"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand facing a wall, about a foot away, with your right foot planted flat behind you.",
+        "Keeping your right heel on the ground, bend your right knee forward toward the wall.",
+        "Ease your knee forward until you feel a stretch through the front of your ankle and up your shin.",
+        "Hold, then release and switch sides on another round."
+      ],
+      "id": "ab2582db-e52c-4820-baed-89ef91592ede"
+    },
+    {
+      "name": "20-20-20 Focus Shift",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Eye",
+        "Right Eye"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Sit comfortably and look at something roughly 20 feet (6 metres) away.",
+        "Let your eyes settle on it without straining to focus.",
+        "Hold your gaze there for about 20 seconds, breathing slowly.",
+        "Blink softly a few times to refresh your eyes.",
+        "Return to your near task; repeat whenever your eyes feel tired."
+      ],
+      "caution": "This is a rest break, not a treatment. See an eye professional for persistent eye pain or changes in vision.",
+      "id": "a03bd3b3-38db-4f17-a7a3-9b740e3bc5f8"
+    },
+    {
+      "name": "Gentle Eye Rolls",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Eye",
+        "Right Eye"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Sit tall and keep your head still, looking straight ahead.",
+        "Slowly move your gaze up, then trace a smooth circle: up, right, down, left.",
+        "Keep the movement slow and comfortable — never forced.",
+        "Complete 3 to 4 slow circles, then reverse direction.",
+        "Blink and let your eyes rest for a moment when finished."
+      ],
+      "caution": "Stop if you feel dizzy or any eye strain. Skip if you have a recent eye injury or eye condition.",
+      "id": "fa1c4ac8-4db9-4cb1-b3c8-5214d72160ca"
+    },
+    {
+      "name": "Jaw-Open Temporalis Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Temple",
+        "Right Temple"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or stand tall with relaxed shoulders.",
+        "Slowly open your mouth as wide as is comfortable and pain-free.",
+        "Feel a gentle stretch through the temples and jaw.",
+        "Hold for about 5 seconds, then slowly close.",
+        "Repeat gently and slowly for the full duration."
+      ],
+      "caution": "Keep within a comfortable, pain-free range. Stop if your jaw clicks, locks, or hurts, and see a dentist for diagnosed TMJ problems.",
+      "id": "7f61b11d-dddd-40df-bd92-7374482d9381"
+    },
+    {
+      "name": "Resisted Jaw Opening",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Jaw",
+        "Right Jaw"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Place your thumb or two fingers gently under your chin.",
+        "Slowly open your mouth against light resistance from your fingers.",
+        "Use only a small, gentle amount of pressure — this is not a strength test.",
+        "Open a short way, hold for 3 seconds, then slowly close.",
+        "Repeat calmly for the full duration."
+      ],
+      "caution": "Use very light resistance and stay pain-free. Stop if you feel clicking, locking, or pain, and see a dentist for diagnosed TMJ problems.",
+      "id": "1d0178e8-3356-49b3-b4bd-7453b01923bc"
+    },
+    {
+      "name": "Side-to-Side Jaw Glide",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Jaw",
+        "Right Jaw"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Relax your jaw with your teeth slightly apart.",
+        "Slowly glide your lower jaw to one side as far as is comfortable.",
+        "Return to centre, then glide gently to the other side.",
+        "Keep the movement small, smooth, and pain-free.",
+        "Continue slowly for the full duration."
+      ],
+      "caution": "Move gently within a comfortable range. Stop if the jaw clicks, locks, or hurts, and see a dentist for diagnosed TMJ problems.",
+      "id": "71106fcf-922a-4728-a8cb-694fe636bd84"
+    },
+    {
+      "name": "Tongue-Up Controlled Open/Close",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Jaw",
+        "Right Jaw"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Rest the tip of your tongue lightly on the roof of your mouth, behind your front teeth.",
+        "Keeping the tongue there, slowly open your mouth only as far as it stays in contact.",
+        "This keeps the jaw opening controlled and centred.",
+        "Hold briefly, then slowly close.",
+        "Repeat calmly for the full duration."
+      ],
+      "caution": "Keep it slow and pain-free. Stop if you feel clicking, locking, or pain, and see a dentist for diagnosed TMJ problems.",
+      "id": "eaed664d-55e8-4e86-8dee-e038209e43dc"
+    },
+    {
+      "name": "Frontalis Release",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Forehead"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Rest the pads of your fingers gently across your forehead.",
+        "Let your eyebrows relax downward as you breathe out slowly.",
+        "Apply light, still pressure — no rubbing or pulling on the skin.",
+        "Hold and breathe slowly, letting the forehead soften.",
+        "Release gently after the hold and repeat."
+      ],
+      "caution": "Use light pressure only. Avoid if you have a skin condition or injury on the forehead.",
+      "id": "aa6fd1ad-4d6e-4850-9ef5-1adcd1e3a3fb"
     }
   ]
 }

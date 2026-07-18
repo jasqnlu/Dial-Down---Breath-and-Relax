@@ -41,18 +41,78 @@ enum MuscleGroup: String, CaseIterable, Codable {
         "Lower Back": ["Lower Back"],
         "Left Arm": ["Left Biceps", "Left Triceps"],
         "Right Arm": ["Right Biceps", "Right Triceps"],
-        "Left Elbow": ["Left Forearm"], "Right Elbow": ["Right Forearm"],
+        "Left Elbow": ["Left Biceps", "Left Triceps", "Left Forearm"],
+        "Right Elbow": ["Right Biceps", "Right Triceps", "Right Forearm"],
+        "Left Wrist": ["Left Forearm"], "Right Wrist": ["Right Forearm"],
+        "Left Ankle": ["Left Calves", "Left Tibialis", "Left Foot"],
+        "Right Ankle": ["Right Calves", "Right Tibialis", "Right Foot"],
         "Left Forearm": ["Left Forearm"], "Right Forearm": ["Right Forearm"],
         "Left Hand": ["Left Hand"], "Right Hand": ["Right Hand"],
         "Hips": ["Left Hip Flexors", "Right Hip Flexors"],
         "Glutes": ["Left Glutes", "Right Glutes"],
         "Left Leg": ["Left Quadriceps"], "Right Leg": ["Right Quadriceps"],
         "Left Hamstring": ["Left Hamstrings"], "Right Hamstring": ["Right Hamstrings"],
-        "Left Knee": ["Left Quadriceps"], "Right Knee": ["Right Quadriceps"],
+        "Left Knee": ["Left Quadriceps", "Left Hamstrings", "Left Calves"],
+        "Right Knee": ["Right Quadriceps", "Right Hamstrings", "Right Calves"],
         "Left Shin": ["Left Tibialis"], "Right Shin": ["Right Tibialis"],
         "Left Calf": ["Left Calves"], "Right Calf": ["Right Calves"],
         "Left Foot": ["Left Foot"], "Right Foot": ["Right Foot"],
     ]
+
+    // MARK: - Muscle sub-heads
+
+    /// Anatomical sub-head display name → its parent muscle group. Head hit
+    /// volumes are *optional* data (`musclegroup_head_hitboxes.json`, generated
+    /// by `Tools/blender/classify_head_hitboxes.py`): when present they surface
+    /// as disambiguation candidates and resolve to their own exercises, falling
+    /// back to the parent muscle's list. These names MUST match the Blender
+    /// script's output exactly.
+    /// Face zones that subdivide the coarse `Head` group. Bilateral zones
+    /// expand to Left/Right; midline zones (Forehead) register as-is. All
+    /// resolve to the `Head` parent, so a zone with no curated exercise falls
+    /// back to the shared head list (see RegionExerciseResolver). Kept strictly
+    /// evidence-based — eyes (strain), temples & forehead (tension), jaw (TMJ).
+    /// No cheeks/mouth: anti-wrinkle claims are unsupported.
+    static let headZones: [(base: String, bilateral: Bool)] = [
+        ("Eye", true), ("Temple", true), ("Jaw", true), ("Forehead", false),
+    ]
+
+    static let muscleHeads: [String: String] = {
+        // Base head names per group (side-agnostic); expanded to Left/Right.
+        let byGroup: [(group: String, heads: [String])] = [
+            ("Shoulder",   ["Anterior Deltoid", "Lateral Deltoid", "Posterior Deltoid"]),
+            ("Chest",      ["Upper Chest", "Lower Chest"]),
+            ("Biceps",     ["Biceps Long Head", "Biceps Short Head"]),
+            ("Triceps",    ["Triceps Long Head", "Triceps Lateral Head", "Triceps Medial Head"]),
+            ("Trapezius",  ["Upper Trapezius", "Middle Trapezius", "Lower Trapezius"]),
+            ("Quadriceps", ["Rectus Femoris", "Vastus Lateralis", "Vastus Medialis"]),
+            ("Hamstrings", ["Biceps Femoris", "Semitendinosus", "Semimembranosus"]),
+            ("Calves",     ["Medial Gastrocnemius", "Lateral Gastrocnemius", "Soleus"]),
+            ("Glutes",     ["Gluteus Maximus", "Gluteus Medius"]),
+        ]
+        var map: [String: String] = [:]
+        for entry in byGroup {
+            for side in ["Left", "Right"] {
+                for head in entry.heads {
+                    map["\(side) \(head)"] = "\(side) \(entry.group)"
+                }
+            }
+        }
+        // Face zones: parent is always the coarse "Head" group (no side-specific
+        // parent, unlike muscle sub-heads).
+        for zone in headZones {
+            if zone.bilateral {
+                map["Left \(zone.base)"] = "Head"
+                map["Right \(zone.base)"] = "Head"
+            } else {
+                map[zone.base] = "Head"
+            }
+        }
+        return map
+    }()
+
+    /// The parent muscle group for a sub-head name, or nil if `name` isn't a head.
+    static func parentOfHead(_ name: String) -> String? { muscleHeads[name] }
 
     /// Maps legacy names to group names; unknown names pass through unchanged.
     /// Order-preserving, deduplicated.

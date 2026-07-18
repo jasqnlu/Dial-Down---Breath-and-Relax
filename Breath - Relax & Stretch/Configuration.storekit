@@ -46,6 +46,36 @@
       "productID" : "pack_athlete_recovery",
       "referenceName" : "Athlete Recovery Pack",
       "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "F1C7A9D4-6E2B-4A18-9C3F-1B8E5D4A2C60",
+      "localizations" : [
+        {
+          "description" : "Wind-down breathing techniques and gentle stretches to help you fall asleep faster.",
+          "displayName" : "Better Sleep & Breathing Pack",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "pack_bettersleep",
+      "referenceName" : "Better Sleep & Breathing Pack",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "3D9E6F2A-8B4C-4F71-A2D5-7C1A9E3B6F84",
+      "localizations" : [
+        {
+          "description" : "Dynamic mobility to open up before a run, plus targeted stretches to cool down after.",
+          "displayName" : "Runner's Warm-Up & Cooldown Pack",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "pack_runner",
+      "referenceName" : "Runner's Warm-Up & Cooldown Pack",
+      "type" : "NonConsumable"
     }
   ],
   "settings" : {

@@ -131,7 +131,11 @@ actor SupabaseService {
     /// the local identity is rotated. Requires the profiles delete policy in
     /// supabase_schema.sql.
     func deleteProfile(id: String) async throws {
-        try await delete(path: "/rest/v1/profiles?id=eq.\(id)")
+        // Strict percent-encoding (unreserved characters only): the id should
+        // always be a UUID, but it round-trips through UserDefaults, so never
+        // let a stray `&`/`=` rewrite the PostgREST filter expression.
+        let encoded = id.addingPercentEncoding(withAllowedCharacters: .alphanumerics.union(.init(charactersIn: "-._~"))) ?? ""
+        try await delete(path: "/rest/v1/profiles?id=eq.\(encoded)")
     }
 
     /// Fetches the top profiles by points for the leaderboard.

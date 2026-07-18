@@ -2,176 +2,302 @@ import SwiftUI
 import SwiftData
 
 // MARK: - BodyMapView
+//
+// One freely-rotatable 3D body in both modes. "Mark" mode adds tap-to-mark:
+// pick a sensation, tap a muscle to mark it (marker dot + chip), tap again
+// with the same sensation to unmark, different sensation to recolor.
+// Hit-testing raycasts the skin mesh and resolves the point in pure Swift
+// (MuscleHitResolver), so rotation stays free while marking.
+
+/// A tapped-but-not-yet-confirmed mark. Session-only — never touches
+/// `BodyMarkStore` until the user taps Confirm, and there's at most one at a
+/// time: a new tap silently replaces it rather than accumulating.
+private struct PendingMark: Equatable {
+    let region: String
+    let point: SIMD3<Float>
+}
 
 struct BodyMapView: View {
-    @AppStorage("bodyMapSex") private var bodyMapSex = "male"
-
-    // Skin is the only body layer now — marking region colours still key off
-    // BodyLayer, so this stays as the single source of truth for those tokens.
-    private let currentLayer: BodyLayer = .skin
     @State private var facing: BodyFacing = .front
-
-    // Regions the user has marked (by drawing on them or tapping them).
-    // This is the single source of truth for "areas to train on".
-    @State private var markedRegions: Set<String> = BodyMapLaunchState.initialMarkedRegions()
-    @State private var showMarkedExercises = false
-
-    // Annotation state
-    @State private var annotationMode = UserDefaults.standard.bool(forKey: "debugMarkMode")
-    @StateObject private var annotationStore = AnnotationStore()
-    @State private var selectedTool: DrawingTool       = .pen
+    @State private var isMarking = UserDefaults.standard.bool(forKey: "debugMarkMode")
+    @StateObject private var markStore = BodyMarkStore()
     @State private var selectedSensation: SensationColor = sensationColors[0]
+    @State private var showMarkedExercises = false
     @State private var showLegend = false
-    @State private var showClearConfirm = false
 
-    // Zoom & pan
-    @State private var zoomScale: CGFloat = 1
-    @State private var lastScale: CGFloat = 1
-    @State private var panOffset: CGSize = .zero
-    @State private var lastPan: CGSize = .zero
+    // MARK: - Single-focus confirm/disambiguate flow
+    @State private var pendingMark: PendingMark?
+    @State private var disambiguationCandidates: [MarkCandidate] = []
+    /// The tapped dot the camera zooms onto — kept alive across navigation so
+    /// Back returns to the same zoomed framing.
+    @State private var focusPoint: SIMD3<Float>?
+    /// The currently highlighted candidate (its region box brightened).
+    @State private var focusedRegion: String?
+    @State private var showConfirmedExercises = false
+    @State private var confirmedRegion = ""
+    /// Bumped when the exercise list is popped, to nudge BodySceneView to
+    /// re-apply the zoom and re-project labels (the covered SCNView goes stale).
+    @State private var refocusToken = 0
 
-    private let minZoom: CGFloat = 1
-    private let maxZoom: CGFloat = 4
-    private let fingerZoomThreshold: CGFloat = 2.2
-
-    /// Individual fingers become tappable once zoomed in past the threshold.
-    private var detailLevel: BodyDetail { zoomScale >= fingerZoomThreshold ? .fine : .normal }
+    private let impact = UIImpactFeedbackGenerator(style: .light)
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
 
                 // ── Top bar ──────────────────────────────────────────────────
-                if annotationMode {
-                    annotationToolbarView
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(.regularMaterial)
-                } else {
-                    HStack(spacing: 8) {
+                HStack(spacing: 8) {
+                    if isDisambiguating {
+                        Text("Which area did you mean?")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                        Spacer(minLength: 0)
+                        Button("Cancel", role: .cancel) { cancelDisambiguation() }
+                            .font(.caption.weight(.medium))
+                    } else if isMarking {
+                        Text(pendingMark == nil
+                             ? "Tap a spot that feels tense or sore."
+                             : "Tap ✓ above to see stretches for this spot.")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                        Spacer(minLength: 0)
+                        Button { showLegend = true } label: {
+                            Image(systemName: "info.circle")
+                                .font(.system(size: 16, weight: .medium))
+                                .frame(width: 36, height: 36)
+                        }
+                        .accessibilityLabel("Colour guide")
+                        Button("Cancel", role: .cancel) {
+                            exitMarking()
+                        }
+                        .font(.caption.weight(.medium))
+                        .accessibilityLabel("Cancel marking")
+                    } else {
                         Spacer(minLength: 0)
                         facingToggleButton
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
                 }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
 
-                // ── The body figure ───────────────────────────────────────────
-                // All three layers (skin, muscle, skeleton) are freely-rotatable
-                // 3D models with their own drag/pinch gestures. Marking needs a
-                // fixed front/back projection, so entering Mark mode locks the
-                // model's rotation and overlays the same invisible region grid,
-                // calibrated to the same footprint regardless of layer.
-                Group {
-                    if !annotationMode {
-                        BodySceneView(facing: facing, style: .skin)
-                    } else {
-                        GeometryReader { geo in
-                            ZStack {
-                                // Matches BodyFigureCanvas's own internal figure
-                                // padding so the 3D render and the region grid it
-                                // carries land in the same box.
-                                BodySceneView(facing: facing,
-                                              style: .skin,
-                                              interactive: false)
-                                    .padding(.horizontal, 28)
-                                    .padding(.vertical, 6)
-                                BodyFigureCanvas(layer: currentLayer,
-                                                 facing: facing,
-                                                 detail: detailLevel,
-                                                 annotationMode: annotationMode,
-                                                 selectedTool: selectedTool,
-                                                 selectedSensation: selectedSensation,
-                                                 sex: bodyMapSex,
-                                                 showSilhouette: false,
-                                                 store: annotationStore,
-                                                 markedRegions: $markedRegions)
-                            }
-                                .scaleEffect(zoomScale, anchor: .center)
-                                .offset(panOffset)
-                                // scaleEffect/offset are reversed during hit-testing, so
-                                // taps and drawing still map onto the true region geometry.
-                                .frame(width: geo.size.width, height: geo.size.height)
-                                .contentShape(Rectangle())
-                                .gesture(panGesture(container: geo.size))
-                                .simultaneousGesture(magnifyGesture)
-                                .clipped()
-                                .overlay(alignment: .bottomTrailing) {
-                                    zoomControls.padding(12)
-                                }
-                                .overlay(alignment: .top) {
-                                    if detailLevel == .fine {
-                                        Text("Zoom detail — tap fingers, toes, eyes & nose")
-                                            .font(.caption2.weight(.medium))
-                                            .padding(.horizontal, 10).padding(.vertical, 5)
-                                            .background(.regularMaterial, in: Capsule())
-                                            .padding(.top, 6)
-                                            .transition(.opacity)
-                                    }
-                                }
-                        }
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .animation(.easeInOut(duration: 0.15), value: detailLevel)
+                // ── The body — one freely-rotatable 3D view in both modes ────
+                BodySceneView(facing: facing,
+                              style: .skin,
+                              marks: displayMarks,
+                              onRegionTap: regionTapHandler,
+                              disambiguationCandidates: disambiguationCandidates,
+                              focusPoint: focusPoint,
+                              focusedRegion: focusedRegion,
+                              onCandidateFocused: handleCandidateFocused,
+                              onCandidateSelected: handleCandidateSelected,
+                              refocusToken: refocusToken)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 // ── Bottom bar ───────────────────────────────────────────────
-                if annotationMode {
-                    annotationPaletteView
+                if isMarking && !isDisambiguating {
+                    sensationPalette
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
                         .background(.regularMaterial)
-                } else if !markedRegions.isEmpty {
+                } else if !markStore.marks.isEmpty && !isDisambiguating {
                     MarkedAreasBanner(
-                        regionNames: markedRegions.sorted(),
+                        regionNames: markStore.markedRegions.sorted(),
                         onFind:  { showMarkedExercises = true },
-                        onClear: { withAnimation { markedRegions.removeAll() } }
+                        onClear: { withAnimation { markStore.clear() } }
                     )
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
             .background(Color.luminaSurface.ignoresSafeArea())
             .floatingTabBarClearance()
-            .navigationTitle(annotationMode ? "Mark Areas" : "Body Map")
+            .navigationTitle(isMarking ? "Mark Areas" : "Body Map")
             .navigationBarTitleDisplayMode(.inline)
-            .animation(.easeInOut(duration: 0.25), value: facing)
-            .animation(.easeInOut(duration: 0.2),  value: markedRegions.isEmpty)
-            .animation(.easeInOut(duration: 0.2),  value: annotationMode)
+            .animation(.easeInOut(duration: 0.2), value: markStore.marks.isEmpty)
+            .animation(.easeInOut(duration: 0.2), value: isMarking)
             .navigationDestination(isPresented: $showMarkedExercises) {
-                BodyPartExercisesView(bodyParts: markedRegions.sorted())
+                BodyPartExercisesView(bodyParts: markStore.markedRegions.sorted())
             }
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            annotationMode.toggle()
-                        }
-                    } label: {
-                        Label(
-                            annotationMode ? "Done" : "Mark",
-                            systemImage: annotationMode
-                                ? "checkmark.circle.fill"
-                                : "pencil.tip.crop.circle"
-                        )
-                    }
-                    .accessibilityLabel(annotationMode ? "Finish marking" : "Mark areas by drawing")
+            .navigationDestination(isPresented: $showConfirmedExercises) {
+                BodyPartExercisesView(bodyPart: confirmedRegion)
+            }
+            .onChange(of: showConfirmedExercises) { _, showing in
+                // Popped back to the zoom — re-drive the scene so the body
+                // re-renders and the labels re-project (Phase C).
+                if !showing && !disambiguationCandidates.isEmpty {
+                    refocusToken += 1
                 }
             }
+            .toolbar { markToolbar }
             .sheet(isPresented: $showLegend) { LegendSheet() }
-            .onAppear {
-                markedRegions = BodyMapLaunchState.initialMarkedRegions(
-                    savedRegions: UserDefaults.standard.stringArray(forKey: "bodymap.markedRegions")
-                )
+            .onAppear { impact.prepare() }
+        }
+    }
+
+    // The single primary action, in the prominent top-right slot users reach
+    // for. While marking, it's Confirm (the ONE checkmark — see the bug where
+    // a second, duplicate checkmark here silently discarded the mark). While
+    // disambiguating, the in-view pins are the only action, so no toolbar
+    // button. Otherwise it enters marking mode.
+    @ToolbarContentBuilder
+    private var markToolbar: some ToolbarContent {
+        ToolbarItem(placement: .primaryAction) {
+            if isMarking && isDisambiguating {
+                // Active disambiguation — the region boxes / side-rail labels
+                // are the only action, so no toolbar button.
+                EmptyView()
+            } else if isMarking {
+                Button {
+                    confirmPendingMark()
+                } label: {
+                    Label("Confirm", systemImage: "checkmark.circle.fill")
+                }
+                .disabled(pendingMark == nil)
+                .accessibilityLabel("Confirm marked area")
+            } else {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        // Start each marking session fresh — clear the previously
+                        // confirmed dot so it doesn't linger into the new one.
+                        markStore.clear()
+                        isMarking = true
+                        resetSessionMarkState()
+                    }
+                } label: {
+                    Label("Mark", systemImage: "hand.point.up.left.fill")
+                }
+                .accessibilityLabel("Mark areas by tapping")
             }
         }
     }
 
+    private func exitMarking() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            isMarking = false
+            resetSessionMarkState()
+        }
+    }
+
+    /// Taps only mark while in marking mode, and never while the
+    /// disambiguation popup is up (pin taps are the only input then, and
+    /// the camera is under programmatic control).
+    private var regionTapHandler: ((String, SIMD3<Float>) -> Void)? {
+        guard isMarking, !isDisambiguating else { return nil }
+        return { region, point in handleRegionTap(region: region, point: point) }
+    }
+
+    /// One dot at a time: a tap always replaces whatever mark was pending,
+    /// rather than accumulating. Nothing is persisted to `BodyMarkStore`
+    /// until Confirm — see `confirmPendingMark`.
+    private func handleRegionTap(region: String, point: SIMD3<Float>) {
+        withAnimation(.easeInOut(duration: 0.18)) {
+            pendingMark = PendingMark(region: region, point: point)
+        }
+        impact.impactOccurred()
+    }
+
+    /// Single-focus: while placing a dot, show ONLY the new pending dot — not
+    /// the previously confirmed one — so a fresh tap never leaves the old dot
+    /// behind. With no pending dot, show whatever single mark is persisted.
+    private var displayMarks: [String: BodyMark] {
+        if let pendingMark {
+            return ["__pending__": BodyMark(sensationID: selectedSensation.id, point: pendingMark.point)]
+        }
+        return markStore.marks
+    }
+
+    private var isDisambiguating: Bool { !disambiguationCandidates.isEmpty }
+
+    /// Confirm step: always zoom into the dot and surface the muscle groups
+    /// plausibly meant by the tap (`MuscleHitResolver.candidates`) as labeled
+    /// pins — the whole point is to let the user disambiguate *which* muscle
+    /// they mean before seeing exercises. Only if no hit volume resolves at
+    /// all (shouldn't happen for a real tap) do we fall back to navigating
+    /// straight to the tapped region.
+    private func confirmPendingMark() {
+        guard let pendingMark else { return }
+
+        // The head fans out into fixed, evidence-based face zones with
+        // hand-tuned anchors instead of geometric hit-box candidates. Side is
+        // inferred from the tapped x (see HeadZones).
+        if pendingMark.region == "Head" {
+            let pins = HeadZones.candidates(forTapAt: pendingMark.point)
+            focusPoint = pendingMark.point
+            focusedRegion = pins.first?.name
+            disambiguationCandidates = pins
+            return
+        }
+        // Pull a few extra candidates so that, after dropping any parent group
+        // whose heads are already present, we still have a full set of ≤4.
+        let raw = MuscleHitResolver.candidates(near: pendingMark.point,
+                                               in: BodyHitVolumes.all, maxCandidates: 6)
+        let presentParents = Set(raw.compactMap { MuscleGroup.parentOfHead($0) })
+        let candidates = raw.filter { !presentParents.contains($0) }.prefix(4)
+        let volumesByName = Dictionary(uniqueKeysWithValues: BodyHitVolumes.all.map { ($0.name, $0) })
+        let pins = candidates.compactMap { name in
+            volumesByName[name].map {
+                MarkCandidate(name: name, point: $0.center,
+                              minBound: $0.minBound, maxBound: $0.maxBound)
+            }
+        }
+        if pins.isEmpty {
+            commitAndNavigate(region: pendingMark.region, point: pendingMark.point)
+        } else {
+            // Zoom onto the actual tapped dot (not a candidate centre) and
+            // auto-highlight the primary candidate.
+            focusPoint = pendingMark.point
+            focusedRegion = pins.first?.name
+            disambiguationCandidates = pins
+        }
+    }
+
+    /// First tap on a candidate (region box or side label) highlights it.
+    private func handleCandidateFocused(_ region: String) {
+        withAnimation(.easeInOut(duration: 0.15)) { focusedRegion = region }
+        impact.impactOccurred()
+    }
+
+    /// Second tap on the focused candidate → drill into its exercises.
+    private func handleCandidateSelected(_ region: String) {
+        let point = focusPoint
+            ?? BodyHitVolumes.all.first { $0.name == region }?.center
+            ?? .zero
+        commitAndNavigate(region: region, point: point)
+    }
+
+    /// Persists the mark at the tapped dot and navigates to the region's
+    /// exercises — but deliberately KEEPS the zoom/candidate/focus state alive
+    /// so pressing Back returns to the zoomed dot (see Phase C). The state is
+    /// only torn down when the user taps Mark again (or Cancel).
+    private func commitAndNavigate(region: String, point: SIMD3<Float>) {
+        markStore.setMark(region: region, sensationID: selectedSensation.id, point: point)
+        pendingMark = nil              // persisted mark now carries the dot
+        isMarking = false
+        confirmedRegion = region
+        showConfirmedExercises = true
+    }
+
+    private func cancelDisambiguation() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            disambiguationCandidates = []
+            focusPoint = nil
+            focusedRegion = nil
+        }
+    }
+
+    private func resetSessionMarkState() {
+        pendingMark = nil
+        disambiguationCandidates = []
+        focusPoint = nil
+        focusedRegion = nil
+    }
+
     // MARK: - Facing control
 
-    // Not a multi-option picker — a single toggle
-    // between Front/Back — so it keeps its directional icon, restyled with
-    // the same chip tokens (unselected LuminaChip look) rather than wrapped
-    // in LuminaChip itself (which is text-only).
+    // Not a multi-option picker — a single toggle between Front/Back — so it
+    // keeps its directional icon, restyled with the same chip tokens
+    // (unselected LuminaChip look) rather than wrapped in LuminaChip itself
+    // (which is text-only). Hidden while marking: rotation is free, so the
+    // user just drags.
     private var facingToggleButton: some View {
         Button {
             withAnimation(.easeInOut(duration: 0.28)) {
@@ -193,184 +319,27 @@ struct BodyMapView: View {
         .accessibilityLabel("Toggle body facing — currently \(facing.rawValue)")
     }
 
-    // MARK: - Zoom & pan
+    // MARK: - Sensation palette (bottom, marking mode)
 
-    private var magnifyGesture: some Gesture {
-        MagnifyGesture()
-            .onChanged { value in
-                zoomScale = min(max(lastScale * value.magnification, minZoom), maxZoom)
-            }
-            .onEnded { _ in
-                lastScale = zoomScale
-                if zoomScale <= minZoom + 0.01 { resetZoom() }
-            }
-    }
-
-    private func panGesture(container: CGSize) -> some Gesture {
-        DragGesture()
-            .onChanged { value in
-                guard zoomScale > 1, !annotationMode else { return }
-                let proposed = CGSize(width:  lastPan.width  + value.translation.width,
-                                      height: lastPan.height + value.translation.height)
-                panOffset = clampPan(proposed, container: container)
-            }
-            .onEnded { _ in lastPan = panOffset }
-    }
-
-    private func clampPan(_ offset: CGSize, container: CGSize) -> CGSize {
-        let maxX = max(0, (zoomScale - 1) * container.width  / 2)
-        let maxY = max(0, (zoomScale - 1) * container.height / 2)
-        return CGSize(width:  min(max(offset.width,  -maxX), maxX),
-                      height: min(max(offset.height, -maxY), maxY))
-    }
-
-    private func stepZoom(_ delta: CGFloat) {
-        let target = min(max(zoomScale + delta, minZoom), maxZoom)
-        withAnimation(.easeInOut(duration: 0.2)) {
-            zoomScale = target
-            lastScale = target
-            panOffset = .zero          // re-centre on button zoom
-            lastPan   = .zero
-        }
-    }
-
-    private func resetZoom() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            zoomScale = 1; lastScale = 1; panOffset = .zero; lastPan = .zero
-        }
-    }
-
-    private var zoomControls: some View {
-        VStack(spacing: 0) {
-            zoomButton("plus")  { stepZoom(0.6) }
-                .disabled(zoomScale >= maxZoom - 0.01)
-            Divider().frame(width: 30)
-            zoomButton("minus") { stepZoom(-0.6) }
-                .disabled(zoomScale <= minZoom + 0.01)
-            if zoomScale > minZoom + 0.01 {
-                Divider().frame(width: 30)
-                zoomButton("arrow.counterclockwise") { resetZoom() }
-            }
-        }
-        .frame(width: 38)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: LuminaRadius.chip))
-        .overlay(RoundedRectangle(cornerRadius: LuminaRadius.chip).strokeBorder(Color(.systemGray4), lineWidth: 0.5))
-        .shadow(color: .black.opacity(0.12), radius: 5, y: 2)
-    }
-
-    private func zoomButton(_ icon: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: icon)
-                .font(.system(size: 15, weight: .semibold))
-                .frame(width: 38, height: 38)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(icon == "plus" ? "Zoom in"
-                          : icon == "minus" ? "Zoom out" : "Reset zoom")
-    }
-
-    // MARK: - Annotation toolbar (top)
-
-    private var annotationToolbarView: some View {
-        HStack(spacing: 12) {
-            // Tool picker
-            HStack(spacing: 0) {
-                ForEach(DrawingTool.allCases) { tool in
-                    Button {
-                        selectedTool = tool
-                    } label: {
-                        Image(systemName: tool.icon)
-                            .font(.system(size: 16, weight: .medium))
-                            .frame(width: 40, height: 36)
-                            .foregroundStyle(selectedTool == tool ? .white : .primary)
-                            .background(selectedTool == tool ? Color.accentColor : Color.clear)
-                            .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.tag))
-                    }
-                    .accessibilityLabel(tool.label)
-                }
-            }
-            .background(Color.luminaContainer,
-                        in: RoundedRectangle(cornerRadius: LuminaRadius.badge))
-
-            Spacer()
-
-            Button { annotationStore.undo() } label: {
-                Image(systemName: "arrow.uturn.backward")
-                    .font(.system(size: 16, weight: .medium))
-                    .frame(width: 36, height: 36)
-            }
-            .disabled(annotationStore.strokes.isEmpty)
-            .accessibilityLabel("Undo last stroke")
-
-            Button(role: .destructive) {
-                showClearConfirm = true
-            } label: {
-                Image(systemName: "trash")
-                    .font(.system(size: 16, weight: .medium))
-                    .frame(width: 36, height: 36)
-            }
-            .disabled(annotationStore.strokes.isEmpty && markedRegions.isEmpty)
-            .accessibilityLabel("Clear all marks")
-            .confirmationDialog(
-                "Clear all marks?",
-                isPresented: $showClearConfirm,
-                titleVisibility: .visible
-            ) {
-                Button("Clear All Marks", role: .destructive) {
-                    withAnimation {
-                        annotationStore.clear()
-                        markedRegions.removeAll()
-                    }
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("This removes every stroke and marked region on the body map. This can't be undone.")
-            }
-
-            Button { showLegend = true } label: {
-                Image(systemName: "info.circle")
-                    .font(.system(size: 16, weight: .medium))
-                    .frame(width: 36, height: 36)
-            }
-            .accessibilityLabel("Colour guide")
-        }
-    }
-
-    // MARK: - Annotation palette (bottom)
-
-    private var annotationPaletteView: some View {
-        VStack(spacing: 8) {
-            Text("Draw on the areas that hurt or feel tight — they’ll light up.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-
-            HStack(spacing: 0) {
-                ForEach(sensationColors) { sc in
-                    Button {
-                        selectedSensation = sc
-                        if selectedTool == .eraser { selectedTool = .pen }
-                    } label: {
-                        VStack(spacing: 4) {
-                            ZStack {
-                                Circle()
-                                    .fill(sc.color)
+    private var sensationPalette: some View {
+        HStack(spacing: 0) {
+            ForEach(sensationColors) { sc in
+                Button { selectedSensation = sc } label: {
+                    VStack(spacing: 4) {
+                        ZStack {
+                            Circle().fill(sc.color).frame(width: 30, height: 30)
+                            if selectedSensation.id == sc.id {
+                                Circle().strokeBorder(.white, lineWidth: 2.5)
                                     .frame(width: 30, height: 30)
-                                if selectedSensation.id == sc.id && selectedTool != .eraser {
-                                    Circle()
-                                        .strokeBorder(.white, lineWidth: 2.5)
-                                        .frame(width: 30, height: 30)
-                                }
                             }
-                            Text(sc.label)
-                                .font(.system(size: 9, weight: .medium))
-                                .foregroundStyle(selectedSensation.id == sc.id && selectedTool != .eraser
-                                                ? sc.color : .secondary)
                         }
-                        .frame(maxWidth: .infinity)
+                        Text(sc.label)
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(selectedSensation.id == sc.id ? sc.color : .secondary)
                     }
-                    .accessibilityLabel("\(sc.label) colour")
+                    .frame(maxWidth: .infinity)
                 }
+                .accessibilityLabel("\(sc.label) colour")
             }
         }
     }

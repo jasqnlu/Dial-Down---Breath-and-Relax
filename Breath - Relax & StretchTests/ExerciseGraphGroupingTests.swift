@@ -102,6 +102,36 @@ struct RegionExerciseResolverTests {
         #expect(resolver.related.map(\.name) == ["Forearm Stretch"])
     }
 
+    /// A sub-head shows its OWN tagged stretches as `direct` (distinct-per-head
+    /// content), with the parent muscle's stretches as the `related` fallback.
+    @Test func headResolvesToOwnExercisesThenParentFallback() {
+        let headEx   = makeExercise(name: "Long-Head Overhead Stretch",
+                                    targetBodyParts: ["Left Triceps Long Head"])
+        let parentEx = makeExercise(name: "Triceps Wall Press",
+                                    targetBodyParts: ["Left Triceps"])
+        let other    = makeExercise(name: "Quad Stretch",
+                                    targetBodyParts: ["Left Quadriceps"])
+
+        let resolver = RegionExerciseResolver(regions: ["Left Triceps Long Head"],
+                                              exercises: [headEx, parentEx, other])
+
+        #expect(resolver.direct.map(\.name) == ["Long-Head Overhead Stretch"])
+        #expect(resolver.related.map(\.name) == ["Triceps Wall Press"])
+        #expect(!(resolver.direct + resolver.related).contains { $0.name == "Quad Stretch" })
+    }
+
+    /// A head with no curated content of its own gracefully falls back to the
+    /// parent muscle's list rather than showing nothing.
+    @Test func headWithoutOwnExercisesFallsBackToParent() {
+        let parentEx = makeExercise(name: "Triceps Wall Press",
+                                    targetBodyParts: ["Left Triceps"])
+        let resolver = RegionExerciseResolver(regions: ["Left Triceps Medial Head"],
+                                              exercises: [parentEx])
+
+        #expect(resolver.direct.isEmpty)
+        #expect(resolver.related.map(\.name) == ["Triceps Wall Press"])
+    }
+
     private func makeExercise(name: String, targetBodyParts: [String]) -> Exercise {
         Exercise(name: name, type: .stretch, targetBodyParts: targetBodyParts,
                  durationSeconds: 60, difficulty: 1, instructions: [])

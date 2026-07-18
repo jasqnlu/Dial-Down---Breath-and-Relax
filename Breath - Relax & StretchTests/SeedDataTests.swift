@@ -15,9 +15,23 @@ struct SeedDataTests {
     @Test func allTargetsAreValidGroups() throws {
         for raw in try Self.loadExercises() {
             for part in (raw["targetBodyParts"] as? [String] ?? []) {
-                #expect(MuscleGroup(rawValue: part) != nil,
+                let isGroup = MuscleGroup(rawValue: part) != nil
+                let isHead = MuscleGroup.parentOfHead(part) != nil
+                #expect(isGroup || isHead,
                         "\(raw["name"] ?? "?") targets unknown '\(part)'")
             }
+        }
+    }
+
+    @Test func faceZoneExercisesTargetRegisteredZones() throws {
+        let zones: Set<String> = ["Left Eye", "Right Eye", "Left Temple",
+                                  "Right Temple", "Left Jaw", "Right Jaw", "Forehead"]
+        let all = try Self.loadExercises()
+        for zone in zones {
+            let hit = all.contains { raw in
+                (raw["targetBodyParts"] as? [String] ?? []).contains(zone)
+            }
+            #expect(hit, "No seed exercise targets the '\(zone)' zone")
         }
     }
 
