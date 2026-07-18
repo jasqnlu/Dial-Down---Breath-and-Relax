@@ -182,7 +182,8 @@
       "name": "Eye Palming",
       "type": "breath",
       "targetBodyParts": [
-        "Head"
+        "Left Eye",
+        "Right Eye"
       ],
       "durationSeconds": 60,
       "difficulty": 1,
@@ -3045,35 +3046,40 @@
       "id": "bc22ed01-77ea-45dd-9d8e-69a562a4169f"
     },
     {
-      "name": "Temple & Jaw Release",
+      "name": "Temporalis Release",
       "type": "stretch",
       "targetBodyParts": [
-        "Head"
+        "Left Temple",
+        "Right Temple"
       ],
       "durationSeconds": 45,
       "difficulty": 1,
       "instructions": [
-        "Sit comfortably and let your jaw go slack.",
-        "Place your fingertips on your temples and make slow, gentle circles for several breaths.",
-        "Slowly open your jaw and glide it side to side a few times to release tension.",
-        "Finish by gently massaging along your jawline with your fingertips."
+        "Place two fingers on the soft spot at each temple.",
+        "Make slow, small circles with light, comfortable pressure.",
+        "Let your jaw relax and your teeth part slightly as you work.",
+        "Keep breathing slowly and evenly throughout.",
+        "Continue gently for the full duration, then rest."
       ],
+      "caution": "Use gentle pressure only. Skip if you have a headache disorder that worsens with touch or any scalp or skin condition.",
       "id": "008d30f4-7e6f-4d97-a004-d2d585360f10"
     },
     {
-      "name": "Forehead & Scalp Press Release",
+      "name": "Brow & Forehead Smoother",
       "type": "stretch",
       "targetBodyParts": [
-        "Head"
+        "Forehead"
       ],
       "durationSeconds": 45,
       "difficulty": 1,
       "instructions": [
-        "Sit tall and close your eyes.",
-        "Place both palms flat against your forehead and apply light, steady pressure for a few seconds, then release.",
-        "Move your fingertips to your scalp and gently knead in small circles, working from your hairline back toward the crown.",
-        "Finish with a few slow, deep breaths as you let your facial muscles relax."
+        "Rest the pads of your fingers flat across your forehead.",
+        "Glide them slowly outward from the centre toward the temples.",
+        "Use light, even pressure — smoothing, not pressing hard.",
+        "Let your brow relax down as you breathe out.",
+        "Repeat the slow glide for the full duration."
       ],
+      "caution": "Use light pressure only. Avoid if you have a skin condition or injury on the forehead.",
       "id": "99a1c308-1e1e-4462-b2eb-f35e79cc3afd"
     },
     {
@@ -3730,6 +3736,138 @@
         "Hold, then release and switch sides on another round."
       ],
       "id": "ab2582db-e52c-4820-baed-89ef91592ede"
+    },
+    {
+      "name": "20-20-20 Focus Shift",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Eye",
+        "Right Eye"
+      ],
+      "durationSeconds": 60,
+      "difficulty": 1,
+      "instructions": [
+        "Sit comfortably and look at something roughly 20 feet (6 metres) away.",
+        "Let your eyes settle on it without straining to focus.",
+        "Hold your gaze there for about 20 seconds, breathing slowly.",
+        "Blink softly a few times to refresh your eyes.",
+        "Return to your near task; repeat whenever your eyes feel tired."
+      ],
+      "caution": "This is a rest break, not a treatment. See an eye professional for persistent eye pain or changes in vision.",
+      "id": "a03bd3b3-38db-4f17-a7a3-9b740e3bc5f8"
+    },
+    {
+      "name": "Gentle Eye Rolls",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Eye",
+        "Right Eye"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Sit tall and keep your head still, looking straight ahead.",
+        "Slowly move your gaze up, then trace a smooth circle: up, right, down, left.",
+        "Keep the movement slow and comfortable — never forced.",
+        "Complete 3 to 4 slow circles, then reverse direction.",
+        "Blink and let your eyes rest for a moment when finished."
+      ],
+      "caution": "Stop if you feel dizzy or any eye strain. Skip if you have a recent eye injury or eye condition.",
+      "id": "fa1c4ac8-4db9-4cb1-b3c8-5214d72160ca"
+    },
+    {
+      "name": "Jaw-Open Temporalis Stretch",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Temple",
+        "Right Temple"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or stand tall with relaxed shoulders.",
+        "Slowly open your mouth as wide as is comfortable and pain-free.",
+        "Feel a gentle stretch through the temples and jaw.",
+        "Hold for about 5 seconds, then slowly close.",
+        "Repeat gently and slowly for the full duration."
+      ],
+      "caution": "Keep within a comfortable, pain-free range. Stop if your jaw clicks, locks, or hurts, and see a dentist for diagnosed TMJ problems.",
+      "id": "7f61b11d-dddd-40df-bd92-7374482d9381"
+    },
+    {
+      "name": "Resisted Jaw Opening",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Jaw",
+        "Right Jaw"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Place your thumb or two fingers gently under your chin.",
+        "Slowly open your mouth against light resistance from your fingers.",
+        "Use only a small, gentle amount of pressure — this is not a strength test.",
+        "Open a short way, hold for 3 seconds, then slowly close.",
+        "Repeat calmly for the full duration."
+      ],
+      "caution": "Use very light resistance and stay pain-free. Stop if you feel clicking, locking, or pain, and see a dentist for diagnosed TMJ problems.",
+      "id": "1d0178e8-3356-49b3-b4bd-7453b01923bc"
+    },
+    {
+      "name": "Side-to-Side Jaw Glide",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Jaw",
+        "Right Jaw"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Relax your jaw with your teeth slightly apart.",
+        "Slowly glide your lower jaw to one side as far as is comfortable.",
+        "Return to centre, then glide gently to the other side.",
+        "Keep the movement small, smooth, and pain-free.",
+        "Continue slowly for the full duration."
+      ],
+      "caution": "Move gently within a comfortable range. Stop if the jaw clicks, locks, or hurts, and see a dentist for diagnosed TMJ problems.",
+      "id": "71106fcf-922a-4728-a8cb-694fe636bd84"
+    },
+    {
+      "name": "Tongue-Up Controlled Open/Close",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Left Jaw",
+        "Right Jaw"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Rest the tip of your tongue lightly on the roof of your mouth, behind your front teeth.",
+        "Keeping the tongue there, slowly open your mouth only as far as it stays in contact.",
+        "This keeps the jaw opening controlled and centred.",
+        "Hold briefly, then slowly close.",
+        "Repeat calmly for the full duration."
+      ],
+      "caution": "Keep it slow and pain-free. Stop if you feel clicking, locking, or pain, and see a dentist for diagnosed TMJ problems.",
+      "id": "eaed664d-55e8-4e86-8dee-e038209e43dc"
+    },
+    {
+      "name": "Frontalis Release",
+      "type": "stretch",
+      "targetBodyParts": [
+        "Forehead"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Rest the pads of your fingers gently across your forehead.",
+        "Let your eyebrows relax downward as you breathe out slowly.",
+        "Apply light, still pressure — no rubbing or pulling on the skin.",
+        "Hold and breathe slowly, letting the forehead soften.",
+        "Release gently after the hold and repeat."
+      ],
+      "caution": "Use light pressure only. Avoid if you have a skin condition or injury on the forehead.",
+      "id": "aa6fd1ad-4d6e-4850-9ef5-1adcd1e3a3fb"
     }
   ]
 }
