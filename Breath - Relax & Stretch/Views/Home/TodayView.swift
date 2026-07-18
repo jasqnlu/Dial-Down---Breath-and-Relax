@@ -187,7 +187,9 @@ struct TodayView: View {
 
     private var heroCard: some View {
         let totalSecs = sessionExercises.reduce(0) { $0 + $1.durationSeconds }
-        let mins = max(1, totalSecs / 60)
+        // Round rather than truncate, so e.g. a 90s session reads "2m" instead
+        // of always flooring to "1m" regardless of how much over a minute it is.
+        let mins = totalSecs > 0 ? max(1, Int((Double(totalSecs) / 60).rounded())) : 0
 
         return ZStack(alignment: .topTrailing) {
             LinearGradient(
