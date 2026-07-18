@@ -319,21 +319,32 @@ final class BodyRig {
         overlayNode.childNodes.forEach { $0.removeFromParentNode() }
         for (i, c) in candidates.enumerated() {
             let size = c.maxBound - c.minBound
-            guard size.x > 0, size.y > 0, size.z > 0 else { continue }
-            let box = SCNBox(width: CGFloat(size.x), height: CGFloat(size.y),
-                             length: CGFloat(size.z), chamferRadius: 0.01)
+            let isPoint = !(size.x > 0 && size.y > 0 && size.z > 0)
             let isFocused = c.name == focused
             let color = CandidatePalette.uiColor(i)
+
             let m = SCNMaterial()
-            m.diffuse.contents = color.withAlphaComponent(isFocused ? 0.5 : 0.16)
-            m.emission.contents = color.withAlphaComponent(isFocused ? 0.4 : 0.1)
             m.isDoubleSided = true
             m.readsFromDepthBuffer = false     // always draw over the skin (x-ray)
             m.writesToDepthBuffer = false
-            box.materials = [m]
-            let node = SCNNode(geometry: box)
+
+            let geometry: SCNGeometry
+            if isPoint {
+                // Face zones carry no box — draw a solid dot at the anchor.
+                geometry = SCNSphere(radius: CGFloat(isFocused ? 0.028 : 0.022))
+                m.diffuse.contents = color
+                m.emission.contents = color.withAlphaComponent(isFocused ? 0.6 : 0.35)
+            } else {
+                geometry = SCNBox(width: CGFloat(size.x), height: CGFloat(size.y),
+                                  length: CGFloat(size.z), chamferRadius: 0.01)
+                m.diffuse.contents = color.withAlphaComponent(isFocused ? 0.5 : 0.16)
+                m.emission.contents = color.withAlphaComponent(isFocused ? 0.4 : 0.1)
+            }
+            geometry.materials = [m]
+
+            let node = SCNNode(geometry: geometry)
             node.name = "candidate:\(c.name)"
-            let center = (c.minBound + c.maxBound) / 2
+            let center = isPoint ? c.point : (c.minBound + c.maxBound) / 2
             node.position = SCNVector3(center.x, center.y, center.z)
             node.renderingOrder = isFocused ? 21 : 20
             overlayNode.addChildNode(node)

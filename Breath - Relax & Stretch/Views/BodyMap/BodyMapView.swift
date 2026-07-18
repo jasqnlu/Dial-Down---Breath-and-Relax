@@ -215,6 +215,17 @@ struct BodyMapView: View {
     /// straight to the tapped region.
     private func confirmPendingMark() {
         guard let pendingMark else { return }
+
+        // The head fans out into fixed, evidence-based face zones with
+        // hand-tuned anchors instead of geometric hit-box candidates. Side is
+        // inferred from the tapped x (see HeadZones).
+        if pendingMark.region == "Head" {
+            let pins = HeadZones.candidates(forTapAt: pendingMark.point)
+            focusPoint = pendingMark.point
+            focusedRegion = pins.first?.name
+            disambiguationCandidates = pins
+            return
+        }
         // Pull a few extra candidates so that, after dropping any parent group
         // whose heads are already present, we still have a full set of ≤4.
         let raw = MuscleHitResolver.candidates(near: pendingMark.point,
