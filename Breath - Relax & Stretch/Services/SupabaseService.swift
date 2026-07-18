@@ -29,9 +29,15 @@ actor SupabaseService {
     /// URL is an actual *.supabase.co API host so a pasted dashboard link
     /// can't silently pass as "configured" and 404 every request.
     nonisolated static var isConfigured: Bool {
-        guard !supabaseAnonKey.isEmpty, !supabaseAnonKey.contains("YOUR_ANON_KEY"),
-              let host = URL(string: supabaseURL)?.host else { return false }
-        return host.hasSuffix(".supabase.co")
+        !supabaseAnonKey.isEmpty && !supabaseAnonKey.contains("YOUR_ANON_KEY")
+            && isValidAPIHost(supabaseURL)
+    }
+
+    /// Extracted as its own testable function so config-sanity tests don't
+    /// depend on whatever supabaseURL happens to be set to — this is what
+    /// would have caught it being the dashboard URL instead of the API host.
+    nonisolated static func isValidAPIHost(_ urlString: String) -> Bool {
+        URL(string: urlString)?.host?.hasSuffix(".supabase.co") == true
     }
 
     // MARK: - Session state
