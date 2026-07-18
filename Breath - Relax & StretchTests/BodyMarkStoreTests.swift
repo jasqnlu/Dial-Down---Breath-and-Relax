@@ -34,6 +34,21 @@ struct BodyMarkStoreTests {
         #expect(reloaded.markedRegions == ["Right Knee"])
     }
 
+    @Test func setMarkAlwaysCommitsEvenWithSameSensationTwice() {
+        let store = BodyMarkStore(defaults: freshDefaults())
+        store.setMark(region: "Left Calves", sensationID: "tension", point: [0.1, -0.3, 0.05])
+        store.setMark(region: "Left Calves", sensationID: "tension", point: [0.1, -0.3, 0.05])
+        #expect(store.marks["Left Calves"]?.sensationID == "tension")
+    }
+
+    @Test func setMarkReplacesPreviousMarkSingleFocus() {
+        let store = BodyMarkStore(defaults: freshDefaults())
+        store.setMark(region: "Left Calves", sensationID: "tension", point: [0.1, -0.3, 0.05])
+        store.setMark(region: "Right Quadriceps", sensationID: "pain", point: [-0.1, -0.2, 0.06])
+        // Single-focus: confirming a new region drops the old one entirely.
+        #expect(store.markedRegions == ["Right Quadriceps"])
+    }
+
     @Test func clearEmptiesStoreAndDisk() {
         let defaults = freshDefaults()
         let store = BodyMarkStore(defaults: defaults)

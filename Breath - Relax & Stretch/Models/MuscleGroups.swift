@@ -59,6 +59,41 @@ enum MuscleGroup: String, CaseIterable, Codable {
         "Left Foot": ["Left Foot"], "Right Foot": ["Right Foot"],
     ]
 
+    // MARK: - Muscle sub-heads
+
+    /// Anatomical sub-head display name → its parent muscle group. Head hit
+    /// volumes are *optional* data (`musclegroup_head_hitboxes.json`, generated
+    /// by `Tools/blender/classify_head_hitboxes.py`): when present they surface
+    /// as disambiguation candidates and resolve to their own exercises, falling
+    /// back to the parent muscle's list. These names MUST match the Blender
+    /// script's output exactly.
+    static let muscleHeads: [String: String] = {
+        // Base head names per group (side-agnostic); expanded to Left/Right.
+        let byGroup: [(group: String, heads: [String])] = [
+            ("Shoulder",   ["Anterior Deltoid", "Lateral Deltoid", "Posterior Deltoid"]),
+            ("Chest",      ["Upper Chest", "Lower Chest"]),
+            ("Biceps",     ["Biceps Long Head", "Biceps Short Head"]),
+            ("Triceps",    ["Triceps Long Head", "Triceps Lateral Head", "Triceps Medial Head"]),
+            ("Trapezius",  ["Upper Trapezius", "Middle Trapezius", "Lower Trapezius"]),
+            ("Quadriceps", ["Rectus Femoris", "Vastus Lateralis", "Vastus Medialis"]),
+            ("Hamstrings", ["Biceps Femoris", "Semitendinosus", "Semimembranosus"]),
+            ("Calves",     ["Medial Gastrocnemius", "Lateral Gastrocnemius", "Soleus"]),
+            ("Glutes",     ["Gluteus Maximus", "Gluteus Medius"]),
+        ]
+        var map: [String: String] = [:]
+        for entry in byGroup {
+            for side in ["Left", "Right"] {
+                for head in entry.heads {
+                    map["\(side) \(head)"] = "\(side) \(entry.group)"
+                }
+            }
+        }
+        return map
+    }()
+
+    /// The parent muscle group for a sub-head name, or nil if `name` isn't a head.
+    static func parentOfHead(_ name: String) -> String? { muscleHeads[name] }
+
     /// Maps legacy names to group names; unknown names pass through unchanged.
     /// Order-preserving, deduplicated.
     static func migrate(_ oldNames: [String]) -> [String] {

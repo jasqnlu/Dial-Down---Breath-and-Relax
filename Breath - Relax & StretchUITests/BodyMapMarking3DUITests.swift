@@ -45,56 +45,49 @@ final class BodyMapMarking3DUITests: XCTestCase {
         attach(app, "02-rotated-debug-boxes")
     }
 
-    /// Taps a point, exits marking mode so the MarkedAreasBanner surfaces the
-    /// marked region name, and returns it.
-    private func markAndReadRegion(_ app: XCUIApplication,
-                                   at offset: CGVector,
-                                   stage: String) -> String? {
-        let window = app.windows.firstMatch
-        window.coordinate(withNormalizedOffset: offset).tap()
+    /// True if any figure-side-prefixed region name (`Left …` / `Right …`) is
+    /// currently visible — as a disambiguation pin, an exercise-list nav title,
+    /// or a static label. Covers both post-confirm outcomes (popup vs. direct
+    /// navigation) without the test needing to know which happened.
+    private func sideVisible(_ app: XCUIApplication, prefix: String) -> Bool {
+        let needle = "\(prefix) "
+        for b in app.buttons.allElementsBoundByIndex where b.label.hasPrefix(needle) { return true }
+        for n in app.navigationBars.allElementsBoundByIndex where n.identifier.hasPrefix(needle) { return true }
+        for t in app.staticTexts.allElementsBoundByIndex where t.label.hasPrefix(needle) { return true }
+        return false
+    }
+
+    /// Taps a point, confirms it via the top-right checkmark, and returns
+    /// whichever region-name surface (pins or exercise list) results.
+    private func markConfirmAndCapture(_ app: XCUIApplication,
+                                       at offset: CGVector,
+                                       stage: String) {
+        app.windows.firstMatch.coordinate(withNormalizedOffset: offset).tap()
         sleep(1)
-        attach(app, "\(stage)-marking")
-        // Exit marking → banner shows the region name as its title.
-        app.descendants(matching: .any)["Finish marking"].firstMatch.tap()
-        sleep(1)
-        attach(app, "\(stage)-banner")
-        // The single-region banner title is the region name; find any label
-        // matching a known muscle-group prefix.
-        for el in app.staticTexts.allElementsBoundByIndex {
-            let v = el.label
-            if v.hasPrefix("Left ") || v.hasPrefix("Right ") || v == "Abs" {
-                return v
-            }
-        }
-        return nil
+        attach(app, "\(stage)-dot-placed")
+        app.descendants(matching: .any)["Confirm marked area"].firstMatch.tap()
+        sleep(2)
+        attach(app, "\(stage)-after-confirm")
     }
 
     /// Headline correctness: anatomical L/R convention + accurate resolution.
     /// The figure faces the viewer, so a tap on the VIEWER'S LEFT resolves to
-    /// a "Right …" region (the figure's own right), and vice-versa.
+    /// a "Right …" region (the figure's own right).
     @MainActor
-    func testTapMarkingAnatomicalSides() throws {
-        // Fresh state so a prior run's marks don't seed the banner.
+    func testViewerLeftTapMapsToFigureRight() throws {
         let app = launchBodyTab(extraArgs: ["-debugMarkMode", "YES"])
+        markConfirmAndCapture(app, at: CGVector(dx: 0.42, dy: 0.40), stage: "03-viewer-left")
+        XCTAssertTrue(sideVisible(app, prefix: "Right"),
+                      "Viewer-left tap should surface a figure-Right region")
+    }
 
-        // Viewer-left torso → figure's RIGHT chest.
-        let left = markAndReadRegion(app, at: CGVector(dx: 0.42, dy: 0.40),
-                                     stage: "03-viewer-left")
-        XCTAssertNotNil(left, "Tap on viewer-left torso marked nothing")
-        XCTAssertTrue(left?.hasPrefix("Right ") ?? false,
-                      "Viewer-left tap should map to a figure-Right region, got \(left ?? "nil")")
-
-        // Re-enter marking mode and clear the first mark so the next banner
-        // shows a single region name (not "2 areas marked").
-        app.descendants(matching: .any)["Mark areas by tapping"].firstMatch.tap()
-        sleep(1)
-        app.descendants(matching: .any)["Clear all marks"].firstMatch.tap()
-        sleep(1)
-        // Viewer-right thigh → figure's LEFT quadriceps.
-        let right = markAndReadRegion(app, at: CGVector(dx: 0.58, dy: 0.62),
-                                      stage: "04-viewer-right")
-        XCTAssertNotNil(right, "Tap on viewer-right thigh marked nothing")
-        XCTAssertTrue(right?.hasPrefix("Left ") ?? false,
-                      "Viewer-right tap should map to a figure-Left region, got \(right ?? "nil")")
+    /// The mirror case: a tap on the VIEWER'S RIGHT resolves to a "Left …"
+    /// region (the figure's own left).
+    @MainActor
+    func testViewerRightTapMapsToFigureLeft() throws {
+        let app = launchBodyTab(extraArgs: ["-debugMarkMode", "YES"])
+        markConfirmAndCapture(app, at: CGVector(dx: 0.58, dy: 0.62), stage: "04-viewer-right")
+        XCTAssertTrue(sideVisible(app, prefix: "Left"),
+                      "Viewer-right tap should surface a figure-Left region")
     }
 }

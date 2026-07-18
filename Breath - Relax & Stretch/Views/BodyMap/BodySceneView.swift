@@ -112,6 +112,11 @@ final class BodyRig {
     /// inherit its raw-OBJ pivot/scale; rigNode children take
     /// normalized-space coordinates directly and still rotate with the body).
     let marksNode = SCNNode()
+    /// Translucent muscle-region highlight boxes shown during the confirm-step
+    /// disambiguation. Under the rig (like marks) so they rotate with the body
+    /// and track the muscle; drawn over the skin (depth-test off) so the
+    /// highlighted region reads as an x-ray patch rather than being occluded.
+    let overlayNode = SCNNode()
     let style: BodyModelStyle
 
     private(set) var loadFailed = false
@@ -130,6 +135,7 @@ final class BodyRig {
         setUpLights()
         scene.rootNode.addChildNode(rigNode)
         rigNode.addChildNode(marksNode)
+        rigNode.addChildNode(overlayNode)
         // Mesh loading is kicked off asynchronously by BodySceneView (see
         // `loadIfNeeded`) instead of here — parsing the OBJ is too heavy to
         // do synchronously on the main thread during View init.
@@ -264,6 +270,91 @@ final class BodyRig {
         rigNode.eulerAngles.y = Float(committedRotationY)
     }
 
+    // MARK: - Disambiguation focus
+
+    /// Dollies the camera to frame `localPoint` (rigNode-local, normalized
+    /// model space) close-up and centered — the confirm-step zoom onto the
+    /// actual tapped dot. The camera approaches along the dot's **outward
+    /// radial-horizontal normal** (the direction from the body's central Y
+    /// axis out through the dot) rather than a fixed world-Z, so a dot on the
+    /// side/back of a rotated limb is framed head-on instead of edge-on or
+    /// occluded. The rig isn't rotated — callers freeze the rotation gesture
+    /// while focused, since this camera pose is computed for the rig
+    /// orientation at the moment of the call.
+    func focus(on localPoint: SIMD3<Float>, duration: TimeInterval = 0.5, completion: @escaping () -> Void = {}) {
+        let worldV = rigNode.convertPosition(SCNVector3(localPoint.x, localPoint.y, localPoint.z), to: nil)
+        let world = SIMD3<Float>(Float(worldV.x), Float(worldV.y), Float(worldV.z))
+        let distance = Float(BodyRig.defaultCameraDistance) * 0.55
+
+        // Outward horizontal direction from the central axis (x=0,z=0) to the
+        // dot. Degenerate only if the dot sits exactly on the axis — fall back
+        // to a front-on view then.
+        let horizontal = SIMD3<Float>(world.x, 0, world.z)
+        let outward = simd_length(horizontal) > 1e-4
+            ? simd_normalize(horizontal)
+            : SIMD3<Float>(0, 0, 1)
+
+        // Camera sits out along the normal, lifted slightly so it looks a touch
+        // down onto the point rather than dead level.
+        let camPos = world + outward * distance + SIMD3<Float>(0, 0.06, 0)
+
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = duration
+        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        cameraNode.position = SCNVector3(camPos.x, camPos.y, camPos.z)
+        cameraNode.look(at: SCNVector3(world.x, world.y, world.z))
+        SCNTransaction.completionBlock = completion
+        SCNTransaction.commit()
+    }
+
+    // MARK: - Candidate region highlights
+
+    /// Renders a translucent, tappable box for each disambiguation candidate,
+    /// colour-coded by index (matching the side-rail labels). The `focused`
+    /// region's box is brighter/more opaque — the "rough" highlight of the
+    /// muscle the user is about to pick. Boxes draw over the skin (depth-test
+    /// off) so they read as an x-ray patch, and carry a `candidate:<name>`
+    /// node name so taps hit-test straight to a region.
+    func showCandidates(_ candidates: [MarkCandidate], focused: String?) {
+        overlayNode.childNodes.forEach { $0.removeFromParentNode() }
+        for (i, c) in candidates.enumerated() {
+            let size = c.maxBound - c.minBound
+            guard size.x > 0, size.y > 0, size.z > 0 else { continue }
+            let box = SCNBox(width: CGFloat(size.x), height: CGFloat(size.y),
+                             length: CGFloat(size.z), chamferRadius: 0.01)
+            let isFocused = c.name == focused
+            let color = CandidatePalette.uiColor(i)
+            let m = SCNMaterial()
+            m.diffuse.contents = color.withAlphaComponent(isFocused ? 0.5 : 0.16)
+            m.emission.contents = color.withAlphaComponent(isFocused ? 0.4 : 0.1)
+            m.isDoubleSided = true
+            m.readsFromDepthBuffer = false     // always draw over the skin (x-ray)
+            m.writesToDepthBuffer = false
+            box.materials = [m]
+            let node = SCNNode(geometry: box)
+            node.name = "candidate:\(c.name)"
+            let center = (c.minBound + c.maxBound) / 2
+            node.position = SCNVector3(center.x, center.y, center.z)
+            node.renderingOrder = isFocused ? 21 : 20
+            overlayNode.addChildNode(node)
+        }
+    }
+
+    func clearCandidates() {
+        overlayNode.childNodes.forEach { $0.removeFromParentNode() }
+    }
+
+    /// Restores the camera to a plain forward-facing shot at `distance` —
+    /// used when disambiguation is cancelled or resolved.
+    func resetCamera(distance: CGFloat, duration: TimeInterval = 0.4) {
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = duration
+        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        cameraNode.position = SCNVector3(0, 0, Float(distance))
+        cameraNode.look(at: SCNVector3(0, 0, 0))
+        SCNTransaction.commit()
+    }
+
     /// Snap to the nearest equivalent of `target` (0 = front, π = back) via the
     /// shortest angular path, so flipping Front/Back never spins the long way round.
     func snap(to target: CGFloat) {
@@ -295,6 +386,10 @@ private struct SceneKitContainer: UIViewRepresentable {
     let scene: SCNScene
     let pointOfView: SCNNode
     var onTap: ((CGPoint, SCNView) -> Void)?
+    /// Fired once after the SCNView is created — lets BodySceneView hold a
+    /// reference for `projectPoint` (candidate-pin placement), since
+    /// SwiftUI's SceneView hides the underlying SCNView entirely.
+    var onViewReady: ((SCNView) -> Void)?
 
     func makeUIView(context: Context) -> SCNView {
         let view = SCNView()
@@ -306,11 +401,17 @@ private struct SceneKitContainer: UIViewRepresentable {
         let tap = UITapGestureRecognizer(target: context.coordinator,
                                          action: #selector(Coordinator.handleTap(_:)))
         view.addGestureRecognizer(tap)
+        DispatchQueue.main.async { onViewReady?(view) }
         return view
     }
 
     func updateUIView(_ view: SCNView, context: Context) {
         context.coordinator.onTap = onTap
+        // A covered SCNView pauses its display link; re-assert continuous
+        // rendering so it resumes drawing when revealed (e.g. after popping the
+        // exercise list) instead of showing a stale/blank frame.
+        view.rendersContinuously = true
+        view.isPlaying = true
     }
 
     func makeCoordinator() -> Coordinator { Coordinator(onTap: onTap) }
@@ -333,6 +434,32 @@ private extension BodyFacing {
     var rotationY: CGFloat { self == .front ? 0 : .pi }
 }
 
+/// A muscle region offered by the confirm-step disambiguation popup, with
+/// the rigNode-local point its label/leader anchors to (its hitbox center)
+/// and the box bounds used to draw the "rough" on-body region highlight.
+struct MarkCandidate: Equatable, Identifiable {
+    var id: String { name }
+    let name: String
+    let point: SIMD3<Float>
+    var minBound: SIMD3<Float> = .zero
+    var maxBound: SIMD3<Float> = .zero
+}
+
+/// Deterministic colour per candidate index — cool hues group the heads of one
+/// muscle as "one muscle, subdivided"; used identically by the on-body
+/// highlight boxes (SceneKit) and the side-rail labels (SwiftUI) so a colour
+/// dot on a label matches its region on the body.
+enum CandidatePalette {
+    static let colors: [Color] = [
+        Color(red: 0.23, green: 0.51, blue: 0.84),   // blue
+        Color(red: 0.17, green: 0.71, blue: 0.79),   // cyan
+        Color(red: 0.48, green: 0.42, blue: 0.94),   // indigo
+        Color(red: 0.88, green: 0.54, blue: 0.29),   // amber (neighbour muscle)
+    ]
+    static func color(_ i: Int) -> Color { colors[((i % colors.count) + colors.count) % colors.count] }
+    static func uiColor(_ i: Int) -> UIColor { UIColor(color(i)) }
+}
+
 struct BodySceneView: View {
     let facing: BodyFacing
 
@@ -348,6 +475,28 @@ struct BodySceneView: View {
     /// works at any camera angle.
     var onRegionTap: ((String, SIMD3<Float>) -> Void)? = nil
 
+    /// Non-empty while showing the post-confirm disambiguation popup: the
+    /// camera zooms to the first candidate and a labeled pin is placed for
+    /// each. Rotation/zoom gestures freeze while this is non-empty, since the
+    /// camera is under programmatic control and pin positions aren't
+    /// recomputed per-frame.
+    var disambiguationCandidates: [MarkCandidate] = []
+    /// The tapped dot to zoom onto (rigNode-local). When nil, falls back to the
+    /// primary candidate's anchor for backward compatibility.
+    var focusPoint: SIMD3<Float>? = nil
+    /// Which candidate is currently highlighted (its box brightened). Owned by
+    /// the parent so it survives navigation (Back returns to the same focus).
+    var focusedRegion: String? = nil
+    /// A tap on an unfocused candidate (region box or side label) → focus it.
+    var onCandidateFocused: ((String) -> Void)? = nil
+    /// A tap on the already-focused candidate → drill into its exercises.
+    var onCandidateSelected: ((String) -> Void)? = nil
+    /// Bumped by the parent when returning from the pushed exercise list, to
+    /// re-apply the zoom + re-project the labels: a covered SCNView pauses
+    /// rendering and its projected anchors go stale, so the scene must be
+    /// re-driven when it becomes visible again (Phase C back-restores-zoom).
+    var refocusToken: Int = 0
+
     @State private var rig: BodyRig
     @State private var dragActive = false
     @State private var cameraZ: CGFloat
@@ -356,19 +505,35 @@ struct BodySceneView: View {
     /// re-renders once the background OBJ parse finishes — `rig` is a class,
     /// so mutating its stored properties alone wouldn't invalidate the view.
     @State private var isLoading = true
+    @State private var scnView: SCNView?
+    @State private var pinPositions: [String: CGPoint] = [:]
     @Environment(\.colorScheme) private var colorScheme
 
     private let minCameraZ: CGFloat = BodyRig.defaultCameraDistance * 0.62         // closer  = zoomed in
     private let maxCameraZ: CGFloat = BodyRig.freeExploreCameraDistance * 1.25      // farther = zoomed out
 
+    private var isFocused: Bool { !disambiguationCandidates.isEmpty }
+
     init(facing: BodyFacing,
          style: BodyModelStyle = .skin,
          marks: [String: BodyMark] = [:],
-         onRegionTap: ((String, SIMD3<Float>) -> Void)? = nil) {
+         onRegionTap: ((String, SIMD3<Float>) -> Void)? = nil,
+         disambiguationCandidates: [MarkCandidate] = [],
+         focusPoint: SIMD3<Float>? = nil,
+         focusedRegion: String? = nil,
+         onCandidateFocused: ((String) -> Void)? = nil,
+         onCandidateSelected: ((String) -> Void)? = nil,
+         refocusToken: Int = 0) {
         self.facing = facing
         self.style = style
         self.marks = marks
         self.onRegionTap = onRegionTap
+        self.disambiguationCandidates = disambiguationCandidates
+        self.focusPoint = focusPoint
+        self.focusedRegion = focusedRegion
+        self.onCandidateFocused = onCandidateFocused
+        self.onCandidateSelected = onCandidateSelected
+        self.refocusToken = refocusToken
         _rig = State(initialValue: BodyRig(style: style))
         _cameraZ = State(initialValue: BodyRig.freeExploreCameraDistance)
         _committedCameraZ = State(initialValue: BodyRig.freeExploreCameraDistance)
@@ -388,17 +553,29 @@ struct BodySceneView: View {
                 )
             } else {
                 SceneKitContainer(scene: rig.scene, pointOfView: rig.cameraNode,
-                                  onTap: tapHandler)
-                    .gesture(rotationGesture)
-                    .simultaneousGesture(zoomGesture)
+                                  onTap: tapHandler,
+                                  onViewReady: { scnView = $0 })
+                    .gesture(rotationGesture, including: isFocused ? .none : .all)
+                    .simultaneousGesture(zoomGesture, including: isFocused ? .none : .all)
                     .overlay(alignment: .top) {
                         Text("Drag to rotate")
                             .font(.caption2.weight(.medium))
                             .padding(.horizontal, 10).padding(.vertical, 5)
                             .background(.regularMaterial, in: Capsule())
                             .padding(.top, 6)
-                            .opacity(dragActive ? 0 : 0.85)
+                            .opacity(dragActive || isFocused ? 0 : 0.85)
                             .animation(.easeInOut(duration: 0.2), value: dragActive)
+                    }
+                    .overlay {
+                        if isFocused {
+                            CandidateRailOverlay(
+                                candidates: disambiguationCandidates,
+                                anchors: pinPositions,
+                                focusedRegion: focusedRegion,
+                                onTap: handleCandidateTap
+                            )
+                            .transition(.opacity)
+                        }
                     }
             }
         }
@@ -419,6 +596,28 @@ struct BodySceneView: View {
         .onChange(of: facing) { _, newFacing in
             rig.snap(to: newFacing.rotationY)
         }
+        .onChange(of: disambiguationCandidates) { _, newCandidates in
+            guard !newCandidates.isEmpty else {
+                pinPositions = [:]
+                rig.clearCandidates()
+                rig.resetCamera(distance: cameraZ)
+                return
+            }
+            applyFocus(for: newCandidates)
+        }
+        .onChange(of: focusedRegion) { _, newFocus in
+            // Re-tint the boxes when the highlighted candidate changes; camera
+            // stays put (the dot is still the frame subject).
+            guard !disambiguationCandidates.isEmpty else { return }
+            rig.showCandidates(disambiguationCandidates,
+                               focused: newFocus ?? disambiguationCandidates.first?.name)
+        }
+        .onChange(of: refocusToken) { _, _ in
+            // Returned from the exercise list — re-drive the paused SCNView and
+            // recompute the (now-stale) projected label anchors.
+            guard !disambiguationCandidates.isEmpty else { return }
+            applyFocus(for: disambiguationCandidates)
+        }
         .onChange(of: marks) { _, newMarks in
             rig.updateMarks(newMarks)
         }
@@ -437,11 +636,65 @@ struct BodySceneView: View {
 
     // MARK: - Tap → region resolution
 
-    /// Non-nil only when a region-tap callback is installed, so plain
-    /// viewing never pays for hit-testing.
+    /// While focused (disambiguation), taps hit-test the translucent candidate
+    /// boxes so tapping a highlighted region on the body selects it directly.
+    /// Otherwise, taps mark — but only when a region-tap callback is installed,
+    /// so plain viewing never pays for hit-testing.
     private var tapHandler: ((CGPoint, SCNView) -> Void)? {
+        if isFocused {
+            return { point, view in handleCandidateHitTest(at: point, in: view) }
+        }
         guard onRegionTap != nil else { return nil }
         return { point, view in handleTap(at: point, in: view) }
+    }
+
+    /// Raycasts the candidate highlight boxes; the nearest hit whose node is a
+    /// `candidate:<name>` routes to the focus/select decision.
+    private func handleCandidateHitTest(at point: CGPoint, in view: SCNView) {
+        let hits = view.hitTest(point, options: [.searchMode: SCNHitTestSearchMode.all.rawValue as NSNumber])
+        guard let hit = hits.first(where: { $0.node.name?.hasPrefix("candidate:") == true }),
+              let name = hit.node.name?.dropFirst("candidate:".count) else { return }
+        handleCandidateTap(String(name))
+    }
+
+    /// First tap on a candidate focuses/highlights it; a second tap on the
+    /// already-focused candidate drills into its exercises. Shared by the
+    /// on-body region boxes and the side-rail labels.
+    private func handleCandidateTap(_ name: String) {
+        if focusedRegion == name {
+            onCandidateSelected?(name)
+        } else {
+            onCandidateFocused?(name)
+        }
+    }
+
+    /// Renders the candidate highlight boxes, zooms onto the dot, and projects
+    /// the label anchors once the dolly settles. Shared by the initial confirm
+    /// and the return-from-navigation re-focus.
+    private func applyFocus(for candidates: [MarkCandidate]) {
+        guard let primary = candidates.first else { return }
+        rig.showCandidates(candidates, focused: focusedRegion ?? primary.name)
+        rig.focus(on: focusPoint ?? primary.point) {
+            projectPinPositions(for: candidates)
+        }
+    }
+
+    /// Re-projects each candidate's rigNode-local anchor to on-screen points
+    /// via `SCNView.projectPoint`, once the focus dolly animation completes
+    /// (camera + rig are static then, so a single projection stays correct
+    /// for as long as the popup is showing).
+    private func projectPinPositions(for candidates: [MarkCandidate]) {
+        guard let scnView else { return }
+        var positions: [String: CGPoint] = [:]
+        for candidate in candidates {
+            let world = rig.rigNode.convertPosition(
+                SCNVector3(candidate.point.x, candidate.point.y, candidate.point.z), to: nil)
+            let projected = scnView.projectPoint(world)
+            positions[candidate.name] = CGPoint(x: CGFloat(projected.x), y: CGFloat(projected.y))
+        }
+        withAnimation(.easeIn(duration: 0.2)) {
+            pinPositions = positions
+        }
     }
 
     /// Stage 1: raycast the skin mesh (marker dots are excluded explicitly,
@@ -488,6 +741,128 @@ struct BodySceneView: View {
             .onEnded { _ in
                 committedCameraZ = cameraZ
             }
+    }
+}
+
+// MARK: - Candidate rail overlay
+
+/// The disambiguation labels, pushed to whichever screen edge has more room
+/// (away from the dot's cluster), each larger than the old on-body capsules and
+/// connected to its muscle region by a thin leader line. The label's colour dot
+/// matches its on-body highlight box. Tapping a label focuses that region;
+/// tapping the focused one again drills into its exercises.
+private struct CandidateRailOverlay: View {
+    let candidates: [MarkCandidate]
+    let anchors: [String: CGPoint]
+    let focusedRegion: String?
+    let onTap: (String) -> Void
+
+    private let labelWidth: CGFloat = 156
+    private let rowGap: CGFloat = 54
+    private let edgeInset: CGFloat = 86
+
+    private struct Placement: Identifiable {
+        var id: String { name }
+        let name: String
+        let index: Int
+        var center: CGPoint
+        var leaderStart: CGPoint
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let placements = layout(in: geo.size)
+            ZStack(alignment: .topLeading) {
+                Canvas { ctx, _ in
+                    for p in placements {
+                        guard let anchor = anchors[p.name] else { continue }
+                        let focused = p.name == focusedRegion
+                        var path = Path()
+                        path.move(to: p.leaderStart)
+                        path.addLine(to: anchor)
+                        ctx.stroke(path,
+                                   with: .color(CandidatePalette.color(p.index).opacity(focused ? 0.95 : 0.5)),
+                                   style: StrokeStyle(lineWidth: focused ? 1.7 : 1.2,
+                                                      dash: focused ? [] : [2, 3]))
+                        let r: CGFloat = focused ? 5 : 3.5
+                        ctx.fill(Path(ellipseIn: CGRect(x: anchor.x - r, y: anchor.y - r,
+                                                        width: r * 2, height: r * 2)),
+                                 with: .color(CandidatePalette.color(p.index)))
+                    }
+                }
+                .allowsHitTesting(false)   // let taps fall through to the 3D boxes
+
+                ForEach(placements) { p in
+                    label(for: p).position(p.center)
+                }
+            }
+        }
+    }
+
+    private func label(for p: Placement) -> some View {
+        let focused = p.name == focusedRegion
+        let color = CandidatePalette.color(p.index)
+        return Button { onTap(p.name) } label: {
+            HStack(spacing: 7) {
+                Circle().fill(color).frame(width: 10, height: 10)
+                Text(p.name)
+                    .font(.subheadline.weight(.semibold))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(.leading)
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 12).padding(.vertical, 9)
+            .frame(width: labelWidth, alignment: .leading)
+            .background(focused ? AnyShapeStyle(color.opacity(0.18))
+                                : AnyShapeStyle(.regularMaterial),
+                        in: RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(focused ? color : Color.clear, lineWidth: 1.5))
+            .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(focused ? "\(p.name) — view exercises"
+                                    : "\(p.name) — highlight region")
+    }
+
+    /// Places labels in a column on the emptier side and spaces them so they
+    /// don't overlap, each sitting at (roughly) its anchor's height.
+    private func layout(in size: CGSize) -> [Placement] {
+        let present = candidates.enumerated().compactMap { i, c -> (Int, MarkCandidate, CGPoint)? in
+            anchors[c.name].map { (i, c, $0) }
+        }
+        guard !present.isEmpty else { return [] }
+
+        let avgX = present.map(\.2.x).reduce(0, +) / CGFloat(present.count)
+        let railRight = avgX < size.width / 2
+        let centerX = railRight ? size.width - edgeInset : edgeInset
+
+        // Desired Y = anchor Y, then de-overlap top→bottom and clamp to frame.
+        let ordered = present.sorted { $0.2.y < $1.2.y }
+        var ys: [CGFloat] = []
+        var lastY = -CGFloat.greatestFiniteMagnitude
+        let topLimit = rowGap / 2 + 8
+        for item in ordered {
+            var y = max(item.2.y, lastY + rowGap)
+            y = max(y, topLimit)
+            lastY = y
+            ys.append(y)
+        }
+        // Pull the stack up if it overran the bottom.
+        let bottomLimit = size.height - rowGap / 2 - 8
+        if let last = ys.last, last > bottomLimit {
+            let shift = last - bottomLimit
+            ys = ys.map { max(topLimit, $0 - shift) }
+        }
+
+        return ordered.enumerated().map { row, item in
+            let (index, cand, _) = item
+            let cy = ys[row]
+            let leaderX = railRight ? centerX - labelWidth / 2 : centerX + labelWidth / 2
+            return Placement(name: cand.name, index: index,
+                             center: CGPoint(x: centerX, y: cy),
+                             leaderStart: CGPoint(x: leaderX, y: cy))
+        }
     }
 }
 

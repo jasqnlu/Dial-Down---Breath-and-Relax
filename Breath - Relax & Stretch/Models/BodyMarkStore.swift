@@ -39,6 +39,15 @@ final class BodyMarkStore: ObservableObject {
         save()
     }
 
+    /// Commits a single mark, replacing any previous one — the body map is
+    /// single-focus (one dot at a time), so confirming a new region must not
+    /// leave the old dot behind. Used by the confirm-and-drill-in flow, where
+    /// placing a mark is a deliberate final step, not a toggle.
+    func setMark(region: String, sensationID: String, point: SIMD3<Float>) {
+        marks = [region: BodyMark(sensationID: sensationID, point: point)]
+        save()
+    }
+
     func clear() {
         marks = [:]
         save()
