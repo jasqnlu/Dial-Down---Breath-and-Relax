@@ -35,6 +35,27 @@ struct MuscleHeadTests {
         #expect(MuscleGroup.parentOfHead("Nonsense") == nil)
     }
 
+    @Test func faceZonesResolveToHeadParent() {
+        for zone in ["Left Eye", "Right Eye", "Left Temple", "Right Temple",
+                     "Left Jaw", "Right Jaw", "Forehead"] {
+            #expect(MuscleGroup.parentOfHead(zone) == "Head",
+                    "\(zone) should parent to Head")
+        }
+    }
+
+    @Test func foreheadIsMidlineWithNoSide() {
+        #expect(MuscleGroup.muscleHeads["Forehead"] == "Head")
+        #expect(MuscleGroup.muscleHeads["Left Forehead"] == nil)
+        #expect(MuscleGroup.muscleHeads["Right Forehead"] == nil)
+    }
+
+    @Test func bilateralFaceZonesComeInPairs() {
+        for base in ["Eye", "Temple", "Jaw"] {
+            #expect(MuscleGroup.muscleHeads["Left \(base)"] == "Head")
+            #expect(MuscleGroup.muscleHeads["Right \(base)"] == "Head")
+        }
+    }
+
     /// The triceps example from the feature request: three heads, one parent.
     @Test func tricepsHasThreeHeadsPerSide() {
         for side in ["Left", "Right"] {

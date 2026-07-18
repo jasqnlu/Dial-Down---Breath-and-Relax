@@ -67,6 +67,16 @@ enum MuscleGroup: String, CaseIterable, Codable {
     /// as disambiguation candidates and resolve to their own exercises, falling
     /// back to the parent muscle's list. These names MUST match the Blender
     /// script's output exactly.
+    /// Face zones that subdivide the coarse `Head` group. Bilateral zones
+    /// expand to Left/Right; midline zones (Forehead) register as-is. All
+    /// resolve to the `Head` parent, so a zone with no curated exercise falls
+    /// back to the shared head list (see RegionExerciseResolver). Kept strictly
+    /// evidence-based — eyes (strain), temples & forehead (tension), jaw (TMJ).
+    /// No cheeks/mouth: anti-wrinkle claims are unsupported.
+    static let headZones: [(base: String, bilateral: Bool)] = [
+        ("Eye", true), ("Temple", true), ("Jaw", true), ("Forehead", false),
+    ]
+
     static let muscleHeads: [String: String] = {
         // Base head names per group (side-agnostic); expanded to Left/Right.
         let byGroup: [(group: String, heads: [String])] = [
@@ -86,6 +96,16 @@ enum MuscleGroup: String, CaseIterable, Codable {
                 for head in entry.heads {
                     map["\(side) \(head)"] = "\(side) \(entry.group)"
                 }
+            }
+        }
+        // Face zones: parent is always the coarse "Head" group (no side-specific
+        // parent, unlike muscle sub-heads).
+        for zone in headZones {
+            if zone.bilateral {
+                map["Left \(zone.base)"] = "Head"
+                map["Right \(zone.base)"] = "Head"
+            } else {
+                map[zone.base] = "Head"
             }
         }
         return map
