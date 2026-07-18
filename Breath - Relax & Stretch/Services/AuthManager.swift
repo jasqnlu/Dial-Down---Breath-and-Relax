@@ -39,7 +39,12 @@ nonisolated struct SecItemKeychainStore: KeychainStore {
             kSecClass:       kSecClassGenericPassword,
             kSecAttrService: service,
             kSecAttrAccount: account,
-            kSecValueData:   data
+            kSecValueData:   data,
+            // AfterFirstUnlock: Supabase session refresh must work whenever
+            // the app runs, not only while the screen is unlocked.
+            // ThisDeviceOnly: password hashes and refresh tokens must not
+            // migrate to a new device via backup/device-transfer restores.
+            kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
         ]
         SecItemDelete(query as CFDictionary)
         SecItemAdd(query as CFDictionary, nil)

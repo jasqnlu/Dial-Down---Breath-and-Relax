@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Body Map — Zoom · Labels · Sub-heads (Prototype)</title>
+<style>
+  :root{
+    --bg:#ece4d8; --surface:#f6f0e7; --surface-2:#efe7db; --container:#e5dccd;
+    --on:#2c2620; --on-var:#6b6153; --line:#d8cdbb;
+    --accent:#3f9d8f; --accent-ink:#0f4f47;
+    --dot:#e0533d; --dot-ring:#fff;
+    --hi:#3f9d8f; --shadow:rgba(60,45,25,.18);
+    --figure-a:#e7c3a8; --figure-b:#d9ab8b; --figure-edge:#c79877;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141317; --surface:#1c1b21; --surface-2:#222129; --container:#2b2a33;
+      --on:#ece7df; --on-var:#a49c8f; --line:#333138;
+      --accent:#57c3b2; --accent-ink:#bff0e8;
+      --dot:#ff6a52; --dot-ring:#0d0d10;
+      --hi:#57c3b2; --shadow:rgba(0,0,0,.5);
+      --figure-a:#5a4a3f; --figure-b:#48392f; --figure-edge:#6b574a;
+    }
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--on);
+    font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    display:flex; flex-direction:column; align-items:center; gap:18px;
+    padding:26px 14px 40px; min-height:100%;
+  }
+  .intro{max-width:400px; text-align:center}
+  .intro h1{font-size:17px; margin:0 0 4px}
+  .intro p{margin:0; color:var(--on-var); font-size:13px}
+  .intro .steps{font-size:12px; color:var(--on-var); margin-top:8px}
+
+  /* ---- phone frame ---- */
+  .phone{
+    width:390px; height:800px; border-radius:44px; background:var(--surface);
+    box-shadow:0 20px 60px var(--shadow), 0 0 0 10px #0000000d;
+    position:relative; overflow:hidden; border:1px solid var(--line);
+    display:flex; flex-direction:column;
+  }
+  .nav{
+    height:52px; flex:0 0 auto; display:flex; align-items:center; gap:10px;
+    padding:0 14px; border-bottom:1px solid var(--line); position:relative; z-index:6;
+    background:var(--surface);
+  }
+  .nav .title{font-weight:600; font-size:16px; flex:1; text-align:center}
+  .nav .slot{min-width:64px; display:flex; align-items:center}
+  .nav .slot.right{justify-content:flex-end}
+  .btn{
+    border:none; background:none; color:var(--accent); font-size:15px; font-weight:600;
+    cursor:pointer; padding:6px 8px; border-radius:10px;
+  }
+  .btn:active{background:#8881}
+  .btn.back{color:var(--accent); font-weight:500; gap:2px; display:flex; align-items:center}
+  .btn.icon{font-size:19px}
+  .btn[disabled]{opacity:.35; cursor:default}
+
+  .hint{
+    text-align:center; font-size:12.5px; color:var(--on-var);
+    padding:8px 14px 2px; z-index:5; position:relative;
+  }
+
+  /* ---- stage ---- */
+  .stage{position:relative; flex:1 1 auto; overflow:hidden; touch-action:manipulation}
+  .scrim{position:absolute; inset:0; background:#0b0906; opacity:0; pointer-events:none;
+    transition:opacity .5s ease; z-index:2}
+  .stage.zoom .scrim{opacity:.55}
+
+  .figwrap{
+    position:absolute; inset:0; z-index:1;
+    transition:transform .55s cubic-bezier(.22,.61,.36,1);
+    transform-origin:50% 50%;
+  }
+  .figure{position:absolute; inset:0}
+  .hotspot{position:absolute; transform:translate(-50%,-50%); border-radius:50%;
+    background:transparent; cursor:pointer}
+  .stage.zoom .hotspot{pointer-events:none}
+
+  /* clickable muscle-head region shapes — live INSIDE figwrap so they scale with the body */
+  .regions{position:absolute; inset:0}
+  .region{position:absolute; transform:translate(-50%,-50%); border-radius:48%; padding:0;
+    border:1px solid var(--rc); background:color-mix(in srgb,var(--rc) 28%, transparent);
+    opacity:0; transition:opacity .3s ease, background .2s, box-shadow .2s;
+    cursor:pointer; pointer-events:auto; display:flex; align-items:center; justify-content:center}
+  .stage.zoom .region{opacity:.5}
+  .region span{font-size:7px; font-weight:800; color:#fff; letter-spacing:.2px;
+    text-shadow:0 1px 2px #000a; opacity:0; transition:opacity .2s}
+  .region.focused{opacity:.92; background:color-mix(in srgb,var(--rc) 46%, transparent);
+    box-shadow:0 0 0 1.5px var(--rc), 0 3px 12px #0005}
+  .region.focused span{opacity:1}
+
+  .dot{position:absolute; width:20px; height:20px; margin:-10px; border-radius:50%;
+    background:var(--dot); box-shadow:0 0 0 3px var(--dot-ring),0 2px 6px #0006;
+    opacity:0; transform:scale(.2); transition:opacity .2s, transform .25s cubic-bezier(.3,1.4,.5,1);
+    z-index:3; pointer-events:none}
+  .dot.on{opacity:1; transform:scale(1)}
+
+  /* leader lines + rail (screen space, above figure) */
+  .leaders{position:absolute; inset:0; z-index:4; pointer-events:none}
+  .leaders line{stroke:var(--accent); stroke-width:1.4; opacity:.7; stroke-dasharray:2 3}
+
+  .rail{position:absolute; top:0; bottom:0; z-index:5; width:150px;
+    display:flex; flex-direction:column; justify-content:center; gap:10px;
+    padding:0 10px; opacity:0; pointer-events:none; transition:opacity .4s ease .15s}
+  .rail.right{right:0; align-items:flex-end}
+  .rail.left{left:0; align-items:flex-start}
+  .stage.zoom .rail{opacity:1; pointer-events:auto}
+  .chip{
+    background:var(--surface); border:1px solid var(--line); color:var(--on);
+    border-radius:13px; padding:9px 13px; font-size:14.5px; font-weight:600;
+    box-shadow:0 4px 14px var(--shadow); cursor:pointer; text-align:left;
+    display:flex; flex-direction:column; gap:1px; max-width:100%;
+    transition:transform .15s, border-color .2s, background .2s;
+  }
+  .chip .row{display:flex; align-items:center; gap:7px; font-size:14.5px; font-weight:600}
+  .chip .row i{width:10px; height:10px; border-radius:50%; flex:0 0 auto;
+    box-shadow:0 0 0 1px #0002}
+  .chip small{font-size:11px; font-weight:500; color:var(--on-var); padding-left:17px}
+  .chip:active{transform:scale(.97)}
+  .chip.focused{border-color:var(--accent); background:color-mix(in srgb,var(--accent) 14%, var(--surface))}
+  .chip.focused small{color:var(--accent-ink)}
+  .chip .go{font-size:11px; font-weight:700; color:var(--accent); margin-top:3px; opacity:0; height:0;
+    transition:opacity .2s}
+  .chip.focused .go{opacity:1; height:auto}
+
+  /* palette */
+  .palette{flex:0 0 auto; display:flex; padding:12px 10px calc(12px + env(safe-area-inset-bottom));
+    gap:4px; border-top:1px solid var(--line); background:var(--surface-2); z-index:6}
+  .palette.hidden{display:none}
+  .sw{flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer;
+    padding:4px 0; border-radius:12px; background:none; border:none}
+  .sw i{width:30px; height:30px; border-radius:50%; display:block; box-shadow:inset 0 0 0 0 #fff}
+  .sw.sel i{box-shadow:inset 0 0 0 2.5px var(--surface-2), 0 0 0 2.5px currentColor}
+  .sw span{font-size:9.5px; font-weight:600; color:var(--on-var)}
+
+  .banner{flex:0 0 auto; display:none; align-items:center; gap:10px; padding:12px 16px;
+    border-top:1px solid var(--line); background:var(--surface); z-index:6}
+  .banner.show{display:flex}
+  .banner .txt{flex:1; font-size:13px}
+  .banner .txt b{display:block; font-size:14px}
+  .pill{background:var(--accent); color:#fff; border:none; border-radius:20px; padding:9px 16px;
+    font-weight:700; font-size:13px; cursor:pointer}
+
+  /* exercise sheet */
+  .sheet{position:absolute; inset:0; z-index:8; background:var(--surface);
+    transform:translateX(100%); transition:transform .32s cubic-bezier(.3,.7,.3,1);
+    display:flex; flex-direction:column}
+  .sheet.show{transform:translateX(0)}
+  .sheet .ehead{padding:14px 16px 10px; border-bottom:1px solid var(--line)}
+  .sheet .ehead h2{margin:0; font-size:19px}
+  .sheet .ehead p{margin:3px 0 0; color:var(--on-var); font-size:12.5px}
+  .exlist{flex:1; overflow:auto; padding:10px 14px 30px}
+  .ex{display:flex; gap:12px; align-items:center; padding:12px; border-radius:16px;
+    background:var(--surface-2); margin-bottom:10px; border:1px solid var(--line)}
+  .ex .thumb{width:46px; height:46px; border-radius:12px; flex:0 0 auto;
+    background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 40%, #7c5cff));
+    display:flex; align-items:center; justify-content:center; font-size:22px}
+  .ex .meta b{font-size:15px; display:block}
+  .ex .meta span{font-size:12px; color:var(--on-var)}
+  .tag{margin-left:auto; font-size:10px; font-weight:700; color:var(--accent);
+    border:1px solid var(--accent); border-radius:8px; padding:3px 7px}
+
+  .fignote{margin-top:6px; font-size:11px; color:var(--on-var); max-width:400px; text-align:center}
+  kbd{font:inherit; background:var(--container); border:1px solid var(--line); border-radius:5px;
+    padding:0 5px}
+</style>
+</head>
+<body>
+  <div class="intro">
+    <h1>Body Map — new zoom &amp; label flow</h1>
+    <p>Interactive UX prototype (not the real 3D engine)</p>
+    <div class="steps">Tap <b>Mark</b> → tap the <b>upper arm</b> → <b>✓ Confirm</b> → pick a triceps head → <b>‹ Back</b> keeps the zoom</div>
+  </div>
+
+  <div class="phone">
+    <!-- nav -->
+    <div class="nav">
+      <div class="slot" id="navLeft"></div>
+      <div class="title" id="navTitle">Body Map</div>
+      <div class="slot right" id="navRight"></div>
+    </div>
+
+    <div class="hint" id="hint"></div>
+
+    <!-- stage -->
+    <div class="stage" id="stage">
+      <div class="figwrap" id="figwrap">
+        <svg class="figure" viewBox="0 0 360 620" id="fig" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="var(--figure-a)"/>
+              <stop offset="1" stop-color="var(--figure-b)"/>
+            </linearGradient>
+          </defs>
+          <g fill="url(#skin)" stroke="var(--figure-edge)" stroke-width="1.5" stroke-linejoin="round">
+            <!-- head/neck -->
+            <ellipse cx="180" cy="46" rx="30" ry="35"/>
+            <rect x="166" y="76" width="28" height="26" rx="10"/>
+            <!-- torso -->
+            <path d="M120 108 Q180 92 240 108 L232 210 Q220 300 205 330 L155 330 Q140 300 128 210 Z"/>
+            <!-- shoulders -->
+            <circle cx="122" cy="120" r="26"/><circle cx="238" cy="120" r="26"/>
+            <!-- left arm (viewer left) -->
+            <path d="M104 128 Q86 175 92 240 L112 238 Q112 180 122 138 Z"/>
+            <path d="M92 238 Q90 300 96 350 L116 348 Q114 300 112 238 Z"/>
+            <ellipse cx="104" cy="366" rx="13" ry="18"/>
+            <!-- right arm (viewer right) -->
+            <path d="M256 128 Q274 175 268 240 L248 238 Q248 180 238 138 Z"/>
+            <path d="M268 238 Q270 300 264 350 L244 348 Q246 300 248 238 Z"/>
+            <ellipse cx="256" cy="366" rx="13" ry="18"/>
+            <!-- pelvis -->
+            <path d="M150 328 Q180 344 210 328 L214 372 Q180 388 146 372 Z"/>
+            <!-- legs -->
+            <path d="M150 366 Q142 460 150 520 L176 520 Q180 440 178 372 Z"/>
+            <path d="M182 372 Q184 440 184 520 L210 520 Q218 460 210 366 Z"/>
+            <path d="M150 520 Q148 570 156 600 L176 600 Q178 560 176 520 Z"/>
+            <path d="M184 520 Q184 560 184 600 L204 600 Q212 570 210 520 Z"/>
+          </g>
+        </svg>
+
+        <!-- clickable muscle-head regions (built on Confirm; scale with figure) -->
+        <div class="regions" id="regions"></div>
+
+        <!-- tappable hotspots -->
+        <div class="hotspot" data-region="rTriceps" style="left:73%;top:33%;width:60px;height:90px"></div>
+        <div class="hotspot" data-region="lTriceps" style="left:27%;top:33%;width:60px;height:90px"></div>
+        <div class="hotspot" data-region="chest"    style="left:50%;top:22%;width:120px;height:60px"></div>
+        <div class="hotspot" data-region="quad"     style="left:47%;top:73%;width:120px;height:110px"></div>
+      </div>
+
+      <div class="dot" id="dot"></div>
+      <svg class="leaders" id="leaders"></svg>
+      <div class="rail right" id="rail"></div>
+      <div class="scrim"></div>
+    </div>
+
+    <!-- palette (marking) -->
+    <div class="palette hidden" id="palette">
+      <button class="sw sel" style="color:#e0533d" data-c="Sore"><i style="background:#e0533d"></i><span>Sore</span></button>
+      <button class="sw" style="color:#e8a13a" data-c="Tense"><i style="background:#e8a13a"></i><span>Tense</span></button>
+      <button class="sw" style="color:#3f9d8f" data-c="Tight"><i style="background:#3f9d8f"></i><span>Tight</span></button>
+      <button class="sw" style="color:#6c7cff" data-c="Stiff"><i style="background:#6c7cff"></i><span>Stiff</span></button>
+    </div>
+
+    <!-- banner (has marks, not marking) -->
+    <div class="banner" id="banner">
+      <div class="txt"><b id="bannerRegion">Right Triceps</b><span>1 area marked</span></div>
+      <button class="pill" id="bannerFind">Find stretches</button>
+    </div>
+
+    <!-- exercise sheet -->
+    <div class="sheet" id="sheet">
+      <div class="ehead"><h2 id="exTitle">Triceps</h2><p id="exSub"></p></div>
+      <div class="exlist" id="exList"></div>
+    </div>
+  </div>
+
+  <div class="fignote">
+    Prototype for the Swift/SceneKit build. Real version zooms the 3D model to the tapped
+    dot along the muscle's outward normal; here it's a CSS transform. <kbd>Mark</kbd> resets the zoom.
+  </div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const stage=$('stage'), figwrap=$('figwrap'), dot=$('dot'), rail=$('rail'),
+        leaders=$('leaders'), hint=$('hint'), navL=$('navLeft'), navR=$('navRight'),
+        navTitle=$('navTitle'), palette=$('palette'), banner=$('banner'), sheet=$('sheet'),
+        regions=$('regions');
+
+  // ---- candidate data: region -> ordered candidates (heads first) ----
+  // hi/anchor positions are % of the figwrap (so they scale with the zoom).
+  const DATA = {
+    rTriceps: { title:'Right upper arm', side:'left',
+      cands:[
+        {name:'Triceps — Lateral Head', tag:'LATERAL', short:'Outer, most visible head',
+          color:'#3b82d6', x:75, y:34, w:44, h:64,
+          ex:[['Overhead Triceps Stretch','30s · each side','🙆'],['Cross-Body Arm Pull','30s · each side','🤝']]},
+        {name:'Triceps — Long Head', tag:'LONG', short:'Inner, runs to shoulder',
+          color:'#2bb6c9', x:70, y:41, w:50, h:78,
+          ex:[['Behind-Back Elbow Pull','30s · hold','🧎'],['Overhead Towel Stretch','40s · each side','🧻']]},
+        {name:'Triceps — Medial Head', tag:'MEDIAL', short:'Deep, near the elbow',
+          color:'#7b6cf0', x:73, y:48, w:40, h:52,
+          ex:[['Wall Triceps Press','30s · each side','🧱'],['Seated Bench Dip Stretch','30s · hold','🪑']]},
+        {name:'Biceps', tag:'BICEPS', short:'Front of the arm — neighbour',
+          color:'#e0894a', x:67, y:36, w:42, h:62,
+          ex:[['Doorway Biceps Stretch','30s · each side','🚪'],['Wall Biceps Extension','30s · hold','🧱']]},
+      ]},
+    lTriceps: { title:'Left upper arm', side:'right',
+      cands:[
+        {name:'Triceps — Lateral Head', tag:'LATERAL', short:'Outer, most visible head',
+          color:'#3b82d6', x:25, y:34, w:44, h:64,
+          ex:[['Overhead Triceps Stretch','30s · each side','🙆'],['Cross-Body Arm Pull','30s · each side','🤝']]},
+        {name:'Triceps — Long Head', tag:'LONG', short:'Inner, runs to shoulder',
+          color:'#2bb6c9', x:30, y:41, w:50, h:78,
+          ex:[['Behind-Back Elbow Pull','30s · hold','🧎'],['Overhead Towel Stretch','40s · each side','🧻']]},
+        {name:'Triceps — Medial Head', tag:'MEDIAL', short:'Deep, near the elbow',
+          color:'#7b6cf0', x:27, y:48, w:40, h:52,
+          ex:[['Wall Triceps Press','30s · each side','🧱'],['Seated Bench Dip Stretch','30s · hold','🪑']]},
+      ]},
+    chest: { title:'Chest', side:'right',
+      cands:[
+        {name:'Pectoralis — Clavicular', tag:'UPPER', short:'Upper chest fibers',
+          color:'#3b82d6', x:50, y:20, w:118, h:42,
+          ex:[['Doorway Pec Stretch (high)','30s · hold','🚪'],['Wall Corner Stretch','40s · hold','🧱']]},
+        {name:'Pectoralis — Sternal', tag:'MID / LOWER', short:'Mid / lower chest',
+          color:'#2bb6c9', x:50, y:28, w:128, h:52,
+          ex:[['Doorway Pec Stretch (low)','30s · hold','🚪'],['Floor Chest Opener','45s · hold','🧘']]},
+      ]},
+    quad: { title:'Thigh', side:'right',
+      cands:[
+        {name:'Rectus Femoris', tag:'RECTUS', short:'Central, crosses the hip',
+          color:'#3b82d6', x:47, y:70, w:56, h:108,
+          ex:[['Standing Quad Stretch','30s · each side','🧍'],['Couch Stretch','45s · each side','🛋️']]},
+        {name:'Vastus Lateralis', tag:'LATERAL', short:'Outer thigh',
+          color:'#2bb6c9', x:42, y:74, w:50, h:104,
+          ex:[['Side-Lying Quad Pull','30s · each side','🛌'],['Foam-Roll Outer Thigh','45s · each side','🧻']]},
+        {name:'Vastus Medialis', tag:'MEDIAL', short:'Inner, teardrop above knee',
+          color:'#7b6cf0', x:53, y:79, w:42, h:78,
+          ex:[['Kneeling Quad Stretch','30s · each side','🧎'],['Wall Quad Stretch','30s · each side','🧱']]},
+      ]},
+  };
+
+  let state = { mode:'browse', region:null, dotX:0, dotY:0, focus:0, sensation:'Sore', committed:false };
+
+  // ---------- rendering ----------
+  function render(){
+    // nav
+    navTitle.textContent = state.mode==='marking'||state.mode==='pending' ? 'Mark Areas' : 'Body Map';
+    navL.innerHTML=''; navR.innerHTML='';
+    if(state.mode==='exercises'){
+      const b=document.createElement('button'); b.className='btn back'; b.innerHTML='‹ Back';
+      b.onclick=goBackFromExercises; navL.appendChild(b);
+    } else if(state.mode==='marking'||state.mode==='pending'){
+      const c=document.createElement('button'); c.className='btn'; c.textContent='Cancel';
+      c.onclick=reset; navL.appendChild(c);
+      const ok=document.createElement('button'); ok.className='btn icon'; ok.textContent='✓';
+      ok.title='Confirm'; ok.disabled = state.mode!=='pending'; ok.onclick=confirm; navR.appendChild(ok);
+    } else if(state.mode==='zoomed'){
+      const c=document.createElement('button'); c.className='btn'; c.textContent='Cancel';
+      c.onclick=reset; navL.appendChild(c);
+    } else { // browse
+      const m=document.createElement('button'); m.className='btn'; m.textContent='Mark';
+      m.onclick=startMarking; navR.appendChild(m);
+    }
+
+    // hint
+    hint.textContent =
+      state.mode==='marking' ? 'Tap a spot that feels tense or sore.' :
+      state.mode==='pending' ? 'Tap ✓ above to see stretches for this spot.' :
+      state.mode==='zoomed'  ? 'Tap a coloured region (or its label) to highlight it — tap again for stretches.' :
+      state.mode==='exercises' ? '' :
+      state.committed ? '' : 'Tap “Mark” to begin.';
+
+    palette.classList.toggle('hidden', !(state.mode==='marking'||state.mode==='pending'));
+    banner.classList.toggle('show', state.mode==='browse' && state.committed);
+    stage.classList.toggle('zoom', state.mode==='zoomed'||state.mode==='exercises');
+    dot.classList.toggle('on', state.mode!=='browse' && state.mode!=='marking');
+    sheet.classList.toggle('show', state.mode==='exercises');
+  }
+
+  // ---------- interactions ----------
+  function startMarking(){ // also the RESET trigger per spec
+    reset(true);
+    state.mode='marking'; render();
+  }
+  function reset(full){
+    state.mode='browse'; state.region=null; state.committed=false; state.focus=0;
+    figwrap.style.transform=''; clearLabels();
+    if(full!==true){ /* Cancel returns to browse */ }
+    render();
+  }
+
+  stage.querySelectorAll('.hotspot').forEach(h=>{
+    h.addEventListener('click', e=>{
+      if(state.mode!=='marking' && state.mode!=='pending') return;
+      const r=stage.getBoundingClientRect();
+      state.dotX = (e.clientX-r.left)/r.width*100;
+      state.dotY = (e.clientY-r.top)/r.height*100;
+      dot.style.left=state.dotX+'%'; dot.style.top=state.dotY+'%';
+      dot.style.background = swatchColor(state.sensation);
+      state.region = h.dataset.region;
+      state.mode='pending'; render();
+    });
+  });
+
+  palette.querySelectorAll('.sw').forEach(s=>{
+    s.addEventListener('click',()=>{
+      palette.querySelectorAll('.sw').forEach(x=>x.classList.remove('sel'));
+      s.classList.add('sel'); state.sensation=s.dataset.c;
+      if(state.mode==='pending') dot.style.background=swatchColor(state.sensation);
+    });
+  });
+  function swatchColor(name){
+    return {Sore:'#e0533d',Tense:'#e8a13a',Tight:'#3f9d8f',Stiff:'#6c7cff'}[name]||'#e0533d';
+  }
+
+  function confirm(){
+    state.committed=true; state.mode='zoomed'; state.focus=0;
+    zoomToDot(); buildLabels(); render();
+  }
+
+  // zoom the figure so the dot sits at ~42%/40% of the stage, scaled up
+  function zoomToDot(){
+    const S=2.5;
+    const tx=42, ty=40;                    // target on-screen % for the dot
+    // transform-origin at the dot, scale, then translate dot to target
+    figwrap.style.transformOrigin = state.dotX+'% '+state.dotY+'%';
+    const dxPct=(tx-state.dotX), dyPct=(ty-state.dotY);
+    figwrap.style.transform =
+      `translate(${dxPct}%, ${dyPct}%) scale(${S})`;
+  }
+
+  function selectCandidate(i){
+    // First tap focuses & highlights the region; second tap opens its stretches.
+    if(state.focus===i) openExercises(i);
+    else { state.focus=i; syncFocus(); }
+  }
+
+  function buildLabels(){
+    const d=DATA[state.region]; if(!d) return;
+    rail.className='rail '+ (d.side==='left'?'left':'right');
+    rail.innerHTML=''; regions.innerHTML='';
+    d.cands.forEach((c,i)=>{
+      // clickable coloured region shape on the body
+      const rg=document.createElement('button'); rg.className='region';
+      rg.style.left=c.x+'%'; rg.style.top=c.y+'%';
+      rg.style.width=(c.w||60)+'px'; rg.style.height=(c.h||60)+'px';
+      rg.style.setProperty('--rc', c.color);
+      rg.innerHTML=`<span>${c.tag||''}</span>`;
+      rg.title=c.name;
+      rg.onclick=e=>{ e.stopPropagation(); selectCandidate(i); };
+      regions.appendChild(rg);
+      // side-rail label, colour-matched to its region
+      const chip=document.createElement('button'); chip.className='chip';
+      chip.innerHTML=`<span class="row"><i style="background:${c.color}"></i>${c.name}</span>`
+        +`<small>${c.short}</small><span class="go">See stretches ›</span>`;
+      chip.onclick=()=>selectCandidate(i);
+      rail.appendChild(chip);
+    });
+    state.focus=0; syncFocus();
+  }
+
+  function syncFocus(){
+    [...rail.children].forEach((c,i)=>c.classList.toggle('focused', i===state.focus));
+    [...regions.children].forEach((r,i)=>r.classList.toggle('focused', i===state.focus));
+    drawLeaders();
+  }
+
+  function drawLeaders(){
+    leaders.innerHTML='';
+    const sr=stage.getBoundingClientRect();
+    [...rail.children].forEach((chip,i)=>{
+      const rg=regions.children[i]; if(!rg) return;
+      const ar=rg.getBoundingClientRect(), cr=chip.getBoundingClientRect();
+      const ax=ar.left+ar.width/2-sr.left, ay=ar.top+ar.height/2-sr.top;
+      const railRight = rail.classList.contains('right');
+      const cx=(railRight? cr.left : cr.right)-sr.left, cy=cr.top+cr.height/2-sr.top;
+      const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+      ln.setAttribute('x1',cx); ln.setAttribute('y1',cy);
+      ln.setAttribute('x2',ax); ln.setAttribute('y2',ay);
+      if(i===state.focus){ ln.setAttribute('opacity','.95'); ln.setAttribute('stroke-dasharray','0'); }
+      leaders.appendChild(ln);
+    });
+  }
+
+  function clearLabels(){
+    rail.innerHTML=''; leaders.innerHTML=''; regions.innerHTML='';
+  }
+
+  // ---------- exercises ----------
+  function openExercises(i){
+    state.focus=i; state.mode='exercises';
+    const c=DATA[state.region].cands[i];
+    $('exTitle').textContent=c.name;
+    $('exSub').textContent=c.short+' · '+c.ex.length+' stretches';
+    const list=$('exList'); list.innerHTML='';
+    c.ex.forEach(([n,meta,emo],idx)=>{
+      const row=document.createElement('div'); row.className='ex';
+      row.innerHTML=`<div class="thumb">${emo}</div>
+        <div class="meta"><b>${n}</b><span>${meta}</span></div>
+        <div class="tag">${idx===0?'BEST':'GOOD'}</div>`;
+      list.appendChild(row);
+    });
+    banner.querySelector('#bannerRegion') && (banner.querySelector('#bannerRegion').textContent=c.name);
+    render();
+  }
+  function goBackFromExercises(){
+    // KEY REQUIREMENT: Back returns to the zoomed-dot + labels state.
+    state.mode='zoomed'; render(); requestAnimationFrame(drawLeaders);
+  }
+
+  banner.querySelector('#bannerFind').onclick=()=>{
+    if(state.committed){ state.mode='zoomed'; render(); requestAnimationFrame(drawLeaders); }
+  };
+
+  window.addEventListener('resize', ()=>{ if(state.mode==='zoomed'||state.mode==='exercises') drawLeaders(); });
+  new ResizeObserver(()=>{ if(rail.children.length) drawLeaders(); }).observe(stage);
+
+  render();
+})();
+</script>
+</body>
+</html>

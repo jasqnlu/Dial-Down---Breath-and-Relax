@@ -1,24 +1,9 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Region → exercise search expansion
-//
-// Most regions search by their own name, but the fine-grained finger regions
-// have no dedicated exercises, so they fall back to the hand / forearm.
-
-private let fingerNames = ["Thumb", "Index", "Middle", "Ring", "Pinky"]
-
-func exerciseSearchTerms(for region: String) -> [String] {
-    if fingerNames.contains(where: { region.contains($0) }) {
-        let side = region.hasPrefix("Left") ? "Left" : "Right"
-        return [region, "\(side) Hand", "\(side) Forearm", "Hand"]
-    }
-    return [region]
-}
-
 // MARK: - Marked-areas banner
 //
-// Appears once the user has marked one or more regions (by drawing or tapping).
+// Appears once the user has marked one or more regions by tapping the 3D body.
 // Summarises what's marked and lets them jump to a combined exercise list.
 
 struct MarkedAreasBanner: View {
@@ -91,22 +76,38 @@ struct RegionExerciseResolver {
     let related: [Exercise]
 
     init(regions: [String], exercises: [Exercise]) {
-        // Expand fingers/toes to their parent (no "ring finger" stretches, but
-        // hand/forearm ones), then migrate coarse region names to fine ones.
-        let expanded = regions.flatMap { exerciseSearchTerms(for: $0) }
-        let fineNames = MuscleGroup.migrate(expanded)
-        let fineSet = Set(fineNames.map { $0.lowercased() })
-        let categories = ExerciseCategory.categories(for: fineNames)
+        // A marked region is either a muscle group / coarse name, or an
+        // anatomical sub-head ("Left Triceps Long Head"). Heads match their own
+        // exercises directly (distinct-per-head content), and fall back to the
+        // parent muscle's exercises as "related" so a head with no curated
+        // stretches yet still shows something useful. Group/coarse names keep
+        // the original behaviour: migrate coarse → fine, then category fallback.
+        var directNames: [String] = []
+        var parentNames: [String] = []
+        for region in regions {
+            if let parent = MuscleGroup.parentOfHead(region) {
+                directNames.append(region)
+                parentNames.append(parent)
+            } else {
+                directNames.append(contentsOf: MuscleGroup.migrate([region]))
+            }
+        }
+        let directSet = Set(directNames.map { $0.lowercased() })
+        let parentSet = Set(MuscleGroup.migrate(parentNames).map { $0.lowercased() })
+        let categories = ExerciseCategory.categories(for: directNames + parentNames)
 
         var directList: [Exercise] = []
         var relatedList: [Exercise] = []
         for exercise in exercises {
             let targets = exercise.targetBodyParts
-            if targets.contains(where: { fineSet.contains($0.lowercased()) }) {
+            let lowered = targets.map { $0.lowercased() }
+            if lowered.contains(where: { directSet.contains($0) }) {
                 directList.append(exercise)
+            } else if lowered.contains(where: { parentSet.contains($0) }) {
+                relatedList.append(exercise)                       // parent-muscle fallback
             } else if !categories.isEmpty,
                       !categories.isDisjoint(with: ExerciseCategory.categories(for: targets)) {
-                relatedList.append(exercise)
+                relatedList.append(exercise)                       // same-area fallback
             }
         }
         self.direct = directList.sorted { $0.name < $1.name }

@@ -28,73 +28,16 @@ struct ExerciseListView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if normalizedSearchText.isEmpty {
-                    ExerciseGraphView(exercises: exercises, typeFilter: selectedType) { exercise in
-                        selectedExercise = exercise
-                    }
-                } else {
-                    ScrollView {
-                        LazyVStack(spacing: 12) {
-                            ForEach(searchResults.visible, id: \.uuid) { exercise in
-                                NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
-                                    ExerciseRow(exercise: exercise)
-                                }
-                                .buttonStyle(.plain)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .luminaCard()
-                                .padding(.horizontal)
-                            }
-
-                            if searchResults.canLoadMore {
-                                ProgressView()
-                                    .padding(.vertical, 12)
-                                    .frame(maxWidth: .infinity)
-                                    .onAppear {
-                                        visibleSearchCount = searchResults.nextVisibleCount
-                                    }
-                            }
-                        }
-                        .padding(.top, 8)
-                    }
-                    .overlay {
-                        if searchResults.matches.isEmpty {
-                            ContentUnavailableView(
-                                "No Exercises",
-                                systemImage: "figure.mind.and.body",
-                                description: Text("No results for your search.")
-                            )
-                        }
-                    }
-                }
+            VStack(spacing: 0) {
+                header
+                content
             }
             .background(Color.luminaSurface)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .floatingTabBarClearance()
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Menu {
-                        Button("All Types") { selectedType = nil }
-                        Divider()
-                        ForEach(ExerciseType.allCases, id: \.self) { type in
-                            Button(type.rawValue) { selectedType = type }
-                        }
-                    } label: {
-                        Label("Filter", systemImage: selectedType == nil
-                              ? "line.3.horizontal.decrease.circle"
-                              : "line.3.horizontal.decrease.circle.fill")
-                    }
-                }
-                ToolbarItem(placement: .principal) {
-                    searchBar
-                }
-            }
             .onChange(of: normalizedSearchText) { _, _ in
                 resetSearchPage()
-                if !normalizedSearchText.isEmpty {
-                    refocusSearchField()
-                }
             }
             .onChange(of: selectedType) { _, _ in
                 resetSearchPage()
@@ -116,14 +59,76 @@ struct ExerciseListView: View {
         }
     }
 
+    @ViewBuilder
+    private var content: some View {
+        Group {
+            if normalizedSearchText.isEmpty {
+                ExerciseGraphView(exercises: exercises, typeFilter: selectedType) { exercise in
+                    selectedExercise = exercise
+                }
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(searchResults.visible, id: \.uuid) { exercise in
+                            NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
+                                ExerciseRow(exercise: exercise)
+                            }
+                            .buttonStyle(.plain)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .luminaCard()
+                            .padding(.horizontal)
+                        }
+
+                        if searchResults.canLoadMore {
+                            ProgressView()
+                                .padding(.vertical, 12)
+                                .frame(maxWidth: .infinity)
+                                .onAppear {
+                                    visibleSearchCount = searchResults.nextVisibleCount
+                                }
+                        }
+                    }
+                    .padding(.top, 8)
+                }
+                .overlay {
+                    if searchResults.matches.isEmpty {
+                        ContentUnavailableView(
+                            "No Exercises",
+                            systemImage: "figure.mind.and.body",
+                            description: Text("No results for your search.")
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     private func resetSearchPage() {
         visibleSearchCount = ExerciseSearchResults.pageSize
     }
 
-    private func refocusSearchField() {
-        Task { @MainActor in
-            isSearchFocused = true
+    private var header: some View {
+        HStack(spacing: 10) {
+            searchBar
+
+            Menu {
+                Button("All Types") { selectedType = nil }
+                Divider()
+                ForEach(ExerciseType.allCases, id: \.self) { type in
+                    Button(type.rawValue) { selectedType = type }
+                }
+            } label: {
+                Label("Filter", systemImage: selectedType == nil
+                      ? "line.3.horizontal.decrease.circle"
+                      : "line.3.horizontal.decrease.circle.fill")
+                    .labelStyle(.iconOnly)
+                    .font(.title3)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
         }
+        .padding(.horizontal)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
     }
 
     private var searchBar: some View {
@@ -149,7 +154,8 @@ struct ExerciseListView: View {
                 .accessibilityLabel("Clear search")
             }
         }
-        .frame(width: 230, height: 36)
+        .frame(maxWidth: .infinity)
+        .frame(height: 36)
         .padding(.horizontal, 12)
         .background(Color.luminaCardFill.opacity(0.96), in: Capsule())
         .overlay(
