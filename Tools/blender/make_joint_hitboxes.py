@@ -34,8 +34,12 @@ for side in ("Left", "Right"):
     out[f"{side} Elbow"] = joint([f"{side} Biceps", f"{side} Triceps"], [f"{side} Forearm"],
                                  0.035, xz_from=[f"{side} Biceps"])
     out[f"{side} Wrist"] = joint([f"{side} Forearm"], [f"{side} Hand"], 0.025)
+    # Quadriceps stays tight to just the Quadriceps neighbor: the full
+    # union was wider than the (now-populated) Vastus Medialis head box
+    # that also contains the knee center, which broke the tiebreak.
     out[f"{side} Knee"] = joint([f"{side} Quadriceps", f"{side} Hamstrings"],
-                                [f"{side} Calves", f"{side} Tibialis"], 0.045)
+                                [f"{side} Calves", f"{side} Tibialis"], 0.03,
+                                xz_from=[f"{side} Quadriceps"])
     out[f"{side} Ankle"] = joint([f"{side} Calves", f"{side} Tibialis"], [f"{side} Foot"],
                                  0.020, xz_from=[f"{side} Foot"])
 
