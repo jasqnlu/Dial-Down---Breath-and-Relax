@@ -392,11 +392,14 @@ Expected: `elbowTapReturnsJointPlusCrossingMuscles` and `chestTapExcludesNonAdja
         // guards against an anatomically-listed but implausibly-far box.
         let byName = Dictionary(volumes.map { ($0.name, $0) }, uniquingKeysWith: { a, _ in a })
         let radius = simd_length(primary.maxBound - primary.minBound) * radiusFactor
-        let neighbors = pool
-            .compactMap { byName[$0] }
-            .filter { simd_length(point - $0.center) <= radius }
-            .sorted { simd_length_squared(point - $0.center) < simd_length_squared(point - $1.center) }
-            .map(\.name)
+        // Explicitly-typed steps: the equivalent single chained expression trips
+        // Swift's "unable to type-check in reasonable time".
+        let pooledVolumes: [HitVolume] = pool.compactMap { byName[$0] }
+        let nearby: [HitVolume] = pooledVolumes.filter { simd_length(point - $0.center) <= radius }
+        let sortedNearby: [HitVolume] = nearby.sorted {
+            simd_length_squared(point - $0.center) < simd_length_squared(point - $1.center)
+        }
+        let neighbors: [String] = sortedNearby.map(\.name)
 
         var result = [primary.name]
         for name in neighbors where result.count < maxCandidates {
