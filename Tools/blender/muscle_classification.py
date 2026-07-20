@@ -213,6 +213,78 @@ def classify_head(name: str):
     return None
 
 
+# --- Face zones ------------------------------------------------------------
+# (base zone, bilateral?, name patterns). Face zones tag facial MUSCLES that
+# also belong to the coarse "Head" group; names match MuscleGroup.muscleHeads.
+FACE_ZONE_RULES = [
+    ("Eye",      True,  [r"orbicularis oculi"]),
+    ("Temple",   True,  [r"temporalis"]),
+    ("Jaw",      True,  [r"masseter"]),
+    ("Forehead", False, [r"frontalis"]),
+]
+# Skin/fascia patches that share a facial-muscle keyword but are NOT the muscle.
+FACE_ZONE_EXCLUDE = ("fascia", "region", "aponeurosis")
+
+
+def classify_face_zone(name: str):
+    """Face zone ("Left Eye"/"Forehead") for a facial-muscle object, else None."""
+    low = name.lower()
+    if any(x in low for x in FACE_ZONE_EXCLUDE):
+        return None
+    side = side_of(name)
+    for base, bilateral, patterns in FACE_ZONE_RULES:
+        if any(re.search(p, low) for p in patterns):
+            if bilateral:
+                return f"{SIDE_WORD[side]} {base}" if side else None
+            return base
+    return None
+
+
+# --- Joints ----------------------------------------------------------------
+# Bilateral joints: (region base, patterns). Side comes from .l/.r. Patterns are
+# scoped so they don't cross-match (e.g. wrist collaterals say "of wrist"; elbow
+# relies on its capsule + annular ligament rather than bare "collateral").
+JOINT_BILATERAL_RULES = [
+    ("Shoulder Joint", [r"glenohumeral", r"acromioclavicular", r"coracohumeral",
+                        r"coraco-acromial", r"glenoid labrum", r"transverse humeral ligament"]),
+    ("Elbow",          [r"capsule of elbow", r"annular ligament of radius",
+                        r"\bquadrate ligament\b", r"oblique cord"]),
+    ("Wrist",          [r"radiocarpal", r"collateral ligament of wrist", r"ulnocarpal",
+                        r"radioscaph", r"radiate carpal", r"ulnolunate", r"ulnotriquetral"]),
+    ("Hip",            [r"capsule of hip", r"iliofemoral", r"pubofemoral", r"ischiofemoral",
+                        r"ligament of head of femur", r"zona orbicularis", r"acetabular"]),
+    ("Knee",           [r"capsule of knee", r"cruciate ligament", r"fibular collateral ligament",
+                        r"tibial collateral ligament", r"meniscus", r"meniscotibial",
+                        r"popliteal ligament", r"transverse ligament of knee", r"infrapatellar"]),
+    ("Ankle",          [r"talofibular", r"calcaneofibular", r"tibiotalar", r"tibiocalcaneal",
+                        r"tibionavicular", r"collateral ligament of ankle", r"talocalcaneal",
+                        r"ankle joint"]),
+]
+_SPINE_LETTER = {"c": "Neck", "t": "Upper Spine", "l": "Lower Spine"}
+
+
+def _spine_region(low: str):
+    """Neck/Upper Spine/Lower Spine from a disc/nucleus level, bucketed by the
+    FIRST vertebra letter (so C7-T1 -> Neck, T12-L1 -> Upper Spine)."""
+    m = re.search(r"(?:intervertebral disc|nucleus pulposus)\s+([ctl])\d", low)
+    return _SPINE_LETTER.get(m.group(1)) if m else None
+
+
+def classify_joint(name: str):
+    """One of the 15 kept joint region names for a joint object, else None."""
+    low = name.lower()
+    spine = _spine_region(low)
+    if spine:
+        return spine
+    if re.search(r"atlanto-axial|atlanto-occipital", low):
+        return "Neck"
+    side = side_of(name)
+    for base, patterns in JOINT_BILATERAL_RULES:
+        if any(re.search(p, low) for p in patterns):
+            return f"{SIDE_WORD[side]} {base}" if side else None
+    return None
+
+
 def apply_recentre_correction(d: dict):
     """Second affine pass that recentres the extracted per-object AABBs onto the
     true whole-body midline, computed from trustworthy (non-.g / non-cross-
