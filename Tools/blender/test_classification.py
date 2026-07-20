@@ -43,6 +43,25 @@ def test_joints():
     check(classify_joint("Hip joint.j"), None, "label anchor (no side)")
     check(classify_joint("Biceps brachii muscle.l"), None, "muscle, not joint")
 
+def test_joint_bucketing():
+    from classify_joint_hitboxes import bucket_joint_boxes
+    fixture = {
+        # two objects of the same joint on the left -> unioned into one box
+        "Articular capsule of elbow joint.l": {"min": [0.10, 0.20, -0.02], "max": [0.20, 0.30, 0.02]},
+        "Annular ligament of radius.l":       {"min": [0.15, 0.18, -0.03], "max": [0.22, 0.24, 0.01]},
+        # right elbow -> separate bucket
+        "Articular capsule of elbow joint.r": {"min": [-0.20, 0.20, -0.02], "max": [-0.10, 0.30, 0.02]},
+        # cervical disc -> Neck
+        "Intervertebral disc C5-C6":          {"min": [-0.03, 0.55, -0.05], "max": [0.03, 0.60, 0.02]},
+        # non-kept -> dropped
+        "Articular capsules of metacarpophalangeal joints": {"min": [0, 0, 0], "max": [0.01, 0.01, 0.01]},
+    }
+    out = bucket_joint_boxes(fixture)
+    check(set(out.keys()), {"Left Elbow", "Right Elbow", "Neck"}, "joint buckets")
+    # Left Elbow unions both left objects.
+    check(out["Left Elbow"]["min"], [0.10, 0.18, -0.03], "left elbow min union")
+    check(out["Left Elbow"]["max"], [0.22, 0.30, 0.02], "left elbow max union")
+
 if __name__ == "__main__":
-    test_face_zones(); test_joints()
+    test_face_zones(); test_joints(); test_joint_bucketing()
     print("OK: classification tests passed")
