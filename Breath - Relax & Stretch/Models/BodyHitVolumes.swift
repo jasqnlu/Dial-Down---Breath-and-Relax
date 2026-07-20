@@ -80,7 +80,7 @@ enum MuscleHitResolver {
     /// closest to the tap, primary first.
     static func candidates(near point: SIMD3<Float>,
                             in volumes: [HitVolume],
-                            radiusFactor: Float = 1.6,
+                            radiusFactor: Float = 1.5,
                             maxCandidates: Int = 4) -> [String] {
         guard let primary = primaryVolume(at: point, in: volumes) else { return [] }
         // The group/joint key for the primary: a head resolves via its parent
@@ -99,7 +99,11 @@ enum MuscleHitResolver {
         // center is near the tap — adjacency is the selector, distance just
         // guards against an anatomically-listed but implausibly-far box.
         let byName = Dictionary(volumes.map { ($0.name, $0) }, uniquingKeysWith: { a, _ in a })
-        let radius = simd_length(primary.maxBound - primary.minBound) * radiusFactor
+        // Floored: a small primary (e.g. a joint capsule) has a tiny diagonal,
+        // and `diagonal * radiusFactor` alone would wrongly drop its genuinely-
+        // adjacent muscles. The floor keeps the distance check a light sanity
+        // guard (adjacency is the real selector) rather than the gate.
+        let radius = max(simd_length(primary.maxBound - primary.minBound) * radiusFactor, 0.4)
         // Broken into explicitly-typed steps: the equivalent single chained
         // expression trips Swift's "unable to type-check in reasonable time".
         let pooledVolumes: [HitVolume] = pool.compactMap { byName[$0] }
