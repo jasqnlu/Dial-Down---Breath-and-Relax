@@ -27,12 +27,16 @@ isn't recognised — the unmatched-'muscle'/'head' report below flags candidates
 """
 
 import json
+import os
 from collections import defaultdict
 
-from muscle_classification import HEAD_RULES, classify_head, side_of, is_excluded, apply_recentre_correction
+from muscle_classification import (HEAD_RULES, classify_head, classify_face_zone,
+                                    side_of, is_excluded, apply_recentre_correction)
 
 SRC = "/tmp/body_part_hitboxes.json"
-OUT = "/tmp/musclegroup_head_hitboxes.json"
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "generated",
+                   "musclegroup_head_hitboxes.json")
+os.makedirs(os.path.dirname(OUT), exist_ok=True)
 
 d = json.load(open(SRC))
 
@@ -46,10 +50,11 @@ matched = defaultdict(list)       # "Left Triceps Long Head" -> [(name, box), �
 unmatched_muscle_like = []
 
 for name, box in d.items():
-    # Mirror the original flow exactly: drop excluded structures and objects
-    # with no unambiguous .l/.r side BEFORE the leftover report, so the report
-    # only ever lists sided muscles we genuinely failed to bucket as a head.
     if is_excluded(name):
+        continue
+    zone = classify_face_zone(name)          # face zones first (masseter/temporalis/…)
+    if zone:
+        matched[zone].append((name, box))
         continue
     if not side_of(name):
         continue
