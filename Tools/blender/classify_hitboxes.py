@@ -89,7 +89,7 @@ os.makedirs(_OUT_DIR, exist_ok=True)
 with open(os.path.join(_OUT_DIR, "musclegroup_hitboxes.json"), "w") as f:
     json.dump(final, f, indent=2)
 print()
-print(f"Wrote {len(final)}-group unioned hitboxes to /tmp/musclegroup_hitboxes.json")
+print(f"Wrote {len(final)}-group unioned hitboxes to {os.path.join(_OUT_DIR, 'musclegroup_hitboxes.json')}")
 
 ALL_GROUPS = [app_side_swap(g) for g, _ in RULES]
 missing = [g for g in ALL_GROUPS if g not in final]

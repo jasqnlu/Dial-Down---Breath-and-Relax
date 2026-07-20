@@ -1,7 +1,7 @@
 """Verify the staged anatomy assets (no Blender needed):
     python3 Tools/blender/verify_anatomy_export.py
 Checks coverage, no excluded-system leakage, mesh<->hitbox alignment, L=+x."""
-import json, os, re, sys
+import json, os, sys
 
 GEN = os.path.join(os.path.dirname(os.path.abspath(__file__)), "generated")
 
@@ -14,7 +14,8 @@ MUSCLE_GROUPS = {  # MuscleGroup.allCases raw values
     "Right Hamstrings","Left Calves","Right Calves","Left Tibialis","Right Tibialis","Head",
     "Left Hand","Right Hand","Left Foot","Right Foot",
 }
-FACE_ZONES = {"Left Eye","Right Eye","Left Temple","Right Temple","Left Jaw","Right Jaw","Forehead"}
+FACE_ZONES = {"Left Eye","Right Eye","Left Temple","Right Temple","Left Jaw","Right Jaw","Forehead"}  # MuscleGroup.headZones (Models/MuscleGroups.swift)
+# JointRegion vocabulary (spec 2026-07-19-anatomy-model-replacement-design.md; keep in sync with the Swift JointRegion set Plan 2 adds).
 JOINT_REGIONS = {"Neck","Upper Spine","Lower Spine"} | {
     f"{s} {j}" for s in ("Left","Right")
     for j in ("Shoulder Joint","Elbow","Wrist","Hip","Knee","Ankle")}
@@ -31,7 +32,10 @@ def parse_obj_centroids(path):
     for line in open(path):
         if line.startswith("o "):
             cur = line[2:].strip()
-            acc[cur] = [0.0, 0.0, 0.0, 0]
+            # setdefault (not reassign): if the OBJ ever splits one node across
+            # multiple `o` blocks, accumulate all its vertices rather than
+            # silently keeping only the last block's.
+            acc.setdefault(cur, [0.0, 0.0, 0.0, 0])
         elif line.startswith("v ") and cur:
             _, x, y, z = line.split()[:4]
             a = acc[cur]; a[0]+=float(x); a[1]+=float(y); a[2]+=float(z); a[3]+=1
@@ -96,6 +100,10 @@ def main():
 
 
 if __name__ == "__main__":
+    if not __debug__:
+        # Every gate below is an `assert`; under `python3 -O` they are stripped
+        # and this harness would rubber-stamp any export. Refuse to run.
+        sys.exit("verify_anatomy_export.py requires assertions (do not run with -O)")
     try:
         main()
     except AssertionError as e:
