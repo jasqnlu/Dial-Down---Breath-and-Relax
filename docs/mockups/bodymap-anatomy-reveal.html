@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Body Map — Single Anatomy Model (Prototype)</title>
+<style>
+  :root{
+    --bg:#ece4d8; --surface:#f6f0e7; --surface-2:#efe7db; --container:#e5dccd;
+    --on:#2c2620; --on-var:#6b6153; --line:#d8cdbb;
+    --accent:#3f9d8f; --accent-ink:#0f4f47;
+    --dot:#e0533d; --dot-ring:#fff; --shadow:rgba(60,45,25,.18);
+    --muscle-a:#b5493a; --muscle-b:#8f3428; --muscle-edge:#6e241c;
+    --joint-a:#d7dae1; --joint-b:#b8bfca; --joint-edge:#8b93a1;
+    --skin-a:#e7c3a8; --skin-b:#d9ab8b; --skin-edge:#c79877;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141317; --surface:#1c1b21; --surface-2:#222129; --container:#2b2a33;
+      --on:#ece7df; --on-var:#a49c8f; --line:#333138;
+      --accent:#57c3b2; --accent-ink:#bff0e8;
+      --dot:#ff6a52; --dot-ring:#0d0d10; --shadow:rgba(0,0,0,.5);
+      --muscle-a:#c15d4c; --muscle-b:#8f3428; --muscle-edge:#4c1a13;
+      --joint-a:#aeb6c4; --joint-b:#7f8794; --joint-edge:#5a616e;
+      --skin-a:#5a4a3f; --skin-b:#48392f; --skin-edge:#6b574a;
+    }
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{margin:0; background:var(--bg); color:var(--on);
+    font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    display:flex; flex-direction:column; align-items:center; gap:16px; padding:24px 14px 40px; min-height:100%}
+  .intro{max-width:440px; text-align:center}
+  .intro h1{font-size:17px; margin:0 0 4px}
+  .intro p{margin:0; color:var(--on-var); font-size:13px}
+  .intro .steps{font-size:12px; color:var(--on-var); margin-top:8px}
+  .intro .steps b{color:var(--on)}
+  .legend{display:flex; gap:12px; justify-content:center; font-size:11px; color:var(--on-var); margin-top:8px; flex-wrap:wrap}
+  .legend i{width:10px; height:10px; border-radius:50%; display:inline-block; vertical-align:-1px; margin-right:4px}
+
+  .phone{width:390px; height:800px; border-radius:44px; background:var(--surface);
+    box-shadow:0 20px 60px var(--shadow), 0 0 0 10px #0000000d;
+    position:relative; overflow:hidden; border:1px solid var(--line); display:flex; flex-direction:column}
+  .nav{height:52px; flex:0 0 auto; display:flex; align-items:center; gap:10px;
+    padding:0 14px; border-bottom:1px solid var(--line); position:relative; z-index:6; background:var(--surface)}
+  .nav .title{font-weight:600; font-size:16px; flex:1; text-align:center}
+  .nav .slot{min-width:64px; display:flex; align-items:center}
+  .nav .slot.right{justify-content:flex-end}
+  .btn{border:none; background:none; color:var(--accent); font-size:15px; font-weight:600; cursor:pointer; padding:6px 8px; border-radius:10px}
+  .btn:active{background:#8881}
+  .btn.icon{font-size:19px}
+  .btn[disabled]{opacity:.35; cursor:default}
+  .hint{text-align:center; font-size:12.5px; color:var(--on-var); padding:8px 14px 2px; z-index:5; position:relative}
+
+  .stage{position:relative; flex:1 1 auto; overflow:hidden; touch-action:manipulation}
+  .scrim{position:absolute; inset:0; background:#0b0906; opacity:0; pointer-events:none; transition:opacity .5s ease; z-index:2}
+  .stage.zoom .scrim{opacity:.45}
+
+  .figwrap{position:absolute; inset:0; z-index:1; transition:transform .55s cubic-bezier(.22,.61,.36,1); transform-origin:50% 50%}
+  .figure{position:absolute; inset:0}
+
+  .anat{transition:fill .25s ease, stroke .25s ease, stroke-width .25s ease, filter .25s ease, opacity .25s ease}
+  .muscle{--base:var(--muscle-a)}
+  .joint{--base:var(--joint-a)}
+  .anat.dim{fill:color-mix(in srgb, var(--rc) 24%, var(--base)); stroke:var(--rc); stroke-width:1.6}
+  .anat.hot{fill:color-mix(in srgb, var(--rc) 48%, var(--base)); stroke:var(--rc); stroke-width:2.6;
+    filter:drop-shadow(0 0 7px color-mix(in srgb, var(--rc) 70%, transparent))}
+
+  .headskin{transition:opacity .5s ease}
+  .stage.head-reveal .headskin{opacity:.12}
+
+  /* full-figure tap surface — active only while marking */
+  .taplayer{position:absolute; inset:0; z-index:3; cursor:crosshair; display:none}
+  .stage.marking .taplayer{display:block}
+
+  .region{position:absolute; inset:0; z-index:4; pointer-events:none}
+  .region button{position:absolute; transform:translate(-50%,-50%); width:42px; height:42px; border-radius:48%;
+    border:none; background:transparent; opacity:0; cursor:pointer; pointer-events:auto}
+
+  .dot{position:absolute; width:20px; height:20px; margin:-10px; border-radius:50%;
+    background:var(--dot); box-shadow:0 0 0 3px var(--dot-ring),0 2px 6px #0006;
+    opacity:0; transform:scale(.2); transition:opacity .2s, transform .25s cubic-bezier(.3,1.4,.5,1); z-index:5; pointer-events:none}
+  .dot.on{opacity:1; transform:scale(1)}
+
+  .leaders{position:absolute; inset:0; z-index:5; pointer-events:none}
+  .leaders line{stroke:var(--accent); stroke-width:1.4; opacity:.7; stroke-dasharray:2 3}
+
+  .rail{position:absolute; top:0; bottom:0; z-index:6; width:158px;
+    display:flex; flex-direction:column; justify-content:center; gap:9px;
+    padding:0 10px; opacity:0; pointer-events:none; transition:opacity .4s ease .15s}
+  .rail.right{right:0; align-items:flex-end}
+  .rail.left{left:0; align-items:flex-start}
+  .stage.zoom .rail{opacity:1; pointer-events:auto}
+  .chip{background:var(--surface); border:1px solid var(--line); color:var(--on); border-radius:13px; padding:9px 13px;
+    box-shadow:0 4px 14px var(--shadow); cursor:pointer; text-align:left; display:flex; flex-direction:column; gap:1px; max-width:100%;
+    transition:transform .15s, border-color .2s, background .2s}
+  .chip .row{display:flex; align-items:center; gap:7px; font-size:14px; font-weight:600}
+  .chip .row i{width:10px; height:10px; border-radius:50%; flex:0 0 auto; box-shadow:0 0 0 1px #0002}
+  .chip .row .kind{margin-left:auto; font-size:9px; font-weight:800; letter-spacing:.04em; padding:2px 6px; border-radius:6px; background:var(--container); color:var(--on-var)}
+  .chip small{font-size:11px; font-weight:500; color:var(--on-var); padding-left:17px}
+  .chip:active{transform:scale(.97)}
+  .chip.focused{border-color:var(--accent); background:color-mix(in srgb,var(--accent) 14%, var(--surface))}
+  .chip .go{font-size:11px; font-weight:700; color:var(--accent); margin-top:3px; opacity:0; height:0; transition:opacity .2s}
+  .chip.focused .go{opacity:1; height:auto}
+
+  .palette{flex:0 0 auto; display:flex; padding:12px 10px calc(12px + env(safe-area-inset-bottom)); gap:4px;
+    border-top:1px solid var(--line); background:var(--surface-2); z-index:7}
+  .palette.hidden{display:none}
+  .sw{flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; padding:4px 0; border-radius:12px; background:none; border:none}
+  .sw i{width:28px; height:28px; border-radius:50%; display:block}
+  .sw.sel i{box-shadow:inset 0 0 0 2.5px var(--surface-2), 0 0 0 2.5px currentColor}
+  .sw span{font-size:9.5px; font-weight:600; color:var(--on-var)}
+
+  .sheet{position:absolute; inset:0; z-index:9; background:var(--surface); transform:translateX(100%);
+    transition:transform .32s cubic-bezier(.3,.7,.3,1); display:flex; flex-direction:column}
+  .sheet.show{transform:translateX(0)}
+  .sheet .ehead{padding:14px 16px 10px; border-bottom:1px solid var(--line)}
+  .sheet .ehead h2{margin:0; font-size:19px}
+  .sheet .ehead p{margin:3px 0 0; color:var(--on-var); font-size:12.5px}
+  .exlist{flex:1; overflow:auto; padding:10px 14px 30px}
+  .ex{display:flex; gap:12px; align-items:center; padding:12px; border-radius:16px; background:var(--surface-2); margin-bottom:10px; border:1px solid var(--line)}
+  .ex .thumb{width:46px; height:46px; border-radius:12px; flex:0 0 auto;
+    background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 40%, #7c5cff)); display:flex; align-items:center; justify-content:center; font-size:22px}
+  .ex .meta b{font-size:15px; display:block}
+  .ex .meta span{font-size:12px; color:var(--on-var)}
+  .tag{margin-left:auto; font-size:10px; font-weight:700; color:var(--accent); border:1px solid var(--accent); border-radius:8px; padding:3px 7px}
+  .jointNote{font-size:11px; color:var(--on-var); background:var(--container); border-radius:10px; padding:8px 11px; margin-bottom:10px}
+
+  .fignote{margin-top:4px; font-size:11px; color:var(--on-var); max-width:440px; text-align:center}
+  code{background:var(--container); border-radius:5px; padding:0 4px}
+</style>
+</head>
+<body>
+  <div class="intro">
+    <h1>Body Map — single anatomy model</h1>
+    <p>UX prototype for the merged-model rebuild — anatomy is always visible; the aesthetic skin head fades to reveal facial muscles.</p>
+    <div class="steps">Tap <b>Mark</b> → tap <b>anywhere on the body</b> → <b>✓</b> → it shows the areas you might have meant (from an <b>anatomical adjacency map</b>, not raw 3D distance).</div>
+    <div class="legend">
+      <span><i style="background:var(--muscle-a)"></i>muscle (always visible)</span>
+      <span><i style="background:var(--joint-a);box-shadow:0 0 0 1px var(--joint-edge)"></i>joint (tappable)</span>
+      <span><i style="background:var(--skin-a)"></i>head-skin (fades on reveal)</span>
+    </div>
+  </div>
+
+  <div class="phone">
+    <div class="nav">
+      <div class="slot" id="navLeft"></div>
+      <div class="title" id="navTitle">Body Map</div>
+      <div class="slot right" id="navRight"></div>
+    </div>
+    <div class="hint" id="hint"></div>
+
+    <div class="stage" id="stage">
+      <div class="figwrap" id="figwrap">
+        <svg class="figure" viewBox="0 0 360 640" id="fig" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="gmuscle" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--muscle-a)"/><stop offset="1" stop-color="var(--muscle-b)"/></linearGradient>
+            <linearGradient id="gjoint" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--joint-a)"/><stop offset="1" stop-color="var(--joint-b)"/></linearGradient>
+            <linearGradient id="gskin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--skin-a)"/><stop offset="1" stop-color="var(--skin-b)"/></linearGradient>
+          </defs>
+
+          <!-- FACIAL MUSCLES (under the head skin) -->
+          <g stroke="var(--muscle-edge)" stroke-width="1" stroke-linejoin="round" fill="url(#gmuscle)">
+            <path id="f-frontalis" class="anat muscle" d="M158 20 Q180 12 202 20 L200 34 Q180 28 160 34 Z"/>
+            <ellipse id="f-tempL" class="anat muscle" cx="155" cy="40" rx="7" ry="12"/>
+            <ellipse id="f-tempR" class="anat muscle" cx="205" cy="40" rx="7" ry="12"/>
+            <ellipse id="f-eyeL" class="anat muscle" cx="169" cy="45" rx="7.5" ry="6"/>
+            <ellipse id="f-eyeR" class="anat muscle" cx="191" cy="45" rx="7.5" ry="6"/>
+            <ellipse id="f-massL" class="anat muscle" cx="163" cy="62" rx="6.5" ry="11"/>
+            <ellipse id="f-massR" class="anat muscle" cx="197" cy="62" rx="6.5" ry="11"/>
+          </g>
+          <!-- HEAD SKIN SHELL (fades on reveal) -->
+          <g class="headskin" fill="url(#gskin)" stroke="var(--skin-edge)" stroke-width="1.4" stroke-linejoin="round">
+            <path d="M150 42 Q150 8 180 8 Q210 8 210 42 Q210 72 192 82 L168 82 Q150 72 150 42 Z"/>
+          </g>
+
+          <!-- BODY MUSCLES (always visible) -->
+          <g stroke="var(--muscle-edge)" stroke-width="1" stroke-linejoin="round" fill="url(#gmuscle)">
+            <path class="anat muscle" d="M168 84 L174 104 L182 104 L178 84 Z" opacity=".9"/>
+            <path class="anat muscle" d="M192 84 L186 104 L178 104 L182 84 Z" opacity=".9"/>
+            <path class="anat muscle" d="M150 106 Q180 96 210 106 L206 120 Q180 110 154 120 Z" opacity=".9"/>
+            <path id="m-delL" class="anat muscle" d="M108 116 Q96 128 100 150 Q118 150 128 132 Q124 118 108 116 Z"/>
+            <path id="m-delR" class="anat muscle" d="M252 116 Q264 128 260 150 Q242 150 232 132 Q236 118 252 116 Z"/>
+            <path id="m-chestUp" class="anat muscle" d="M134 124 Q180 112 226 124 L222 146 Q180 134 138 146 Z"/>
+            <path id="m-chestLow" class="anat muscle" d="M138 148 Q180 138 222 148 L214 182 Q180 170 146 182 Z"/>
+            <path id="m-abs" class="anat muscle" d="M158 186 Q180 180 202 186 L200 276 Q180 286 160 276 Z"/>
+            <path id="m-oblL" class="anat muscle" d="M138 190 Q150 188 156 192 L158 268 Q146 262 138 250 Z" opacity=".92"/>
+            <path id="m-oblR" class="anat muscle" d="M222 190 Q210 188 204 192 L202 268 Q214 262 222 250 Z" opacity=".92"/>
+            <path id="m-bicL" class="anat muscle" d="M104 152 Q94 178 98 214 Q110 218 120 212 Q118 178 122 150 Z"/>
+            <path id="m-tricL" class="anat muscle" d="M92 156 Q84 186 90 216 L100 214 Q96 184 104 154 Z"/>
+            <path id="m-bicR" class="anat muscle" d="M256 152 Q266 178 262 214 Q250 218 240 212 Q242 178 238 150 Z"/>
+            <path id="m-tricR" class="anat muscle" d="M268 156 Q276 186 270 216 L260 214 Q264 184 256 154 Z"/>
+            <path id="m-foreL" class="anat muscle" d="M90 240 Q84 288 92 330 L108 328 Q104 286 106 240 Z"/>
+            <path id="m-foreR" class="anat muscle" d="M270 240 Q276 288 268 330 L252 328 Q256 286 254 240 Z"/>
+            <path id="m-quadL" class="anat muscle" d="M150 386 Q144 452 154 512 L176 512 Q178 450 174 388 Z"/>
+            <path id="m-quadR" class="anat muscle" d="M210 386 Q216 452 206 512 L184 512 Q182 450 186 388 Z"/>
+            <path id="m-calfL" class="anat muscle" d="M154 528 Q150 574 158 600 L176 600 Q176 566 174 528 Z" opacity=".92"/>
+            <path id="m-calfR" class="anat muscle" d="M206 528 Q210 574 202 600 L184 600 Q184 566 186 528 Z" opacity=".92"/>
+          </g>
+
+          <!-- JOINTS (capsules — always visible, tappable) -->
+          <g stroke="var(--joint-edge)" stroke-width="1.1" stroke-linejoin="round" fill="url(#gjoint)">
+            <ellipse id="j-shoulderL" class="anat joint" cx="112" cy="140" rx="12" ry="12"/>
+            <ellipse id="j-shoulderR" class="anat joint" cx="248" cy="140" rx="12" ry="12"/>
+            <ellipse id="j-elbowL" class="anat joint" cx="98"  cy="230" rx="11" ry="13"/>
+            <ellipse id="j-elbowR" class="anat joint" cx="262" cy="230" rx="11" ry="13"/>
+            <ellipse id="j-wristL" class="anat joint" cx="96"  cy="336" rx="9"  ry="10"/>
+            <ellipse id="j-wristR" class="anat joint" cx="264" cy="336" rx="9"  ry="10"/>
+            <ellipse id="j-hipL"   class="anat joint" cx="160" cy="374" rx="13" ry="12"/>
+            <ellipse id="j-hipR"   class="anat joint" cx="200" cy="374" rx="13" ry="12"/>
+            <ellipse id="j-kneeL"  class="anat joint" cx="164" cy="518" rx="12" ry="13"/>
+            <ellipse id="j-kneeR"  class="anat joint" cx="196" cy="518" rx="12" ry="13"/>
+            <ellipse id="j-ankleL" class="anat joint" cx="164" cy="606" rx="9"  ry="9"/>
+            <ellipse id="j-ankleR" class="anat joint" cx="196" cy="606" rx="9"  ry="9"/>
+          </g>
+        </svg>
+
+        <div class="taplayer" id="taplayer"></div>
+        <div class="region" id="region"></div>
+      </div>
+
+      <div class="dot" id="dot"></div>
+      <svg class="leaders" id="leaders"></svg>
+      <div class="rail right" id="rail"></div>
+      <div class="scrim"></div>
+    </div>
+
+    <div class="palette hidden" id="palette">
+      <button class="sw sel" style="color:#e0533d" data-c="Sore"><i style="background:#e0533d"></i><span>Sore</span></button>
+      <button class="sw" style="color:#e8a13a" data-c="Tense"><i style="background:#e8a13a"></i><span>Tense</span></button>
+      <button class="sw" style="color:#3f9d8f" data-c="Tight"><i style="background:#3f9d8f"></i><span>Tight</span></button>
+      <button class="sw" style="color:#6c7cff" data-c="Stiff"><i style="background:#6c7cff"></i><span>Stiff</span></button>
+    </div>
+
+    <div class="sheet" id="sheet">
+      <div class="ehead"><h2 id="exTitle">—</h2><p id="exSub"></p></div>
+      <div class="exlist" id="exList"></div>
+    </div>
+  </div>
+
+  <div class="fignote">
+    Prototype for the SceneKit rebuild (<code>docs/superpowers/specs/2026-07-19-anatomy-model-replacement-design.md</code>).
+    Tap Mark, then tap anywhere — it resolves to the nearest region and offers only its <b>anatomically-adjacent</b>
+    neighbours (a chest tap never offers the arm). Joints highlight as capsules; a face tap fades the skin head.
+  </div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const stage=$('stage'), figwrap=$('figwrap'), dot=$('dot'), rail=$('rail'), leaders=$('leaders'),
+        hint=$('hint'), navL=$('navLeft'), navR=$('navRight'), navTitle=$('navTitle'),
+        palette=$('palette'), sheet=$('sheet'), region=$('region'), fig=$('fig'), taplayer=$('taplayer');
+
+  const COLORS=['#3b82d6','#2bb6c9','#7b6cf0','#e0894a'];   // blue, cyan, indigo, amber (CandidatePalette)
+  const shp=(id,x,y)=>({id,x,y});                            // candidate → shape center (% of stage)
+  const EX={ // small reusable stretch lists per region name
+    def:[['Static Hold','30s · each','🧘'],['Gentle Mobilise','10 reps','🔄']],
+  };
+  const ex=(...a)=>a.length?a:EX.def;
+
+  // Each region: anchor (cx,cy % of stage) for nearest-tap resolution + its
+  // adjacency candidates (primary first). `head:true` fades the skin head.
+  const REGIONS = {
+    Face:{cx:50,cy:7,head:true,cands:[
+      {n:'Temple',k:'MUSCLE',s:'Temporalis',ids:[['f-tempL',43,6],['f-tempR',57,6]],ex:ex(['Temple Release','30s · circles','💆'],['Jaw Unclench','20s · hold','😮'])},
+      {n:'Forehead',k:'MUSCLE',s:'Frontalis',ids:[['f-frontalis',50,3.5]],ex:ex(['Brow Smoothing','20s · hold','☝️'])},
+      {n:'Eye',k:'MUSCLE',s:'Orbicularis oculi',ids:[['f-eyeL',47,7],['f-eyeR',53,7]],ex:ex(['Palming (eye rest)','40s · dark','🤲'])},
+      {n:'Jaw',k:'MUSCLE',s:'Masseter',ids:[['f-massL',45,10],['f-massR',55,10]],ex:ex(['Masseter Massage','30s · each','💆'])},
+    ]},
+    Chest:{cx:50,cy:22,cands:[
+      {n:'Upper Chest',k:'HEAD',s:'Clavicular pec',ids:[['m-chestUp',50,21]],ex:ex(['Doorway Pec (high)','30s · hold','🚪'])},
+      {n:'Lower Chest',k:'HEAD',s:'Sternal pec',ids:[['m-chestLow',50,26]],ex:ex(['Doorway Pec (low)','30s · hold','🚪'])},
+      {n:'Abs',k:'ADJACENT',s:'Neighbour',ids:[['m-abs',50,38]],ex:ex(['Cobra Stretch','30s · hold','🐍'])},
+      {n:'Left Shoulder',k:'ADJACENT',s:'Neighbour',ids:[['m-delL',31,21]],ex:ex(['Cross-Body Shoulder','30s · each','🤝'])},
+    ]},
+    Abs:{cx:50,cy:38,cands:[
+      {n:'Abs',k:'MUSCLE',s:'Rectus abdominis',ids:[['m-abs',50,38]],ex:ex(['Cobra Stretch','30s · hold','🐍'])},
+      {n:'Left Obliques',k:'ADJACENT',s:'Neighbour',ids:[['m-oblL',41,36]],ex:ex(['Side Bend','30s · each','🙆'])},
+      {n:'Right Obliques',k:'ADJACENT',s:'Neighbour',ids:[['m-oblR',59,36]],ex:ex(['Side Bend','30s · each','🙆'])},
+      {n:'Lower Chest',k:'ADJACENT',s:'Neighbour',ids:[['m-chestLow',50,26]],ex:ex(['Floor Chest Opener','45s · hold','🧘'])},
+    ]},
+    ShoulderL:{cx:31,cy:21,cands:[
+      {n:'Left Shoulder',k:'MUSCLE',s:'Deltoid',ids:[['m-delL',31,21]],ex:ex(['Cross-Body Shoulder','30s · each','🤝'])},
+      {n:'Left Shoulder Joint',k:'JOINT',s:'Glenohumeral mobility',ids:[['j-shoulderL',31,22]],ex:ex(['Arm Circles','10 reps','🔄'],['Wall Slides','10 reps','🧱'])},
+      {n:'Left Biceps',k:'ADJACENT',s:'Neighbour',ids:[['m-bicL',30,29]],ex:ex(['Doorway Biceps','30s · each','🚪'])},
+      {n:'Upper Chest',k:'ADJACENT',s:'Neighbour',ids:[['m-chestUp',50,21]],ex:ex(['Doorway Pec (high)','30s · hold','🚪'])},
+    ]},
+    ShoulderR:{cx:69,cy:21,cands:[
+      {n:'Right Shoulder',k:'MUSCLE',s:'Deltoid',ids:[['m-delR',69,21]],ex:ex(['Cross-Body Shoulder','30s · each','🤝'])},
+      {n:'Right Shoulder Joint',k:'JOINT',s:'Glenohumeral mobility',ids:[['j-shoulderR',69,22]],ex:ex(['Arm Circles','10 reps','🔄'])},
+      {n:'Right Biceps',k:'ADJACENT',s:'Neighbour',ids:[['m-bicR',70,29]],ex:ex(['Doorway Biceps','30s · each','🚪'])},
+      {n:'Upper Chest',k:'ADJACENT',s:'Neighbour',ids:[['m-chestUp',50,21]],ex:ex(['Doorway Pec (high)','30s · hold','🚪'])},
+    ]},
+    BicepsL:{cx:30,cy:29,cands:[
+      {n:'Left Biceps',k:'MUSCLE',s:'Biceps brachii',ids:[['m-bicL',30,29]],ex:ex(['Doorway Biceps','30s · each','🚪'])},
+      {n:'Left Triceps',k:'ADJACENT',s:'Neighbour',ids:[['m-tricL',24,29]],ex:ex(['Overhead Triceps','30s · each','🙆'])},
+      {n:'Left Elbow',k:'JOINT',s:'Elbow mobility',ids:[['j-elbowL',27,36]],ex:ex(['Elbow Flex/Extend','10 reps','💪'])},
+      {n:'Left Shoulder',k:'ADJACENT',s:'Neighbour',ids:[['m-delL',31,21]],ex:ex(['Cross-Body Shoulder','30s · each','🤝'])},
+    ]},
+    BicepsR:{cx:70,cy:29,cands:[
+      {n:'Right Biceps',k:'MUSCLE',s:'Biceps brachii',ids:[['m-bicR',70,29]],ex:ex(['Doorway Biceps','30s · each','🚪'])},
+      {n:'Right Triceps',k:'ADJACENT',s:'Neighbour',ids:[['m-tricR',76,29]],ex:ex(['Overhead Triceps','30s · each','🙆'])},
+      {n:'Right Elbow',k:'JOINT',s:'Elbow mobility',ids:[['j-elbowR',73,36]],ex:ex(['Elbow Flex/Extend','10 reps','💪'])},
+      {n:'Right Shoulder',k:'ADJACENT',s:'Neighbour',ids:[['m-delR',69,21]],ex:ex(['Cross-Body Shoulder','30s · each','🤝'])},
+    ]},
+    ElbowL:{cx:27,cy:36,cands:[
+      {n:'Left Elbow',k:'JOINT',s:'Elbow mobility',ids:[['j-elbowL',27,36]],ex:ex(['Elbow Flex/Extend','10 reps','💪'],['Pronate/Supinate','10 reps','🔄'])},
+      {n:'Left Biceps',k:'CROSSES',s:'Crosses joint',ids:[['m-bicL',30,29]],ex:ex(['Doorway Biceps','30s · each','🚪'])},
+      {n:'Left Triceps',k:'CROSSES',s:'Crosses joint',ids:[['m-tricL',24,29]],ex:ex(['Overhead Triceps','30s · each','🙆'])},
+      {n:'Left Forearm',k:'CROSSES',s:'Crosses joint',ids:[['m-foreL',27,45]],ex:ex(['Wrist Flexor','30s · each','🙏'])},
+    ]},
+    ElbowR:{cx:73,cy:36,cands:[
+      {n:'Right Elbow',k:'JOINT',s:'Elbow mobility',ids:[['j-elbowR',73,36]],ex:ex(['Elbow Flex/Extend','10 reps','💪'])},
+      {n:'Right Biceps',k:'CROSSES',s:'Crosses joint',ids:[['m-bicR',70,29]],ex:ex(['Doorway Biceps','30s · each','🚪'])},
+      {n:'Right Triceps',k:'CROSSES',s:'Crosses joint',ids:[['m-tricR',76,29]],ex:ex(['Overhead Triceps','30s · each','🙆'])},
+      {n:'Right Forearm',k:'CROSSES',s:'Crosses joint',ids:[['m-foreR',73,45]],ex:ex(['Wrist Flexor','30s · each','🙏'])},
+    ]},
+    ForearmL:{cx:27,cy:45,cands:[
+      {n:'Left Forearm',k:'MUSCLE',s:'Wrist flexors/extensors',ids:[['m-foreL',27,45]],ex:ex(['Wrist Flexor','30s · each','🙏'],['Wrist Extensor','30s · each','🤲'])},
+      {n:'Left Elbow',k:'JOINT',s:'Neighbour joint',ids:[['j-elbowL',27,36]],ex:ex(['Elbow Flex/Extend','10 reps','💪'])},
+      {n:'Left Wrist',k:'JOINT',s:'Wrist mobility',ids:[['j-wristL',27,53]],ex:ex(['Wrist Circles','10 reps','🔄'])},
+    ]},
+    ForearmR:{cx:73,cy:45,cands:[
+      {n:'Right Forearm',k:'MUSCLE',s:'Wrist flexors/extensors',ids:[['m-foreR',73,45]],ex:ex(['Wrist Flexor','30s · each','🙏'])},
+      {n:'Right Elbow',k:'JOINT',s:'Neighbour joint',ids:[['j-elbowR',73,36]],ex:ex(['Elbow Flex/Extend','10 reps','💪'])},
+      {n:'Right Wrist',k:'JOINT',s:'Wrist mobility',ids:[['j-wristR',73,53]],ex:ex(['Wrist Circles','10 reps','🔄'])},
+    ]},
+    QuadL:{cx:45,cy:70,cands:[
+      {n:'Left Quadriceps',k:'MUSCLE',s:'Front thigh',ids:[['m-quadL',45,70]],ex:ex(['Standing Quad','30s · each','🧍'])},
+      {n:'Left Hip',k:'JOINT',s:'Hip mobility',ids:[['j-hipL',44,58]],ex:ex(['Hip Flexor Lunge','30s · each','🏃'])},
+      {n:'Left Knee',k:'JOINT',s:'Knee mobility',ids:[['j-kneeL',46,81]],ex:ex(['Knee Flex/Extend','10 reps','🦵'])},
+    ]},
+    QuadR:{cx:55,cy:70,cands:[
+      {n:'Right Quadriceps',k:'MUSCLE',s:'Front thigh',ids:[['m-quadR',55,70]],ex:ex(['Standing Quad','30s · each','🧍'])},
+      {n:'Right Hip',k:'JOINT',s:'Hip mobility',ids:[['j-hipR',56,58]],ex:ex(['Hip Flexor Lunge','30s · each','🏃'])},
+      {n:'Right Knee',k:'JOINT',s:'Knee mobility',ids:[['j-kneeR',54,81]],ex:ex(['Knee Flex/Extend','10 reps','🦵'])},
+    ]},
+    KneeL:{cx:46,cy:81,cands:[
+      {n:'Left Knee',k:'JOINT',s:'Knee mobility',ids:[['j-kneeL',46,81]],ex:ex(['Knee Flex/Extend','10 reps','🦵'],['Wall Sit','30s · hold','🧱'])},
+      {n:'Left Quadriceps',k:'CROSSES',s:'Crosses joint',ids:[['m-quadL',45,70]],ex:ex(['Standing Quad','30s · each','🧍'])},
+      {n:'Left Calf',k:'CROSSES',s:'Crosses joint',ids:[['m-calfL',45,88]],ex:ex(['Wall Calf Stretch','30s · each','🧱'])},
+    ]},
+    KneeR:{cx:54,cy:81,cands:[
+      {n:'Right Knee',k:'JOINT',s:'Knee mobility',ids:[['j-kneeR',54,81]],ex:ex(['Knee Flex/Extend','10 reps','🦵'])},
+      {n:'Right Quadriceps',k:'CROSSES',s:'Crosses joint',ids:[['m-quadR',55,70]],ex:ex(['Standing Quad','30s · each','🧍'])},
+      {n:'Right Calf',k:'CROSSES',s:'Crosses joint',ids:[['m-calfR',55,88]],ex:ex(['Wall Calf Stretch','30s · each','🧱'])},
+    ]},
+    CalfL:{cx:45,cy:88,cands:[
+      {n:'Left Calf',k:'MUSCLE',s:'Gastrocnemius/soleus',ids:[['m-calfL',45,88]],ex:ex(['Wall Calf Stretch','30s · each','🧱'])},
+      {n:'Left Knee',k:'JOINT',s:'Neighbour joint',ids:[['j-kneeL',46,81]],ex:ex(['Knee Flex/Extend','10 reps','🦵'])},
+      {n:'Left Ankle',k:'JOINT',s:'Ankle mobility',ids:[['j-ankleL',46,95]],ex:ex(['Ankle Circles','10 reps','🔄'])},
+    ]},
+    CalfR:{cx:55,cy:88,cands:[
+      {n:'Right Calf',k:'MUSCLE',s:'Gastrocnemius/soleus',ids:[['m-calfR',55,88]],ex:ex(['Wall Calf Stretch','30s · each','🧱'])},
+      {n:'Right Knee',k:'JOINT',s:'Neighbour joint',ids:[['j-kneeR',54,81]],ex:ex(['Knee Flex/Extend','10 reps','🦵'])},
+      {n:'Right Ankle',k:'JOINT',s:'Ankle mobility',ids:[['j-ankleR',54,95]],ex:ex(['Ankle Circles','10 reps','🔄'])},
+    ]},
+  };
+
+  let state={mode:'browse', region:null, dotX:0, dotY:0, focus:0, sensation:'Sore'};
+
+  function nearestRegion(x,y){
+    let best=null, bd=1e9;
+    for(const [k,r] of Object.entries(REGIONS)){
+      const d=(r.cx-x)**2+(r.cy-y)**2; if(d<bd){bd=d; best=k;}
+    }
+    return best;
+  }
+
+  function render(){
+    navTitle.textContent=(state.mode==='marking'||state.mode==='pending')?'Mark Areas':'Body Map';
+    navL.innerHTML=''; navR.innerHTML='';
+    if(state.mode==='exercises'){
+      const b=document.createElement('button'); b.className='btn'; b.textContent='‹ Back';
+      b.onclick=()=>{state.mode='zoomed'; render(); requestAnimationFrame(drawLeaders);}; navL.appendChild(b);
+    } else if(state.mode==='marking'||state.mode==='pending'){
+      const c=document.createElement('button'); c.className='btn'; c.textContent='Cancel'; c.onclick=()=>reset(); navL.appendChild(c);
+      const ok=document.createElement('button'); ok.className='btn icon'; ok.textContent='✓'; ok.disabled=state.mode!=='pending'; ok.onclick=confirm; navR.appendChild(ok);
+    } else if(state.mode==='zoomed'){
+      const c=document.createElement('button'); c.className='btn'; c.textContent='Cancel'; c.onclick=()=>reset(); navL.appendChild(c);
+    } else {
+      const m=document.createElement('button'); m.className='btn'; m.textContent='Mark'; m.onclick=startMarking; navR.appendChild(m);
+    }
+    const r=state.region?REGIONS[state.region]:null;
+    hint.textContent=
+      state.mode==='marking'?'Tap anywhere on the body that feels tense or sore.':
+      state.mode==='pending'?'Tap ✓ above to see the areas you might have meant.':
+      state.mode==='zoomed'?((r&&r.head)?'Skin head fades — facial muscles revealed. Tap a highlighted muscle or its label.':'Tap a highlighted muscle/joint (or its label) to focus it, tap again for stretches.'):'';
+    palette.classList.toggle('hidden', !(state.mode==='marking'||state.mode==='pending'));
+    stage.classList.toggle('marking', state.mode==='marking'||state.mode==='pending');
+    stage.classList.toggle('zoom', state.mode==='zoomed'||state.mode==='exercises');
+    stage.classList.toggle('head-reveal', (state.mode==='zoomed'||state.mode==='exercises') && !!(r&&r.head));
+    dot.classList.toggle('on', state.mode==='pending'||state.mode==='zoomed'||state.mode==='exercises');
+    sheet.classList.toggle('show', state.mode==='exercises');
+  }
+
+  function startMarking(){ reset(); state.mode='marking'; render(); }
+  function reset(){ state.mode='browse'; state.region=null; state.focus=0; figwrap.style.transform=''; clearLabels(); clearHighlight(); render(); }
+
+  taplayer.addEventListener('click', e=>{
+    if(state.mode!=='marking' && state.mode!=='pending') return;
+    const b=stage.getBoundingClientRect();
+    state.dotX=(e.clientX-b.left)/b.width*100;
+    state.dotY=(e.clientY-b.top)/b.height*100;
+    state.region=nearestRegion(state.dotX, state.dotY);
+    dot.style.left=state.dotX+'%'; dot.style.top=state.dotY+'%'; dot.style.background=swatch(state.sensation);
+    state.mode='pending'; render();
+  });
+
+  palette.querySelectorAll('.sw').forEach(s=>s.addEventListener('click',()=>{
+    palette.querySelectorAll('.sw').forEach(x=>x.classList.remove('sel')); s.classList.add('sel');
+    state.sensation=s.dataset.c; if(state.mode==='pending') dot.style.background=swatch(state.sensation);
+  }));
+  const swatch=n=>({Sore:'#e0533d',Tense:'#e8a13a',Tight:'#3f9d8f',Stiff:'#6c7cff'}[n]||'#e0533d');
+
+  function confirm(){ state.mode='zoomed'; state.focus=0; zoomToDot(); buildLabels(); render(); }
+  function zoomToDot(){
+    const S=2.4, tx=(state.dotX<50?46:54), ty=Math.min(Math.max(state.dotY,26),74);
+    figwrap.style.transformOrigin=state.dotX+'% '+state.dotY+'%';
+    figwrap.style.transform=`translate(${tx-state.dotX}%, ${ty-state.dotY}%) scale(${S})`;
+  }
+
+  function colorFor(i){ return COLORS[i%COLORS.length]; }
+  function shapesOf(c){ return c.ids.map(([id])=>document.getElementById(id)).filter(Boolean); }
+
+  function buildLabels(){
+    const r=REGIONS[state.region]; if(!r) return;
+    rail.className='rail '+(state.dotX<50?'right':'left'); rail.innerHTML=''; region.innerHTML='';
+    r.cands.forEach((c,i)=>{
+      c._c=colorFor(i);
+      const anchor=c.ids[0];
+      const rg=document.createElement('button'); rg.style.left=anchor[1]+'%'; rg.style.top=anchor[2]+'%';
+      rg.onclick=e=>{e.stopPropagation(); pick(i);}; region.appendChild(rg);
+      const chip=document.createElement('button'); chip.className='chip';
+      chip.innerHTML=`<span class="row"><i style="background:${c._c}"></i>${c.n}<span class="kind">${c.k}</span></span><small>${c.s}</small><span class="go">See stretches ›</span>`;
+      chip.onclick=()=>pick(i); rail.appendChild(chip);
+      shapesOf(c).forEach(el=>{el.classList.add('dim'); el.style.setProperty('--rc', c._c);});
+    });
+    state.focus=0; syncFocus();
+  }
+  function pick(i){ if(state.focus===i) openExercises(i); else {state.focus=i; syncFocus();} }
+  function syncFocus(){
+    const r=REGIONS[state.region];
+    [...rail.children].forEach((c,i)=>c.classList.toggle('focused', i===state.focus));
+    r.cands.forEach((c,i)=>shapesOf(c).forEach(el=>{
+      el.classList.toggle('hot', i===state.focus); el.classList.toggle('dim', i!==state.focus); el.style.setProperty('--rc', c._c);
+    }));
+    drawLeaders();
+  }
+  function clearHighlight(){ fig.querySelectorAll('.anat').forEach(el=>el.classList.remove('dim','hot')); }
+  function drawLeaders(){
+    leaders.innerHTML=''; const sr=stage.getBoundingClientRect();
+    [...rail.children].forEach((chip,i)=>{
+      const rg=region.children[i]; if(!rg) return;
+      const ar=rg.getBoundingClientRect(), cr=chip.getBoundingClientRect();
+      const ax=ar.left+ar.width/2-sr.left, ay=ar.top+ar.height/2-sr.top;
+      const right=rail.classList.contains('right');
+      const cx=(right?cr.left:cr.right)-sr.left, cy=cr.top+cr.height/2-sr.top;
+      const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+      ln.setAttribute('x1',cx); ln.setAttribute('y1',cy); ln.setAttribute('x2',ax); ln.setAttribute('y2',ay);
+      if(i===state.focus){ln.setAttribute('opacity','.95'); ln.setAttribute('stroke-dasharray','0');}
+      leaders.appendChild(ln);
+    });
+  }
+  function clearLabels(){ rail.innerHTML=''; leaders.innerHTML=''; region.innerHTML=''; }
+
+  function openExercises(i){
+    state.focus=i; state.mode='exercises';
+    const c=REGIONS[state.region].cands[i];
+    $('exTitle').textContent=c.n; $('exSub').textContent=c.s+' · '+c.ex.length+' stretches';
+    const list=$('exList'); list.innerHTML='';
+    if(c.k==='JOINT'){ const note=document.createElement('div'); note.className='jointNote';
+      note.textContent='Joint — dedicated mobility drills (its own curated content, follow-up spec).'; list.appendChild(note); }
+    c.ex.forEach(([n,meta,emo],idx)=>{ const row=document.createElement('div'); row.className='ex';
+      row.innerHTML=`<div class="thumb">${emo}</div><div class="meta"><b>${n}</b><span>${meta}</span></div><div class="tag">${idx===0?'BEST':'GOOD'}</div>`;
+      list.appendChild(row); });
+    render();
+  }
+
+  window.addEventListener('resize', ()=>{ if(rail.children.length) drawLeaders(); });
+  new ResizeObserver(()=>{ if(rail.children.length) drawLeaders(); }).observe(stage);
+
+  startMarking();
+})();
+</script>
+</body>
+</html>
