@@ -83,7 +83,10 @@ for group, items in matched.items():
     hi = [max(m[i] for m in maxs) for i in range(3)]
     final[app_side_swap(group)] = {"min": lo, "max": hi, "source_object_count": len(items)}
 
-with open("/tmp/musclegroup_hitboxes.json", "w") as f:
+import os
+_OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "generated")
+os.makedirs(_OUT_DIR, exist_ok=True)
+with open(os.path.join(_OUT_DIR, "musclegroup_hitboxes.json"), "w") as f:
     json.dump(final, f, indent=2)
 print()
 print(f"Wrote {len(final)}-group unioned hitboxes to /tmp/musclegroup_hitboxes.json")
