@@ -75,7 +75,11 @@ Bones, organs, nerves, vessels, lymph, and unmatched objects are excluded (they 
 ## Component 3 — Region vocabulary
 
 - **Muscles:** `MuscleGroup` enum unchanged.
-- **Joints:** a `JointRegion` set (the kept joint region names). Joints are NOT `MuscleGroup` cases; they are their own region strings, resolved through `BodyHitVolumes` like the current joints. `RegionExerciseResolver` maps a joint to the union of its crossing muscles' stretches until sub-project #2 supplies dedicated content.
+- **Joints:** a `JointRegion` set of **15 region names**, resolved through `BodyHitVolumes` like the current joints (NOT `MuscleGroup` cases). Names are chosen to not collide with any `MuscleGroup` raw value (note `Left/Right Shoulder Joint`, since `Left/Right Shoulder` is already the deltoid group):
+  - **Midline (3):** `Neck` (cervical, discs C2-C3…C7-T1), `Upper Spine` (thoracic, T1-T2…T12-L1), `Lower Spine` (lumbar, L1-L2…L5-S1).
+  - **Bilateral (6×2=12):** `Left/Right Shoulder Joint`, `Left/Right Elbow`, `Left/Right Wrist`, `Left/Right Hip`, `Left/Right Knee`, `Left/Right Ankle`.
+
+  `RegionExerciseResolver` maps a joint to the union of its crossing muscles' stretches until sub-project #2 supplies dedicated content.
 - **Face zones:** `MuscleGroup.headZones` (Eye/Temple/Jaw/Forehead) unchanged as vocabulary, but they now own facial-muscle node geometry via the node map.
 
 ## Component 4 — Anatomical adjacency (`RegionAdjacency`)
