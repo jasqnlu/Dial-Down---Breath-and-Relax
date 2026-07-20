@@ -64,13 +64,19 @@ struct MuscleHitResolverTests {
     }
 
     @Test func primaryGroupSurfacesItsOwnSubHeads() {
-        // A tap resolving to the Left Biceps group should offer its heads.
-        let biceps = vol("Left Biceps", min: [0.1, 0.2, -0.1], max: [0.35, 0.6, 0.1])
-        let longHead  = vol("Left Biceps Long Head",  min: [0.1, 0.2, -0.1], max: [0.22, 0.6, 0.1])
-        let shortHead = vol("Left Biceps Short Head", min: [0.22, 0.2, -0.1], max: [0.35, 0.6, 0.1])
-        let result = MuscleHitResolver.candidates(near: biceps.center,
+        // Tap the biceps in the GAP between its two head boxes, so the primary
+        // resolves to the GROUP (not a head) — then the sub-head pooling is the
+        // only thing that can surface both heads. (A tap inside a head box would
+        // make that head the primary, trivially satisfying the assertion.)
+        let biceps    = vol("Left Biceps",            min: [0.10, 0.2, -0.1], max: [0.35, 0.6, 0.1])
+        let longHead  = vol("Left Biceps Long Head",  min: [0.10, 0.2, -0.1], max: [0.18, 0.6, 0.1])
+        let shortHead = vol("Left Biceps Short Head", min: [0.27, 0.2, -0.1], max: [0.35, 0.6, 0.1])
+        let tap: SIMD3<Float> = [0.225, 0.4, 0.0]   // inside biceps, outside both head boxes
+        let result = MuscleHitResolver.candidates(near: tap,
                                                   in: [biceps, longHead, shortHead], maxCandidates: 4)
-        #expect(result.contains("Left Biceps Long Head") || result.contains("Left Biceps Short Head"))
+        #expect(result.first == "Left Biceps")
+        #expect(result.contains("Left Biceps Long Head"))
+        #expect(result.contains("Left Biceps Short Head"))
     }
 
     @Test func candidatesCapAtMaxClosestFirst() {
@@ -82,6 +88,7 @@ struct MuscleHitResolverTests {
                                                   in: [chest, abs, obl, sh], maxCandidates: 2)
         #expect(result.count == 2)
         #expect(result.first == "Left Chest")
+        #expect(result.last == "Abs")   // the closest adjacent neighbor survives the cap
     }
 
     @Test func candidatesOnEmptyVolumesReturnsEmpty() {
