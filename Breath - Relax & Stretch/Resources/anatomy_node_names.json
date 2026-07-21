@@ -1,0 +1,2050 @@
+{
+  "nodes": {
+    "Abdominal_part_of_pectoralis_major_muscle_l": {
+      "group": "Left Chest",
+      "head": "Left Lower Chest",
+      "layer": "muscle"
+    },
+    "Abdominal_part_of_pectoralis_major_muscle_r": {
+      "group": "Right Chest",
+      "head": "Right Lower Chest",
+      "layer": "muscle"
+    },
+    "Acetabular_labrum_l": {
+      "joint": "Left Hip",
+      "layer": "joint"
+    },
+    "Acetabular_labrum_r": {
+      "joint": "Right Hip",
+      "layer": "joint"
+    },
+    "Acromial_part_of_deltoid_muscle_l": {
+      "group": "Left Shoulder",
+      "head": "Left Lateral Deltoid",
+      "layer": "muscle"
+    },
+    "Acromial_part_of_deltoid_muscle_r": {
+      "group": "Right Shoulder",
+      "head": "Right Lateral Deltoid",
+      "layer": "muscle"
+    },
+    "Acromioclavicular_ligament_l": {
+      "joint": "Left Shoulder Joint",
+      "layer": "joint"
+    },
+    "Acromioclavicular_ligament_r": {
+      "joint": "Right Shoulder Joint",
+      "layer": "joint"
+    },
+    "Anconeus_muscle_l": {
+      "group": "Left Triceps",
+      "layer": "muscle"
+    },
+    "Anconeus_muscle_r": {
+      "group": "Right Triceps",
+      "layer": "muscle"
+    },
+    "Angle_of_mouth_l": {
+      "layer": "headSkin"
+    },
+    "Angle_of_mouth_r": {
+      "layer": "headSkin"
+    },
+    "Annular_ligament_of_radius_l": {
+      "joint": "Left Elbow",
+      "layer": "joint"
+    },
+    "Annular_ligament_of_radius_r": {
+      "joint": "Right Elbow",
+      "layer": "joint"
+    },
+    "Anterior_belly_of_digastric_muscle_l": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Anterior_belly_of_digastric_muscle_r": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Anterior_cruciate_ligament_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Anterior_cruciate_ligament_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Anterior_meniscotibial_ligament_Lateral_meniscus_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Anterior_meniscotibial_ligament_Lateral_meniscus_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Anterior_meniscotibial_ligament_Medial_meniscus_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Anterior_meniscotibial_ligament_Medial_meniscus_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Anterior_notch_of_auricle_l": {
+      "layer": "headSkin"
+    },
+    "Anterior_notch_of_auricle_r": {
+      "layer": "headSkin"
+    },
+    "Anterior_talocalcaneal_ligament_l": {
+      "joint": "Left Ankle",
+      "layer": "joint"
+    },
+    "Anterior_talocalcaneal_ligament_r": {
+      "joint": "Right Ankle",
+      "layer": "joint"
+    },
+    "Anterior_talofibular_ligament_l": {
+      "joint": "Left Ankle",
+      "layer": "joint"
+    },
+    "Anterior_talofibular_ligament_r": {
+      "joint": "Right Ankle",
+      "layer": "joint"
+    },
+    "Antihelix_l": {
+      "layer": "headSkin"
+    },
+    "Antihelix_r": {
+      "layer": "headSkin"
+    },
+    "Antitragus_l": {
+      "layer": "headSkin"
+    },
+    "Antitragus_r": {
+      "layer": "headSkin"
+    },
+    "Apex_of_auricle_l": {
+      "layer": "headSkin"
+    },
+    "Apex_of_auricle_r": {
+      "layer": "headSkin"
+    },
+    "Arcuate_popliteal_ligament_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Arcuate_popliteal_ligament_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Articular_capsule_of_acromioclavicular_joint_l": {
+      "joint": "Left Shoulder Joint",
+      "layer": "joint"
+    },
+    "Articular_capsule_of_acromioclavicular_joint_r": {
+      "joint": "Right Shoulder Joint",
+      "layer": "joint"
+    },
+    "Articular_capsule_of_elbow_joint_l": {
+      "joint": "Left Elbow",
+      "layer": "joint"
+    },
+    "Articular_capsule_of_elbow_joint_r": {
+      "joint": "Right Elbow",
+      "layer": "joint"
+    },
+    "Articular_capsule_of_glenohumeral_joint_l": {
+      "joint": "Left Shoulder Joint",
+      "layer": "joint"
+    },
+    "Articular_capsule_of_glenohumeral_joint_r": {
+      "joint": "Right Shoulder Joint",
+      "layer": "joint"
+    },
+    "Articular_capsule_of_hip_joint_l": {
+      "joint": "Left Hip",
+      "layer": "joint"
+    },
+    "Articular_capsule_of_hip_joint_r": {
+      "joint": "Right Hip",
+      "layer": "joint"
+    },
+    "Articular_capsule_of_knee_joint_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Articular_capsule_of_knee_joint_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Articular_capsule_of_radiocarpal_joint_l": {
+      "joint": "Left Wrist",
+      "layer": "joint"
+    },
+    "Articular_capsule_of_radiocarpal_joint_r": {
+      "joint": "Right Wrist",
+      "layer": "joint"
+    },
+    "Articular_disc_of_acromioclavicular_joint_l": {
+      "joint": "Left Shoulder Joint",
+      "layer": "joint"
+    },
+    "Articular_disc_of_acromioclavicular_joint_r": {
+      "joint": "Right Shoulder Joint",
+      "layer": "joint"
+    },
+    "Ascending_part_of_trapezius_muscle_l": {
+      "group": "Left Trapezius",
+      "head": "Left Lower Trapezius",
+      "layer": "muscle"
+    },
+    "Ascending_part_of_trapezius_muscle_r": {
+      "group": "Right Trapezius",
+      "head": "Right Lower Trapezius",
+      "layer": "muscle"
+    },
+    "Auricular_region_l": {
+      "layer": "headSkin"
+    },
+    "Auricular_region_r": {
+      "layer": "headSkin"
+    },
+    "Auricular_tubercle_l": {
+      "layer": "headSkin"
+    },
+    "Auricular_tubercle_r": {
+      "layer": "headSkin"
+    },
+    "Brachialis_muscle_l": {
+      "group": "Left Biceps",
+      "layer": "muscle"
+    },
+    "Brachialis_muscle_r": {
+      "group": "Right Biceps",
+      "layer": "muscle"
+    },
+    "Brachioradialis_muscle_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Brachioradialis_muscle_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Buccal_region_l": {
+      "layer": "headSkin"
+    },
+    "Buccal_region_r": {
+      "layer": "headSkin"
+    },
+    "Calcaneofibular_ligament_l": {
+      "joint": "Left Ankle",
+      "layer": "joint"
+    },
+    "Calcaneofibular_ligament_r": {
+      "joint": "Right Ankle",
+      "layer": "joint"
+    },
+    "Cavity_of_concha_l": {
+      "layer": "headSkin"
+    },
+    "Cavity_of_concha_r": {
+      "layer": "headSkin"
+    },
+    "Clavicular_head_of_pectoralis_major_muscle_l": {
+      "group": "Left Chest",
+      "head": "Left Upper Chest",
+      "layer": "muscle"
+    },
+    "Clavicular_head_of_pectoralis_major_muscle_r": {
+      "group": "Right Chest",
+      "head": "Right Upper Chest",
+      "layer": "muscle"
+    },
+    "Clavicular_part_of_deltoid_muscle_l": {
+      "group": "Left Shoulder",
+      "head": "Left Anterior Deltoid",
+      "layer": "muscle"
+    },
+    "Clavicular_part_of_deltoid_muscle_r": {
+      "group": "Right Shoulder",
+      "head": "Right Anterior Deltoid",
+      "layer": "muscle"
+    },
+    "Concha_of_auricle_l": {
+      "layer": "headSkin"
+    },
+    "Concha_of_auricle_r": {
+      "layer": "headSkin"
+    },
+    "Coraco_acromial_ligament_l": {
+      "joint": "Left Shoulder Joint",
+      "layer": "joint"
+    },
+    "Coraco_acromial_ligament_r": {
+      "joint": "Right Shoulder Joint",
+      "layer": "joint"
+    },
+    "Coracobrachialis_muscle_l": {
+      "group": "Left Biceps",
+      "layer": "muscle"
+    },
+    "Coracobrachialis_muscle_r": {
+      "group": "Right Biceps",
+      "layer": "muscle"
+    },
+    "Coracohumeral_ligament_l": {
+      "joint": "Left Shoulder Joint",
+      "layer": "joint"
+    },
+    "Coracohumeral_ligament_r": {
+      "joint": "Right Shoulder Joint",
+      "layer": "joint"
+    },
+    "Crura_of_antihelix_l": {
+      "layer": "headSkin"
+    },
+    "Crura_of_antihelix_r": {
+      "layer": "headSkin"
+    },
+    "Cymba_conchae_l": {
+      "layer": "headSkin"
+    },
+    "Cymba_conchae_r": {
+      "layer": "headSkin"
+    },
+    "Deep_head_of_flexor_pollicis_brevis_l": {
+      "group": "Left Hand",
+      "layer": "muscle"
+    },
+    "Deep_head_of_flexor_pollicis_brevis_r": {
+      "group": "Right Hand",
+      "layer": "muscle"
+    },
+    "Deep_head_of_pronator_teres_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Deep_head_of_pronator_teres_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Deep_part_of_masseter_l": {
+      "faceZone": "Left Jaw",
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Deep_part_of_masseter_r": {
+      "faceZone": "Right Jaw",
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Deep_part_of_tibial_collateral_ligament_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Deep_part_of_tibial_collateral_ligament_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Descending_part_of_iliofemoral_ligament_l": {
+      "joint": "Left Hip",
+      "layer": "joint"
+    },
+    "Descending_part_of_iliofemoral_ligament_r": {
+      "joint": "Right Hip",
+      "layer": "joint"
+    },
+    "Descending_part_of_trapezius_muscle_l": {
+      "group": "Left Trapezius",
+      "head": "Left Upper Trapezius",
+      "layer": "muscle"
+    },
+    "Descending_part_of_trapezius_muscle_r": {
+      "group": "Right Trapezius",
+      "head": "Right Upper Trapezius",
+      "layer": "muscle"
+    },
+    "Dorsal_radiocarpal_ligament_l": {
+      "joint": "Left Wrist",
+      "layer": "joint"
+    },
+    "Dorsal_radiocarpal_ligament_r": {
+      "joint": "Right Wrist",
+      "layer": "joint"
+    },
+    "Dorsal_ulnocarpal_ligament_l": {
+      "joint": "Left Wrist",
+      "layer": "joint"
+    },
+    "Dorsal_ulnocarpal_ligament_r": {
+      "joint": "Right Wrist",
+      "layer": "joint"
+    },
+    "Eminentia_conchae_l": {
+      "layer": "headSkin"
+    },
+    "Eminentia_conchae_r": {
+      "layer": "headSkin"
+    },
+    "Eminentia_fossae_triangularis_l": {
+      "layer": "headSkin"
+    },
+    "Eminentia_fossae_triangularis_r": {
+      "layer": "headSkin"
+    },
+    "Eminentia_scaphae_l": {
+      "layer": "headSkin"
+    },
+    "Eminentia_scaphae_r": {
+      "layer": "headSkin"
+    },
+    "Extensor_carpi_radialis_brevis_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Extensor_carpi_radialis_brevis_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Extensor_carpi_radialis_longus_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Extensor_carpi_radialis_longus_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Extensor_digitorum_brevis_l": {
+      "group": "Left Foot",
+      "layer": "muscle"
+    },
+    "Extensor_digitorum_brevis_r": {
+      "group": "Right Foot",
+      "layer": "muscle"
+    },
+    "Extensor_digitorum_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Extensor_digitorum_longus_l": {
+      "group": "Left Tibialis",
+      "layer": "muscle"
+    },
+    "Extensor_digitorum_longus_r": {
+      "group": "Right Tibialis",
+      "layer": "muscle"
+    },
+    "Extensor_digitorum_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Extensor_hallucis_brevis_l": {
+      "group": "Left Foot",
+      "layer": "muscle"
+    },
+    "Extensor_hallucis_brevis_r": {
+      "group": "Right Foot",
+      "layer": "muscle"
+    },
+    "Extensor_hallucis_longus_l": {
+      "group": "Left Tibialis",
+      "layer": "muscle"
+    },
+    "Extensor_hallucis_longus_r": {
+      "group": "Right Tibialis",
+      "layer": "muscle"
+    },
+    "Extensor_pollicis_brevis_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Extensor_pollicis_brevis_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Extensor_pollicis_longus_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Extensor_pollicis_longus_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "External_abdominal_oblique_muscle_l": {
+      "group": "Left Obliques",
+      "layer": "muscle"
+    },
+    "External_abdominal_oblique_muscle_r": {
+      "group": "Right Obliques",
+      "layer": "muscle"
+    },
+    "Eyebrow_l": {
+      "layer": "headSkin"
+    },
+    "Eyebrow_r": {
+      "layer": "headSkin"
+    },
+    "Fibular_collateral_ligament_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Fibular_collateral_ligament_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Fibularis_brevis_muscle_l": {
+      "group": "Left Tibialis",
+      "layer": "muscle"
+    },
+    "Fibularis_brevis_muscle_r": {
+      "group": "Right Tibialis",
+      "layer": "muscle"
+    },
+    "Fibularis_longus_muscle_l": {
+      "group": "Left Tibialis",
+      "layer": "muscle"
+    },
+    "Fibularis_longus_muscle_r": {
+      "group": "Right Tibialis",
+      "layer": "muscle"
+    },
+    "Fibularis_tertius_muscle_l": {
+      "group": "Left Tibialis",
+      "layer": "muscle"
+    },
+    "Fibularis_tertius_muscle_r": {
+      "group": "Right Tibialis",
+      "layer": "muscle"
+    },
+    "Flexor_carpi_radialis_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Flexor_carpi_radialis_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Flexor_digitorum_brevis_l": {
+      "group": "Left Foot",
+      "layer": "muscle"
+    },
+    "Flexor_digitorum_brevis_r": {
+      "group": "Right Foot",
+      "layer": "muscle"
+    },
+    "Flexor_digitorum_longus_l": {
+      "group": "Left Calves",
+      "layer": "muscle"
+    },
+    "Flexor_digitorum_longus_r": {
+      "group": "Right Calves",
+      "layer": "muscle"
+    },
+    "Flexor_digitorum_profundus_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Flexor_digitorum_profundus_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Flexor_hallucis_longus_l": {
+      "group": "Left Calves",
+      "layer": "muscle"
+    },
+    "Flexor_hallucis_longus_r": {
+      "group": "Right Calves",
+      "layer": "muscle"
+    },
+    "Flexor_pollicis_longus_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Flexor_pollicis_longus_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Fossa_antihelica_l": {
+      "layer": "headSkin"
+    },
+    "Fossa_antihelica_r": {
+      "layer": "headSkin"
+    },
+    "Frontal_region_l": {
+      "layer": "headSkin"
+    },
+    "Frontal_region_r": {
+      "layer": "headSkin"
+    },
+    "Frontalis_muscle_l": {
+      "faceZone": "Forehead",
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Frontalis_muscle_r": {
+      "faceZone": "Forehead",
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Geniohyoid_muscle_l": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Geniohyoid_muscle_r": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Glenoid_labrum_l": {
+      "joint": "Left Shoulder Joint",
+      "layer": "joint"
+    },
+    "Glenoid_labrum_r": {
+      "joint": "Right Shoulder Joint",
+      "layer": "joint"
+    },
+    "Gluteus_maximus_muscle_l": {
+      "group": "Left Glutes",
+      "head": "Left Gluteus Maximus",
+      "layer": "muscle"
+    },
+    "Gluteus_maximus_muscle_r": {
+      "group": "Right Glutes",
+      "head": "Right Gluteus Maximus",
+      "layer": "muscle"
+    },
+    "Gluteus_medius_muscle_l": {
+      "group": "Left Glutes",
+      "head": "Left Gluteus Medius",
+      "layer": "muscle"
+    },
+    "Gluteus_medius_muscle_r": {
+      "group": "Right Glutes",
+      "head": "Right Gluteus Medius",
+      "layer": "muscle"
+    },
+    "Gluteus_minimus_muscle_l": {
+      "group": "Left Glutes",
+      "layer": "muscle"
+    },
+    "Gluteus_minimus_muscle_r": {
+      "group": "Right Glutes",
+      "layer": "muscle"
+    },
+    "Gracilis_muscle_l": {
+      "group": "Left Adductors",
+      "layer": "muscle"
+    },
+    "Gracilis_muscle_r": {
+      "group": "Right Adductors",
+      "layer": "muscle"
+    },
+    "Helix_l": {
+      "layer": "headSkin"
+    },
+    "Helix_r": {
+      "layer": "headSkin"
+    },
+    "Humeral_head_of_extensor_carpi_ulnaris_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Humeral_head_of_extensor_carpi_ulnaris_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Humeral_head_of_flexor_carpi_ulnaris_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Humeral_head_of_flexor_carpi_ulnaris_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Humero_ulnar_head_of_flexor_digitorum_superficialis_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Humero_ulnar_head_of_flexor_digitorum_superficialis_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Iliacus_muscle_l": {
+      "group": "Left Hip Flexors",
+      "layer": "muscle"
+    },
+    "Iliacus_muscle_r": {
+      "group": "Right Hip Flexors",
+      "layer": "muscle"
+    },
+    "Iliocostalis_colli_muscle": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Iliocostalis_colli_muscle_r": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Iliocostalis_lumborum_muscle_l": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Iliocostalis_lumborum_muscle_r": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Iliocostalis_thoracis_muscle_l": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Iliocostalis_thoracis_muscle_r": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Iliopsoas_fascia_l": {
+      "group": "Left Hip Flexors",
+      "layer": "muscle"
+    },
+    "Iliopsoas_fascia_r": {
+      "group": "Right Hip Flexors",
+      "layer": "muscle"
+    },
+    "Inferior_glenohumeral_ligament_l": {
+      "joint": "Left Shoulder Joint",
+      "layer": "joint"
+    },
+    "Inferior_glenohumeral_ligament_r": {
+      "joint": "Right Shoulder Joint",
+      "layer": "joint"
+    },
+    "Infra_orbital_region_l": {
+      "layer": "headSkin"
+    },
+    "Infra_orbital_region_r": {
+      "layer": "headSkin"
+    },
+    "Infrapatellar_fat_pad_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Infrapatellar_fat_pad_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Infraspinatus_muscle_l": {
+      "group": "Left Shoulder",
+      "layer": "muscle"
+    },
+    "Infraspinatus_muscle_r": {
+      "group": "Right Shoulder",
+      "layer": "muscle"
+    },
+    "Internal_abdominal_oblique_muscle_l": {
+      "group": "Left Obliques",
+      "layer": "muscle"
+    },
+    "Internal_abdominal_oblique_muscle_r": {
+      "group": "Right Obliques",
+      "layer": "muscle"
+    },
+    "Intertragic_incisure_l": {
+      "layer": "headSkin"
+    },
+    "Intertragic_incisure_r": {
+      "layer": "headSkin"
+    },
+    "Intervertebral_disc_C2_C3": {
+      "joint": "Neck",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_C3_C4": {
+      "joint": "Neck",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_C4_C5": {
+      "joint": "Neck",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_C5_C6": {
+      "joint": "Neck",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_C6_C7": {
+      "joint": "Neck",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_C7_T1": {
+      "joint": "Neck",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_L1_L2": {
+      "joint": "Lower Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_L2_L3": {
+      "joint": "Lower Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_L3_L4": {
+      "joint": "Lower Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_L4_L5": {
+      "joint": "Lower Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_L5_S1": {
+      "joint": "Lower Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_T10_T11": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_T11_T12": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_T12_L1": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_T1_T2": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_T2_T3": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_T3_T4": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_T4_T5": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_T5_T6": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_T6_T7": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_T7_T8": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_T8_T9": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Intervertebral_disc_T9_T10": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Ischiofemoral_ligament_l": {
+      "joint": "Left Hip",
+      "layer": "joint"
+    },
+    "Ischiofemoral_ligament_r": {
+      "joint": "Right Hip",
+      "layer": "joint"
+    },
+    "Labial_commissure_l": {
+      "layer": "headSkin"
+    },
+    "Labial_commissure_r": {
+      "layer": "headSkin"
+    },
+    "Lateral_head_of_flexor_hallucis_brevis_l": {
+      "group": "Left Foot",
+      "layer": "muscle"
+    },
+    "Lateral_head_of_flexor_hallucis_brevis_r": {
+      "group": "Right Foot",
+      "layer": "muscle"
+    },
+    "Lateral_head_of_gastrocnemius_l": {
+      "group": "Left Calves",
+      "head": "Left Lateral Gastrocnemius",
+      "layer": "muscle"
+    },
+    "Lateral_head_of_gastrocnemius_r": {
+      "group": "Right Calves",
+      "head": "Right Lateral Gastrocnemius",
+      "layer": "muscle"
+    },
+    "Lateral_head_of_triceps_brachii_l": {
+      "group": "Left Triceps",
+      "head": "Left Triceps Lateral Head",
+      "layer": "muscle"
+    },
+    "Lateral_head_of_triceps_brachii_r": {
+      "group": "Right Triceps",
+      "head": "Right Triceps Lateral Head",
+      "layer": "muscle"
+    },
+    "Lateral_meniscus_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Lateral_meniscus_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Lateral_talocalcaneal_ligament_l": {
+      "joint": "Left Ankle",
+      "layer": "joint"
+    },
+    "Lateral_talocalcaneal_ligament_r": {
+      "joint": "Right Ankle",
+      "layer": "joint"
+    },
+    "Latissimus_dorsi_muscle_l": {
+      "group": "Left Lats",
+      "layer": "muscle"
+    },
+    "Latissimus_dorsi_muscle_r": {
+      "group": "Right Lats",
+      "layer": "muscle"
+    },
+    "Ligament_of_head_of_femur_l": {
+      "joint": "Left Hip",
+      "layer": "joint"
+    },
+    "Ligament_of_head_of_femur_r": {
+      "joint": "Right Hip",
+      "layer": "joint"
+    },
+    "Lobule_of_auricle_l": {
+      "layer": "headSkin"
+    },
+    "Lobule_of_auricle_r": {
+      "layer": "headSkin"
+    },
+    "Long_head_of_biceps_brachii_l": {
+      "group": "Left Biceps",
+      "head": "Left Biceps Long Head",
+      "layer": "muscle"
+    },
+    "Long_head_of_biceps_brachii_r": {
+      "group": "Right Biceps",
+      "head": "Right Biceps Long Head",
+      "layer": "muscle"
+    },
+    "Long_head_of_biceps_femoris_l": {
+      "group": "Left Hamstrings",
+      "head": "Left Biceps Femoris",
+      "layer": "muscle"
+    },
+    "Long_head_of_biceps_femoris_r": {
+      "group": "Right Hamstrings",
+      "head": "Right Biceps Femoris",
+      "layer": "muscle"
+    },
+    "Long_head_of_triceps_brachii_l": {
+      "group": "Left Triceps",
+      "head": "Left Triceps Long Head",
+      "layer": "muscle"
+    },
+    "Long_head_of_triceps_brachii_r": {
+      "group": "Right Triceps",
+      "head": "Right Triceps Long Head",
+      "layer": "muscle"
+    },
+    "Longissimus_capitis_muscle_l": {
+      "group": "Back Neck",
+      "layer": "muscle"
+    },
+    "Longissimus_capitis_muscle_r": {
+      "group": "Back Neck",
+      "layer": "muscle"
+    },
+    "Longissimus_thoracis_muscle_l": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Longissimus_thoracis_muscle_r": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Longus_capitis_muscle_l": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Longus_capitis_muscle_r": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Longus_colli_muscle_l": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Longus_colli_muscle_r": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Masseteric_fascia_l": {
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Masseteric_fascia_r": {
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Mastoid_region_l": {
+      "layer": "headSkin"
+    },
+    "Mastoid_region_r": {
+      "layer": "headSkin"
+    },
+    "Medial_head_of_flexor_hallucis_brevis_l": {
+      "group": "Left Foot",
+      "layer": "muscle"
+    },
+    "Medial_head_of_flexor_hallucis_brevis_r": {
+      "group": "Right Foot",
+      "layer": "muscle"
+    },
+    "Medial_head_of_gastrocnemius_l": {
+      "group": "Left Calves",
+      "head": "Left Medial Gastrocnemius",
+      "layer": "muscle"
+    },
+    "Medial_head_of_gastrocnemius_r": {
+      "group": "Right Calves",
+      "head": "Right Medial Gastrocnemius",
+      "layer": "muscle"
+    },
+    "Medial_head_of_triceps_brachii_l": {
+      "group": "Left Triceps",
+      "head": "Left Triceps Medial Head",
+      "layer": "muscle"
+    },
+    "Medial_head_of_triceps_brachii_r": {
+      "group": "Right Triceps",
+      "head": "Right Triceps Medial Head",
+      "layer": "muscle"
+    },
+    "Medial_meniscus_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Medial_meniscus_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Medial_talocalcaneal_ligament_l": {
+      "joint": "Left Ankle",
+      "layer": "joint"
+    },
+    "Medial_talocalcaneal_ligament_r": {
+      "joint": "Right Ankle",
+      "layer": "joint"
+    },
+    "Mental_region_l": {
+      "layer": "headSkin"
+    },
+    "Mental_region_r": {
+      "layer": "headSkin"
+    },
+    "Mentolabial_sulcus_l": {
+      "layer": "headSkin"
+    },
+    "Mentolabial_sulcus_r": {
+      "layer": "headSkin"
+    },
+    "Middle_glenohumeral_ligament_l": {
+      "joint": "Left Shoulder Joint",
+      "layer": "joint"
+    },
+    "Middle_glenohumeral_ligament_r": {
+      "joint": "Right Shoulder Joint",
+      "layer": "joint"
+    },
+    "Multifidus_lumborum_muscle_l": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Multifidus_lumborum_muscle_r": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Multifidus_thoracis_muscle_l": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Multifidus_thoracis_muscle_r": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Mylohyoid_muscle_l": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Mylohyoid_muscle_r": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Nasal_region_l": {
+      "layer": "headSkin"
+    },
+    "Nasal_region_r": {
+      "layer": "headSkin"
+    },
+    "Nasolabial_sulcus_l": {
+      "layer": "headSkin"
+    },
+    "Nasolabial_sulcus_r": {
+      "layer": "headSkin"
+    },
+    "Nucleus_pulposus_C2_C3": {
+      "joint": "Neck",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_C3_C4": {
+      "joint": "Neck",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_C4_C5": {
+      "joint": "Neck",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_C5_C6": {
+      "joint": "Neck",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_C6_C7": {
+      "joint": "Neck",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_C7_T1": {
+      "joint": "Neck",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_L1_L2": {
+      "joint": "Lower Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_L2_L3": {
+      "joint": "Lower Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_L3_L4": {
+      "joint": "Lower Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_L4_L5": {
+      "joint": "Lower Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_L5_S1": {
+      "joint": "Lower Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_T10_T11": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_T11_T12": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_T12_L1": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_T1_T2": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_T2_T3": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_T3_T4": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_T4_T5": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_T5_T6": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_T6_T7": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_T7_T8": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_T8_T9": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Nucleus_pulposus_T9_T10": {
+      "joint": "Upper Spine",
+      "layer": "joint"
+    },
+    "Oblique_cord_l": {
+      "joint": "Left Elbow",
+      "layer": "joint"
+    },
+    "Oblique_cord_r": {
+      "joint": "Right Elbow",
+      "layer": "joint"
+    },
+    "Oblique_popliteal_ligament_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Oblique_popliteal_ligament_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Occipital_region_l": {
+      "layer": "headSkin"
+    },
+    "Occipital_region_r": {
+      "layer": "headSkin"
+    },
+    "Occipitalis_muscle_l": {
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Occipitalis_muscle_r": {
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Omohyoid_muscle_l": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Omohyoid_muscle_r": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Opponens_digiti_minimi_muscle_of_foot_l": {
+      "group": "Left Foot",
+      "layer": "muscle"
+    },
+    "Opponens_digiti_minimi_muscle_of_foot_r": {
+      "group": "Right Foot",
+      "layer": "muscle"
+    },
+    "Opponens_digiti_minimi_muscle_of_hand_l": {
+      "group": "Left Hand",
+      "layer": "muscle"
+    },
+    "Opponens_digiti_minimi_muscle_of_hand_r": {
+      "group": "Right Hand",
+      "layer": "muscle"
+    },
+    "Opponens_pollicis_muscle_l": {
+      "group": "Left Hand",
+      "layer": "muscle"
+    },
+    "Opponens_pollicis_muscle_r": {
+      "group": "Right Hand",
+      "layer": "muscle"
+    },
+    "Oral_region_l": {
+      "layer": "headSkin"
+    },
+    "Oral_region_r": {
+      "layer": "headSkin"
+    },
+    "Orbicularis_oris_muscle_l": {
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Orbicularis_oris_muscle_r": {
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Orbital_part_of_orbicularis_oculi_l": {
+      "faceZone": "Left Eye",
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Orbital_part_of_orbicularis_oculi_r": {
+      "faceZone": "Right Eye",
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Orbital_region_l": {
+      "layer": "headSkin"
+    },
+    "Orbital_region_r": {
+      "layer": "headSkin"
+    },
+    "Palmaris_longus_muscle_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Palmaris_longus_muscle_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Palpebral_part_of_orbicularis_oculi_l": {
+      "faceZone": "Left Eye",
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Palpebral_part_of_orbicularis_oculi_r": {
+      "faceZone": "Right Eye",
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Parietal_region_l": {
+      "layer": "headSkin"
+    },
+    "Parietal_region_r": {
+      "layer": "headSkin"
+    },
+    "Parotideomasseteric_region_l": {
+      "layer": "headSkin"
+    },
+    "Parotideomasseteric_region_r": {
+      "layer": "headSkin"
+    },
+    "Pectineus_muscle_l": {
+      "group": "Left Hip Flexors",
+      "layer": "muscle"
+    },
+    "Pectineus_muscle_r": {
+      "group": "Right Hip Flexors",
+      "layer": "muscle"
+    },
+    "Pectoralis_minor_muscle_l": {
+      "group": "Left Chest",
+      "layer": "muscle"
+    },
+    "Pectoralis_minor_muscle_r": {
+      "group": "Right Chest",
+      "layer": "muscle"
+    },
+    "Philtrum_l": {
+      "layer": "headSkin"
+    },
+    "Philtrum_r": {
+      "layer": "headSkin"
+    },
+    "Piriformis_fascia_l": {
+      "group": "Left Glutes",
+      "layer": "muscle"
+    },
+    "Piriformis_fascia_r": {
+      "group": "Right Glutes",
+      "layer": "muscle"
+    },
+    "Piriformis_muscle_l": {
+      "group": "Left Glutes",
+      "layer": "muscle"
+    },
+    "Piriformis_muscle_r": {
+      "group": "Right Glutes",
+      "layer": "muscle"
+    },
+    "Plantaris_muscle_l": {
+      "group": "Left Calves",
+      "layer": "muscle"
+    },
+    "Plantaris_muscle_r": {
+      "group": "Right Calves",
+      "layer": "muscle"
+    },
+    "Platysma_l": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Platysma_r": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Posterior_auricular_groove_l": {
+      "layer": "headSkin"
+    },
+    "Posterior_auricular_groove_r": {
+      "layer": "headSkin"
+    },
+    "Posterior_belly_of_digastric_muscle_l": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Posterior_belly_of_digastric_muscle_r": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Posterior_cruciate_ligament_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Posterior_cruciate_ligament_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Posterior_meniscotibial_ligament_Lateral_meniscus_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Posterior_meniscotibial_ligament_Lateral_meniscus_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Posterior_meniscotibial_ligament_Medial_meniscus_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Posterior_meniscotibial_ligament_Medial_meniscus_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Posterior_talocalcaneal_ligament_l": {
+      "joint": "Left Ankle",
+      "layer": "joint"
+    },
+    "Posterior_talocalcaneal_ligament_r": {
+      "joint": "Right Ankle",
+      "layer": "joint"
+    },
+    "Posterior_talofibular_ligament_l": {
+      "joint": "Left Ankle",
+      "layer": "joint"
+    },
+    "Posterior_talofibular_ligament_r": {
+      "joint": "Right Ankle",
+      "layer": "joint"
+    },
+    "Posterior_tibiotalar_ligament_l": {
+      "joint": "Left Ankle",
+      "layer": "joint"
+    },
+    "Posterior_tibiotalar_ligament_r": {
+      "joint": "Right Ankle",
+      "layer": "joint"
+    },
+    "Pronator_quadratus_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Pronator_quadratus_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Psoas_major_l": {
+      "group": "Left Hip Flexors",
+      "layer": "muscle"
+    },
+    "Psoas_major_r": {
+      "group": "Right Hip Flexors",
+      "layer": "muscle"
+    },
+    "Pubofemoral_ligament_l": {
+      "joint": "Left Hip",
+      "layer": "joint"
+    },
+    "Pubofemoral_ligament_r": {
+      "joint": "Right Hip",
+      "layer": "joint"
+    },
+    "Pyramidalis_muscle_l": {
+      "group": "Abs",
+      "layer": "muscle"
+    },
+    "Pyramidalis_muscle_r": {
+      "group": "Abs",
+      "layer": "muscle"
+    },
+    "Quadrate_ligament_l": {
+      "joint": "Left Elbow",
+      "layer": "joint"
+    },
+    "Quadrate_ligament_r": {
+      "joint": "Right Elbow",
+      "layer": "joint"
+    },
+    "Quadratus_lumborum_muscle_l": {
+      "group": "Lower Back",
+      "layer": "muscle"
+    },
+    "Quadratus_lumborum_muscle_r": {
+      "group": "Lower Back",
+      "layer": "muscle"
+    },
+    "Quadratus_plantae_muscle_l": {
+      "group": "Left Foot",
+      "layer": "muscle"
+    },
+    "Quadratus_plantae_muscle_r": {
+      "group": "Right Foot",
+      "layer": "muscle"
+    },
+    "Radial_collateral_ligament_of_wrist_joint_l": {
+      "joint": "Left Wrist",
+      "layer": "joint"
+    },
+    "Radial_collateral_ligament_of_wrist_joint_r": {
+      "joint": "Right Wrist",
+      "layer": "joint"
+    },
+    "Radial_head_of_flexor_digitorum_superficialis_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Radial_head_of_flexor_digitorum_superficialis_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Radiate_carpal_ligament_l": {
+      "joint": "Left Wrist",
+      "layer": "joint"
+    },
+    "Radiate_carpal_ligament_r": {
+      "joint": "Right Wrist",
+      "layer": "joint"
+    },
+    "Radioscaphocapitate_ligament_l": {
+      "joint": "Left Wrist",
+      "layer": "joint"
+    },
+    "Radioscaphocapitate_ligament_r": {
+      "joint": "Right Wrist",
+      "layer": "joint"
+    },
+    "Rectus_abdominis_muscle_l": {
+      "group": "Abs",
+      "layer": "muscle"
+    },
+    "Rectus_abdominis_muscle_r": {
+      "group": "Abs",
+      "layer": "muscle"
+    },
+    "Rectus_femoris_muscle_l": {
+      "group": "Left Quadriceps",
+      "head": "Left Rectus Femoris",
+      "layer": "muscle"
+    },
+    "Rectus_femoris_muscle_r": {
+      "group": "Right Quadriceps",
+      "head": "Right Rectus Femoris",
+      "layer": "muscle"
+    },
+    "Sartorius_muscle_l": {
+      "group": "Left Hip Flexors",
+      "layer": "muscle"
+    },
+    "Sartorius_muscle_r": {
+      "group": "Right Hip Flexors",
+      "layer": "muscle"
+    },
+    "Scalenus_anterior_muscle_l": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Scalenus_anterior_muscle_r": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Scalenus_medius_muscle_l": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Scalenus_medius_muscle_r": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Scalenus_posterior_muscle_l": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Scalenus_posterior_muscle_r": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Scapha_l": {
+      "layer": "headSkin"
+    },
+    "Scapha_r": {
+      "layer": "headSkin"
+    },
+    "Scapular_spinal_part_of_deltoid_muscle_l": {
+      "group": "Left Shoulder",
+      "head": "Left Posterior Deltoid",
+      "layer": "muscle"
+    },
+    "Scapular_spinal_part_of_deltoid_muscle_r": {
+      "group": "Right Shoulder",
+      "head": "Right Posterior Deltoid",
+      "layer": "muscle"
+    },
+    "Semimembranosus_muscle_l": {
+      "group": "Left Hamstrings",
+      "head": "Left Semimembranosus",
+      "layer": "muscle"
+    },
+    "Semimembranosus_muscle_r": {
+      "group": "Right Hamstrings",
+      "head": "Right Semimembranosus",
+      "layer": "muscle"
+    },
+    "Semispinalis_colli_muscle_l": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Semispinalis_colli_muscle_r": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Semispinalis_thoracis_muscle_l": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Semispinalis_thoracis_muscle_r": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Semitendinosus_muscle_l": {
+      "group": "Left Hamstrings",
+      "head": "Left Semitendinosus",
+      "layer": "muscle"
+    },
+    "Semitendinosus_muscle_r": {
+      "group": "Right Hamstrings",
+      "head": "Right Semitendinosus",
+      "layer": "muscle"
+    },
+    "Serratus_anterior_muscle_l": {
+      "group": "Left Chest",
+      "layer": "muscle"
+    },
+    "Serratus_anterior_muscle_r": {
+      "group": "Right Chest",
+      "layer": "muscle"
+    },
+    "Short_head_of_biceps_brachii_l": {
+      "group": "Left Biceps",
+      "head": "Left Biceps Short Head",
+      "layer": "muscle"
+    },
+    "Short_head_of_biceps_brachii_r": {
+      "group": "Right Biceps",
+      "head": "Right Biceps Short Head",
+      "layer": "muscle"
+    },
+    "Short_head_of_biceps_femoris_l": {
+      "group": "Left Hamstrings",
+      "head": "Left Biceps Femoris",
+      "layer": "muscle"
+    },
+    "Short_head_of_biceps_femoris_r": {
+      "group": "Right Hamstrings",
+      "head": "Right Biceps Femoris",
+      "layer": "muscle"
+    },
+    "Soleus_muscle_l": {
+      "group": "Left Calves",
+      "head": "Left Soleus",
+      "layer": "muscle"
+    },
+    "Soleus_muscle_r": {
+      "group": "Right Calves",
+      "head": "Right Soleus",
+      "layer": "muscle"
+    },
+    "Spinalis_capitis_muscle_l": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Spinalis_capitis_muscle_r": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Spinalis_colli_muscle_l": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Spinalis_colli_muscle_r": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Spinalis_thoracis_muscle_l": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Spinalis_thoracis_muscle_r": {
+      "group": "Spinal Erectors",
+      "layer": "muscle"
+    },
+    "Splenius_capitis_muscle_l": {
+      "group": "Back Neck",
+      "layer": "muscle"
+    },
+    "Splenius_capitis_muscle_r": {
+      "group": "Back Neck",
+      "layer": "muscle"
+    },
+    "Sternocleidomastoid_muscle_l": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Sternocleidomastoid_muscle_r": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Sternocostal_head_of_pectoralis_major_muscle_l": {
+      "group": "Left Chest",
+      "head": "Left Lower Chest",
+      "layer": "muscle"
+    },
+    "Sternocostal_head_of_pectoralis_major_muscle_r": {
+      "group": "Right Chest",
+      "head": "Right Lower Chest",
+      "layer": "muscle"
+    },
+    "Sternohyoid_muscle_l": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Sternohyoid_muscle_r": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Sternothyroid_muscle_l": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Sternothyroid_muscle_r": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Subscapularis_muscle_l": {
+      "group": "Left Shoulder",
+      "layer": "muscle"
+    },
+    "Subscapularis_muscle_r": {
+      "group": "Right Shoulder",
+      "layer": "muscle"
+    },
+    "Superficial_head_of_flexor_pollicis_brevis_l": {
+      "group": "Left Hand",
+      "layer": "muscle"
+    },
+    "Superficial_head_of_flexor_pollicis_brevis_r": {
+      "group": "Right Hand",
+      "layer": "muscle"
+    },
+    "Superficial_head_of_pronator_teres_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Superficial_head_of_pronator_teres_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Superficial_part_of_masseter_l": {
+      "faceZone": "Left Jaw",
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Superficial_part_of_masseter_r": {
+      "faceZone": "Right Jaw",
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Superficial_part_of_tibial_collateral_ligament_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Superficial_part_of_tibial_collateral_ligament_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Superior_glenohumeral_ligament_l": {
+      "joint": "Left Shoulder Joint",
+      "layer": "joint"
+    },
+    "Superior_glenohumeral_ligament_r": {
+      "joint": "Right Shoulder Joint",
+      "layer": "joint"
+    },
+    "Supinator_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Supinator_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Supraspinatus_muscle_l": {
+      "group": "Left Shoulder",
+      "layer": "muscle"
+    },
+    "Supraspinatus_muscle_r": {
+      "group": "Right Shoulder",
+      "layer": "muscle"
+    },
+    "Talocalcaneal_interosseous_ligament_l": {
+      "joint": "Left Ankle",
+      "layer": "joint"
+    },
+    "Talocalcaneal_interosseous_ligament_r": {
+      "joint": "Right Ankle",
+      "layer": "joint"
+    },
+    "Temporal_region_l": {
+      "layer": "headSkin"
+    },
+    "Temporal_region_r": {
+      "layer": "headSkin"
+    },
+    "Temporalis_muscle_l": {
+      "faceZone": "Left Temple",
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Temporalis_muscle_r": {
+      "faceZone": "Right Temple",
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Tensor_fasciae_latae_l": {
+      "group": "Left Hip Flexors",
+      "layer": "muscle"
+    },
+    "Tensor_fasciae_latae_r": {
+      "group": "Right Hip Flexors",
+      "layer": "muscle"
+    },
+    "Teres_major_muscle_l": {
+      "group": "Left Shoulder",
+      "layer": "muscle"
+    },
+    "Teres_major_muscle_r": {
+      "group": "Right Shoulder",
+      "layer": "muscle"
+    },
+    "Teres_minor_muscle_l": {
+      "group": "Left Shoulder",
+      "layer": "muscle"
+    },
+    "Teres_minor_muscle_r": {
+      "group": "Right Shoulder",
+      "layer": "muscle"
+    },
+    "Thyrohyoid_muscle_l": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Thyrohyoid_muscle_r": {
+      "group": "Front Neck",
+      "layer": "muscle"
+    },
+    "Tibialis_anterior_muscle_l": {
+      "group": "Left Tibialis",
+      "layer": "muscle"
+    },
+    "Tibialis_anterior_muscle_r": {
+      "group": "Right Tibialis",
+      "layer": "muscle"
+    },
+    "Tibialis_posterior_muscle_l": {
+      "group": "Left Tibialis",
+      "layer": "muscle"
+    },
+    "Tibialis_posterior_muscle_r": {
+      "group": "Right Tibialis",
+      "layer": "muscle"
+    },
+    "Tibiocalcaneal_ligament_l": {
+      "joint": "Left Ankle",
+      "layer": "joint"
+    },
+    "Tibiocalcaneal_ligament_r": {
+      "joint": "Right Ankle",
+      "layer": "joint"
+    },
+    "Tibionavicular_ligament_l": {
+      "joint": "Left Ankle",
+      "layer": "joint"
+    },
+    "Tibionavicular_ligament_r": {
+      "joint": "Right Ankle",
+      "layer": "joint"
+    },
+    "Tragus_l": {
+      "layer": "headSkin"
+    },
+    "Tragus_r": {
+      "layer": "headSkin"
+    },
+    "Transverse_acetabular_ligament_l": {
+      "joint": "Left Hip",
+      "layer": "joint"
+    },
+    "Transverse_acetabular_ligament_r": {
+      "joint": "Right Hip",
+      "layer": "joint"
+    },
+    "Transverse_humeral_ligament_l": {
+      "joint": "Left Shoulder Joint",
+      "layer": "joint"
+    },
+    "Transverse_humeral_ligament_r": {
+      "joint": "Right Shoulder Joint",
+      "layer": "joint"
+    },
+    "Transverse_ligament_of_knee_l": {
+      "joint": "Left Knee",
+      "layer": "joint"
+    },
+    "Transverse_ligament_of_knee_r": {
+      "joint": "Right Knee",
+      "layer": "joint"
+    },
+    "Transverse_part_of_iliofemoral_ligament_l": {
+      "joint": "Left Hip",
+      "layer": "joint"
+    },
+    "Transverse_part_of_iliofemoral_ligament_r": {
+      "joint": "Right Hip",
+      "layer": "joint"
+    },
+    "Transverse_part_of_trapezius_muscle_l": {
+      "group": "Left Trapezius",
+      "head": "Left Middle Trapezius",
+      "layer": "muscle"
+    },
+    "Transverse_part_of_trapezius_muscle_r": {
+      "group": "Right Trapezius",
+      "head": "Right Middle Trapezius",
+      "layer": "muscle"
+    },
+    "Transversus_abdominis_muscle_l": {
+      "group": "Abs",
+      "layer": "muscle"
+    },
+    "Transversus_abdominis_muscle_r": {
+      "group": "Abs",
+      "layer": "muscle"
+    },
+    "Triangular_fossa_l": {
+      "layer": "headSkin"
+    },
+    "Triangular_fossa_r": {
+      "layer": "headSkin"
+    },
+    "Tubercle_of_upper_lip_l": {
+      "layer": "headSkin"
+    },
+    "Tubercle_of_upper_lip_r": {
+      "layer": "headSkin"
+    },
+    "Ulnar_collateral_ligament_of_wrist_joint_l": {
+      "joint": "Left Wrist",
+      "layer": "joint"
+    },
+    "Ulnar_collateral_ligament_of_wrist_joint_r": {
+      "joint": "Right Wrist",
+      "layer": "joint"
+    },
+    "Ulnar_head_of_extensor_carpi_ulnaris_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Ulnar_head_of_extensor_carpi_ulnaris_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Ulnar_head_of_flexor_carpi_ulnaris_l": {
+      "group": "Left Forearm",
+      "layer": "muscle"
+    },
+    "Ulnar_head_of_flexor_carpi_ulnaris_r": {
+      "group": "Right Forearm",
+      "layer": "muscle"
+    },
+    "Ulnolunate_ligament_l": {
+      "joint": "Left Wrist",
+      "layer": "joint"
+    },
+    "Ulnolunate_ligament_r": {
+      "joint": "Right Wrist",
+      "layer": "joint"
+    },
+    "Ulnotriquetral_ligament_l": {
+      "joint": "Left Wrist",
+      "layer": "joint"
+    },
+    "Ulnotriquetral_ligament_r": {
+      "joint": "Right Wrist",
+      "layer": "joint"
+    },
+    "Vastus_intermedius_muscle_l": {
+      "group": "Left Quadriceps",
+      "layer": "muscle"
+    },
+    "Vastus_intermedius_muscle_r": {
+      "group": "Right Quadriceps",
+      "layer": "muscle"
+    },
+    "Vastus_lateralis_muscle_l": {
+      "group": "Left Quadriceps",
+      "head": "Left Vastus Lateralis",
+      "layer": "muscle"
+    },
+    "Vastus_lateralis_muscle_r": {
+      "group": "Right Quadriceps",
+      "head": "Right Vastus Lateralis",
+      "layer": "muscle"
+    },
+    "Vastus_medialis_muscle_l": {
+      "group": "Left Quadriceps",
+      "head": "Left Vastus Medialis",
+      "layer": "muscle"
+    },
+    "Vastus_medialis_muscle_r": {
+      "group": "Right Quadriceps",
+      "head": "Right Vastus Medialis",
+      "layer": "muscle"
+    },
+    "Zona_orbicularis_l": {
+      "joint": "Left Hip",
+      "layer": "joint"
+    },
+    "Zona_orbicularis_r": {
+      "joint": "Right Hip",
+      "layer": "joint"
+    },
+    "Zygomatic_region_l": {
+      "layer": "headSkin"
+    },
+    "Zygomatic_region_r": {
+      "layer": "headSkin"
+    },
+    "Zygomaticus_major_muscle_l": {
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Zygomaticus_major_muscle_r": {
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Zygomaticus_minor_muscle_l": {
+      "group": "Head",
+      "layer": "muscle"
+    },
+    "Zygomaticus_minor_muscle_r": {
+      "group": "Head",
+      "layer": "muscle"
+    }
+  }
+}

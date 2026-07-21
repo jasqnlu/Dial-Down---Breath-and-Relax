@@ -57,6 +57,15 @@ enum MuscleGroup: String, CaseIterable, Codable {
         "Left Shin": ["Left Tibialis"], "Right Shin": ["Right Tibialis"],
         "Left Calf": ["Left Calves"], "Right Calf": ["Right Calves"],
         "Left Foot": ["Left Foot"], "Right Foot": ["Right Foot"],
+        // Joint regions (Plan 3, 15-region set): resolve to the muscles that
+        // cross them, so a joint tap surfaces those muscles' stretches. Elbow/
+        // Wrist/Knee/Ankle/Neck already appear above; these add the rest.
+        "Left Shoulder Joint": ["Left Shoulder", "Left Chest", "Left Lats", "Left Trapezius"],
+        "Right Shoulder Joint": ["Right Shoulder", "Right Chest", "Right Lats", "Right Trapezius"],
+        "Left Hip": ["Left Glutes", "Left Hip Flexors", "Left Adductors", "Left Hamstrings"],
+        "Right Hip": ["Right Glutes", "Right Hip Flexors", "Right Adductors", "Right Hamstrings"],
+        "Upper Spine": ["Spinal Erectors", "Left Trapezius", "Right Trapezius"],
+        "Lower Spine": ["Lower Back", "Spinal Erectors"],
     ]
 
     // MARK: - Muscle sub-heads
