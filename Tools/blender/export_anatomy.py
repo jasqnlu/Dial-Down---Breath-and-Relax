@@ -152,6 +152,12 @@ for obj, node_name, tags in selected:
         continue
     nmat = eval_obj.matrix_world.to_3x3().inverted_safe().transposed()
     mw = eval_obj.matrix_world
+    # Z-Anatomy builds one lateral side as a MIRROR of the other (negative-
+    # determinant world matrix). Mirroring reverses triangle winding, so those
+    # faces must be re-reversed here — otherwise the double-sided material shades
+    # the mirrored half with inverted normals and it renders dark/flat (the
+    # "half grey" seam). Flip the face vertex order when the determinant is < 0.
+    flip = mw.to_3x3().determinant() < 0
     node_map[node_name] = tags
     layer_counts[tags["layer"]] = layer_counts.get(tags["layer"], 0) + 1
     lines.append(f"o {node_name}")
@@ -164,7 +170,10 @@ for obj, node_name, tags in selected:
         lines.append(f"vn {n.x:.6f} {n.y:.6f} {n.z:.6f}")
     for tri in mesh.loop_triangles:
         a, b, c = (i + 1 + v_offset for i in tri.vertices)
-        lines.append(f"f {a}//{a} {b}//{b} {c}//{c}")
+        if flip:
+            lines.append(f"f {a}//{a} {c}//{c} {b}//{b}")
+        else:
+            lines.append(f"f {a}//{a} {b}//{b} {c}//{c}")
     v_offset += len(mesh.vertices)
     eval_obj.to_mesh_clear()
     if dec: obj.modifiers.remove(dec)
