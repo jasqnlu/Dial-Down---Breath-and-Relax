@@ -3,20 +3,21 @@ import SceneKit
 
 // MARK: - Body Rig
 //
-// Owns the SceneKit scene graph for the rotatable 3D skin model:
+// Owns the SceneKit scene graph for the rotatable single anatomy model:
 //   sceneRoot
 //     ├─ cameraNode        (static — never rotates)
 //     ├─ keyLight / fillLight / ambientLight  (static, world-fixed)
 //     └─ rigNode           (rotates around Y for the turntable effect)
-//          ├─ bodyNode     (the loaded mesh, pre-centred + pre-scaled)
+//          ├─ anatomyNode  (muscle + joint pieces, always visible, grayscale)
+//          ├─ headSkinNode (aesthetic skin head, grayscale, fades on reveal)
 //          └─ marksNode    (marker-dot spheres, normalized-space coords)
 //
-// The mesh ships at native ZBrush export scale with no material/texture, so
-// this also recentres it (pivot = bounding-box centre), uniform-scales it to
-// a fixed height, and applies a skin-tone PBR material in code.
+// `BodyAnatomy.obj` is PRE-NORMALIZED at export (Y-up, +Z-forward, height 2,
+// whole-body recentred), so pieces load at IDENTITY — never recentre/scale
+// them here or they'd drift from the hitboxes. Each piece wears a neutral
+// grayscale PBR material at rest; candidate highlights tint it on reveal.
 //
-// Confirmed empirically from the source OBJ (see decimation notes): Y is up,
-// the figure's face points toward +Z. Rotation 0 == front, π == back.
+// Y is up, the figure's face points toward +Z. Rotation 0 == front, π == back.
 // Anatomical left = world +X (the marking system's L/R convention).
 
 nonisolated enum BodyModelStyle {
@@ -53,10 +54,10 @@ nonisolated enum MuscleHighlight {
     }
 }
 
-/// Loads and caches the (multi-MB) body OBJ mesh off the main thread. An
-/// actor so concurrent loads — e.g. two `BodySceneView`s mounting at once, or
-/// a facing flip re-creating the rig mid-load — serialize on the shared
-/// template cache instead of racing.
+/// Parses and caches the (multi-MB) `BodyAnatomy.obj` into per-object pieces off
+/// the main thread. An actor so concurrent loads — e.g. two `BodySceneView`s
+/// mounting at once, or a facing flip re-creating the rig mid-load — serialize
+/// on the shared `partsCache` instead of racing.
 actor BodyMeshLoader {
     static let shared = BodyMeshLoader()
     private var partsCache: [AnatomyPiece]?
@@ -128,9 +129,9 @@ final class BodyRig {
     let scene = SCNScene()
     let cameraNode = SCNNode()
     let rigNode = SCNNode()
-    /// Marker dots live under the rig (NOT bodyNode: bodyNode's children
-    /// inherit its raw-OBJ pivot/scale; rigNode children take
-    /// normalized-space coordinates directly and still rotate with the body).
+    /// Marker dots live directly under the rig: the anatomy pieces load at
+    /// identity (pre-normalized), and rigNode children take normalized-space
+    /// coordinates directly while still rotating with the body.
     let marksNode = SCNNode()
     let anatomyNode = SCNNode()   // muscle + joint children, always visible
     let headSkinNode = SCNNode()  // head-skin patches, always visible, fades on reveal
@@ -776,8 +777,8 @@ struct BodySceneView: View {
         }
     }
 
-    /// Stage 1: raycast the skin mesh (marker dots are excluded explicitly,
-    /// so the first non-marker hit is the occlusion-correct surface point).
+    /// Stage 1: raycast the always-visible anatomy geometry (marker dots are
+    /// excluded explicitly, so the first non-marker hit is the surface point).
     /// Stage 2: convert the world hit point to rigNode-local (normalized
     /// model space, rotation factored out) and resolve it with pure math.
     private func handleTap(at point: CGPoint, in view: SCNView) {
