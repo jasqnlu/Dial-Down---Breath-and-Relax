@@ -344,6 +344,10 @@ final class BodyRig {
         SCNTransaction.animationDuration = duration
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
         cameraNode.position = SCNVector3(camPos.x, camPos.y, camPos.z)
+        // `look(at:)` uses the world up-vector (0,1,0), so the camera never rolls
+        // around its view axis — focus stays a pure upright dolly (pinned by
+        // BodyRigFocusTests). Any apparent turn on select is dolly parallax (the
+        // dot is framed from its own outward normal), not a rig/camera rotation.
         cameraNode.look(at: SCNVector3(world.x, world.y, world.z))
         SCNTransaction.completionBlock = completion
         SCNTransaction.commit()
