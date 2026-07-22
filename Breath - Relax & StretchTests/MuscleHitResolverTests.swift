@@ -50,17 +50,17 @@ struct MuscleHitResolverTests {
         #expect(!result.contains("Left Forearm"))
     }
 
-    @Test func elbowTapReturnsJointPlusCrossingMuscles() {
-        // Elbow box is smallest, so it wins the primary tiebreak; its adjacency
-        // is biceps/triceps/forearm.
-        let biceps = vol("Left Biceps",  min: [0.1, 0.3, -0.1], max: [0.3, 0.6, 0.1])
-        let triceps = vol("Left Triceps", min: [0.1, 0.3, -0.1], max: [0.3, 0.6, 0.1])
-        let forearm = vol("Left Forearm", min: [0.1, 0.0, -0.1], max: [0.3, 0.3, 0.1])
-        let elbow = vol("Left Elbow", min: [0.17, 0.28, -0.03], max: [0.23, 0.34, 0.03])
-        let result = MuscleHitResolver.candidates(near: elbow.center,
-                                                  in: [biceps, triceps, forearm, elbow], maxCandidates: 4)
-        #expect(result.first == "Left Elbow")
-        #expect(Set(result) == ["Left Elbow", "Left Biceps", "Left Triceps", "Left Forearm"])
+    @Test func shoulderJointTapReturnsJointPlusCrossingMuscles() {
+        // Shoulder Joint box is smallest, so it wins the primary tiebreak; its
+        // adjacency (per RegionAdjacency) is shoulder/chest/trapezius.
+        let shoulder  = vol("Left Shoulder",   min: [0.1, 0.3, -0.1], max: [0.3, 0.6, 0.1])
+        let chest     = vol("Left Chest",      min: [0.1, 0.3, -0.1], max: [0.3, 0.6, 0.1])
+        let trapezius = vol("Left Trapezius",  min: [0.1, 0.0, -0.1], max: [0.3, 0.3, 0.1])
+        let shoulderJoint = vol("Left Shoulder Joint", min: [0.17, 0.28, -0.03], max: [0.23, 0.34, 0.03])
+        let result = MuscleHitResolver.candidates(near: shoulderJoint.center,
+                                                  in: [shoulder, chest, trapezius, shoulderJoint], maxCandidates: 4)
+        #expect(result.first == "Left Shoulder Joint")
+        #expect(Set(result) == ["Left Shoulder Joint", "Left Shoulder", "Left Chest", "Left Trapezius"])
     }
 
     @Test func primaryGroupSurfacesItsOwnSubHeads() {
