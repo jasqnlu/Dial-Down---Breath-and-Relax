@@ -1,7 +1,7 @@
 """Export the skin-covered Body-Map model: one welded skin shell + muscle layer.
 
 Run: /Applications/Blender.app/Contents/MacOS/Blender -b \
-     /Users/jasonlu/Blender/Z-AnatomyMuscle-Joint-Skin-Merged.blend \
+     /Users/jasonlu/Blender/Z-Anatomyskinjointmuscle.blend \
      --python Tools/blender/export_skin_muscle.py [-- <decimate_ratio>]
 
 Joins the 296 body-region patches in collection "9: Regions of human body"
