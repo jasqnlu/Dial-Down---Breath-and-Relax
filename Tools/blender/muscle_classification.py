@@ -254,14 +254,15 @@ _SPINE_LETTER = {"c": "Neck", "l": "Lower Spine"}
 
 
 def _spine_region(low: str):
-    """Neck/Upper Spine/Lower Spine from a disc/nucleus level, bucketed by the
-    FIRST vertebra letter (so C7-T1 -> Neck, T12-L1 -> Upper Spine)."""
+    """Neck/Lower Spine from a disc/nucleus level, bucketed by the FIRST
+    vertebra letter (so cervical -> Neck, lumbar -> Lower Spine; thoracic
+    has no bucket and returns None)."""
     m = re.search(r"(?:intervertebral disc|nucleus pulposus)\s+([ctl])\d", low)
     return _SPINE_LETTER.get(m.group(1)) if m else None
 
 
 def classify_joint(name: str):
-    """One of the 15 kept joint region names for a joint object, else None."""
+    """One of the 6 kept joint region names for a joint object, else None."""
     low = name.lower()
     spine = _spine_region(low)
     if spine:
