@@ -30,7 +30,10 @@ MAP_PATH = os.path.join(OUT_DIR, "skinmuscle_node_names.json")
 
 SKIN_COLLECTION = "9: Regions of human body"
 MUSCLE_COLLECTION = "4: Muscular system"
-SKIN_WELD_DIST = 0.0015
+# Tuned against the real blend: boundary edges bottom out around dist=0.003
+# (185 residual, vs. 284 at 0.0008 and 204 at 0.004) once the non-anatomical
+# folder anchor + degenerate marker objects below are correctly excluded.
+SKIN_WELD_DIST = 0.003
 
 DECIMATE_RATIO = 0.15
 if "--" in sys.argv:
@@ -70,15 +73,29 @@ skin_layer_coll.exclude = False  # un-exclude so its objects are selectable/join
 skin_coll = bpy.data.collections.get(SKIN_COLLECTION)
 if skin_coll is None:
     raise SystemExit(f"Collection not found: {SKIN_COLLECTION!r}")
-skin_patches = [o for o in skin_coll.all_objects if o.type == 'MESH']
+# The collection also holds the ".g" category-folder anchor for itself plus a
+# handful of 2-vertex/0-face "region" reference markers (Z-Anatomy pin
+# objects, not surface geometry) — both must be excluded or they either
+# pollute the join (the ".g" anchor's own huge placeholder mesh) or add
+# spurious geometry-free objects.
+skin_patches = [o for o in skin_coll.all_objects
+                if o.type == 'MESH' and not NON_ANATOMICAL.search(o.name)
+                and len(o.data.polygons) > 0]
 if not skin_patches:
     raise SystemExit(f"No mesh patches found in {SKIN_COLLECTION!r}")
 
 bpy.ops.object.select_all(action='DESELECT')
 for o in skin_patches:
     o.select_set(True)
-bpy.context.view_layer.objects.active = skin_patches[0]
-bpy.ops.object.join()
+active_patch = skin_patches[0]
+bpy.context.view_layer.objects.active = active_patch
+# bpy.ops.object.join() silently no-ops in headless (-b) execution without an
+# explicit context override — without this, "active" ends up not recognized
+# as a selected mesh and the op leaves BodySkin as just the first patch.
+with bpy.context.temp_override(active_object=active_patch,
+                                selected_objects=skin_patches,
+                                selected_editable_objects=skin_patches):
+    bpy.ops.object.join()
 body_skin = bpy.context.view_layer.objects.active
 body_skin.name = "BodySkin"
 
