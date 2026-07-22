@@ -247,20 +247,10 @@ def classify_face_zone(name: str):
 JOINT_BILATERAL_RULES = [
     ("Shoulder Joint", [r"glenohumeral", r"acromioclavicular", r"coracohumeral",
                         r"coraco-acromial", r"glenoid labrum", r"transverse humeral ligament"]),
-    ("Elbow",          [r"capsule of elbow", r"annular ligament of radius",
-                        r"\bquadrate ligament\b", r"oblique cord"]),
-    ("Wrist",          [r"radiocarpal", r"collateral ligament of wrist", r"ulnocarpal",
-                        r"radioscaph", r"radiate carpal", r"ulnolunate", r"ulnotriquetral"]),
     ("Hip",            [r"capsule of hip", r"iliofemoral", r"pubofemoral", r"ischiofemoral",
                         r"ligament of head of femur", r"zona orbicularis", r"acetabular"]),
-    ("Knee",           [r"capsule of knee", r"cruciate ligament", r"fibular collateral ligament",
-                        r"tibial collateral ligament", r"meniscus", r"meniscotibial",
-                        r"popliteal ligament", r"transverse ligament of knee", r"infrapatellar"]),
-    ("Ankle",          [r"talofibular", r"calcaneofibular", r"tibiotalar", r"tibiocalcaneal",
-                        r"tibionavicular", r"collateral ligament of ankle", r"talocalcaneal",
-                        r"ankle joint"]),
 ]
-_SPINE_LETTER = {"c": "Neck", "t": "Upper Spine", "l": "Lower Spine"}
+_SPINE_LETTER = {"c": "Neck", "l": "Lower Spine"}
 
 
 def _spine_region(low: str):

@@ -2,18 +2,13 @@ import Testing
 @testable import BreathRelaxStretch
 
 struct JointRegionTests {
-    @Test func hasExactlyFifteenRegions() {
-        #expect(JointRegion.allCases.count == 15)
+    @Test func hasExactlySixRegions() {
+        #expect(JointRegion.allCases.count == 6)
     }
 
     @Test func containsTheExpectedNames() {
-        let expected: Set<String> = [
-            "Neck", "Upper Spine", "Lower Spine",
-            "Left Shoulder Joint", "Right Shoulder Joint",
-            "Left Elbow", "Right Elbow", "Left Wrist", "Right Wrist",
-            "Left Hip", "Right Hip", "Left Knee", "Right Knee",
-            "Left Ankle", "Right Ankle",
-        ]
+        let expected: Set<String> = ["Neck", "Lower Spine",
+            "Left Hip", "Right Hip", "Left Shoulder Joint", "Right Shoulder Joint"]
         #expect(JointRegion.allNames == expected)
     }
 
@@ -23,9 +18,9 @@ struct JointRegionTests {
     }
 
     @Test func isJointRecognizesMembersAndRejectsOthers() {
-        #expect(JointRegion.isJoint("Left Elbow"))
+        #expect(JointRegion.isJoint("Left Hip"))
         #expect(JointRegion.isJoint("Neck"))
-        #expect(!JointRegion.isJoint("Left Biceps"))
+        #expect(!JointRegion.isJoint("Left Elbow"))
         #expect(!JointRegion.isJoint("Nonsense"))
     }
 }

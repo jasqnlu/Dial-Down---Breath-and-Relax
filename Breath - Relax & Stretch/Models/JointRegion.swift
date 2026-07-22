@@ -8,16 +8,11 @@ import Foundation
 /// Left = the figure's own left = world +x.
 enum JointRegion: String, CaseIterable {
     case neck = "Neck"
-    case upperSpine = "Upper Spine"
     case lowerSpine = "Lower Spine"
-    case leftShoulder = "Left Shoulder Joint",   rightShoulder = "Right Shoulder Joint"
-    case leftElbow = "Left Elbow",               rightElbow = "Right Elbow"
-    case leftWrist = "Left Wrist",               rightWrist = "Right Wrist"
-    case leftHip = "Left Hip",                   rightHip = "Right Hip"
-    case leftKnee = "Left Knee",                 rightKnee = "Right Knee"
-    case leftAnkle = "Left Ankle",               rightAnkle = "Right Ankle"
+    case leftShoulder = "Left Shoulder Joint", rightShoulder = "Right Shoulder Joint"
+    case leftHip = "Left Hip",                 rightHip = "Right Hip"
 
-    /// The 15 region names.
+    /// The 6 region names.
     static let allNames: Set<String> = Set(allCases.map(\.rawValue))
 
     /// Whether `name` is one of the joint regions.
