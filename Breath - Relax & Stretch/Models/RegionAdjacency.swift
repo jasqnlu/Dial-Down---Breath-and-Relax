@@ -18,13 +18,11 @@ enum RegionAdjacency {
             // ── Axial / torso (midline + both-sides) ──
             "Front Neck": ["Back Neck", "Neck"],
             "Back Neck": ["Spinal Erectors", "Neck"],
-            "Spinal Erectors": ["Lower Back", "Upper Spine", "Lower Spine", "Neck"],
+            "Spinal Erectors": ["Lower Back", "Lower Spine", "Neck"],
             "Lower Back": ["Lower Spine"],
             "Abs": ["Left Obliques", "Right Obliques", "Left Chest", "Right Chest",
                     "Left Hip Flexors", "Right Hip Flexors"],
-            "Neck": ["Upper Spine", "Left Trapezius", "Right Trapezius"],
-            "Upper Spine": ["Lower Spine", "Left Trapezius", "Right Trapezius",
-                            "Left Lats", "Right Lats"],
+            "Neck": ["Left Trapezius", "Right Trapezius"],
             "Lower Spine": ["Left Glutes", "Right Glutes"],
         ]
         // ── Per-side chains (authored for Left; mirrored to Right at build) ──
@@ -35,31 +33,27 @@ enum RegionAdjacency {
             "Left Chest": ["Left Obliques", "Left Shoulder", "Left Shoulder Joint"],
             "Left Obliques": ["Left Chest", "Left Lats", "Lower Back", "Left Hip Flexors"],
             "Left Lats": ["Left Obliques", "Spinal Erectors", "Left Shoulder", "Left Trapezius", "Lower Back"],
-            "Left Biceps": ["Left Triceps", "Left Shoulder", "Left Forearm", "Left Elbow", "Left Shoulder Joint"],
-            "Left Triceps": ["Left Biceps", "Left Shoulder", "Left Forearm", "Left Elbow", "Left Shoulder Joint"],
-            "Left Forearm": ["Left Hand", "Left Elbow", "Left Wrist"],
-            "Left Hand": ["Left Wrist"],
+            "Left Biceps": ["Left Triceps", "Left Shoulder", "Left Forearm", "Left Shoulder Joint"],
+            "Left Triceps": ["Left Biceps", "Left Shoulder", "Left Forearm", "Left Shoulder Joint"],
+            "Left Forearm": ["Left Hand"],
+            "Left Hand": [],
             "Left Glutes": ["Lower Back", "Left Hip Flexors", "Left Hamstrings", "Left Adductors", "Left Hip"],
             "Left Hip Flexors": ["Left Adductors", "Left Quadriceps", "Left Glutes", "Left Hip", "Lower Back"],
             "Left Adductors": ["Left Quadriceps", "Left Hamstrings", "Left Glutes", "Left Hip"],
-            "Left Quadriceps": ["Left Adductors", "Left Hamstrings", "Left Knee", "Left Hip"],
-            "Left Hamstrings": ["Left Glutes", "Left Adductors", "Left Quadriceps", "Left Calves", "Left Knee", "Left Hip"],
-            "Left Calves": ["Left Tibialis", "Left Foot", "Left Knee", "Left Ankle"],
-            "Left Tibialis": ["Left Foot", "Left Knee", "Left Ankle"],
-            "Left Foot": ["Left Ankle"],
+            "Left Quadriceps": ["Left Adductors", "Left Hamstrings", "Left Hip"],
+            "Left Hamstrings": ["Left Glutes", "Left Adductors", "Left Quadriceps", "Left Calves", "Left Hip"],
+            "Left Calves": ["Left Tibialis", "Left Foot"],
+            "Left Tibialis": ["Left Foot"],
+            "Left Foot": [],
             // joints → their crossing muscles
             "Left Shoulder Joint": ["Left Shoulder", "Left Chest", "Left Trapezius"],
-            "Left Elbow": ["Left Biceps", "Left Triceps", "Left Forearm"],
-            "Left Wrist": ["Left Forearm", "Left Hand"],
             "Left Hip": ["Left Glutes", "Left Hip Flexors", "Left Adductors", "Left Quadriceps", "Left Hamstrings", "Lower Back"],
-            "Left Knee": ["Left Quadriceps", "Left Hamstrings", "Left Calves", "Left Tibialis"],
-            "Left Ankle": ["Left Calves", "Left Tibialis", "Left Foot"],
         ]
         for (k, v) in leftEdges {
             e[k] = v
             // Mirror Left → Right by swapping the side prefix on the key and each
             // neighbor that carries a side. Midline neighbors (Abs, Lower Back,
-            // Spinal Erectors, Neck, Upper/Lower Spine) pass through unchanged.
+            // Spinal Erectors, Neck, Lower Spine) pass through unchanged.
             e[mirror(k)] = v.map(mirror)
         }
         return e

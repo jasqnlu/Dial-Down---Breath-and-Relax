@@ -35,9 +35,9 @@ struct RegionAdjacencyTests {
         #expect(!chest.contains("Left Hand"))
     }
 
-    @Test func elbowCrossesBicepsTricepsForearm() {
-        let elbow = RegionAdjacency.adjacent(to: "Left Elbow")
-        #expect(elbow.isSuperset(of: ["Left Biceps", "Left Triceps", "Left Forearm"]))
+    @Test func shoulderJointCrossesShoulderChestTrapezius() {
+        let shoulderJoint = RegionAdjacency.adjacent(to: "Left Shoulder Joint")
+        #expect(shoulderJoint.isSuperset(of: ["Left Shoulder", "Left Chest", "Left Trapezius"]))
     }
 
     @Test func adjacencyStaysOnOneSide() {
