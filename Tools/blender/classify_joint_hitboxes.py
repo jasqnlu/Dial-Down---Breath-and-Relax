@@ -1,4 +1,4 @@
-"""Derive the 15-region joint hit boxes from REAL Z-Anatomy joint geometry
+"""Derive the 6-region joint hit boxes from REAL Z-Anatomy joint geometry
 (capsules/ligaments/discs), replacing the hand-placed boxes.
 
 Pipeline (same two-step shape as classify_hitboxes.py):
@@ -48,8 +48,8 @@ if __name__ == "__main__":
         b = final[region]
         cx = (b["min"][0] + b["max"][0]) / 2
         print(f"  {region:22} center x={cx:+.3f}")
-    expected = (["Neck", "Upper Spine", "Lower Spine"]
+    expected = (["Neck", "Lower Spine"]
                 + [f"{s} {j}" for s in ("Left", "Right")
-                   for j in ("Shoulder Joint", "Elbow", "Wrist", "Hip", "Knee", "Ankle")])
+                   for j in ("Shoulder Joint", "Hip")])
     missing = [r for r in expected if r not in final]
     print(f"\nMissing joint regions ({len(missing)}): {missing}")
