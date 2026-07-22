@@ -7,7 +7,7 @@ Pipeline (same two-step shape as classify_hitboxes.py):
        -> Tools/blender/generated/joint_hitboxes.json
 Buckets each joint object by classify_joint and unions each region into one AABB.
 Same normalized model space as the muscle/head boxes (shared apply_recentre_
-correction), so all boxes align with BodyAnatomy.obj.
+correction), so all boxes align with BodySkinMuscle.obj.
 """
 import json
 import os
