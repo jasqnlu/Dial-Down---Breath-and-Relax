@@ -188,6 +188,34 @@ for obj in muscle_coll.all_objects:
 
 print(f"Selected {len(selected)} objects (1 skin + {len(selected) - 1} muscles); writing renderable ones…")
 
+# --- Trim boundary for the Obliques/Abs visual overlap --------------------
+# Z-Anatomy models External/Internal abdominal oblique + transversus abdominis
+# as single objects whose aponeurosis reaches almost to the body midline —
+# the same medial territory Rectus abdominis (Abs) occupies at a similar
+# anterior depth, so the two groups render as one blended blob instead of
+# distinct regions. The anatomical boundary between them is the linea
+# semilunaris (Abs's own lateral edge); approximate it per side as the
+# most-lateral world-space X any Abs-classified vertex reaches, and later
+# drop any Obliques triangle that doesn't clear it.
+abs_lateral_x = {}  # 'l' -> max X reached (world), 'r' -> min X reached (world)
+for obj in muscle_coll.all_objects:
+    if obj.type != 'MESH' or NON_ANATOMICAL.search(obj.name):
+        continue
+    group = classify_group(obj.name)
+    if group not in ("Left Abs", "Right Abs"):
+        continue
+    side = 'l' if group.startswith("Left") else 'r'
+    xs = [(obj.matrix_world @ v.co).x for v in obj.data.vertices]
+    if not xs:
+        continue
+    lateral = max(xs) if side == 'l' else min(xs)
+    if side not in abs_lateral_x:
+        abs_lateral_x[side] = lateral
+    elif side == 'l':
+        abs_lateral_x[side] = max(abs_lateral_x[side], lateral)
+    else:
+        abs_lateral_x[side] = min(abs_lateral_x[side], lateral)
+
 # --- Write the OBJ (baked normalized coords, one `o` group per object) -------
 os.makedirs(OUT_DIR, exist_ok=True)
 depsgraph = bpy.context.evaluated_depsgraph_get()
@@ -234,7 +262,23 @@ for obj, node_name, tags in selected:
     for v in mesh.vertices:
         n = blender_to_app((nmat @ v.normal)).normalized()
         lines.append(f"vn {n.x:.6f} {n.y:.6f} {n.z:.6f}")
+    # Obliques/abs overlap trim (see abs_lateral_x above): drop any triangle
+    # of an Obliques object that doesn't clear the Abs boundary on its side.
+    oblique_side = None
+    if tags.get("group") in ("Left Obliques", "Right Obliques"):
+        oblique_side = 'l' if tags["group"].startswith("Left") else 'r'
+    vertex_world_x = None
+    if oblique_side is not None and oblique_side in abs_lateral_x:
+        boundary = abs_lateral_x[oblique_side]
+        vertex_world_x = [(mw @ v.co).x for v in mesh.vertices]
     for tri in mesh.loop_triangles:
+        if vertex_world_x is not None:
+            if oblique_side == 'l':
+                if not all(vertex_world_x[i] >= boundary for i in tri.vertices):
+                    continue
+            else:
+                if not all(vertex_world_x[i] <= boundary for i in tri.vertices):
+                    continue
         a, b, c = (i + 1 + v_offset for i in tri.vertices)
         if flip:
             lines.append(f"f {a}//{a} {c}//{c} {b}//{b}")

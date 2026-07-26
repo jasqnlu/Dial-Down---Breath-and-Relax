@@ -17,9 +17,20 @@ struct SeedDataTests {
             for part in (raw["targetBodyParts"] as? [String] ?? []) {
                 let isGroup = MuscleGroup(rawValue: part) != nil
                 let isHead = MuscleGroup.parentOfHead(part) != nil
-                #expect(isGroup || isHead,
+                let isJoint = JointRegion.isJoint(part)
+                #expect(isGroup || isHead || isJoint,
                         "\(raw["name"] ?? "?") targets unknown '\(part)'")
             }
+        }
+    }
+
+    @Test func everyJointRegionHasDedicatedExercises() throws {
+        let all = try Self.loadExercises()
+        for joint in JointRegion.allCases {
+            let hit = all.contains { raw in
+                (raw["targetBodyParts"] as? [String] ?? []).contains(joint.rawValue)
+            }
+            #expect(hit, "No seed exercise targets the '\(joint.rawValue)' joint directly")
         }
     }
 

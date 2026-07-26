@@ -53,9 +53,17 @@ RULES = [
     ("Right Shoulder", ["deltoid muscle", "deltoideus", "supraspinatus", "infraspinatus", "teres minor", "teres major", "subscapularis", "rotator cuff"]),
     ("Left Chest", ["pectoralis major", "pectoralis minor", "serratus anterior"]),
     ("Right Chest", ["pectoralis major", "pectoralis minor", "serratus anterior"]),
-    ("Abs", ["rectus abdominis", "transversus abdominis", "pyramidalis"]),
-    ("Left Obliques", ["external abdominal oblique", "internal abdominal oblique"]),
-    ("Right Obliques", ["external abdominal oblique", "internal abdominal oblique"]),
+    # Only rectus abdominis + pyramidalis (the surface-visible "six-pack") —
+    # transversus abdominis is the deepest abdominal-wall layer and its AABB
+    # wraps almost as far laterally as the oblique muscles above it, which
+    # used to inflate the old side-agnostic "Abs" box past Obliques' volume
+    # and made Obliques win the smallest-volume hit-test tiebreak across the
+    # whole front of the torso. Bucketed under Obliques below instead, where
+    # it anatomically belongs (deep to internal oblique).
+    ("Left Abs", ["rectus abdominis", "pyramidalis"]),
+    ("Right Abs", ["rectus abdominis", "pyramidalis"]),
+    ("Left Obliques", ["external abdominal oblique", "internal abdominal oblique", "transversus abdominis"]),
+    ("Right Obliques", ["external abdominal oblique", "internal abdominal oblique", "transversus abdominis"]),
     ("Left Lats", ["latissimus dorsi"]),
     ("Right Lats", ["latissimus dorsi"]),
     ("Spinal Erectors", ["erector spinae", "iliocostalis", "longissimus thoracis", "spinalis", "multifidus thoracis", "multifidus lumborum", "semispinalis thoracis"]),

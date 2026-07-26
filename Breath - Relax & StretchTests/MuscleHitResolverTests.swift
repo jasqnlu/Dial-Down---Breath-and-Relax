@@ -31,7 +31,7 @@ struct MuscleHitResolverTests {
 
     @Test func bundledMuscleVolumesLoad() {
         let volumes = BodyHitVolumes.load(resource: "musclegroup_hitboxes")
-        #expect(volumes.count == 40)
+        #expect(volumes.count == 41)
         #expect(volumes.allSatisfy { $0.volume > 0 })
     }
 
@@ -41,12 +41,12 @@ struct MuscleHitResolverTests {
     /// bleed the old radius suffered) — adjacency must still exclude the forearm.
     @Test func chestTapExcludesNonAdjacentForearm() {
         let chest = vol("Left Chest",   min: [0.05, 0.3, 0.0], max: [0.35, 0.6, 0.25])
-        let abs   = vol("Abs",          min: [-0.1, 0.1, 0.0], max: [0.1, 0.35, 0.2])   // adjacent
+        let abs   = vol("Left Abs",     min: [-0.1, 0.1, 0.0], max: [0.1, 0.35, 0.2])   // adjacent
         let fore  = vol("Left Forearm", min: [0.30, 0.2, 0.0], max: [0.45, 0.5, 0.2])   // near but NOT adjacent
         let tapCenter = chest.center
         let result = MuscleHitResolver.candidates(near: tapCenter, in: [chest, abs, fore], maxCandidates: 4)
         #expect(result.first == "Left Chest")
-        #expect(result.contains("Abs"))
+        #expect(result.contains("Left Abs"))
         #expect(!result.contains("Left Forearm"))
     }
 
@@ -81,14 +81,14 @@ struct MuscleHitResolverTests {
 
     @Test func candidatesCapAtMaxClosestFirst() {
         let chest = vol("Left Chest", min: [0.05, 0.3, 0.0], max: [0.35, 0.6, 0.25])
-        let abs   = vol("Abs",           min: [0.0, 0.28, 0.0], max: [0.1, 0.4, 0.2])   // closest neighbor
+        let abs   = vol("Left Abs",      min: [0.0, 0.28, 0.0], max: [0.1, 0.4, 0.2])   // closest neighbor
         let obl   = vol("Left Obliques", min: [0.0, 0.1, 0.0], max: [0.2, 0.3, 0.2])
         let sh    = vol("Left Shoulder", min: [0.2, 0.55, 0.0], max: [0.4, 0.75, 0.2])
         let result = MuscleHitResolver.candidates(near: chest.center,
                                                   in: [chest, abs, obl, sh], maxCandidates: 2)
         #expect(result.count == 2)
         #expect(result.first == "Left Chest")
-        #expect(result.last == "Abs")   // the closest adjacent neighbor survives the cap
+        #expect(result.last == "Left Abs")   // the closest adjacent neighbor survives the cap
     }
 
     @Test func candidatesOnEmptyVolumesReturnsEmpty() {

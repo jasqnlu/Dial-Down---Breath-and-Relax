@@ -37,7 +37,7 @@
                         assign(.shoulders, [.leftDelts, .rightDelts, .leftTraps, .rightTraps])
                         assign(.chest, [.leftChest, .rightChest])
                         assign(.back, [.leftLats, .rightLats, .spinalErectors, .lowerBack])
-                        assign(.core, [.abs, .leftObliques, .rightObliques])
+                        assign(.core, [.leftAbs, .rightAbs, .leftObliques, .rightObliques])
                         assign(.arms, [.leftBiceps, .rightBiceps, .leftTriceps, .rightTriceps,
                                        .leftForearm, .rightForearm, .leftHand, .rightHand])
                         assign(.hipsGlutes, [.leftGlutes, .rightGlutes, .leftHipFlexors, .rightHipFlexors,

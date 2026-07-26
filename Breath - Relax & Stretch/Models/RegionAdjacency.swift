@@ -20,8 +20,6 @@ enum RegionAdjacency {
             "Back Neck": ["Spinal Erectors", "Neck"],
             "Spinal Erectors": ["Lower Back", "Lower Spine", "Neck"],
             "Lower Back": ["Lower Spine"],
-            "Abs": ["Left Obliques", "Right Obliques", "Left Chest", "Right Chest",
-                    "Left Hip Flexors", "Right Hip Flexors"],
             "Neck": ["Left Trapezius", "Right Trapezius"],
             "Lower Spine": ["Left Glutes", "Right Glutes"],
         ]
@@ -30,8 +28,9 @@ enum RegionAdjacency {
             "Left Trapezius": ["Left Shoulder", "Back Neck", "Front Neck", "Spinal Erectors", "Neck"],
             "Left Shoulder": ["Left Trapezius", "Left Chest", "Left Biceps", "Left Triceps",
                               "Left Lats", "Left Shoulder Joint"],
-            "Left Chest": ["Left Obliques", "Left Shoulder", "Left Shoulder Joint"],
-            "Left Obliques": ["Left Chest", "Left Lats", "Lower Back", "Left Hip Flexors"],
+            "Left Chest": ["Left Obliques", "Left Abs", "Left Shoulder", "Left Shoulder Joint"],
+            "Left Abs": ["Right Abs", "Left Obliques", "Left Chest", "Left Hip Flexors"],
+            "Left Obliques": ["Left Chest", "Left Abs", "Left Lats", "Lower Back", "Left Hip Flexors"],
             "Left Lats": ["Left Obliques", "Spinal Erectors", "Left Shoulder", "Left Trapezius", "Lower Back"],
             "Left Biceps": ["Left Triceps", "Left Shoulder", "Left Forearm", "Left Shoulder Joint"],
             "Left Triceps": ["Left Biceps", "Left Shoulder", "Left Forearm", "Left Shoulder Joint"],
@@ -52,7 +51,7 @@ enum RegionAdjacency {
         for (k, v) in leftEdges {
             e[k] = v
             // Mirror Left → Right by swapping the side prefix on the key and each
-            // neighbor that carries a side. Midline neighbors (Abs, Lower Back,
+            // neighbor that carries a side. Midline neighbors (Lower Back,
             // Spinal Erectors, Neck, Lower Spine) pass through unchanged.
             e[mirror(k)] = v.map(mirror)
         }
