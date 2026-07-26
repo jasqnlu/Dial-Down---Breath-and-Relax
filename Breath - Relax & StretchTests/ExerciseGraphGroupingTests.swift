@@ -73,9 +73,9 @@ struct ExerciseGraphGroupingTests {
 
 struct RegionExerciseResolverTests {
     /// The regression: a coarse region name ("Core") must resolve to the fine
-    /// muscle it maps to ("Abs") instead of matching nothing.
+    /// muscle it maps to ("Left Abs"/"Right Abs") instead of matching nothing.
     @Test func coarseRegionResolvesToItsMuscleGroup() {
-        let abs = makeExercise(name: "Ab Crunch", targetBodyParts: ["Abs"])
+        let abs = makeExercise(name: "Ab Crunch", targetBodyParts: ["Left Abs", "Right Abs"])
         let oblique = makeExercise(name: "Oblique Twist", targetBodyParts: ["Left Obliques"])
         let bicep = makeExercise(name: "Bicep Stretch", targetBodyParts: ["Left Biceps"])
 
@@ -130,6 +130,37 @@ struct RegionExerciseResolverTests {
 
         #expect(resolver.direct.isEmpty)
         #expect(resolver.related.map(\.name) == ["Triceps Wall Press"])
+    }
+
+    /// A joint region shows its OWN tagged exercises as `direct` (dedicated
+    /// joint-mobility content), falling back to the crossing muscles'
+    /// stretches as `related`.
+    @Test func jointResolvesToOwnExercisesThenCrossingMuscleFallback() {
+        let jointEx  = makeExercise(name: "Standing Hip Circles",
+                                    targetBodyParts: ["Left Hip Flexors", "Left Adductors", "Left Hip"])
+        let crossing = makeExercise(name: "Glute Stretch",
+                                    targetBodyParts: ["Left Glutes"])
+        // "Left Hip" crosses into both .hipsGlutes (glutes/hip flexors/adductors)
+        // and .legs (hamstrings), so pick an unrelated exercise outside both.
+        let other    = makeExercise(name: "Bicep Stretch",
+                                    targetBodyParts: ["Left Biceps"])
+
+        let resolver = RegionExerciseResolver(regions: ["Left Hip"],
+                                              exercises: [jointEx, crossing, other])
+
+        #expect(resolver.direct.map(\.name) == ["Standing Hip Circles"])
+        #expect(resolver.related.map(\.name) == ["Glute Stretch"])
+        #expect(!(resolver.direct + resolver.related).contains { $0.name == "Bicep Stretch" })
+    }
+
+    /// A joint with no curated content of its own gracefully falls back to
+    /// its crossing muscles' stretches rather than showing nothing.
+    @Test func jointWithoutOwnExercisesFallsBackToCrossingMuscles() {
+        let crossing = makeExercise(name: "Glute Stretch", targetBodyParts: ["Left Glutes"])
+        let resolver = RegionExerciseResolver(regions: ["Left Hip"], exercises: [crossing])
+
+        #expect(resolver.direct.isEmpty)
+        #expect(resolver.related.map(\.name) == ["Glute Stretch"])
     }
 
     private func makeExercise(name: String, targetBodyParts: [String]) -> Exercise {

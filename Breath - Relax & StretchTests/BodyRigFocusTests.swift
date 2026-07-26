@@ -26,4 +26,22 @@ import simd
         let right = rig.cameraNode.simdTransform.columns.0   // camera's local +X in world space
         #expect(abs(right.y) < 0.001, "camera rolled during focus (right.y=\(right.y))")
     }
+
+    /// resetCamera's first phase must retreat along the camera's CURRENT
+    /// bearing, not swing over to the canonical +Z bearing — an off-axis
+    /// focus dolly (see above) reversed straight to (0,0,distance) orbits the
+    /// body and reads as the figure rotating (the bug this guards against).
+    @Test func resetCameraRecedesAlongCurrentBearingRatherThanOrbiting() {
+        let off = SCNVector3(1.0, 0.2, 0.3)   // an off-axis focus position
+        let receded = BodyRig.recededPosition(from: off, minDistance: BodyRig.defaultCameraDistance)
+
+        let originalBearing = simd_normalize(SIMD3<Float>(off.x, 0, off.z))
+        let recededBearing = simd_normalize(SIMD3<Float>(receded.x, 0, receded.z))
+        #expect(simd_length(originalBearing - recededBearing) < 0.001,
+                "receded position changed bearing — this orbits the body instead of receding")
+
+        let distance = simd_length(SIMD3<Float>(receded.x, 0, receded.z))
+        #expect(distance >= Float(BodyRig.defaultCameraDistance) - 0.001,
+                "receded position should be at least defaultCameraDistance out")
+    }
 }

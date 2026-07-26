@@ -722,11 +722,11 @@
       "layer": "muscle"
     },
     "Pyramidalis_muscle_l": {
-      "group": "Abs",
+      "group": "Left Abs",
       "layer": "muscle"
     },
     "Pyramidalis_muscle_r": {
-      "group": "Abs",
+      "group": "Right Abs",
       "layer": "muscle"
     },
     "Quadratus_lumborum_muscle_l": {
@@ -754,11 +754,11 @@
       "layer": "muscle"
     },
     "Rectus_abdominis_muscle_l": {
-      "group": "Abs",
+      "group": "Left Abs",
       "layer": "muscle"
     },
     "Rectus_abdominis_muscle_r": {
-      "group": "Abs",
+      "group": "Right Abs",
       "layer": "muscle"
     },
     "Rectus_femoris_muscle_l": {
@@ -1072,11 +1072,11 @@
       "layer": "muscle"
     },
     "Transversus_abdominis_muscle_l": {
-      "group": "Abs",
+      "group": "Left Obliques",
       "layer": "muscle"
     },
     "Transversus_abdominis_muscle_r": {
-      "group": "Abs",
+      "group": "Right Obliques",
       "layer": "muscle"
     },
     "Ulnar_head_of_extensor_carpi_ulnaris_l": {

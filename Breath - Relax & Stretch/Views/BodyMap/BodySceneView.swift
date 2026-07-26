@@ -464,13 +464,45 @@ final class BodyRig {
 
     /// Restores the camera to a plain forward-facing shot at `distance` —
     /// used when disambiguation is cancelled or resolved.
+    ///
+    /// `focus()` deliberately dollies off the Z-axis, out along the tapped
+    /// dot's outward normal (see its doc comment). Snapping straight back to
+    /// (0,0,distance) in one animated beat swings the camera through that
+    /// same arc in reverse — which orbits the body and reads as the FIGURE
+    /// rotating, not the camera zooming out (the exact illusion `focus()`
+    /// guards against, unguarded on the way back). Retreating along the
+    /// current bearing first removes the orbit — the dot just recedes — then
+    /// the bearing snaps to dead-center instantly, once the camera is far
+    /// enough out for that jump to be imperceptible.
     func resetCamera(distance: CGFloat, duration: TimeInterval = 0.4) {
+        let receded = BodyRig.recededPosition(from: cameraNode.position, minDistance: distance)
+
         SCNTransaction.begin()
         SCNTransaction.animationDuration = duration
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        cameraNode.position = SCNVector3(0, 0, Float(distance))
+        cameraNode.position = receded
         cameraNode.look(at: SCNVector3(0, 0, 0))
+        SCNTransaction.completionBlock = { [weak self] in
+            guard let self else { return }
+            SCNTransaction.begin()
+            SCNTransaction.animationDuration = 0
+            self.cameraNode.position = SCNVector3(0, 0, Float(distance))
+            self.cameraNode.look(at: SCNVector3(0, 0, 0))
+            SCNTransaction.commit()
+        }
         SCNTransaction.commit()
+    }
+
+    /// Pure helper for `resetCamera`'s first phase: moves `position` straight
+    /// out along its own bearing (the horizontal direction from the origin
+    /// through it) to at least `minDistance`, preserving whatever azimuth the
+    /// focus dolly left the camera at. Degenerate only if the camera sits
+    /// exactly on the Y axis — falls back to the canonical +Z bearing then.
+    static func recededPosition(from position: SCNVector3, minDistance: CGFloat) -> SCNVector3 {
+        let current = SIMD3<Float>(Float(position.x), 0, Float(position.z))
+        let bearing = simd_length(current) > 1e-4 ? simd_normalize(current) : SIMD3<Float>(0, 0, 1)
+        let target = bearing * Float(max(defaultCameraDistance, minDistance))
+        return SCNVector3(target.x, 0, target.z)
     }
 
     /// Snap to the nearest equivalent of `target` (0 = front, π = back) via the
@@ -698,6 +730,13 @@ struct BodySceneView: View {
             }
         }
         .onAppear {
+            // Skip while disambiguating: the view also disappears/reappears
+            // when the exercise list is pushed/popped over it, and in that
+            // case `refocusToken` (below) owns the camera — it redoes the
+            // full off-axis dolly + look(at:). Stomping just `position.z`
+            // here would leave the camera's x/y and orientation mismatched,
+            // which reads as the body having rotated.
+            guard !isFocused else { return }
             rig.snap(to: facing.rotationY)
             rig.cameraNode.position.z = Float(cameraZ)
         }

@@ -76,10 +76,11 @@ struct RegionExerciseResolver {
     let related: [Exercise]
 
     init(regions: [String], exercises: [Exercise]) {
-        // A marked region is either a muscle group / coarse name, or an
-        // anatomical sub-head ("Left Triceps Long Head"). Heads match their own
-        // exercises directly (distinct-per-head content), and fall back to the
-        // parent muscle's exercises as "related" so a head with no curated
+        // A marked region is a muscle group / coarse name, an anatomical
+        // sub-head ("Left Triceps Long Head"), or a joint region ("Left Hip").
+        // Heads and joints both match their own tagged exercises directly
+        // (distinct, dedicated content), and fall back to the parent/crossing
+        // muscles' exercises as "related" so a region with no curated
         // stretches yet still shows something useful. Group/coarse names keep
         // the original behaviour: migrate coarse → fine, then category fallback.
         var directNames: [String] = []
@@ -88,6 +89,9 @@ struct RegionExerciseResolver {
             if let parent = MuscleGroup.parentOfHead(region) {
                 directNames.append(region)
                 parentNames.append(parent)
+            } else if JointRegion.isJoint(region) {
+                directNames.append(region)
+                parentNames.append(contentsOf: MuscleGroup.migrate([region]))
             } else {
                 directNames.append(contentsOf: MuscleGroup.migrate([region]))
             }
@@ -165,11 +169,9 @@ struct BodyPartExercisesView: View {
                         Section {
                             exerciseRows(resolver.related)
                         } header: {
-                            Text("More from this area")
+                            Text(relatedSectionTitle)
                         } footer: {
-                            Text(resolver.direct.isEmpty
-                                 ? "No exercises target this exact spot yet — here are related ones for the same area."
-                                 : "Other exercises that work the same area.")
+                            Text(relatedFooterText)
                         }
                     }
                 }
@@ -187,6 +189,25 @@ struct BodyPartExercisesView: View {
                 ExerciseRow(exercise: exercise)
             }
         }
+    }
+
+    // A single tapped region is named directly ("Spinal Erectors") rather
+    // than lumped into generic "this area" copy, so a specific muscle/joint
+    // reads as its own distinct thing even when it has no exercises of its
+    // own yet and is falling back to a nearby one's stretches.
+    private var relatedSectionTitle: String {
+        bodyParts.count == 1 ? "Related to \(bodyParts[0])" : "More from this area"
+    }
+
+    private var relatedFooterText: String {
+        guard bodyParts.count == 1 else {
+            return resolver.direct.isEmpty
+                ? "No exercises target this exact spot yet — here are related ones for the same area."
+                : "Other exercises that work the same area."
+        }
+        return resolver.direct.isEmpty
+            ? "No exercises target \(bodyParts[0]) directly yet — here are ones for nearby muscles."
+            : "Other exercises that work near \(bodyParts[0])."
     }
 
     private var emptyDescription: String {
