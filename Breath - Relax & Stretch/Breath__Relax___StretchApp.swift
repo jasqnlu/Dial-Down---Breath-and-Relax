@@ -113,10 +113,17 @@ struct BreathRelaxStretchApp: App {
                         Text("Your saved data couldn't be opened, so this session is running in a temporary mode — anything you do now will be lost when you close the app. Reopening the app again may restore normal saving.")
                     }
                     .task { await syncRemoteCatalog() }
-                    .onOpenURL { url in
-                        deepLinkRouter.handle(url)
-                    }
                 }
+            }
+            // Mounted unconditionally (not inside the `else` branch above) so a
+            // cold-launch deep link — a widget tap, a shared routine/challenge
+            // link — is still caught during the splash window, not only once
+            // `isPreloading` flips false. `DeepLinkRouter.pendingAction` already
+            // queues until a consumer (HomeView) is ready, exactly as it does
+            // today for the auth/onboarding gate, so routing through it here
+            // needs no new queuing logic.
+            .onOpenURL { url in
+                deepLinkRouter.handle(url)
             }
             .task {
                 async let meshWarm: Void = warmBodyMesh()
