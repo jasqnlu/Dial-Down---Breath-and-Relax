@@ -55,6 +55,11 @@ struct BreathRelaxStretchApp: App {
         }
     }
 
+    /// Gates the splash (`AppLoadingView`) until the anatomy mesh is warm and
+    /// a minimum readable duration has elapsed. See `minimumSplashDuration`.
+    @State private var isPreloading = true
+    private static let minimumSplashDuration: UInt64 = 1_500_000_000 // 1.5s, in nanoseconds
+
     @AppStorage("seedDataVersion") private var seedDataVersion: Int = 0
     /// Highest seed version that added new exercises the user should be told
     /// about. Later data-only migrations bump `seedDataVersion` past this.
@@ -69,45 +74,85 @@ struct BreathRelaxStretchApp: App {
 
     var body: some Scene {
         WindowGroup {
-            OnboardingGate {
-                RootView()
-            }
-            .preferredColorScheme(resolvedColorScheme)
-            .environmentObject(auth)
-            .environmentObject(deepLinkRouter)
-            .onAppear {
-                let freshInstall = seedIfNeeded()
-                migrateSeedIfNeeded()
-                if freshInstall {
-                    // A first-ever launch already has all the content — don't
-                    // greet new users with a "New Content Added" alert.
-                    notifiedSeedVersion = seedDataVersion
-                } else if notifiedSeedVersion < Self.latestContentSeedVersion {
-                    // Only greet users about versions that actually added new
-                    // exercises. Data-only migrations (e.g. v5's isBilateral
-                    // flag) bump seedDataVersion but shouldn't pop the alert.
-                    showNewContentAlert = true
+            Group {
+                if isPreloading {
+                    AppLoadingView()
+                        .transition(.opacity)
+                } else {
+                    OnboardingGate {
+                        RootView()
+                    }
+                    .preferredColorScheme(resolvedColorScheme)
+                    .environmentObject(auth)
+                    .environmentObject(deepLinkRouter)
+                    .onAppear {
+                        let freshInstall = seedIfNeeded()
+                        migrateSeedIfNeeded()
+                        if freshInstall {
+                            // A first-ever launch already has all the content — don't
+                            // greet new users with a "New Content Added" alert.
+                            notifiedSeedVersion = seedDataVersion
+                        } else if notifiedSeedVersion < Self.latestContentSeedVersion {
+                            // Only greet users about versions that actually added new
+                            // exercises. Data-only migrations (e.g. v5's isBilateral
+                            // flag) bump seedDataVersion but shouldn't pop the alert.
+                            showNewContentAlert = true
+                        }
+                        if Self.didFallBackToInMemoryStore {
+                            showDataNotSavingAlert = true
+                        }
+                    }
+                    .alert("New Content Added", isPresented: $showNewContentAlert) {
+                        Button("Got it") { notifiedSeedVersion = seedDataVersion }
+                    } message: {
+                        Text("New stretches were added covering every muscle group — find them in the Exercises tab.")
+                    }
+                    .alert("Changes Won't Be Saved", isPresented: $showDataNotSavingAlert) {
+                        Button("OK") {}
+                    } message: {
+                        Text("Your saved data couldn't be opened, so this session is running in a temporary mode — anything you do now will be lost when you close the app. Reopening the app again may restore normal saving.")
+                    }
+                    .task { await syncRemoteCatalog() }
                 }
-                if Self.didFallBackToInMemoryStore {
-                    showDataNotSavingAlert = true
-                }
             }
-            .alert("New Content Added", isPresented: $showNewContentAlert) {
-                Button("Got it") { notifiedSeedVersion = seedDataVersion }
-            } message: {
-                Text("New stretches were added covering every muscle group — find them in the Exercises tab.")
-            }
-            .alert("Changes Won't Be Saved", isPresented: $showDataNotSavingAlert) {
-                Button("OK") {}
-            } message: {
-                Text("Your saved data couldn't be opened, so this session is running in a temporary mode — anything you do now will be lost when you close the app. Reopening the app again may restore normal saving.")
-            }
-            .task { await syncRemoteCatalog() }
+            // Mounted unconditionally (not inside the `else` branch above) so a
+            // cold-launch deep link — a widget tap, a shared routine/challenge
+            // link — is still caught during the splash window, not only once
+            // `isPreloading` flips false. `DeepLinkRouter.pendingAction` already
+            // queues until a consumer (HomeView) is ready, exactly as it does
+            // today for the auth/onboarding gate, so routing through it here
+            // needs no new queuing logic.
             .onOpenURL { url in
                 deepLinkRouter.handle(url)
             }
+            .task {
+                guard isPreloading else { return }
+                async let meshWarm: Void = warmBodyMesh()
+                async let minimumDelay: Void = pauseForReadability()
+                await meshWarm
+                await minimumDelay
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isPreloading = false
+                }
+            }
         }
         .modelContainer(sharedModelContainer)
+    }
+
+    // MARK: - Launch preload
+
+    /// Warms `BodyMeshLoader`'s in-memory cache so the first `BodySceneView`
+    /// the user opens never has to parse the 12MB anatomy OBJ itself. Result
+    /// is discarded — a parse failure just means `BodySceneView` falls back
+    /// to its existing "3D Model Unavailable" state later, on demand.
+    private func warmBodyMesh() async {
+        _ = await BodyMeshLoader.shared.anatomyParts()
+    }
+
+    /// Keeps the splash up for at least `minimumSplashDuration` even when the
+    /// mesh preloads faster than that, so the trivia fact is readable.
+    private func pauseForReadability() async {
+        try? await Task.sleep(nanoseconds: Self.minimumSplashDuration)
     }
 
     // MARK: - Seed exercises
