@@ -480,10 +480,11 @@ struct SessionPlayerView: View {
                     guard !Task.isCancelled else { return }
                     // Mirrors the existing countdown `.task` loop's own
                     // `guard !isPaused` skip — while the session is paused,
+                    // or during a get-ready transition / the summary screen,
                     // this tick is a no-op rather than advancing/beeping.
-                    guard !isPaused else { continue }
+                    guard !isPaused, !isShowingGetReady, !showingSummary else { continue }
                     withAnimation(.easeOut(duration: 0.35)) {
-                        instructionCueIndex += 1
+                        instructionCueIndex = (instructionCueIndex + 1) % count
                     }
                     AudioServicesPlaySystemSound(soundCueBeep)
                 }
@@ -539,6 +540,7 @@ struct SessionPlayerView: View {
             }
         } else {
             // Session complete
+            instructionCueTask?.cancel()
             notifySuccess.notificationOccurred(.success)
             AudioServicesPlaySystemSound(soundComplete)
             saveSession()
