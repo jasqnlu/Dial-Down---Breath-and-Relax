@@ -126,6 +126,7 @@ struct BreathRelaxStretchApp: App {
                 deepLinkRouter.handle(url)
             }
             .task {
+                guard isPreloading else { return }
                 async let meshWarm: Void = warmBodyMesh()
                 async let minimumDelay: Void = pauseForReadability()
                 await meshWarm
