@@ -3,6 +3,7 @@
     {
       "name": "Deep Belly Breath",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 120,
       "difficulty": 1,
@@ -19,6 +20,7 @@
     {
       "name": "Box Breathing",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 180,
       "difficulty": 1,
@@ -36,6 +38,7 @@
     {
       "name": "4-7-8 Breathing",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 150,
       "difficulty": 2,
@@ -52,6 +55,7 @@
     {
       "name": "Alternate Nostril Breathing",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 180,
       "difficulty": 2,
@@ -69,6 +73,7 @@
     {
       "name": "Pursed-Lip Breathing",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 120,
       "difficulty": 1,
@@ -84,6 +89,7 @@
     {
       "name": "Diaphragmatic Breath with Counting",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 150,
       "difficulty": 1,
@@ -99,6 +105,7 @@
     {
       "name": "Coherent Breathing",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 180,
       "difficulty": 1,
@@ -114,6 +121,7 @@
     {
       "name": "Humming Bee Breath",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 90,
       "difficulty": 2,
@@ -129,6 +137,7 @@
     {
       "name": "Lion's Breath",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 60,
       "difficulty": 1,
@@ -144,6 +153,7 @@
     {
       "name": "Eye Palming",
       "type": "breath",
+      "cueStyle": "hold",
       "targetBodyParts": [],
       "durationSeconds": 60,
       "difficulty": 1,
@@ -158,6 +168,7 @@
     {
       "name": "Chin Tuck (Forward Head Reset)",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Front Neck",
         "Back Neck",
@@ -178,6 +189,7 @@
     {
       "name": "Seated Neck Rolls",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Front Neck",
         "Back Neck",
@@ -200,6 +212,7 @@
     {
       "name": "Neck Extension Stretch (Gentle Look-Up)",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Front Neck"
       ],
@@ -218,6 +231,7 @@
     {
       "name": "Neck Flexion Stretch (Chin-to-Chest)",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Back Neck"
       ],
@@ -237,6 +251,7 @@
       "name": "Seated Neck Rotation",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Front Neck",
         "Back Neck",
@@ -256,6 +271,7 @@
     {
       "name": "Left Levator Scapulae Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Back Neck",
         "Left Trapezius"
@@ -275,6 +291,7 @@
     {
       "name": "Right Levator Scapulae Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Back Neck",
         "Right Trapezius"
@@ -295,6 +312,7 @@
       "name": "Left Upper Trapezius Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Trapezius"
       ],
@@ -314,6 +332,7 @@
       "name": "Right Upper Trapezius Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Trapezius"
       ],
@@ -332,6 +351,7 @@
     {
       "name": "Shoulder Roll",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Trapezius",
         "Right Trapezius",
@@ -353,6 +373,7 @@
     {
       "name": "Left Cross-Body Rear Delt Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Shoulder"
       ],
@@ -371,6 +392,7 @@
     {
       "name": "Right Cross-Body Rear Delt Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Shoulder"
       ],
@@ -389,6 +411,7 @@
     {
       "name": "Doorway Shoulder & Chest Opener",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Shoulder",
         "Right Shoulder",
@@ -410,6 +433,7 @@
     {
       "name": "Left Thread the Needle",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Shoulder",
         "Left Lats",
@@ -429,6 +453,7 @@
     {
       "name": "Right Thread the Needle",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Shoulder",
         "Right Lats",
@@ -448,6 +473,7 @@
     {
       "name": "Doorway Pec Stretch (Mid Chest)",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Chest",
         "Right Chest",
@@ -469,6 +495,7 @@
     {
       "name": "High Doorway Chest Stretch (Upper Chest)",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Chest",
         "Right Chest",
@@ -490,6 +517,7 @@
     {
       "name": "Left Supine Chest Opener (Open Book)",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Chest",
         "Spinal Erectors"
@@ -508,6 +536,7 @@
     {
       "name": "Right Supine Chest Opener (Open Book)",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Chest",
         "Spinal Erectors"
@@ -526,6 +555,7 @@
     {
       "name": "Cobra Stretch (Prone Press-Up)",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Abs",
         "Right Abs"
@@ -545,6 +575,7 @@
     {
       "name": "Standing Back Extension",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Abs",
         "Right Abs",
@@ -565,6 +596,7 @@
     {
       "name": "Kneeling Abdominal Stretch (Camel-Lite)",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Abs",
         "Right Abs"
@@ -584,6 +616,7 @@
     {
       "name": "Cat-Cow Flow",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Spinal Erectors",
         "Lower Back",
@@ -605,6 +638,7 @@
     {
       "name": "Left Seated Spinal Twist",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Spinal Erectors",
         "Lower Back",
@@ -625,6 +659,7 @@
     {
       "name": "Right Seated Spinal Twist",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Spinal Erectors",
         "Lower Back",
@@ -645,6 +680,7 @@
     {
       "name": "Child's Pose",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Lower Back",
         "Spinal Erectors",
@@ -667,6 +703,7 @@
       "name": "Left Single-Leg Supine Knee-to-Chest",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Lower Back",
         "Left Glutes"
@@ -686,6 +723,7 @@
       "name": "Right Single-Leg Supine Knee-to-Chest",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Lower Back",
         "Right Glutes"
@@ -704,6 +742,7 @@
     {
       "name": "Double Knee-to-Chest Release",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Lower Back",
         "Left Glutes",
@@ -723,6 +762,7 @@
     {
       "name": "Pelvic Tilt",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Abs",
         "Right Abs",
@@ -744,6 +784,7 @@
     {
       "name": "Seated Forward Fold",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Lower Back",
         "Spinal Erectors",
@@ -765,6 +806,7 @@
     {
       "name": "Happy Baby Pose",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Lower Back",
         "Left Adductors",
@@ -784,6 +826,7 @@
     {
       "name": "Left Supine Spinal Twist (Windshield Wipers)",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Spinal Erectors",
         "Lower Back",
@@ -803,6 +846,7 @@
     {
       "name": "Right Supine Spinal Twist (Windshield Wipers)",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Spinal Erectors",
         "Lower Back",
@@ -823,6 +867,7 @@
       "name": "Left Standing Side Reach",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Obliques",
         "Left Lats"
@@ -842,6 +887,7 @@
       "name": "Right Standing Side Reach",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Obliques",
         "Right Lats"
@@ -860,6 +906,7 @@
     {
       "name": "Left Standing Side Bend",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Obliques"
       ],
@@ -877,6 +924,7 @@
     {
       "name": "Right Standing Side Bend",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Obliques"
       ],
@@ -895,6 +943,7 @@
       "name": "Left Kneeling Lat Stretch (Hands on Chair)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Lats"
       ],
@@ -913,6 +962,7 @@
       "name": "Right Kneeling Lat Stretch (Hands on Chair)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Lats"
       ],
@@ -931,6 +981,7 @@
       "name": "Left Wall Bicep Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Biceps"
       ],
@@ -950,6 +1001,7 @@
       "name": "Right Wall Bicep Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Biceps"
       ],
@@ -969,6 +1021,7 @@
       "name": "Left Doorway Bicep Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Biceps",
         "Left Chest"
@@ -988,6 +1041,7 @@
       "name": "Right Doorway Bicep Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Biceps",
         "Right Chest"
@@ -1006,6 +1060,7 @@
     {
       "name": "Clasped-Hands Behind-Back Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Biceps",
         "Right Biceps",
@@ -1029,6 +1084,7 @@
       "name": "Left Overhead Triceps Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Triceps"
       ],
@@ -1047,6 +1103,7 @@
       "name": "Right Overhead Triceps Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Triceps"
       ],
@@ -1065,6 +1122,7 @@
       "name": "Left Cross-Body Elbow Pull",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Triceps",
         "Left Shoulder"
@@ -1084,6 +1142,7 @@
       "name": "Right Cross-Body Elbow Pull",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Triceps",
         "Right Shoulder"
@@ -1103,6 +1162,7 @@
       "name": "Left Towel-Assisted Triceps Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Triceps",
         "Left Shoulder"
@@ -1123,6 +1183,7 @@
       "name": "Right Towel-Assisted Triceps Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Triceps",
         "Right Shoulder"
@@ -1143,6 +1204,7 @@
       "name": "Left Wrist Flexor Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Forearm"
       ],
@@ -1160,6 +1222,7 @@
       "name": "Right Wrist Flexor Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Forearm"
       ],
@@ -1177,6 +1240,7 @@
       "name": "Left Wrist Extensor Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Forearm"
       ],
@@ -1194,6 +1258,7 @@
       "name": "Right Wrist Extensor Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Forearm"
       ],
@@ -1210,6 +1275,7 @@
     {
       "name": "Reverse Prayer Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Forearm",
         "Right Forearm",
@@ -1231,6 +1297,7 @@
     {
       "name": "Prayer Stretch (Palms Together, Lower)",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Forearm",
         "Right Forearm"
@@ -1249,6 +1316,7 @@
     {
       "name": "Wrist Circles",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Forearm",
         "Right Forearm"
@@ -1267,6 +1335,7 @@
       "name": "Left Seated Figure-Four Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Glutes"
       ],
@@ -1286,6 +1355,7 @@
       "name": "Right Seated Figure-Four Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Glutes"
       ],
@@ -1305,6 +1375,7 @@
       "name": "Left Supine Figure-4 Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Glutes"
       ],
@@ -1323,6 +1394,7 @@
       "name": "Right Supine Figure-4 Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Glutes"
       ],
@@ -1341,6 +1413,7 @@
       "name": "Left Standing Figure-4 Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Glutes"
       ],
@@ -1360,6 +1433,7 @@
       "name": "Right Standing Figure-4 Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Glutes"
       ],
@@ -1378,6 +1452,7 @@
     {
       "name": "Pigeon Pose (Right Leg Forward)",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Glutes",
         "Left Hip Flexors"
@@ -1397,6 +1472,7 @@
     {
       "name": "Pigeon Pose (Left Leg Forward)",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Glutes",
         "Right Hip Flexors"
@@ -1417,6 +1493,7 @@
       "name": "Left Kneeling Hip-Flexor Lunge",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Hip Flexors"
       ],
@@ -1436,6 +1513,7 @@
       "name": "Right Kneeling Hip-Flexor Lunge",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Hip Flexors"
       ],
@@ -1455,6 +1533,7 @@
       "name": "Left Low Lunge (Anjaneyasana)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Hip Flexors",
         "Left Abs",
@@ -1475,6 +1554,7 @@
       "name": "Right Low Lunge (Anjaneyasana)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Hip Flexors",
         "Left Abs",
@@ -1495,6 +1575,7 @@
       "name": "Left Standing Hip-Flexor Stretch (Foot Elevated)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Hip Flexors"
       ],
@@ -1514,6 +1595,7 @@
       "name": "Right Standing Hip-Flexor Stretch (Foot Elevated)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Hip Flexors"
       ],
@@ -1532,6 +1614,7 @@
     {
       "name": "Seated Butterfly Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Adductors",
         "Right Adductors"
@@ -1552,6 +1635,7 @@
       "name": "Left Side Lunge (Groin Stretch)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Adductors"
       ],
@@ -1570,6 +1654,7 @@
       "name": "Right Side Lunge (Groin Stretch)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Adductors"
       ],
@@ -1587,6 +1672,7 @@
     {
       "name": "Frog Stretch (Kneeling Groin Stretch)",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Adductors",
         "Right Adductors"
@@ -1606,6 +1692,7 @@
     {
       "name": "Wide-Legged Forward Fold",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Adductors",
         "Right Adductors",
@@ -1628,6 +1715,7 @@
       "name": "Left Standing Quad Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Quadriceps"
       ],
@@ -1647,6 +1735,7 @@
       "name": "Right Standing Quad Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Quadriceps"
       ],
@@ -1666,6 +1755,7 @@
       "name": "Left Kneeling Quad Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Quadriceps",
         "Left Hip Flexors"
@@ -1686,6 +1776,7 @@
       "name": "Right Kneeling Quad Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Quadriceps",
         "Right Hip Flexors"
@@ -1706,6 +1797,7 @@
       "name": "Left Side-Lying Quad Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Quadriceps"
       ],
@@ -1724,6 +1816,7 @@
       "name": "Right Side-Lying Quad Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Quadriceps"
       ],
@@ -1741,6 +1834,7 @@
     {
       "name": "Standing Hamstring Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Hamstrings",
         "Right Hamstrings",
@@ -1762,6 +1856,7 @@
       "name": "Left Seated Hamstring Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Hamstrings",
         "Lower Back"
@@ -1781,6 +1876,7 @@
       "name": "Right Seated Hamstring Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Hamstrings",
         "Lower Back"
@@ -1800,6 +1896,7 @@
       "name": "Left Supine Hamstring Stretch with Towel",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Hamstrings"
       ],
@@ -1818,6 +1915,7 @@
       "name": "Right Supine Hamstring Stretch with Towel",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Hamstrings"
       ],
@@ -1835,6 +1933,7 @@
     {
       "name": "Downward-Facing Dog",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Hamstrings",
         "Right Hamstrings",
@@ -1859,6 +1958,7 @@
     {
       "name": "Legs Up the Wall",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Hamstrings",
         "Right Hamstrings",
@@ -1879,6 +1979,7 @@
       "name": "Calf Stretch at Wall (Straight-Knee)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Calves",
         "Right Calves"
@@ -1897,6 +1998,7 @@
       "name": "Bent-Knee Wall Calf Stretch (Soleus)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Calves",
         "Right Calves"
@@ -1915,6 +2017,7 @@
       "name": "Left Seated Calf Stretch with Towel",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Calves"
       ],
@@ -1933,6 +2036,7 @@
       "name": "Right Seated Calf Stretch with Towel",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Calves"
       ],
@@ -1950,6 +2054,7 @@
     {
       "name": "Kneeling Tibialis Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Tibialis",
         "Right Tibialis"
@@ -1970,6 +2075,7 @@
       "name": "Left Standing Tibialis Stretch (Toe Point)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Tibialis"
       ],
@@ -1988,6 +2094,7 @@
       "name": "Right Standing Tibialis Stretch (Toe Point)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Tibialis"
       ],
@@ -2006,6 +2113,7 @@
       "name": "Shin & Ankle Mobiliser",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Tibialis",
         "Right Tibialis",
@@ -2026,6 +2134,7 @@
       "name": "Ankle Alphabet",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Foot",
         "Right Foot"
@@ -2044,6 +2153,7 @@
       "name": "Wrist & Forearm Release",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Forearm",
         "Right Forearm",
@@ -2063,6 +2173,7 @@
     {
       "name": "Sun Salutation Warm-Up",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Hamstrings",
         "Right Hamstrings",
@@ -2088,6 +2199,7 @@
     {
       "name": "Upper-Back Cat-Cow (Seated)",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Trapezius",
         "Right Trapezius",
@@ -2109,6 +2221,7 @@
     {
       "name": "Reverse Prayer Shoulder Mobiliser",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Shoulder",
         "Right Shoulder",
@@ -2130,6 +2243,7 @@
     {
       "name": "Left Chin-to-Shoulder Diagonal Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Back Neck",
         "Left Trapezius"
@@ -2148,6 +2262,7 @@
     {
       "name": "Right Chin-to-Shoulder Diagonal Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Back Neck",
         "Right Trapezius"
@@ -2167,6 +2282,7 @@
       "name": "Left Sleeper Stretch (Internal Rotation)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Shoulder",
         "Left Shoulder Joint"
@@ -2186,6 +2302,7 @@
       "name": "Right Sleeper Stretch (Internal Rotation)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Shoulder",
         "Right Shoulder Joint"
@@ -2205,6 +2322,7 @@
       "name": "Left Doorway External Rotation Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Shoulder",
         "Left Shoulder Joint"
@@ -2223,6 +2341,7 @@
       "name": "Right Doorway External Rotation Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Shoulder",
         "Right Shoulder Joint"
@@ -2240,6 +2359,7 @@
     {
       "name": "Left Overhead Shoulder Stretch with Strap",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Shoulder",
         "Left Lats"
@@ -2258,6 +2378,7 @@
     {
       "name": "Right Overhead Shoulder Stretch with Strap",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Shoulder",
         "Right Lats"
@@ -2277,6 +2398,7 @@
       "name": "Left Wall Corner Pec Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Chest"
       ],
@@ -2295,6 +2417,7 @@
       "name": "Right Wall Corner Pec Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Chest"
       ],
@@ -2312,6 +2435,7 @@
     {
       "name": "Sphinx Pose",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Abs",
         "Right Abs",
@@ -2332,6 +2456,7 @@
     {
       "name": "Standing Forward Fold (Ragdoll)",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Lower Back",
         "Spinal Erectors",
@@ -2354,6 +2479,7 @@
       "name": "Left Standing Reach-Through Twist",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Obliques",
         "Spinal Erectors"
@@ -2373,6 +2499,7 @@
       "name": "Right Standing Reach-Through Twist",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Right Obliques",
         "Spinal Erectors"
@@ -2392,6 +2519,7 @@
       "name": "Left Overhead Reach Lat Stretch with Strap",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Lats",
         "Left Shoulder"
@@ -2410,6 +2538,7 @@
       "name": "Right Overhead Reach Lat Stretch with Strap",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Lats",
         "Right Shoulder"
@@ -2428,6 +2557,7 @@
       "name": "Left Extended-Fingers Bicep Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Biceps",
         "Left Forearm"
@@ -2446,6 +2576,7 @@
       "name": "Right Extended-Fingers Bicep Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Biceps",
         "Right Forearm"
@@ -2464,6 +2595,7 @@
       "name": "Left Behind-Head Strap-Assisted Triceps Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Triceps",
         "Left Shoulder"
@@ -2483,6 +2615,7 @@
       "name": "Right Behind-Head Strap-Assisted Triceps Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Triceps",
         "Right Shoulder"
@@ -2501,6 +2634,7 @@
     {
       "name": "Prayer Push Against Wall",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Forearm",
         "Right Forearm"
@@ -2519,6 +2653,7 @@
       "name": "Left Standing Crossed-Leg Fold",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Glutes"
       ],
@@ -2537,6 +2672,7 @@
       "name": "Right Standing Crossed-Leg Fold",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Glutes"
       ],
@@ -2555,6 +2691,7 @@
       "name": "Left Couch Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Hip Flexors",
         "Left Quadriceps"
@@ -2575,6 +2712,7 @@
       "name": "Right Couch Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Hip Flexors",
         "Right Quadriceps"
@@ -2595,6 +2733,7 @@
       "name": "Left Cossack Squat Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Adductors",
         "Left Quadriceps"
@@ -2615,6 +2754,7 @@
       "name": "Right Cossack Squat Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Right Adductors",
         "Right Quadriceps"
@@ -2635,6 +2775,7 @@
       "name": "Left Reclined Quad Stretch with Strap",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Quadriceps"
       ],
@@ -2653,6 +2794,7 @@
       "name": "Right Reclined Quad Stretch with Strap",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Quadriceps"
       ],
@@ -2671,6 +2813,7 @@
       "name": "Left Doorframe Hamstring Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Hamstrings"
       ],
@@ -2689,6 +2832,7 @@
       "name": "Right Doorframe Hamstring Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Hamstrings"
       ],
@@ -2707,6 +2851,7 @@
       "name": "Runner's Calf Stretch (Staggered Stance)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Calves",
         "Right Calves"
@@ -2725,6 +2870,7 @@
       "name": "Left Toe Spread & Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Foot"
       ],
@@ -2742,6 +2888,7 @@
       "name": "Right Toe Spread & Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Right Foot"
       ],
@@ -2759,6 +2906,7 @@
       "name": "Left Finger Extension Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Hand"
       ],
@@ -2776,6 +2924,7 @@
       "name": "Right Finger Extension Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Right Hand"
       ],
@@ -2792,6 +2941,7 @@
     {
       "name": "Equal Breathing (Sama Vritti)",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 150,
       "difficulty": 1,
@@ -2807,6 +2957,7 @@
     {
       "name": "Ocean Breath (Ujjayi)",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 120,
       "difficulty": 2,
@@ -2822,6 +2973,7 @@
     {
       "name": "Physiological Sigh",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 60,
       "difficulty": 1,
@@ -2837,6 +2989,7 @@
       "name": "Left Half-Kneeling Rear-Foot Instep Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Tibialis"
       ],
@@ -2855,6 +3008,7 @@
       "name": "Right Half-Kneeling Rear-Foot Instep Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Tibialis"
       ],
@@ -2873,6 +3027,7 @@
       "name": "Left Seated Behind-Hip Bicep Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Biceps"
       ],
@@ -2890,6 +3045,7 @@
       "name": "Right Seated Behind-Hip Bicep Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Biceps"
       ],
@@ -2907,6 +3063,7 @@
       "name": "Left Wall-Assisted Overhead Triceps Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Triceps"
       ],
@@ -2924,6 +3081,7 @@
       "name": "Right Wall-Assisted Overhead Triceps Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Triceps"
       ],
@@ -2941,6 +3099,7 @@
       "name": "Left Step-Edge Calf Drop Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Calves"
       ],
@@ -2952,13 +3111,14 @@
         "Slowly let that heel drop down below the level of the step until you feel a stretch through your calf.",
         "Hold gently, then rise back to the step edge and switch legs on another round."
       ],
-      "caution": "Hold a railing or wall the whole time and move slowly — don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
+      "caution": "Hold a railing or wall the whole time and move slowly \u2014 don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
       "id": "ca88ac04-f55d-45c9-9693-19f6829c6283"
     },
     {
       "name": "Right Step-Edge Calf Drop Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Calves"
       ],
@@ -2970,13 +3130,14 @@
         "Slowly let that heel drop down below the level of the step until you feel a stretch through your calf.",
         "Hold gently, then rise back to the step edge and switch legs on another round."
       ],
-      "caution": "Hold a railing or wall the whole time and move slowly — don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
+      "caution": "Hold a railing or wall the whole time and move slowly \u2014 don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
       "id": "2fc19eb8-63ab-4f73-859b-b5b6fad04ac8"
     },
     {
       "name": "Left Scalene Neck Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Front Neck"
       ],
@@ -2995,6 +3156,7 @@
       "name": "Right Scalene Neck Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Front Neck"
       ],
@@ -3012,6 +3174,7 @@
     {
       "name": "Temporalis Release",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Temple",
         "Right Temple"
@@ -3031,6 +3194,7 @@
     {
       "name": "Brow & Forehead Smoother",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Forehead"
       ],
@@ -3039,7 +3203,7 @@
       "instructions": [
         "Rest the pads of your fingers flat across your forehead.",
         "Glide them slowly outward from the centre toward the temples.",
-        "Use light, even pressure — smoothing, not pressing hard.",
+        "Use light, even pressure \u2014 smoothing, not pressing hard.",
         "Let your brow relax down as you breathe out.",
         "Repeat the slow glide for the full duration."
       ],
@@ -3049,6 +3213,7 @@
     {
       "name": "Wrist Flexor Prayer Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Hand",
         "Right Hand",
@@ -3068,6 +3233,7 @@
     {
       "name": "Wrist Extensor Reverse-Prayer Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Hand",
         "Right Hand",
@@ -3088,6 +3254,7 @@
       "name": "Left Plantar Fascia Stretch (Toe Raise)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Foot"
       ],
@@ -3105,6 +3272,7 @@
       "name": "Right Plantar Fascia Stretch (Toe Raise)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Foot"
       ],
@@ -3122,6 +3290,7 @@
       "name": "Left Standing Crescent Moon Side Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Obliques",
         "Left Lats"
@@ -3140,6 +3309,7 @@
       "name": "Right Standing Crescent Moon Side Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Obliques",
         "Right Lats"
@@ -3158,6 +3328,7 @@
       "name": "Left Cow-Face Arm Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Triceps",
         "Left Shoulder"
@@ -3170,13 +3341,14 @@
         "Try to walk your fingers toward each other behind your back, using a towel bridged between your hands if they don't meet.",
         "Hold, feeling a stretch through the back of your left upper arm, shoulder, and upper back, then release and switch sides on another round."
       ],
-      "caution": "Ease off or skip if you have a shoulder injury — don't force the hands to meet, a towel gap is fine.",
+      "caution": "Ease off or skip if you have a shoulder injury \u2014 don't force the hands to meet, a towel gap is fine.",
       "id": "8143f5d1-d84e-4265-8134-e92dd1dce26e"
     },
     {
       "name": "Right Cow-Face Arm Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Triceps",
         "Right Shoulder"
@@ -3189,12 +3361,13 @@
         "Try to walk your fingers toward each other behind your back, using a towel bridged between your hands if they don't meet.",
         "Hold, feeling a stretch through the back of your right upper arm, shoulder, and upper back, then release and switch sides on another round."
       ],
-      "caution": "Ease off or skip if you have a shoulder injury — don't force the hands to meet, a towel gap is fine.",
+      "caution": "Ease off or skip if you have a shoulder injury \u2014 don't force the hands to meet, a towel gap is fine.",
       "id": "a306395b-08bf-4304-a785-d12d032dd445"
     },
     {
       "name": "Suboccipital Release (Finger Press)",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Back Neck",
         "Head"
@@ -3212,6 +3385,7 @@
     {
       "name": "Prone Neck Retraction",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Back Neck",
         "Front Neck"
@@ -3230,6 +3404,7 @@
       "name": "Left Isometric Neck Side Press",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Front Neck",
         "Left Trapezius"
@@ -3242,13 +3417,14 @@
         "Hold the resisted press for a few seconds, breathing steadily, then ease off completely.",
         "Repeat the press-and-release for the full duration, then switch sides on another round."
       ],
-      "caution": "Use only mild, steady pressure — this is a gentle isometric hold, not a maximal push.",
+      "caution": "Use only mild, steady pressure \u2014 this is a gentle isometric hold, not a maximal push.",
       "id": "b7721974-7206-4913-b9d2-8d4f41db1034"
     },
     {
       "name": "Right Isometric Neck Side Press",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Front Neck",
         "Right Trapezius"
@@ -3261,12 +3437,13 @@
         "Hold the resisted press for a few seconds, breathing steadily, then ease off completely.",
         "Repeat the press-and-release for the full duration, then switch sides on another round."
       ],
-      "caution": "Use only mild, steady pressure — this is a gentle isometric hold, not a maximal push.",
+      "caution": "Use only mild, steady pressure \u2014 this is a gentle isometric hold, not a maximal push.",
       "id": "4a1b7329-be46-4b36-a2b5-4d0f06c15b78"
     },
     {
       "name": "Standing Chest Expansion Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Chest",
         "Right Chest"
@@ -3284,6 +3461,7 @@
     {
       "name": "Kneeling Chest Stretch on Chair",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Chest",
         "Right Chest",
@@ -3304,6 +3482,7 @@
     {
       "name": "Doorway Overhead Chest Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Chest",
         "Right Chest"
@@ -3322,6 +3501,7 @@
     {
       "name": "Seated Thoracic Extension Over Chair Back",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Chest",
         "Right Chest",
@@ -3342,6 +3522,7 @@
       "name": "Left Pigeon Pose Hip Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Glutes",
         "Left Hip Flexors"
@@ -3354,13 +3535,14 @@
         "Lower your hips toward the floor and walk your hands forward, folding over your front leg if it's comfortable.",
         "Hold, breathing into the stretch through your left glute and the front of your right hip, then rise slowly and switch sides on another round."
       ],
-      "caution": "Skip or use a cushion under the front hip if you have knee pain — this is a deep hip-opener, not a beginner stretch.",
+      "caution": "Skip or use a cushion under the front hip if you have knee pain \u2014 this is a deep hip-opener, not a beginner stretch.",
       "id": "75c79a3b-c5d0-42b1-9c20-83f6efee0783"
     },
     {
       "name": "Right Pigeon Pose Hip Stretch",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Glutes",
         "Right Hip Flexors"
@@ -3373,12 +3555,13 @@
         "Lower your hips toward the floor and walk your hands forward, folding over your front leg if it's comfortable.",
         "Hold, breathing into the stretch through your right glute and the front of your left hip, then rise slowly and switch sides on another round."
       ],
-      "caution": "Skip or use a cushion under the front hip if you have knee pain — this is a deep hip-opener, not a beginner stretch.",
+      "caution": "Skip or use a cushion under the front hip if you have knee pain \u2014 this is a deep hip-opener, not a beginner stretch.",
       "id": "42440164-bfff-4ca0-a0f6-f481181865d5"
     },
     {
       "name": "Bridge Pose",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Abs",
         "Right Abs",
@@ -3395,12 +3578,13 @@
         "Clasp your hands underneath you and roll your shoulders in to open your chest, or keep arms flat by your sides.",
         "Hold, feeling the stretch across your hip flexors and chest, then lower your spine back down slowly, one vertebra at a time."
       ],
-      "caution": "Skip if you have neck or lower-back issues — keep the neck neutral and avoid turning your head while lifted.",
+      "caution": "Skip if you have neck or lower-back issues \u2014 keep the neck neutral and avoid turning your head while lifted.",
       "id": "abe45c7a-3b15-412e-856e-bc76e65d4eb2"
     },
     {
       "name": "Standing Split Prep Stretch",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Hamstrings",
         "Right Hamstrings"
@@ -3413,12 +3597,13 @@
         "Keep both legs as straight as you can and square your hips toward the floor.",
         "Hold, feeling the stretch through the standing leg's hamstring, then lower slowly and switch sides on another round."
       ],
-      "caution": "Only lift as high as you can while keeping the standing leg straight and controlled — use a wall for balance.",
+      "caution": "Only lift as high as you can while keeping the standing leg straight and controlled \u2014 use a wall for balance.",
       "id": "1bed1844-6818-410c-a8b3-e1079f857bbd"
     },
     {
       "name": "Extended Exhale Breathing",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 120,
       "difficulty": 1,
@@ -3433,6 +3618,7 @@
     {
       "name": "Counting Down Sleep Breath",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 180,
       "difficulty": 1,
@@ -3440,13 +3626,14 @@
         "Lie down in bed or a comfortable reclined position and close your eyes.",
         "Inhale slowly through your nose, then exhale while silently counting 'ten.'",
         "Inhale again, then exhale while counting 'nine,' continuing to count down with each exhale.",
-        "If you lose track, simply restart from ten — the goal is a slow, wandering mind, not a perfect count."
+        "If you lose track, simply restart from ten \u2014 the goal is a slow, wandering mind, not a perfect count."
       ],
       "id": "cb84490b-b29c-433b-8115-3bef0cd12b30"
     },
     {
       "name": "Cooling Sitali Breath",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 90,
       "difficulty": 2,
@@ -3462,6 +3649,7 @@
     {
       "name": "Three-Part Breath (Dirga Pranayama)",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 150,
       "difficulty": 1,
@@ -3476,6 +3664,7 @@
     {
       "name": "Body Scan Breathing",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 180,
       "difficulty": 1,
@@ -3490,6 +3679,7 @@
     {
       "name": "Segmented Exhale Breathing (Viloma)",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 120,
       "difficulty": 2,
@@ -3504,6 +3694,7 @@
     {
       "name": "Progressive Relaxation Breath",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 180,
       "difficulty": 1,
@@ -3518,6 +3709,7 @@
     {
       "name": "Left-Nostril Calming Breath (Chandra Bhedana)",
       "type": "breath",
+      "cueStyle": "repeat",
       "targetBodyParts": [],
       "durationSeconds": 120,
       "difficulty": 2,
@@ -3525,7 +3717,7 @@
         "Sit comfortably and bring your right hand up, folding your index and middle fingers into your palm.",
         "Close your right nostril gently with your right thumb and inhale slowly through your left nostril only.",
         "Close your left nostril with your ring finger, release your thumb, and exhale slowly through your right nostril.",
-        "Continue inhaling only through the left and exhaling only through the right for the full duration — this pattern is traditionally used to calm and cool the body before rest."
+        "Continue inhaling only through the left and exhaling only through the right for the full duration \u2014 this pattern is traditionally used to calm and cool the body before rest."
       ],
       "id": "668913b8-bdb7-40a1-ae32-1b70a16afe26"
     },
@@ -3533,6 +3725,7 @@
       "name": "Standing IT Band Side Stretch (Left)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Quadriceps",
         "Left Hip Flexors"
@@ -3551,6 +3744,7 @@
       "name": "Standing IT Band Side Stretch (Right)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Quadriceps",
         "Right Hip Flexors"
@@ -3568,6 +3762,7 @@
     {
       "name": "Dynamic Standing Leg Swings",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Hip Flexors",
         "Right Hip Flexors",
@@ -3584,12 +3779,13 @@
         "Let the swing grow gradually taller as your hips loosen, without forcing the range of motion.",
         "After the set time, turn around and repeat with the other leg."
       ],
-      "caution": "Keep the motion controlled, not kicking — this is a warm-up mobilizer, not a max-range stretch.",
+      "caution": "Keep the motion controlled, not kicking \u2014 this is a warm-up mobilizer, not a max-range stretch.",
       "id": "e80fc7d8-0c6f-433f-9335-c2f26d5477b5"
     },
     {
       "name": "Standing Hip Circles",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Hip Flexors",
         "Right Hip Flexors",
@@ -3612,6 +3808,7 @@
       "name": "Runner's Lunge with Rotation (Left)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Hip Flexors",
         "Left Quadriceps",
@@ -3632,6 +3829,7 @@
       "name": "Runner's Lunge with Rotation (Right)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Hip Flexors",
         "Right Quadriceps",
@@ -3652,6 +3850,7 @@
       "name": "Standing Ankle Dorsiflexion Stretch (Left)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Tibialis",
         "Left Calves"
@@ -3670,6 +3869,7 @@
       "name": "Standing Ankle Dorsiflexion Stretch (Right)",
       "isBilateral": false,
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Right Tibialis",
         "Right Calves"
@@ -3687,6 +3887,7 @@
     {
       "name": "20-20-20 Focus Shift",
       "type": "stretch",
+      "cueStyle": "hold",
       "targetBodyParts": [
         "Left Eye",
         "Right Eye"
@@ -3706,6 +3907,7 @@
     {
       "name": "Gentle Eye Rolls",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Eye",
         "Right Eye"
@@ -3715,7 +3917,7 @@
       "instructions": [
         "Sit tall and keep your head still, looking straight ahead.",
         "Slowly move your gaze up, then trace a smooth circle: up, right, down, left.",
-        "Keep the movement slow and comfortable — never forced.",
+        "Keep the movement slow and comfortable \u2014 never forced.",
         "Complete 3 to 4 slow circles, then reverse direction.",
         "Blink and let your eyes rest for a moment when finished."
       ],
@@ -3725,6 +3927,7 @@
     {
       "name": "Jaw-Open Temporalis Stretch",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Temple",
         "Right Temple"
@@ -3744,6 +3947,7 @@
     {
       "name": "Resisted Jaw Opening",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Jaw",
         "Right Jaw"
@@ -3753,7 +3957,7 @@
       "instructions": [
         "Place your thumb or two fingers gently under your chin.",
         "Slowly open your mouth against light resistance from your fingers.",
-        "Use only a small, gentle amount of pressure — this is not a strength test.",
+        "Use only a small, gentle amount of pressure \u2014 this is not a strength test.",
         "Open a short way, hold for 3 seconds, then slowly close.",
         "Repeat calmly for the full duration."
       ],
@@ -3763,6 +3967,7 @@
     {
       "name": "Side-to-Side Jaw Glide",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Jaw",
         "Right Jaw"
@@ -3782,6 +3987,7 @@
     {
       "name": "Tongue-Up Controlled Open/Close",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Left Jaw",
         "Right Jaw"
@@ -3801,6 +4007,7 @@
     {
       "name": "Frontalis Release",
       "type": "stretch",
+      "cueStyle": "repeat",
       "targetBodyParts": [
         "Forehead"
       ],
@@ -3809,7 +4016,7 @@
       "instructions": [
         "Rest the pads of your fingers gently across your forehead.",
         "Let your eyebrows relax downward as you breathe out slowly.",
-        "Apply light, still pressure — no rubbing or pulling on the skin.",
+        "Apply light, still pressure \u2014 no rubbing or pulling on the skin.",
         "Hold and breathe slowly, letting the forehead soften.",
         "Release gently after the hold and repeat."
       ],
