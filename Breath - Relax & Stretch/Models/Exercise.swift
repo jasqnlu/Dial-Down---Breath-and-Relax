@@ -8,6 +8,11 @@ enum ExerciseType: String, Codable, CaseIterable {
     case both = "Both"
 }
 
+enum ExerciseCueStyle: String, Codable, CaseIterable {
+    case hold = "Hold"
+    case repeatMotion = "Repeat"
+}
+
 @Model
 final class Exercise {
     // Inline defaults required for CloudKit (iCloud) sync compatibility.
@@ -26,6 +31,10 @@ final class Exercise {
     /// Defaults to true — most stretches are bilateral — so the seed JSON only
     /// needs to specify `false` for the one-side-at-a-time exercises.
     var isBilateral: Bool = true
+    /// Whether this exercise is a static position held for the whole
+    /// duration (.hold) or a rhythmic motion repeated throughout (.repeatMotion).
+    /// Drives the session player's cue badge. Defaults to `.hold`.
+    var cueStyle: ExerciseCueStyle = ExerciseCueStyle.hold
     var posesData: Data = Data()
 
     /// Stable identifier tying this row back to its entry in the bundled
@@ -104,7 +113,8 @@ final class Exercise {
         instructions: [String],
         mediaURL: String? = nil,
         caution: String? = nil,
-        isBilateral: Bool = true
+        isBilateral: Bool = true,
+        cueStyle: ExerciseCueStyle = .hold
     ) {
         self.uuid = uuid
         self.name = name
@@ -116,6 +126,7 @@ final class Exercise {
         self.mediaURL = mediaURL
         self.caution = caution
         self.isBilateral = isBilateral
+        self.cueStyle = cueStyle
     }
 
     /// Deterministic UUID derived from an exercise's name, so seeding the same
