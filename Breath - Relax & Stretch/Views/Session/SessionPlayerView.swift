@@ -69,6 +69,7 @@ struct SessionPlayerView: View {
     private let soundTransition: SystemSoundID = 1057  // short tock — exercise advance
     private let soundComplete:   SystemSoundID = 1016  // tweet chime — session done
     @State private var breathTick = 0  // counts seconds to fire cue every 4s
+    @State private var cueBadgePulsing = false
 
     var currentExercise: Exercise? {
         guard currentIndex < exercises.count else { return nil }
@@ -237,6 +238,8 @@ struct SessionPlayerView: View {
                 .foregroundStyle(Color.luminaOnSurfaceVariant)
                 .padding(.top, 4)
 
+            cueBadge(for: exercise.cueStyle)
+
             Spacer()
 
             if exercise.type != .breath {
@@ -291,6 +294,28 @@ struct SessionPlayerView: View {
             .padding(.bottom, 48)
         }
         .background(Color.luminaSurface.ignoresSafeArea())
+    }
+
+    @ViewBuilder
+    private func cueBadge(for cueStyle: ExerciseCueStyle) -> some View {
+        Text(cueStyle == .hold ? "Hold" : "Keep Going")
+            .font(.luminaLabel)
+            .textCase(.uppercase)
+            .foregroundStyle(Color.luminaPrimary)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 6)
+            .background(Color.luminaMintTint, in: Capsule())
+            .scaleEffect(cueStyle == .repeatMotion && cueBadgePulsing ? 1.07 : 1.0)
+            .opacity(cueStyle == .repeatMotion && cueBadgePulsing ? 0.82 : 1.0)
+            .padding(.top, 12)
+            .accessibilityLabel("Exercise cue")
+            .accessibilityValue(cueStyle == .hold ? "Hold" : "Keep going")
+            .onAppear {
+                guard cueStyle == .repeatMotion else { return }
+                withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) {
+                    cueBadgePulsing = true
+                }
+            }
     }
 
     @ViewBuilder
