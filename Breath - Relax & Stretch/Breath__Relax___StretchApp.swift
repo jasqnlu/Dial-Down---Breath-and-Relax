@@ -187,12 +187,16 @@ struct BreathRelaxStretchApp: App {
             // Missing key defaults to true — most stretches are bilateral;
             // the seed only marks the one-side-at-a-time exercises false.
             let isBilateral = raw["isBilateral"] as? Bool ?? true
+            // Missing/unparseable key defaults to .hold via Exercise's own
+            // inline default — every seed entry has a real value (Task 2),
+            // this only guards a malformed bundle.
+            let cueStyle = (raw["cueStyle"] as? String).flatMap { ExerciseCueStyle(rawValue: $0.capitalized) } ?? .hold
             let exercise = Exercise(
                 uuid: Exercise.stableSeedUUID(forName: name),
                 name: name, type: type, targetBodyParts: parts,
                 durationSeconds: duration, difficulty: difficulty,
                 instructions: instructions, mediaURL: mediaURL, caution: caution,
-                isBilateral: isBilateral
+                isBilateral: isBilateral, cueStyle: cueStyle
             )
             exercise.seedID = raw["id"] as? String
             exercise.localVideoName = raw["localVideoName"] as? String
@@ -222,6 +226,7 @@ struct BreathRelaxStretchApp: App {
         migrateSeedToV5IfNeeded()
         migrateSeedToV6IfNeeded()
         migrateSeedToV7IfNeeded()
+        migrateSeedToV8IfNeeded()
     }
 
     /// Loads the bundled seed JSON's exercise array, or nil if unavailable.
@@ -288,6 +293,17 @@ struct BreathRelaxStretchApp: App {
             }
         }
         seedDataVersion = 7
+    }
+
+    private func migrateSeedToV8IfNeeded() {
+        guard seedDataVersion < 8 else { return }
+        if let rawExercises = loadSeedExercises() {
+            let context = sharedModelContainer.mainContext
+            if SeedMigrator.migrateV8(context: context, rawExercises: rawExercises) {
+                try? context.save()
+            }
+        }
+        seedDataVersion = 8
     }
 
     // MARK: - Remote catalog sync (best-effort, offline-first)
