@@ -115,6 +115,7 @@ enum SeedMigrator {
                 )
                 exercise.seedID = seedID
                 exercise.localVideoName = raw["localVideoName"] as? String
+                exercise.animationName = raw["animationName"] as? String
                 context.insert(exercise)
                 if let seedID { existingBySeedID[seedID] = exercise }
                 existingByName[name] = exercise
@@ -197,6 +198,33 @@ enum SeedMigrator {
                 exercise.seedID = id
                 changed = true
             }
+        }
+        return changed
+    }
+
+    /// v7 — backfills `Exercise.animationName` (the baked 3D muscle-animation
+    /// demo loop) onto already-seeded rows, matched by the stable `seedID`.
+    /// New installs already read `animationName` at insert time (`migrateV4`),
+    /// so this only matters for users seeded before the field carried a value.
+    /// Only fills an *empty* animationName from the bundle — never clobbers one
+    /// already set, and never touches user-created rows (which have no seedID).
+    @discardableResult
+    static func migrateV7(context: ModelContext, rawExercises: [[String: Any]]) -> Bool {
+        var animationBySeedID: [String: String] = [:]
+        for raw in rawExercises {
+            guard let id = raw["id"] as? String,
+                  let anim = raw["animationName"] as? String, !anim.isEmpty else { continue }
+            animationBySeedID[id] = anim
+        }
+
+        let existing = (try? context.fetch(FetchDescriptor<Exercise>())) ?? []
+        var changed = false
+        for exercise in existing {
+            guard let seedID = exercise.seedID,
+                  let anim = animationBySeedID[seedID],
+                  (exercise.animationName ?? "").isEmpty else { continue }
+            exercise.animationName = anim
+            changed = true
         }
         return changed
     }

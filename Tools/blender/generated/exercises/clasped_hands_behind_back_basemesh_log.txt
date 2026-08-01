@@ -1,0 +1,6 @@
+landmarks: H=20.74, zmin=0.0, zmax=20.74, hand_x=5.84, hand_z=9.59, shoulder_x=2.91, shoulder_z=17.01, hip_x=1.04, foot_x=2.03
+bind: distance skinning -> 24461/24461 verts (power=3.5, top_k=2)
+[clasped_hands_behind_back_basemesh] built + exported.
+animated model : /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/clasped_hands_behind_back_basemesh.glb
+editable scene : /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/clasped_hands_behind_back_basemesh.blend
+frames         : 0..120 @ 30fps (4.0s)

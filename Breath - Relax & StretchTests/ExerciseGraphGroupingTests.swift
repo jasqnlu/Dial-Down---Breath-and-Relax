@@ -16,6 +16,24 @@ struct ExerciseGraphGroupingTests {
         #expect(groups.first { $0.title == "Quadriceps" }?.exercises.count == 2)
     }
 
+    /// Head sub-zone tags ("Left Temple", "Forehead") must resolve to the
+    /// Neck category node the same way `RegionExerciseResolver` resolves them
+    /// for the Body Map — otherwise these exercises never appear anywhere in
+    /// the Exercises tab's pinch-zoom graph.
+    @Test func headSubZoneExercisesResolveToNeckCategory() {
+        let exercises = [
+            makeExercise(name: "Temporalis Release", targetBodyParts: ["Left Temple", "Right Temple"], difficulty: 1),
+            makeExercise(name: "Brow & Forehead Smoother", targetBodyParts: ["Forehead"], difficulty: 1)
+        ]
+
+        #expect(ExerciseCategory.categories(for: exercises[0].targetBodyParts) == [.neck])
+        #expect(ExerciseCategory.categories(for: exercises[1].targetBodyParts) == [.neck])
+
+        let groups = ExerciseGraphGrouping.groups(for: exercises, in: .neck)
+        #expect(groups.flatMap(\.exercises).map(\.name).sorted() ==
+                ["Brow & Forehead Smoother", "Temporalis Release"])
+    }
+
     @Test func fallsBackToDifficultyWhenBodyPartDoesNotMatchCategory() {
         let exercises = [
             makeExercise(name: "Starter stretch", targetBodyParts: [], difficulty: 1),
@@ -163,8 +181,29 @@ struct RegionExerciseResolverTests {
         #expect(resolver.related.map(\.name) == ["Glute Stretch"])
     }
 
-    private func makeExercise(name: String, targetBodyParts: [String]) -> Exercise {
-        Exercise(name: name, type: .stretch, targetBodyParts: targetBodyParts,
+    /// A breathing-type exercise must never surface on the Body Map, even if
+    /// (due to a seed-data mistake) its `targetBodyParts` directly names the
+    /// tapped region or shares its category — regression for the bug where
+    /// "Progressive Relaxation Breath" leaked into Core/Legs regions.
+    @Test func excludesBreathTypeExercisesEvenWhenTargetBodyPartsMatch() {
+        let breathEx = makeExercise(name: "Progressive Relaxation Breath",
+                                    targetBodyParts: ["Left Abs", "Left Quadriceps"],
+                                    type: .breath)
+        let stretchEx = makeExercise(name: "Ab Crunch", targetBodyParts: ["Left Abs"])
+
+        let resolver = RegionExerciseResolver(regions: ["Left Abs"], exercises: [breathEx, stretchEx])
+
+        #expect(resolver.direct.map(\.name) == ["Ab Crunch"])
+        #expect(!(resolver.direct + resolver.related).contains { $0.name == "Progressive Relaxation Breath" })
+
+        // Also check the same-category fallback path (a different region,
+        // same category, no direct match on either exercise).
+        let resolverFallback = RegionExerciseResolver(regions: ["Left Obliques"], exercises: [breathEx])
+        #expect(resolverFallback.isEmpty)
+    }
+
+    private func makeExercise(name: String, targetBodyParts: [String], type: ExerciseType = .stretch) -> Exercise {
+        Exercise(name: name, type: type, targetBodyParts: targetBodyParts,
                  durationSeconds: 60, difficulty: 1, instructions: [])
     }
 }

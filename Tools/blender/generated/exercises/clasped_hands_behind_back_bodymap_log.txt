@@ -1,0 +1,8 @@
+model bounds (Blender): (-0.374, -0.163, 0.0) .. (0.374, 0.163, 1.916)  height=1.916
+bind: distance skinning -> 86176/86176 verts weighted (power=3.0, top_k=2)
+[clasped_hands_behind_back_bodymap] built + exported.
+animated model : /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/clasped_hands_behind_back_bodymap.glb
+editable scene : /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/clasped_hands_behind_back_bodymap.blend
+frames         : 0..120 @ 30fps (4.0s loop)
+tune FACING sign + POSES angles if the stretch looks off.
+next: convert .glb -> .usdz for SceneKit/RealityKit.

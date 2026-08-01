@@ -181,6 +181,11 @@ struct ExerciseListView: View {
 
 struct ExerciseRow: View {
     let exercise: Exercise
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var rowWidth: CGFloat = 0
+
+    /// The animation pane is 3/8 of the row's own width; the rest goes to stats.
+    private var thumbnailSide: CGFloat { rowWidth * 0.375 }
 
     var difficultyLabel: String {
         switch exercise.difficulty {
@@ -191,34 +196,101 @@ struct ExerciseRow: View {
         }
     }
 
-    private var hasVideo: Bool {
-        exercise.localVideoURL != nil
+    private var hasDemo: Bool {
+        exercise.demoVideoURL != nil
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Text(exercise.name)
-                    .font(.luminaCardTitle)
-                if hasVideo {
-                    Image(systemName: "film.fill")
-                        .font(.luminaCaption)
-                        .foregroundStyle(Color.accentColor)
-                        .accessibilityHidden(true)
-                }
+        VStack(alignment: .leading, spacing: 10) {
+            Text(exercise.name)
+                .font(.luminaCardTitle)
+                .foregroundStyle(Color.luminaOnSurface)
+                .lineLimit(2)
+
+            HStack(alignment: .top, spacing: 12) {
+                thumbnail
+                    .frame(width: thumbnailSide, height: thumbnailSide)
+                    .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.panel, style: .continuous))
+                    .accessibilityHidden(true)
+
+                stats
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            HStack(spacing: 12) {
-                Label(exercise.durationFormatted, systemImage: "clock")
-                Label(exercise.type.rawValue, systemImage: "figure.mind.and.body")
-                Label(difficultyLabel, systemImage: "chart.bar")
-            }
-            .font(.luminaCaption)
-            .foregroundStyle(.secondary)
         }
         .padding(.vertical, 4)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { rowWidth = proxy.size.width }
+                    .onChange(of: proxy.size.width) { _, newValue in rowWidth = newValue }
+            }
+        )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(exercise.name), \(exercise.type.rawValue), \(exercise.durationFormatted), \(difficultyLabel)\(hasVideo ? ", has video" : "")")
+        .accessibilityLabel("\(exercise.name), \(exercise.type.rawValue), \(exercise.durationFormatted), \(difficultyLabel)\(hasDemo ? ", has animated demo" : "")\(exercise.caution.map { ", caution: \($0)" } ?? "")")
+    }
+
+    @ViewBuilder
+    private var thumbnail: some View {
+        if let url = exercise.demoVideoURL {
+            LoopingVideoThumbnail(url: url, reduceMotion: reduceMotion)
+        } else {
+            ZStack {
+                Color.luminaContainer
+                Image(systemName: "figure.mind.and.body")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
+        }
+    }
+
+    private var stats: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Text(exercise.type.rawValue)
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaPrimary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Color.luminaMintTint, in: Capsule())
+
+                difficultyDots
+            }
+
+            Label(exercise.durationFormatted, systemImage: "clock")
+                .font(.luminaCaption)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+
+            if let caution = exercise.caution, !caution.isEmpty {
+                cautionLine(caution)
+            }
+        }
+    }
+
+    private var difficultyDots: some View {
+        HStack(spacing: 3) {
+            ForEach(1...3, id: \.self) { level in
+                Circle()
+                    .fill(level <= exercise.difficulty ? Color.luminaPrimary : Color.luminaOutline)
+                    .frame(width: 5, height: 5)
+            }
+        }
+        .accessibilityLabel(difficultyLabel)
+    }
+
+    private func cautionLine(_ text: String) -> some View {
+        HStack(alignment: .top, spacing: 5) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(Color.luminaOnOrange)
+            Text(text)
+                .font(.luminaCaption)
+                .foregroundStyle(Color.luminaOnOrange)
+                .lineLimit(2)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(Color.luminaOrange.opacity(0.16), in: RoundedRectangle(cornerRadius: LuminaRadius.tag, style: .continuous))
     }
 }
 

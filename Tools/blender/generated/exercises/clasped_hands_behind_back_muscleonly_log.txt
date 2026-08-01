@@ -1,0 +1,15 @@
+imported 269 objects
+model bounds: (-0.374, -0.163, 0.0) .. (0.374, 0.163, 1.916)  height=1.916
+muscles: 250  (mapped=246 fallback=0  highlight=34 neutral=216  mitts=4)
+neck detected at z=1.657 (width=0.101); frac=0.864
+skin clip: 6562 -> 3218 verts kept (head cap)
+joined muscles -> 'Muscles' (78036 verts, 2 mat slots, 12 vgroups)
+peak forearm.L tail world = (-0.003, 0.171, 0.960)  [y<0=behind, |x|~0=midline]
+peak forearm.R tail world = (0.003, 0.171, 0.960)  [y<0=behind, |x|~0=midline]
+render: rest_demo -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/clasped_hands_behind_back_muscleonly_rest_demo.png
+render: peak_demo -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/clasped_hands_behind_back_muscleonly_peak_demo.png
+render: peak_front -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/clasped_hands_behind_back_muscleonly_peak_front.png
+demo frames -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/_demo_frames (encode to clasped_hands_behind_back.mp4 next)
+[clasped_hands_behind_back_muscleonly] built + exported.
+animated model : /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/clasped_hands_behind_back_muscleonly.glb
+editable scene : /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/clasped_hands_behind_back_muscleonly.blend
