@@ -164,6 +164,7 @@ struct SessionPlayerView: View {
                     breathTick += 1
                     if breathTick % 4 == 0 { AudioServicesPlaySystemSound(soundTick) }
                 } else {
+                    AudioServicesPlaySystemSound(soundCueBeep)
                     advanceToNext(completion: 1.0)
                 }
             }
@@ -469,6 +470,7 @@ struct SessionPlayerView: View {
         if let exercise = currentExercise {
             VoiceCueService.shared.speak(exercise.name)
         }
+        AudioServicesPlaySystemSound(soundCueBeep)
         instructionCueTask?.cancel()
         instructionCueIndex = 0
         if let count = currentExercise?.instructions.count, count > 1 {
@@ -499,6 +501,7 @@ struct SessionPlayerView: View {
         sideSwitchPending = false
         impactMedium.impactOccurred()
         VoiceCueService.shared.speak("Switch sides")
+        AudioServicesPlaySystemSound(soundCueBeep)
     }
 
     /// Called when the app returns to the foreground. `Timer.publish` doesn't
