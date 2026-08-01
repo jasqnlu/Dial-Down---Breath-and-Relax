@@ -1022,6 +1022,7 @@
         "Release slowly."
       ],
       "caution": "Skip or keep the lift small if you have shoulder impingement or limited shoulder mobility.",
+      "animationName": "clasped_hands_behind_back.mp4",
       "id": "ec528f52-dab9-59b9-b9b0-bb8f2759bc3c"
     },
     {
@@ -3503,12 +3504,7 @@
     {
       "name": "Progressive Relaxation Breath",
       "type": "breath",
-      "targetBodyParts": [
-        "Left Abs",
-        "Right Abs",
-        "Left Quadriceps",
-        "Right Quadriceps"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 180,
       "difficulty": 1,
       "instructions": [

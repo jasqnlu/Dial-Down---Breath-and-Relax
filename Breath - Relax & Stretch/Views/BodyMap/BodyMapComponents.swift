@@ -103,6 +103,10 @@ struct RegionExerciseResolver {
         var directList: [Exercise] = []
         var relatedList: [Exercise] = []
         for exercise in exercises {
+            // Pure breathing exercises have no body-part target of their own;
+            // never let one leak into a body-map region via the same-area
+            // fallback below (mirrors ExerciseGraphView's type filtering).
+            guard exercise.type != .breath else { continue }
             let targets = exercise.targetBodyParts
             let lowered = targets.map { $0.lowercased() }
             if lowered.contains(where: { directSet.contains($0) }) {

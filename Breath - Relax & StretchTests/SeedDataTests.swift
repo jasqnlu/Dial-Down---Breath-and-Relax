@@ -60,6 +60,18 @@ struct SeedDataTests {
         }
     }
 
+    /// Pure breathing exercises must never carry `targetBodyParts` — the Body
+    /// Map resolves regions to exercises purely from that field, so a
+    /// non-empty value on a `breath`-typed entry leaks it into whichever
+    /// muscle/joint regions it happens to name (regression for "Progressive
+    /// Relaxation Breath" appearing under Core/Legs regions).
+    @Test func breathExercisesHaveNoTargetBodyParts() throws {
+        for raw in try Self.loadExercises() where (raw["type"] as? String) == "breath" {
+            #expect((raw["targetBodyParts"] as? [String] ?? []).isEmpty,
+                    "\(raw["name"] ?? "?") is type 'breath' but has non-empty targetBodyParts")
+        }
+    }
+
     @Test func exerciseNamesAreUnique() throws {
         let names = try Self.loadExercises().compactMap { $0["name"] as? String }
         #expect(names.count == Set(names).count)

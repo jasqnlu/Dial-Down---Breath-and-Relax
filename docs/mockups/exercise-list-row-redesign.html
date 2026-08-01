@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Exercise List — Title-Forward Row (Prototype)</title>
+<style>
+  :root{
+    --bg:#ece4d8; --surface:#f6f0e7; --surface-2:#efe7db; --container:#e5dccd;
+    --on:#2c2620; --on-var:#6b6153; --line:#d8cdbb;
+    --accent:#3f9d8f; --accent-ink:#0f4f47; --accent-soft:#3f9d8f1a;
+    --warn:#c67b3f; --warn-ink:#7a4c22; --warn-soft:#c67b3f1a;
+    --shadow:rgba(60,45,25,.18);
+    --figure:#4a4038; --figure-ring:#3f9d8f33;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141317; --surface:#1c1b21; --surface-2:#222129; --container:#2b2a33;
+      --on:#ece7df; --on-var:#a49c8f; --line:#333138;
+      --accent:#57c3b2; --accent-ink:#bff0e8; --accent-soft:#57c3b229;
+      --warn:#e0a563; --warn-ink:#f2d3ab; --warn-soft:#e0a56329;
+      --shadow:rgba(0,0,0,.5);
+      --figure:#d8d2c8; --figure-ring:#57c3b23a;
+    }
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--on);
+    font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    display:flex; flex-direction:column; align-items:center; gap:16px;
+    padding:26px 14px 40px; min-height:100%;
+  }
+  .intro{max-width:420px; text-align:center}
+  .intro h1{font-size:17px; margin:0 0 4px}
+  .intro p{margin:0; color:var(--on-var); font-size:13px}
+
+  .phone{
+    width:390px; height:800px; border-radius:44px; background:var(--surface);
+    box-shadow:0 20px 60px var(--shadow), 0 0 0 10px #0000000d;
+    position:relative; overflow:hidden; border:1px solid var(--line);
+    display:flex; flex-direction:column;
+  }
+  .nav{
+    height:52px; flex:0 0 auto; display:flex; align-items:center;
+    padding:0 18px; border-bottom:1px solid var(--line);
+    background:var(--surface);
+  }
+  .nav .title{font-weight:700; font-size:20px; letter-spacing:-.01em}
+
+  .list{
+    flex:1 1 auto; overflow-y:auto; padding:14px 14px 28px;
+    display:flex; flex-direction:column; gap:12px;
+  }
+
+  /* ---- row card ---- */
+  .row{
+    background:var(--surface-2); border:1px solid var(--line); border-radius:20px;
+    padding:14px 14px 15px; display:flex; flex-direction:column; gap:10px;
+  }
+  .row .title{
+    font-size:16.5px; font-weight:650; letter-spacing:-.01em; color:var(--on);
+  }
+  .row .subtitle{
+    font-size:12px; color:var(--on-var); margin-top:1px;
+  }
+
+  .body{
+    display:flex; align-items:stretch; gap:12px;
+  }
+
+  /* animation pane: 3/8 of the row width */
+  .anim{
+    flex:0 0 37.5%;
+    background:var(--container); border-radius:14px;
+    position:relative; overflow:hidden;
+    aspect-ratio:1/1;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .anim .ring{
+    position:absolute; width:74%; height:74%; border-radius:50%;
+    background:radial-gradient(circle, var(--figure-ring), transparent 70%);
+    animation:breathe 4.2s ease-in-out infinite;
+  }
+  .anim svg{ width:58%; height:58%; position:relative; z-index:1 }
+  .anim .stick{
+    stroke:var(--figure); stroke-width:5; stroke-linecap:round; fill:none;
+  }
+  .anim .arms{ transform-origin:50% 40%; animation:clasp 4.2s ease-in-out infinite; }
+  .anim .torso{ transform-origin:50% 45%; animation:breathe-scale 4.2s ease-in-out infinite; }
+
+  @keyframes breathe{
+    0%,100%{ transform:scale(.9); opacity:.55 }
+    50%{ transform:scale(1.08); opacity:.9 }
+  }
+  @keyframes breathe-scale{
+    0%,100%{ transform:scaleY(1) }
+    50%{ transform:scaleY(1.035) }
+  }
+  @keyframes clasp{
+    0%,100%{ transform:rotate(0deg) }
+    50%{ transform:rotate(2.5deg) }
+  }
+
+  /* meta pane: remaining 5/8 */
+  .meta{
+    flex:1 1 auto; display:flex; flex-direction:column; gap:7px; min-width:0;
+    justify-content:center;
+  }
+  .stat{ display:flex; align-items:baseline; gap:6px; font-size:13px }
+  .stat .k{ color:var(--on-var); min-width:64px; flex:0 0 auto }
+  .stat .v{ color:var(--on); font-weight:600 }
+
+  .tag-row{ display:flex; align-items:center; gap:6px; flex-wrap:wrap }
+  .tag{
+    display:inline-flex; align-items:center; font-size:11.5px; font-weight:650;
+    padding:3px 8px; border-radius:999px; background:var(--accent-soft); color:var(--accent-ink);
+  }
+  .dots{ display:inline-flex; gap:3px; align-items:center }
+  .dot{ width:6px; height:6px; border-radius:50%; background:var(--line) }
+  .dot.on{ background:var(--accent) }
+
+  .caution{
+    display:flex; align-items:flex-start; gap:6px; margin-top:2px;
+    background:var(--warn-soft); border-radius:10px; padding:6px 8px;
+  }
+  .caution .ico{ color:var(--warn); font-size:12px; line-height:1.3; flex:0 0 auto }
+  .caution .txt{ font-size:11.5px; line-height:1.35; color:var(--warn-ink) }
+
+  .row.compact .caution{ display:none }
+</style>
+</head>
+<body>
+
+  <div class="intro">
+    <h1>Title-forward exercise row</h1>
+    <p>Title leads the card. Below it: the loop on the left at 3/8 width, duration / type / difficulty / caution on the right. Stick figure is a constant placeholder for every row.</p>
+  </div>
+
+  <div class="phone">
+    <div class="nav"><span class="title">Stretches</span></div>
+    <div class="list">
+
+      <!-- Clasped-Hands Behind Back -->
+      <div class="row">
+        <div>
+          <div class="title">Clasped-Hands Behind Back</div>
+          <div class="subtitle">Shoulders &amp; chest</div>
+        </div>
+        <div class="body">
+          <div class="anim">
+            <div class="ring"></div>
+            <svg viewBox="0 0 100 100">
+              <g class="stick">
+                <circle cx="50" cy="20" r="9"/>
+                <g class="torso">
+                  <line x1="50" y1="29" x2="50" y2="62"/>
+                </g>
+                <line x1="50" y1="62" x2="38" y2="90"/>
+                <line x1="50" y1="62" x2="62" y2="90"/>
+                <g class="arms">
+                  <path d="M50,36 C34,42 30,54 40,64"/>
+                  <path d="M50,36 C66,42 70,54 60,64"/>
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div class="meta">
+            <div class="tag-row">
+              <span class="tag">Stretch</span>
+              <span class="dots">
+                <span class="dot on"></span><span class="dot on"></span><span class="dot"></span>
+              </span>
+            </div>
+            <div class="stat"><span class="k">Duration</span><span class="v">45 sec</span></div>
+            <div class="stat"><span class="k">Difficulty</span><span class="v">Moderate</span></div>
+            <div class="caution">
+              <span class="ico">&#9888;</span>
+              <span class="txt">Avoid if you have a shoulder impingement or recent rotator cuff injury.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Standing Quad Stretch -->
+      <div class="row">
+        <div>
+          <div class="title">Standing Quad Stretch</div>
+          <div class="subtitle">Legs &amp; hips</div>
+        </div>
+        <div class="body">
+          <div class="anim">
+            <div class="ring"></div>
+            <svg viewBox="0 0 100 100">
+              <g class="stick">
+                <circle cx="50" cy="20" r="9"/>
+                <g class="torso"><line x1="50" y1="29" x2="50" y2="62"/></g>
+                <line x1="50" y1="62" x2="38" y2="90"/>
+                <line x1="50" y1="62" x2="62" y2="90"/>
+                <g class="arms">
+                  <path d="M50,36 C34,42 30,54 40,64"/>
+                  <path d="M50,36 C66,42 70,54 60,64"/>
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div class="meta">
+            <div class="tag-row">
+              <span class="tag">Stretch</span>
+              <span class="dots">
+                <span class="dot on"></span><span class="dot"></span><span class="dot"></span>
+              </span>
+            </div>
+            <div class="stat"><span class="k">Duration</span><span class="v">30 sec / side</span></div>
+            <div class="stat"><span class="k">Difficulty</span><span class="v">Easy</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seated Spinal Twist -->
+      <div class="row">
+        <div>
+          <div class="title">Seated Spinal Twist</div>
+          <div class="subtitle">Back &amp; core</div>
+        </div>
+        <div class="body">
+          <div class="anim">
+            <div class="ring"></div>
+            <svg viewBox="0 0 100 100">
+              <g class="stick">
+                <circle cx="50" cy="20" r="9"/>
+                <g class="torso"><line x1="50" y1="29" x2="50" y2="62"/></g>
+                <line x1="50" y1="62" x2="38" y2="90"/>
+                <line x1="50" y1="62" x2="62" y2="90"/>
+                <g class="arms">
+                  <path d="M50,36 C34,42 30,54 40,64"/>
+                  <path d="M50,36 C66,42 70,54 60,64"/>
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div class="meta">
+            <div class="tag-row">
+              <span class="tag">Mobility</span>
+              <span class="dots">
+                <span class="dot on"></span><span class="dot on"></span><span class="dot on"></span>
+              </span>
+            </div>
+            <div class="stat"><span class="k">Duration</span><span class="v">60 sec / side</span></div>
+            <div class="stat"><span class="k">Difficulty</span><span class="v">Advanced</span></div>
+            <div class="caution">
+              <span class="ico">&#9888;</span>
+              <span class="txt">Move gently — skip if you have a disc injury or acute low-back pain.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

@@ -49,9 +49,18 @@
                     }()
 
                     /// Categories an exercise belongs to, derived from its target body
-    /// parts. Names that aren't a known MuscleGroup raw value are ignored.
+    /// parts. A part may be a top-level `MuscleGroup` raw value directly, or
+    /// an anatomical sub-head ("Left Temple") — those resolve to their parent
+    /// group (e.g. "Head") the same way `RegionExerciseResolver` does for the
+    /// Body Map, so head-zone exercises still land on the Neck node instead of
+    /// falling out of every category. Joint-region names (e.g. "Left Hip")
+    /// aren't muscle groups and don't resolve on their own; every seeded
+    /// joint-tagged exercise also carries a muscle-group tag it's found by.
+    /// Names that still don't resolve are ignored.
     static func categories(for targetBodyParts: [String]) -> Set<ExerciseCategory> {
-        Set(targetBodyParts.compactMap { membership[$0] })
+        Set(targetBodyParts.compactMap { part in
+            membership[MuscleGroup.parentOfHead(part) ?? part]
+        })
     }
 }
 
