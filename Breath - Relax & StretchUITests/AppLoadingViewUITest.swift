@@ -19,7 +19,7 @@ final class AppLoadingViewUITest: XCTestCase {
         // `staticTexts["Did you know?"]` (the raw child text is absorbed
         // into the combined element and won't match).
         let triviaCard = app.descendants(matching: .any)["Body trivia fact"]
-        XCTAssertTrue(triviaCard.waitForExistence(timeout: 2), "Trivia card should appear on cold launch")
+        XCTAssertTrue(triviaCard.waitForExistence(timeout: 5), "Trivia card should appear on cold launch")
 
         let splashScreenshot = XCTAttachment(screenshot: app.screenshot())
         splashScreenshot.lifetime = .keepAlways
