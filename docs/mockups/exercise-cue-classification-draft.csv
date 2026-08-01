@@ -1,0 +1,208 @@
+name,type,cueStyle,confidence,reason
+Deep Belly Breath,breath,repeat,high,Breath cycle repeated for the full duration.
+Box Breathing,breath,repeat,high,Repeated box-breathing cycle for the full duration.
+4-7-8 Breathing,breath,repeat,high,Repeated 4-7-8 cycles (3-4 times).
+Alternate Nostril Breathing,breath,repeat,high,Repeated alternating-nostril breath cycles.
+Pursed-Lip Breathing,breath,repeat,high,Repeated pursed-lip breath cycles.
+Diaphragmatic Breath with Counting,breath,repeat,high,Repeated breath cycles with counting.
+Coherent Breathing,breath,repeat,high,Continuous repeated breath cycles at ~6/min.
+Humming Bee Breath,breath,repeat,high,Repeated humming exhale cycles.
+Lion's Breath,breath,repeat,high,Explicitly repeated 5-6 times.
+Eye Palming,breath,hold,high,Static eye-palming position held for the full duration.
+Chin Tuck (Forward Head Reset),stretch,repeat,high,Short hold repeated 10 times.
+Seated Neck Rolls,stretch,repeat,high,"Rolling/circular head motion, reversing direction."
+Neck Extension Stretch (Gentle Look-Up),stretch,hold,high,"Head tilted back and held 10-15s, a few reps."
+Neck Flexion Stretch (Chin-to-Chest),stretch,hold,high,Chin-to-chest position held 15-20s.
+Seated Neck Rotation,stretch,hold,high,Head turned and held each side 10-15s.
+Left Levator Scapulae Stretch,stretch,hold,high,Neck stretch held 20-30s.
+Right Levator Scapulae Stretch,stretch,hold,high,Neck stretch held 20-30s.
+Left Upper Trapezius Stretch,stretch,hold,high,Trapezius stretch held 20-30s.
+Right Upper Trapezius Stretch,stretch,hold,high,Trapezius stretch held 20-30s.
+Shoulder Roll,stretch,repeat,high,Explicit 5 backward + 5 forward rolls.
+Left Cross-Body Rear Delt Stretch,stretch,hold,high,Cross-body stretch held 20s.
+Right Cross-Body Rear Delt Stretch,stretch,hold,high,Cross-body stretch held 20s.
+Doorway Shoulder & Chest Opener,stretch,hold,high,Doorway lean held 20-30s.
+Left Thread the Needle,stretch,hold,high,Thread-the-needle held 20-30s.
+Right Thread the Needle,stretch,hold,high,Thread-the-needle held 20-30s.
+Doorway Pec Stretch (Mid Chest),stretch,hold,high,Pec stretch held 20-30s.
+High Doorway Chest Stretch (Upper Chest),stretch,hold,high,Chest stretch held 20-30s.
+Left Supine Chest Opener (Open Book),stretch,hold,high,Open-book stretch held 20-30s.
+Right Supine Chest Opener (Open Book),stretch,hold,high,Open-book stretch held 20-30s.
+Cobra Stretch (Prone Press-Up),stretch,hold,high,Cobra position held 15-20s.
+Standing Back Extension,stretch,repeat,high,Short hold repeated 5-6 times.
+Kneeling Abdominal Stretch (Camel-Lite),stretch,hold,high,Kneeling arch held 15-20s.
+Cat-Cow Flow,stretch,repeat,high,Flow between two poses repeated 8-10 times.
+Left Seated Spinal Twist,stretch,hold,high,Spinal twist held 20s.
+Right Seated Spinal Twist,stretch,hold,high,Spinal twist held 20s.
+Child's Pose,stretch,hold,high,Position held for the full duration.
+Left Single-Leg Supine Knee-to-Chest,stretch,hold,high,Knee-to-chest held 20-30s.
+Right Single-Leg Supine Knee-to-Chest,stretch,hold,high,Knee-to-chest held 20-30s.
+Double Knee-to-Chest Release,stretch,repeat,high,Mostly held 20-30s but optional gentle rocking mentioned. (resolved: alternating/switch instructions already surface via instruction-cycling — classified repeat.)
+Pelvic Tilt,stretch,repeat,high,Explicit repeat 10-12 times.
+Seated Forward Fold,stretch,hold,high,Forward fold held 20-30s.
+Happy Baby Pose,stretch,repeat,high,Held 20-30s but includes side-to-side rocking. (resolved: alternating/switch instructions already surface via instruction-cycling — classified repeat.)
+Left Supine Spinal Twist (Windshield Wipers),stretch,hold,high,Spinal twist held 20-30s.
+Right Supine Spinal Twist (Windshield Wipers),stretch,hold,high,Spinal twist held 20-30s.
+Left Standing Side Reach,stretch,hold,high,Side reach held 15-20s.
+Right Standing Side Reach,stretch,hold,high,Side reach held 15-20s.
+Left Standing Side Bend,stretch,hold,high,Side bend held 15-20s.
+Right Standing Side Bend,stretch,hold,high,Side bend held 15-20s.
+Left Kneeling Lat Stretch (Hands on Chair),stretch,hold,high,Lat stretch held 20s.
+Right Kneeling Lat Stretch (Hands on Chair),stretch,hold,high,Lat stretch held 20s.
+Left Wall Bicep Stretch,stretch,hold,high,Bicep stretch held 15-20s.
+Right Wall Bicep Stretch,stretch,hold,high,Bicep stretch held 15-20s.
+Left Doorway Bicep Stretch,stretch,hold,high,Bicep stretch held 15-20s.
+Right Doorway Bicep Stretch,stretch,hold,high,Bicep stretch held 15-20s.
+Clasped-Hands Behind-Back Stretch,stretch,hold,high,Clasped-hands position held 15-20s.
+Left Overhead Triceps Stretch,stretch,hold,high,Triceps stretch held 20s.
+Right Overhead Triceps Stretch,stretch,hold,high,Triceps stretch held 20s.
+Left Cross-Body Elbow Pull,stretch,hold,high,Elbow pull held 20s.
+Right Cross-Body Elbow Pull,stretch,hold,high,Elbow pull held 20s.
+Left Towel-Assisted Triceps Stretch,stretch,hold,high,Towel triceps stretch held 20s.
+Right Towel-Assisted Triceps Stretch,stretch,hold,high,Towel triceps stretch held 20s.
+Left Wrist Flexor Stretch,stretch,hold,high,Wrist flexor stretch held 15-20s.
+Right Wrist Flexor Stretch,stretch,hold,high,Wrist flexor stretch held 15-20s.
+Left Wrist Extensor Stretch,stretch,hold,high,Wrist extensor stretch held 15-20s.
+Right Wrist Extensor Stretch,stretch,hold,high,Wrist extensor stretch held 15-20s.
+Reverse Prayer Stretch,stretch,hold,high,Reverse prayer position held 15-20s.
+"Prayer Stretch (Palms Together, Lower)",stretch,hold,high,Prayer position held 15-20s.
+Wrist Circles,stretch,repeat,high,"Explicit wrist circles, 10 each direction."
+Left Seated Figure-Four Stretch,stretch,hold,high,Figure-4 stretch held 30s.
+Right Seated Figure-Four Stretch,stretch,hold,high,Figure-4 stretch held 30s.
+Left Supine Figure-4 Stretch,stretch,hold,high,Figure-4 stretch held 20-30s.
+Right Supine Figure-4 Stretch,stretch,hold,high,Figure-4 stretch held 20-30s.
+Left Standing Figure-4 Stretch,stretch,hold,high,Figure-4 stretch held 20s.
+Right Standing Figure-4 Stretch,stretch,hold,high,Figure-4 stretch held 20s.
+Pigeon Pose (Right Leg Forward),stretch,hold,high,Pigeon pose held 30-45s.
+Pigeon Pose (Left Leg Forward),stretch,hold,high,Pigeon pose held 30-45s.
+Left Kneeling Hip-Flexor Lunge,stretch,hold,high,Lunge held 30s.
+Right Kneeling Hip-Flexor Lunge,stretch,hold,high,Lunge held 30s.
+Left Low Lunge (Anjaneyasana),stretch,hold,high,Low lunge held 20-30s.
+Right Low Lunge (Anjaneyasana),stretch,hold,high,Low lunge held 20-30s.
+Left Standing Hip-Flexor Stretch (Foot Elevated),stretch,hold,high,Hip-flexor stretch held 20-30s.
+Right Standing Hip-Flexor Stretch (Foot Elevated),stretch,hold,high,Hip-flexor stretch held 20-30s.
+Seated Butterfly Stretch,stretch,hold,high,Butterfly position held 30s.
+Left Side Lunge (Groin Stretch),stretch,hold,high,Side lunge held 20-30s.
+Right Side Lunge (Groin Stretch),stretch,hold,high,Side lunge held 20-30s.
+Frog Stretch (Kneeling Groin Stretch),stretch,hold,high,Frog stretch held 20-30s.
+Wide-Legged Forward Fold,stretch,hold,high,Forward fold held 20-30s.
+Left Standing Quad Stretch,stretch,hold,high,Quad stretch held 20-30s.
+Right Standing Quad Stretch,stretch,hold,high,Quad stretch held 20-30s.
+Left Kneeling Quad Stretch,stretch,hold,high,Quad stretch held 20-30s.
+Right Kneeling Quad Stretch,stretch,hold,high,Quad stretch held 20-30s.
+Left Side-Lying Quad Stretch,stretch,hold,high,Quad stretch held 20-30s.
+Right Side-Lying Quad Stretch,stretch,hold,high,Quad stretch held 20-30s.
+Standing Hamstring Stretch,stretch,hold,high,Hamstring fold held 20-30s.
+Left Seated Hamstring Stretch,stretch,hold,high,Hamstring stretch held 20-30s.
+Right Seated Hamstring Stretch,stretch,hold,high,Hamstring stretch held 20-30s.
+Left Supine Hamstring Stretch with Towel,stretch,hold,high,Hamstring stretch held 20-30s.
+Right Supine Hamstring Stretch with Towel,stretch,hold,high,Hamstring stretch held 20-30s.
+Downward-Facing Dog,stretch,repeat,high,Held 20-30s but includes gentle calf pedaling motion. (resolved: alternating/switch instructions already surface via instruction-cycling — classified repeat.)
+Legs Up the Wall,stretch,hold,high,Position held for the full duration.
+Calf Stretch at Wall (Straight-Knee),stretch,hold,high,Calf stretch held 20-30s.
+Bent-Knee Wall Calf Stretch (Soleus),stretch,hold,high,Calf stretch held 20-30s.
+Left Seated Calf Stretch with Towel,stretch,hold,high,Calf stretch held 20s.
+Right Seated Calf Stretch with Towel,stretch,hold,high,Calf stretch held 20s.
+Kneeling Tibialis Stretch,stretch,hold,high,Tibialis stretch held 15-20s.
+Left Standing Tibialis Stretch (Toe Point),stretch,hold,high,Tibialis stretch held 15-20s.
+Right Standing Tibialis Stretch (Toe Point),stretch,hold,high,Tibialis stretch held 15-20s.
+Shin & Ankle Mobiliser,stretch,repeat,high,Continuous dynamic ankle-tracing motion.
+Ankle Alphabet,stretch,repeat,high,Continuous dynamic ankle-tracing motion.
+Wrist & Forearm Release,stretch,repeat,high,Sequence of quick stretches/shakes without a stated hold. (resolved: alternating/switch instructions already surface via instruction-cycling — classified repeat.)
+Sun Salutation Warm-Up,stretch,repeat,high,Flow repeated slowly 4-6 times.
+Upper-Back Cat-Cow (Seated),stretch,repeat,high,Cat-Cow flow repeated 8-10 times.
+Reverse Prayer Shoulder Mobiliser,stretch,hold,high,Position held 15-20s.
+Left Chin-to-Shoulder Diagonal Stretch,stretch,hold,high,Diagonal neck stretch held 15-20s.
+Right Chin-to-Shoulder Diagonal Stretch,stretch,hold,high,Diagonal neck stretch held 15-20s.
+Left Sleeper Stretch (Internal Rotation),stretch,hold,high,Sleeper stretch held 15-20s.
+Right Sleeper Stretch (Internal Rotation),stretch,hold,high,Sleeper stretch held 15-20s.
+Left Doorway External Rotation Stretch,stretch,hold,high,Rotation stretch held 15-20s.
+Right Doorway External Rotation Stretch,stretch,hold,high,Rotation stretch held 15-20s.
+Left Overhead Shoulder Stretch with Strap,stretch,hold,high,Strap stretch held 15-20s.
+Right Overhead Shoulder Stretch with Strap,stretch,hold,high,Strap stretch held 15-20s.
+Left Wall Corner Pec Stretch,stretch,hold,high,Corner pec stretch held 20s.
+Right Wall Corner Pec Stretch,stretch,hold,high,Corner pec stretch held 20s.
+Sphinx Pose,stretch,hold,high,Sphinx position held 30s.
+Standing Forward Fold (Ragdoll),stretch,repeat,high,Held 20-30s but includes gentle side-to-side sway. (resolved: alternating/switch instructions already surface via instruction-cycling — classified repeat.)
+Left Standing Reach-Through Twist,stretch,repeat,high,Explicit repeat 3-4 times on this side.
+Right Standing Reach-Through Twist,stretch,repeat,high,Explicit repeat 3-4 times on this side.
+Left Overhead Reach Lat Stretch with Strap,stretch,hold,high,Lat stretch held 15-20s.
+Right Overhead Reach Lat Stretch with Strap,stretch,hold,high,Lat stretch held 15-20s.
+Left Extended-Fingers Bicep Stretch,stretch,hold,high,Bicep/forearm stretch held 15-20s.
+Right Extended-Fingers Bicep Stretch,stretch,hold,high,Bicep/forearm stretch held 15-20s.
+Left Behind-Head Strap-Assisted Triceps Stretch,stretch,hold,high,Triceps stretch held 15-20s.
+Right Behind-Head Strap-Assisted Triceps Stretch,stretch,hold,high,Triceps stretch held 15-20s.
+Prayer Push Against Wall,stretch,hold,high,Wall press held 15-20s.
+Left Standing Crossed-Leg Fold,stretch,hold,high,Crossed-leg fold held 15-20s.
+Right Standing Crossed-Leg Fold,stretch,hold,high,Crossed-leg fold held 15-20s.
+Left Couch Stretch,stretch,hold,high,Couch stretch held 20-30s.
+Right Couch Stretch,stretch,hold,high,Couch stretch held 20-30s.
+Left Cossack Squat Stretch,stretch,repeat,high,Explicit 4-6 controlled reps per side.
+Right Cossack Squat Stretch,stretch,repeat,high,Explicit 4-6 controlled reps per side.
+Left Reclined Quad Stretch with Strap,stretch,hold,high,Quad stretch held 20s.
+Right Reclined Quad Stretch with Strap,stretch,hold,high,Quad stretch held 20s.
+Left Doorframe Hamstring Stretch,stretch,hold,high,Hamstring stretch held 20-30s.
+Right Doorframe Hamstring Stretch,stretch,hold,high,Hamstring stretch held 20-30s.
+Runner's Calf Stretch (Staggered Stance),stretch,repeat,high,Held 20s per side but explicitly repeated 2 rounds. (resolved: alternating/switch instructions already surface via instruction-cycling — classified repeat.)
+Left Toe Spread & Stretch,stretch,repeat,high,Sequential per-toe holds plus flex/extend motion. (resolved: alternating/switch instructions already surface via instruction-cycling — classified repeat.)
+Right Toe Spread & Stretch,stretch,repeat,high,Sequential per-toe holds plus flex/extend motion. (resolved: alternating/switch instructions already surface via instruction-cycling — classified repeat.)
+Left Finger Extension Stretch,stretch,repeat,high,Sequential per-finger holds cycling through fingers. (resolved: alternating/switch instructions already surface via instruction-cycling — classified repeat.)
+Right Finger Extension Stretch,stretch,repeat,high,Sequential per-finger holds cycling through fingers. (resolved: alternating/switch instructions already surface via instruction-cycling — classified repeat.)
+Equal Breathing (Sama Vritti),breath,repeat,high,Continuous balanced breath cycles.
+Ocean Breath (Ujjayi),breath,repeat,high,Continuous Ujjayi breath cycles.
+Physiological Sigh,breath,repeat,high,Explicit repeat 3-5 times.
+Left Half-Kneeling Rear-Foot Instep Stretch,stretch,hold,high,"Held, then switch legs on another round."
+Right Half-Kneeling Rear-Foot Instep Stretch,stretch,hold,high,"Held, then switch legs on another round."
+Left Seated Behind-Hip Bicep Stretch,stretch,hold,high,"Held, then release slowly."
+Right Seated Behind-Hip Bicep Stretch,stretch,hold,high,"Held, then release slowly."
+Left Wall-Assisted Overhead Triceps Stretch,stretch,hold,high,"Held, then switch sides on another round."
+Right Wall-Assisted Overhead Triceps Stretch,stretch,hold,high,"Held, then switch sides on another round."
+Left Step-Edge Calf Drop Stretch,stretch,hold,high,"Held gently, then switch legs."
+Right Step-Edge Calf Drop Stretch,stretch,hold,high,"Held gently, then switch legs."
+Left Scalene Neck Stretch,stretch,hold,high,"Held, then return to center."
+Right Scalene Neck Stretch,stretch,hold,high,"Held, then return to center."
+Temporalis Release,stretch,repeat,high,Continuous small circular massage motion.
+Brow & Forehead Smoother,stretch,repeat,high,Repeated slow gliding motion for full duration.
+Wrist Flexor Prayer Stretch,stretch,hold,high,"Held, breathing evenly."
+Wrist Extensor Reverse-Prayer Stretch,stretch,hold,high,"Held, breathing evenly."
+Left Plantar Fascia Stretch (Toe Raise),stretch,hold,high,"Held, then release slowly."
+Right Plantar Fascia Stretch (Toe Raise),stretch,hold,high,"Held, then release slowly."
+Left Standing Crescent Moon Side Stretch,stretch,hold,high,"Held, then return to center."
+Right Standing Crescent Moon Side Stretch,stretch,hold,high,"Held, then return to center."
+Left Cow-Face Arm Stretch,stretch,hold,high,"Held, then release and switch sides."
+Right Cow-Face Arm Stretch,stretch,hold,high,"Held, then release and switch sides."
+Suboccipital Release (Finger Press),stretch,repeat,high,Static pressure hold with a few small chin nods mixed in. (resolved: alternating/switch instructions already surface via instruction-cycling — classified repeat.)
+Prone Neck Retraction,stretch,repeat,high,Explicit glide-and-release rhythm repeated.
+Left Isometric Neck Side Press,stretch,repeat,high,Explicit press-and-release repeated.
+Right Isometric Neck Side Press,stretch,repeat,high,Explicit press-and-release repeated.
+Standing Chest Expansion Stretch,stretch,hold,high,"Held, then release slowly."
+Kneeling Chest Stretch on Chair,stretch,hold,high,"Held, breathing deeply."
+Doorway Overhead Chest Stretch,stretch,hold,high,"Held, then step back to release."
+Seated Thoracic Extension Over Chair Back,stretch,hold,high,Held for a few breaths.
+Left Pigeon Pose Hip Stretch,stretch,hold,high,"Held, then rise and switch sides."
+Right Pigeon Pose Hip Stretch,stretch,hold,high,"Held, then rise and switch sides."
+Bridge Pose,stretch,hold,high,"Held, then lower slowly."
+Standing Split Prep Stretch,stretch,hold,high,"Held, then lower and switch sides."
+Extended Exhale Breathing,breath,repeat,high,Repeated extended-exhale breath cycles.
+Counting Down Sleep Breath,breath,repeat,high,Repeated countdown breath cycles.
+Cooling Sitali Breath,breath,repeat,high,Repeated Sitali breath cycles.
+Three-Part Breath (Dirga Pranayama),breath,repeat,high,Repeated three-part breath waves.
+Body Scan Breathing,breath,repeat,high,Repeated breath cycles scanning through body parts.
+Segmented Exhale Breathing (Viloma),breath,repeat,high,Repeated segmented-exhale cycles.
+Progressive Relaxation Breath,breath,repeat,high,Repeated tense-and-release breath pairs up the body.
+Left-Nostril Calming Breath (Chandra Bhedana),breath,repeat,high,Continuous alternating-nostril breath pattern.
+Standing IT Band Side Stretch (Left),stretch,hold,high,"Held, then return to center."
+Standing IT Band Side Stretch (Right),stretch,hold,high,"Held, then return to center."
+Dynamic Standing Leg Swings,stretch,repeat,high,Continuous pendulum leg swings.
+Standing Hip Circles,stretch,repeat,high,Continuous hip circles.
+Runner's Lunge with Rotation (Left),stretch,hold,high,"Held, then release and switch sides."
+Runner's Lunge with Rotation (Right),stretch,hold,high,"Held, then release and switch sides."
+Standing Ankle Dorsiflexion Stretch (Left),stretch,hold,high,"Held, then switch sides."
+Standing Ankle Dorsiflexion Stretch (Right),stretch,hold,high,"Held, then switch sides."
+20-20-20 Focus Shift,stretch,hold,high,Gaze held for about 20 seconds.
+Gentle Eye Rolls,stretch,repeat,high,"Explicit 3-4 circles, then reversed."
+Jaw-Open Temporalis Stretch,stretch,repeat,high,Explicit repeat gently and slowly for full duration.
+Resisted Jaw Opening,stretch,repeat,high,Explicit repeat calmly for the full duration.
+Side-to-Side Jaw Glide,stretch,repeat,high,Continuous side-to-side glide for the full duration.
+Tongue-Up Controlled Open/Close,stretch,repeat,high,Explicit repeat calmly for the full duration.
+Frontalis Release,stretch,repeat,high,Hold-then-release cycle explicitly repeated. (resolved: alternating/switch instructions already surface via instruction-cycling — classified repeat.)

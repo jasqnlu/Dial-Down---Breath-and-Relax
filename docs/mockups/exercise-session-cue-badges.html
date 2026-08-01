@@ -1,0 +1,322 @@
+<title>Breath — Exercise Session Cue Badges</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --surface:#F8FAFB; --on-surface:#191C1D; --on-surface-var:#3D4946;
+    --primary:#00685B; --primary-container:#008374; --mint-tint:#D7F2EA;
+    --gradient-start:#4AC4C4; --line:#E1E9E6; --shadow:#00000022;
+    --card-bg:#FFFFFF;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --surface:#0E1413; --on-surface:#EFF1F2; --on-surface-var:#BCC9C5;
+      --primary:#6ED8C5; --primary-container:#005046; --mint-tint:#17332E;
+      --gradient-start:#2E7D7D; --line:#20302C; --shadow:#00000066;
+      --card-bg:#141B1A;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:48px 20px; min-height:100vh;
+    background:var(--surface); color:var(--on-surface);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Rounded","Segoe UI",sans-serif;
+    display:flex; flex-direction:column; align-items:center; gap:28px;
+  }
+  h1{font-size:20px; margin:0}
+  .intro{max-width:460px; text-align:center; color:var(--on-surface-var); font-size:14px; line-height:1.5; margin:0}
+
+  .switcher{
+    display:flex; gap:8px; background:var(--mint-tint); padding:4px; border-radius:999px;
+  }
+  .switcher button{
+    border:none; background:transparent; padding:9px 18px; border-radius:999px;
+    font-size:14px; font-weight:600; color:var(--primary); cursor:pointer;
+    font-family:inherit;
+  }
+  .switcher button.active{background:var(--primary); color:var(--surface);}
+
+  .legend{
+    display:flex; gap:18px; flex-wrap:wrap; justify-content:center; max-width:460px;
+    font-size:12.5px; color:var(--on-surface-var);
+  }
+  .legend span{display:inline-flex; align-items:center; gap:6px}
+  .legend .dot{width:8px; height:8px; border-radius:50%; background:var(--primary); flex:0 0 auto}
+
+  .phone{
+    width:390px; height:800px; border-radius:44px; background:var(--surface);
+    box-shadow:0 20px 60px var(--shadow), 0 0 0 10px #0000000d;
+    position:relative; overflow:hidden; border:1px solid var(--line);
+    display:flex; flex-direction:column;
+  }
+
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 18px 10px;
+  }
+  .close{font-size:22px; color:var(--on-surface-var); line-height:1}
+  .speed{
+    display:flex; background:var(--mint-tint); border-radius:8px; padding:2px;
+    font-size:12px; font-weight:600; color:var(--on-surface-var);
+  }
+  .speed span{padding:4px 10px; border-radius:6px}
+  .speed span.active{background:var(--card-bg); color:var(--on-surface)}
+  .counter{font-size:12px; color:var(--on-surface-var)}
+
+  .progress{ margin:0 18px 18px; height:4px; border-radius:2px; background:var(--line); overflow:hidden}
+  .progress-fill{height:100%; width:38%; background:var(--primary); border-radius:2px}
+
+  .center{ flex:1; display:flex; flex-direction:column; align-items:center; padding:0 24px; overflow:hidden }
+  .spacer{flex:1 1 auto}
+  .spacer.small{flex:0 0 14px}
+
+  .name{font-size:30px; font-weight:800; text-align:center; letter-spacing:-.01em}
+  .type{font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--on-surface-var); margin-top:4px}
+
+  /* --- NEW: cue badge --- */
+  .cue-badge{
+    margin-top:16px; padding:7px 18px; border-radius:999px;
+    font-size:12.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--mint-tint); color:var(--primary);
+  }
+  .cue-badge.hold{ }
+  .cue-badge.repeat{ animation:badgePulse 1.15s ease-in-out infinite; }
+  @keyframes badgePulse{
+    0%,100%{ transform:scale(1); opacity:1 }
+    50%{ transform:scale(1.07); opacity:.82 }
+  }
+  .cue-badge .glyph{font-size:14px; line-height:1}
+
+  .stage{
+    width:100%; max-width:280px; aspect-ratio:1/1; border-radius:24px;
+    background:var(--card-bg); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+  .stage svg{width:62%; height:62%}
+  .stick{ stroke:var(--primary); stroke-width:7; stroke-linecap:round; fill:none }
+  .stick-head{ fill:var(--primary); stroke:none }
+
+  /* hold pose: gentle sustained breathing scale, no repeat cadence implied */
+  .stage.hold svg{ animation:holdBreathe 3.6s ease-in-out infinite }
+  @keyframes holdBreathe{
+    0%,100%{ transform:scale(1) }
+    50%{ transform:scale(1.03) }
+  }
+
+  /* repeat pose: arms cycle through a rolling motion, looping briskly */
+  .arm-l, .arm-r{ transform-origin:135px 95px }
+  .stage.repeat .arm-l{ animation:rollL 1.15s ease-in-out infinite }
+  .stage.repeat .arm-r{ animation:rollR 1.15s ease-in-out infinite }
+  @keyframes rollL{
+    0%,100%{ transform:rotate(0deg) }
+    50%{ transform:rotate(-34deg) }
+  }
+  @keyframes rollR{
+    0%,100%{ transform:rotate(0deg) }
+    50%{ transform:rotate(34deg) }
+  }
+
+  /* --- NEW: on-screen instruction cue --- */
+  .instruction{
+    margin-top:18px; min-height:44px; display:flex; align-items:center; justify-content:center;
+    text-align:center; font-size:16px; font-weight:600; color:var(--on-surface);
+    padding:0 8px;
+  }
+  .instruction span{ animation:fadeStep .45s ease }
+  @keyframes fadeStep{
+    from{ opacity:0; transform:translateY(4px) }
+    to{ opacity:1; transform:translateY(0) }
+  }
+
+  .timer{
+    margin-top:6px; font-size:56px; font-weight:200; font-variant-numeric:tabular-nums;
+    letter-spacing:-.02em;
+  }
+
+  .controls{
+    display:flex; align-items:center; justify-content:center; gap:44px;
+    padding-bottom:40px;
+  }
+  .skip{font-size:26px; color:var(--on-surface-var); opacity:.85}
+  .skip.hidden-spacer{visibility:hidden}
+  .play{
+    width:72px; height:72px; border-radius:50%; background:var(--primary);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 20px var(--primary-container)55;
+  }
+  .play .icon{ color:var(--surface); font-size:26px }
+
+  .new-tag{
+    position:absolute; top:-9px; right:-14px; background:var(--gradient-start); color:#04211f;
+    font-size:9px; font-weight:800; letter-spacing:.04em; padding:2px 6px; border-radius:6px;
+    text-transform:uppercase;
+  }
+  .new-anchor{ position:relative; display:inline-flex }
+</style>
+
+<h1>Session player — hold vs. keep-going cues</h1>
+<p class="intro">
+  Mockup for a new per-exercise cue during the exercise itself. A new
+  <code>cueStyle</code> field (<code>.hold</code> / <code>.repeat</code>) drives a small badge
+  under the exercise name, plus the exercise's own instructions shown between the animation
+  and the countdown — both currently missing from the live session player. Stick figures are
+  placeholders for the real pose animation.
+</p>
+
+<div class="switcher">
+  <button id="btn-hold" class="active" onclick="setMode('hold')">Hold-type exercise</button>
+  <button id="btn-repeat" onclick="setMode('repeat')">Repeat-type exercise</button>
+</div>
+
+<div class="legend">
+  <span><span class="dot"></span> new: cue badge (static for hold, pulsing for repeat)</span>
+  <span><span class="dot"></span> new: instruction text, cycling for repeat-type</span>
+</div>
+
+<div class="phone">
+  <div class="topbar">
+    <div class="close">✕</div>
+    <div class="speed"><span>0.5x</span><span class="active">1x</span><span>2x</span></div>
+    <div class="counter">3 / 6</div>
+  </div>
+  <div class="progress"><div class="progress-fill"></div></div>
+
+  <div class="center">
+    <div class="spacer small"></div>
+
+    <div class="name" id="ex-name">Standing Hamstring Stretch</div>
+    <div class="type" id="ex-type">Stretch</div>
+
+    <span class="new-anchor">
+      <div class="cue-badge hold" id="cue-badge">
+        <span class="glyph">◐</span><span id="cue-text">Hold</span>
+      </div>
+      <span class="new-tag">new</span>
+    </span>
+
+    <div class="spacer small"></div>
+
+    <span class="new-anchor" style="width:100%; display:flex; justify-content:center">
+      <div class="stage hold" id="stage">
+        <svg viewBox="0 0 200 200">
+          <circle class="stick-head" cx="100" cy="46" r="14"/>
+          <path class="stick" d="M100 60 L100 118"/>
+          <path class="stick arm-l" d="M100 78 L64 100"/>
+          <path class="stick arm-r" d="M100 78 L136 60"/>
+          <path class="stick" d="M100 118 L74 168"/>
+          <path class="stick" d="M100 118 L128 170"/>
+        </svg>
+      </div>
+    </span>
+
+    <span class="new-anchor" style="width:100%; display:flex; justify-content:center">
+      <div class="instruction" id="instruction"><span id="instruction-text">Keep your back flat.</span></div>
+      <span class="new-tag">new</span>
+    </span>
+
+    <div class="timer" id="timer">0:38</div>
+
+    <div class="spacer"></div>
+
+    <div class="controls">
+      <div class="skip">⏭</div>
+      <div class="play"><div class="icon">❚❚</div></div>
+      <div class="skip hidden-spacer">⏭</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const modes = {
+    hold: {
+      name: "Standing Hamstring Stretch",
+      type: "Stretch",
+      glyph: "◐",
+      cue: "Hold",
+      instructions: [
+        "Keep your back flat.",
+        "Hinge at the hips, not your waist.",
+        "Relax your neck and shoulders."
+      ],
+      stepMs: 3400,
+      startSeconds: 38
+    },
+    repeat: {
+      name: "Shoulder Rolls",
+      type: "Stretch",
+      glyph: "↻",
+      cue: "Keep going",
+      instructions: [
+        "Roll shoulders back",
+        "Roll shoulders forward",
+        "Keep breathing steadily"
+      ],
+      stepMs: 1150,
+      startSeconds: 25
+    }
+  };
+
+  let current = "hold";
+  let stepIndex = 0;
+  let stepTimer = null;
+  let countdownTimer = null;
+  let secondsLeft = modes.hold.startSeconds;
+
+  function setMode(mode){
+    current = mode;
+    document.getElementById("btn-hold").classList.toggle("active", mode === "hold");
+    document.getElementById("btn-repeat").classList.toggle("active", mode === "repeat");
+
+    const m = modes[mode];
+    document.getElementById("ex-name").textContent = m.name;
+    document.getElementById("ex-type").textContent = m.type;
+
+    const badge = document.getElementById("cue-badge");
+    badge.classList.toggle("hold", mode === "hold");
+    badge.classList.toggle("repeat", mode === "repeat");
+    document.querySelector("#cue-badge .glyph").textContent = m.glyph;
+    document.getElementById("cue-text").textContent = m.cue;
+
+    const stage = document.getElementById("stage");
+    stage.classList.toggle("hold", mode === "hold");
+    stage.classList.toggle("repeat", mode === "repeat");
+
+    stepIndex = 0;
+    secondsLeft = m.startSeconds;
+    updateInstruction();
+    updateTimer();
+
+    clearInterval(stepTimer);
+    stepTimer = setInterval(advanceInstruction, m.stepMs);
+    clearInterval(countdownTimer);
+    countdownTimer = setInterval(tickTimer, 1000);
+  }
+
+  function updateInstruction(){
+    const m = modes[current];
+    const el = document.getElementById("instruction-text");
+    el.textContent = m.instructions[stepIndex % m.instructions.length];
+    el.style.animation = "none";
+    void el.offsetWidth;
+    el.style.animation = "";
+  }
+
+  function advanceInstruction(){
+    stepIndex++;
+    updateInstruction();
+  }
+
+  function updateTimer(){
+    const mm = Math.floor(secondsLeft / 60);
+    const ss = String(secondsLeft % 60).padStart(2, "0");
+    document.getElementById("timer").textContent = `${mm}:${ss}`;
+  }
+
+  function tickTimer(){
+    secondsLeft = secondsLeft > 0 ? secondsLeft - 1 : modes[current].startSeconds;
+    updateTimer();
+  }
+
+  setMode("hold");
+</script>
