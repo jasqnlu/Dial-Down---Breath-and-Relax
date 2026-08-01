@@ -228,4 +228,31 @@ enum SeedMigrator {
         }
         return changed
     }
+
+    /// v8 — backfills `Exercise.cueStyle` onto already-seeded rows, matched by
+    /// `seedID`. New installs already read `cueStyle` at insert time; this
+    /// only matters for users seeded before the field existed. Parses the
+    /// bundle's lowercase string via `ExerciseCueStyle(rawValue:)` on the
+    /// capitalized string, same as the insert-time parsing.
+    @discardableResult
+    static func migrateV8(context: ModelContext, rawExercises: [[String: Any]]) -> Bool {
+        var cueStyleBySeedID: [String: ExerciseCueStyle] = [:]
+        for raw in rawExercises {
+            guard let id = raw["id"] as? String,
+                  let cueStyleStr = raw["cueStyle"] as? String,
+                  let cueStyle = ExerciseCueStyle(rawValue: cueStyleStr.capitalized) else { continue }
+            cueStyleBySeedID[id] = cueStyle
+        }
+
+        let existing = (try? context.fetch(FetchDescriptor<Exercise>())) ?? []
+        var changed = false
+        for exercise in existing {
+            guard let seedID = exercise.seedID,
+                  let cueStyle = cueStyleBySeedID[seedID],
+                  exercise.cueStyle != cueStyle else { continue }
+            exercise.cueStyle = cueStyle
+            changed = true
+        }
+        return changed
+    }
 }

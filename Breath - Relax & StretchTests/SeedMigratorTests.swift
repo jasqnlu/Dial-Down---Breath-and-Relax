@@ -273,4 +273,66 @@ struct SeedMigratorTests {
         let all = try context.fetch(FetchDescriptor<Exercise>())
         #expect(all[0].animationName == nil)
     }
+
+    // MARK: - v8: cueStyle backfill
+
+    @Test func v8BackfillsCueStyleBySeedID() throws {
+        let context = makeContext()
+        let exercise = Exercise(
+            name: "Shoulder Roll", type: .stretch,
+            targetBodyParts: ["Left Shoulder"], durationSeconds: 30,
+            difficulty: 1, instructions: ["a", "b", "c"]
+        )
+        exercise.seedID = "shoulder-roll-id"
+        #expect(exercise.cueStyle == .hold)
+        context.insert(exercise)
+        try context.save()
+
+        var raw = rawExercise(id: "shoulder-roll-id", name: "Shoulder Roll")
+        raw["cueStyle"] = "repeat"
+        let changed = SeedMigrator.migrateV8(context: context, rawExercises: [raw])
+        #expect(changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all[0].cueStyle == .repeatMotion)
+    }
+
+    @Test func v8IsNoOpWhenBundleCueStyleMatchesAlready() throws {
+        let context = makeContext()
+        let exercise = Exercise(
+            name: "Child's Pose", type: .stretch,
+            targetBodyParts: ["Back"], durationSeconds: 45,
+            difficulty: 1, instructions: ["a", "b", "c"], cueStyle: .hold
+        )
+        exercise.seedID = "childs-pose-id"
+        context.insert(exercise)
+        try context.save()
+
+        var raw = rawExercise(id: "childs-pose-id", name: "Child's Pose")
+        raw["cueStyle"] = "hold"
+        let changed = SeedMigrator.migrateV8(context: context, rawExercises: [raw])
+        #expect(!changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all[0].cueStyle == .hold)
+    }
+
+    @Test func v8NeverTouchesUserCreatedExercises() throws {
+        let context = makeContext()
+        let custom = Exercise(
+            name: "My Custom Move", type: .stretch,
+            targetBodyParts: ["Left Quadriceps"], durationSeconds: 30,
+            difficulty: 1, instructions: ["x", "y", "z"]
+        )
+        context.insert(custom)   // no seedID
+        try context.save()
+
+        var raw = rawExercise(id: "seed-1", name: "Some Seed")
+        raw["cueStyle"] = "repeat"
+        let changed = SeedMigrator.migrateV8(context: context, rawExercises: [raw])
+        #expect(!changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all[0].cueStyle == .hold)
+    }
 }
