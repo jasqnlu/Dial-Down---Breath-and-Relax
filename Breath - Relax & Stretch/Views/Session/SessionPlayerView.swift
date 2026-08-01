@@ -68,8 +68,11 @@ struct SessionPlayerView: View {
     private let soundTick:       SystemSoundID = 1104  // keyboard click — breathing cue
     private let soundTransition: SystemSoundID = 1057  // short tock — exercise advance
     private let soundComplete:   SystemSoundID = 1016  // tweet chime — session done
+    private let soundCueBeep: SystemSoundID = 1103  // soft low tock — cue reminder
     @State private var breathTick = 0  // counts seconds to fire cue every 4s
     @State private var cueBadgePulsing = false
+    @State private var instructionCueIndex = 0
+    @State private var instructionCueTask: Task<Void, Never>? = nil
 
     var currentExercise: Exercise? {
         guard currentIndex < exercises.count else { return nil }
@@ -149,6 +152,7 @@ struct SessionPlayerView: View {
             UIApplication.shared.isIdleTimerDisabled = false
             VoiceCueService.shared.stop()
             getReadyTask?.cancel()
+            instructionCueTask?.cancel()
         }
         .task {
             for await _ in Timer.publish(every: 1, on: .main, in: .common).autoconnect().values {
@@ -252,6 +256,8 @@ struct SessionPlayerView: View {
                     .padding()
             }
 
+            instructionCue(for: exercise)
+
             Text(timeString(secondsRemaining))
                 .font(.system(size: exerciseTimerSize, weight: .thin, design: .rounded))
                 .monospacedDigit()
@@ -316,6 +322,28 @@ struct SessionPlayerView: View {
                     cueBadgePulsing = true
                 }
             }
+    }
+
+    @ViewBuilder
+    private func instructionCue(for exercise: Exercise) -> some View {
+        if !exercise.instructions.isEmpty {
+            let index = min(instructionCueIndex, exercise.instructions.count - 1)
+            Text(exercise.instructions[index])
+                .id(index)
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurface)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+                .padding(.top, 8)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .leading).combined(with: .opacity)
+                        .animation(.easeOut(duration: 0.35)),
+                    removal: .opacity
+                        .animation(.easeIn(duration: 0.25))
+                ))
+                .accessibilityLabel("Exercise instruction")
+                .accessibilityValue(exercise.instructions[index])
+        }
     }
 
     @ViewBuilder
@@ -440,6 +468,24 @@ struct SessionPlayerView: View {
         }
         if let exercise = currentExercise {
             VoiceCueService.shared.speak(exercise.name)
+        }
+        instructionCueTask?.cancel()
+        instructionCueIndex = 0
+        if let count = currentExercise?.instructions.count, count > 1 {
+            instructionCueTask = Task { @MainActor in
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(3.5))
+                    guard !Task.isCancelled else { return }
+                    // Mirrors the existing countdown `.task` loop's own
+                    // `guard !isPaused` skip — while the session is paused,
+                    // this tick is a no-op rather than advancing/beeping.
+                    guard !isPaused else { continue }
+                    withAnimation(.easeOut(duration: 0.35)) {
+                        instructionCueIndex += 1
+                    }
+                    AudioServicesPlaySystemSound(soundCueBeep)
+                }
+            }
         }
     }
 
