@@ -84,6 +84,14 @@ struct SeedDataTests {
             #expect((1...3).contains((raw["difficulty"] as? Int) ?? 0))
         }
     }
+
+    @Test func everyExerciseHasCueStyle() throws {
+        for raw in try Self.loadExercises() {
+            let cueStyle = raw["cueStyle"] as? String
+            #expect(["hold", "repeat"].contains(cueStyle ?? ""),
+                    "\(raw["name"] ?? "?") has missing/invalid cueStyle: \(cueStyle ?? "nil")")
+        }
+    }
 }
 
 private final class BundleToken {}
