@@ -799,6 +799,10 @@ The instruction index must reset to `0` and start a fresh 3.5s cycling loop ever
                 while !Task.isCancelled {
                     try? await Task.sleep(for: .seconds(3.5))
                     guard !Task.isCancelled else { return }
+                    // Mirrors the existing countdown `.task` loop's own
+                    // `guard !isPaused` skip — while the session is paused,
+                    // this tick is a no-op rather than advancing/beeping.
+                    guard !isPaused else { continue }
                     withAnimation(.easeOut(duration: 0.35)) {
                         instructionCueIndex += 1
                     }
