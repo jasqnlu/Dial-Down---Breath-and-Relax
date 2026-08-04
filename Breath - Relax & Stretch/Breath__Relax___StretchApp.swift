@@ -176,6 +176,7 @@ struct BreathRelaxStretchApp: App {
         migrateSeedToV4IfNeeded()
         migrateSeedToV5IfNeeded()
         migrateSeedToV6IfNeeded()
+        migrateSeedToV7IfNeeded()
     }
 
     /// Loads the bundled seed JSON's exercise array, or nil if unavailable.
@@ -231,6 +232,17 @@ struct BreathRelaxStretchApp: App {
             }
         }
         seedDataVersion = 6
+    }
+
+    private func migrateSeedToV7IfNeeded() {
+        guard seedDataVersion < 7 else { return }
+        if let rawExercises = loadSeedExercises() {
+            let context = sharedModelContainer.mainContext
+            if SeedMigrator.migrateV7(context: context, rawExercises: rawExercises) {
+                try? context.save()
+            }
+        }
+        seedDataVersion = 7
     }
 
     // MARK: - Remote catalog sync (best-effort, offline-first)

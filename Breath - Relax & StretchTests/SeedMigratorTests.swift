@@ -198,4 +198,79 @@ struct SeedMigratorTests {
         let all = try context.fetch(FetchDescriptor<Exercise>())
         #expect(all[0].isBilateral)
     }
+
+    // MARK: - v4: animationName on fresh insert
+
+    @Test func v4InsertsAnimationName() throws {
+        let context = makeContext()
+        var raw = rawExercise(id: "new-id", name: "New Stretch")
+        raw["animationName"] = "anim.mp4"
+        _ = SeedMigrator.migrateV4(context: context, rawExercises: [raw])
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all[0].animationName == "anim.mp4")
+    }
+
+    // MARK: - v7: animationName backfill onto existing installs
+
+    @Test func v7BackfillsAnimationNameBySeedID() throws {
+        let context = makeContext()
+        let exercise = Exercise(
+            name: "Clasp", type: .stretch,
+            targetBodyParts: ["Left Shoulder"], durationSeconds: 45,
+            difficulty: 2, instructions: ["a", "b", "c"]
+        )
+        exercise.seedID = "clasp-id"
+        #expect(exercise.animationName == nil)
+        context.insert(exercise)
+        try context.save()
+
+        var raw = rawExercise(id: "clasp-id", name: "Clasp")
+        raw["animationName"] = "clasped_hands_behind_back.mp4"
+        let changed = SeedMigrator.migrateV7(context: context, rawExercises: [raw])
+        #expect(changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all[0].animationName == "clasped_hands_behind_back.mp4")
+    }
+
+    @Test func v7DoesNotClobberExistingAnimation() throws {
+        let context = makeContext()
+        let exercise = Exercise(
+            name: "Clasp", type: .stretch,
+            targetBodyParts: ["Left Shoulder"], durationSeconds: 45,
+            difficulty: 2, instructions: ["a", "b", "c"]
+        )
+        exercise.seedID = "clasp-id"
+        exercise.animationName = "already.mp4"
+        context.insert(exercise)
+        try context.save()
+
+        var raw = rawExercise(id: "clasp-id", name: "Clasp")
+        raw["animationName"] = "clasped_hands_behind_back.mp4"
+        let changed = SeedMigrator.migrateV7(context: context, rawExercises: [raw])
+        #expect(!changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all[0].animationName == "already.mp4")
+    }
+
+    @Test func v7NeverTouchesUserCreatedExercises() throws {
+        let context = makeContext()
+        let custom = Exercise(
+            name: "My Custom Move", type: .stretch,
+            targetBodyParts: ["Left Quadriceps"], durationSeconds: 30,
+            difficulty: 1, instructions: ["x", "y", "z"]
+        )
+        context.insert(custom)   // no seedID
+        try context.save()
+
+        var raw = rawExercise(id: "seed-1", name: "Some Seed")
+        raw["animationName"] = "x.mp4"
+        let changed = SeedMigrator.migrateV7(context: context, rawExercises: [raw])
+        #expect(!changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all[0].animationName == nil)
+    }
 }

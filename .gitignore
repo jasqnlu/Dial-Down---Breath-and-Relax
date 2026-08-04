@@ -38,3 +38,10 @@ fastlane/test_output
 
 # Graphify knowledge graph (regenerate with `graphify update .`)
 graphify-out/
+
+# Python bytecode (Blender pipeline tooling)
+__pycache__/
+*.pyc
+
+# Git worktrees (subagent-driven-development isolation)
+.worktrees/

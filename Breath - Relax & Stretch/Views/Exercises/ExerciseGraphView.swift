@@ -393,10 +393,11 @@ private struct ExerciseGroupCorpusSheet: View {
                             dismiss()
                             onSelect(exercise)
                         } label: {
-                            ExerciseCorpusRow(exercise: exercise, color: selected.category.accentColor)
+                            ExerciseRow(exercise: exercise)
                         }
                         .buttonStyle(.plain)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .luminaCard()
                     }
                 }
                 .padding(.horizontal, 16)
@@ -427,46 +428,6 @@ private struct ExerciseGroupCorpusSheet: View {
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
-    }
-}
-
-private struct ExerciseCorpusRow: View {
-    let exercise: Exercise
-    let color: Color
-
-    private var difficultyLabel: String {
-        switch exercise.difficulty {
-        case 1: return "Easy"
-        case 2: return "Medium"
-        case 3: return "Hard"
-        default: return ""
-        }
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(exercise.name)
-                .font(.luminaCardTitle)
-                .foregroundStyle(Color.luminaOnSurface)
-                .lineLimit(2)
-                .minimumScaleFactor(0.85)
-            HStack(spacing: 10) {
-                Label(exercise.durationFormatted, systemImage: "clock")
-                Label(difficultyLabel, systemImage: "chart.bar")
-                Label(exercise.type.rawValue, systemImage: "figure.mind.and.body")
-            }
-            .font(.luminaCaption)
-            .foregroundStyle(Color.luminaOnSurfaceVariant)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.tag, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: LuminaRadius.tag, style: .continuous)
-                .strokeBorder(color.opacity(0.22), lineWidth: 1)
-        )
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(exercise.name), \(exercise.durationFormatted), \(difficultyLabel)")
     }
 }
 

@@ -41,8 +41,11 @@ final class HeadZoneVerificationUITests: XCTestCase {
         let window = app.windows.firstMatch
         attach(app, "00-body-initial")
 
-        // Tap the head, slightly right-of-centre.
-        window.coordinate(withNormalizedOffset: CGVector(dx: 0.53, dy: 0.16)).tap()
+        // Tap the head, slightly right-of-centre. (Offset retuned for the
+        // skin-covered pivot's BodySkinMuscle model, which renders the body
+        // smaller/lower in frame than the old BodyAnatomy model — the previous
+        // dy: 0.16 landed above the head in empty space.)
+        window.coordinate(withNormalizedOffset: CGVector(dx: 0.54, dy: 0.29)).tap()
         sleep(1)
         attach(app, "01-head-dot-placed")
         app.descendants(matching: .any)["Confirm marked area"].firstMatch.tap()
@@ -52,6 +55,8 @@ final class HeadZoneVerificationUITests: XCTestCase {
         let hint = app.staticTexts["Which area did you mean?"]
         XCTAssertTrue(hint.waitForExistence(timeout: 3),
                       "Tapping the head should fan into the face-zone disambiguation")
+        sleep(1) // let the candidate-label fade-in animation settle before enumerating buttons —
+                 // without this, allElementsBoundByIndex can race a still-animating button count.
 
         let labels = app.buttons.allElementsBoundByIndex.map(\.label).filter { $0.contains("—") }
         let names = Set(labels.map {

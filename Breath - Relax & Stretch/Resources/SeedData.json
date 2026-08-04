@@ -3,11 +3,7 @@
     {
       "name": "Deep Belly Breath",
       "type": "breath",
-      "targetBodyParts": [
-        "Abs",
-        "Left Chest",
-        "Right Chest"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 120,
       "difficulty": 1,
       "instructions": [
@@ -23,11 +19,7 @@
     {
       "name": "Box Breathing",
       "type": "breath",
-      "targetBodyParts": [
-        "Left Chest",
-        "Right Chest",
-        "Abs"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 180,
       "difficulty": 1,
       "instructions": [
@@ -44,11 +36,7 @@
     {
       "name": "4-7-8 Breathing",
       "type": "breath",
-      "targetBodyParts": [
-        "Left Chest",
-        "Right Chest",
-        "Abs"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 150,
       "difficulty": 2,
       "instructions": [
@@ -64,11 +52,7 @@
     {
       "name": "Alternate Nostril Breathing",
       "type": "breath",
-      "targetBodyParts": [
-        "Left Chest",
-        "Right Chest",
-        "Abs"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 180,
       "difficulty": 2,
       "instructions": [
@@ -85,11 +69,7 @@
     {
       "name": "Pursed-Lip Breathing",
       "type": "breath",
-      "targetBodyParts": [
-        "Left Chest",
-        "Right Chest",
-        "Abs"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 120,
       "difficulty": 1,
       "instructions": [
@@ -104,11 +84,7 @@
     {
       "name": "Diaphragmatic Breath with Counting",
       "type": "breath",
-      "targetBodyParts": [
-        "Abs",
-        "Left Chest",
-        "Right Chest"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 150,
       "difficulty": 1,
       "instructions": [
@@ -123,11 +99,7 @@
     {
       "name": "Coherent Breathing",
       "type": "breath",
-      "targetBodyParts": [
-        "Left Chest",
-        "Right Chest",
-        "Abs"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 180,
       "difficulty": 1,
       "instructions": [
@@ -142,11 +114,7 @@
     {
       "name": "Humming Bee Breath",
       "type": "breath",
-      "targetBodyParts": [
-        "Head",
-        "Left Chest",
-        "Right Chest"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 90,
       "difficulty": 2,
       "instructions": [
@@ -161,12 +129,7 @@
     {
       "name": "Lion's Breath",
       "type": "breath",
-      "targetBodyParts": [
-        "Head",
-        "Front Neck",
-        "Left Chest",
-        "Right Chest"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 60,
       "difficulty": 1,
       "instructions": [
@@ -181,10 +144,7 @@
     {
       "name": "Eye Palming",
       "type": "breath",
-      "targetBodyParts": [
-        "Left Eye",
-        "Right Eye"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 60,
       "difficulty": 1,
       "instructions": [
@@ -200,7 +160,8 @@
       "type": "stretch",
       "targetBodyParts": [
         "Front Neck",
-        "Back Neck"
+        "Back Neck",
+        "Neck"
       ],
       "durationSeconds": 45,
       "difficulty": 1,
@@ -221,7 +182,8 @@
         "Front Neck",
         "Back Neck",
         "Left Trapezius",
-        "Right Trapezius"
+        "Right Trapezius",
+        "Neck"
       ],
       "durationSeconds": 45,
       "difficulty": 1,
@@ -277,7 +239,8 @@
       "type": "stretch",
       "targetBodyParts": [
         "Front Neck",
-        "Back Neck"
+        "Back Neck",
+        "Neck"
       ],
       "durationSeconds": 30,
       "difficulty": 1,
@@ -373,7 +336,9 @@
         "Left Trapezius",
         "Right Trapezius",
         "Left Shoulder",
-        "Right Shoulder"
+        "Right Shoulder",
+        "Left Shoulder Joint",
+        "Right Shoulder Joint"
       ],
       "durationSeconds": 30,
       "difficulty": 1,
@@ -562,8 +527,8 @@
       "name": "Cobra Stretch (Prone Press-Up)",
       "type": "stretch",
       "targetBodyParts": [
-        "Abs",
-        "Spinal Erectors"
+        "Left Abs",
+        "Right Abs"
       ],
       "durationSeconds": 45,
       "difficulty": 2,
@@ -581,7 +546,8 @@
       "name": "Standing Back Extension",
       "type": "stretch",
       "targetBodyParts": [
-        "Abs",
+        "Left Abs",
+        "Right Abs",
         "Lower Back"
       ],
       "durationSeconds": 30,
@@ -600,8 +566,8 @@
       "name": "Kneeling Abdominal Stretch (Camel-Lite)",
       "type": "stretch",
       "targetBodyParts": [
-        "Abs",
-        "Spinal Erectors"
+        "Left Abs",
+        "Right Abs"
       ],
       "durationSeconds": 45,
       "difficulty": 2,
@@ -621,7 +587,9 @@
       "targetBodyParts": [
         "Spinal Erectors",
         "Lower Back",
-        "Abs"
+        "Left Abs",
+        "Right Abs",
+        "Lower Spine"
       ],
       "durationSeconds": 90,
       "difficulty": 1,
@@ -640,7 +608,8 @@
       "targetBodyParts": [
         "Spinal Erectors",
         "Lower Back",
-        "Left Obliques"
+        "Left Obliques",
+        "Lower Spine"
       ],
       "durationSeconds": 60,
       "difficulty": 1,
@@ -659,7 +628,8 @@
       "targetBodyParts": [
         "Spinal Erectors",
         "Lower Back",
-        "Right Obliques"
+        "Right Obliques",
+        "Lower Spine"
       ],
       "durationSeconds": 60,
       "difficulty": 1,
@@ -754,9 +724,11 @@
       "name": "Pelvic Tilt",
       "type": "stretch",
       "targetBodyParts": [
-        "Abs",
+        "Left Abs",
+        "Right Abs",
         "Lower Back",
-        "Spinal Erectors"
+        "Spinal Erectors",
+        "Lower Spine"
       ],
       "durationSeconds": 60,
       "difficulty": 1,
@@ -889,8 +861,7 @@
       "name": "Left Standing Side Bend",
       "type": "stretch",
       "targetBodyParts": [
-        "Left Obliques",
-        "Left Lats"
+        "Left Obliques"
       ],
       "durationSeconds": 45,
       "difficulty": 1,
@@ -907,8 +878,7 @@
       "name": "Right Standing Side Bend",
       "type": "stretch",
       "targetBodyParts": [
-        "Right Obliques",
-        "Right Lats"
+        "Right Obliques"
       ],
       "durationSeconds": 45,
       "difficulty": 1,
@@ -926,8 +896,7 @@
       "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
-        "Left Lats",
-        "Left Shoulder"
+        "Left Lats"
       ],
       "durationSeconds": 45,
       "difficulty": 1,
@@ -945,8 +914,7 @@
       "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
-        "Right Lats",
-        "Right Shoulder"
+        "Right Lats"
       ],
       "durationSeconds": 45,
       "difficulty": 1,
@@ -1054,6 +1022,7 @@
         "Release slowly."
       ],
       "caution": "Skip or keep the lift small if you have shoulder impingement or limited shoulder mobility.",
+      "animationName": "clasped_hands_behind_back.mp4",
       "id": "ec528f52-dab9-59b9-b9b0-bb8f2759bc3c"
     },
     {
@@ -1488,7 +1457,8 @@
       "type": "stretch",
       "targetBodyParts": [
         "Left Hip Flexors",
-        "Abs"
+        "Left Abs",
+        "Right Abs"
       ],
       "durationSeconds": 60,
       "difficulty": 2,
@@ -1507,7 +1477,8 @@
       "type": "stretch",
       "targetBodyParts": [
         "Right Hip Flexors",
-        "Abs"
+        "Left Abs",
+        "Right Abs"
       ],
       "durationSeconds": 60,
       "difficulty": 2,
@@ -2098,7 +2069,8 @@
         "Left Shoulder",
         "Right Shoulder",
         "Spinal Erectors",
-        "Abs"
+        "Left Abs",
+        "Right Abs"
       ],
       "durationSeconds": 120,
       "difficulty": 2,
@@ -2196,7 +2168,8 @@
       "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
-        "Left Shoulder"
+        "Left Shoulder",
+        "Left Shoulder Joint"
       ],
       "durationSeconds": 45,
       "difficulty": 2,
@@ -2214,7 +2187,8 @@
       "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
-        "Right Shoulder"
+        "Right Shoulder",
+        "Right Shoulder Joint"
       ],
       "durationSeconds": 45,
       "difficulty": 2,
@@ -2232,7 +2206,8 @@
       "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
-        "Left Shoulder"
+        "Left Shoulder",
+        "Left Shoulder Joint"
       ],
       "durationSeconds": 45,
       "difficulty": 2,
@@ -2249,7 +2224,8 @@
       "isBilateral": false,
       "type": "stretch",
       "targetBodyParts": [
-        "Right Shoulder"
+        "Right Shoulder",
+        "Right Shoulder Joint"
       ],
       "durationSeconds": 45,
       "difficulty": 2,
@@ -2337,8 +2313,8 @@
       "name": "Sphinx Pose",
       "type": "stretch",
       "targetBodyParts": [
-        "Abs",
-        "Spinal Erectors",
+        "Left Abs",
+        "Right Abs",
         "Lower Back"
       ],
       "durationSeconds": 60,
@@ -2816,11 +2792,7 @@
     {
       "name": "Equal Breathing (Sama Vritti)",
       "type": "breath",
-      "targetBodyParts": [
-        "Left Chest",
-        "Right Chest",
-        "Abs"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 150,
       "difficulty": 1,
       "instructions": [
@@ -2835,11 +2807,7 @@
     {
       "name": "Ocean Breath (Ujjayi)",
       "type": "breath",
-      "targetBodyParts": [
-        "Front Neck",
-        "Left Chest",
-        "Right Chest"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 120,
       "difficulty": 2,
       "instructions": [
@@ -2854,11 +2822,7 @@
     {
       "name": "Physiological Sigh",
       "type": "breath",
-      "targetBodyParts": [
-        "Left Chest",
-        "Right Chest",
-        "Abs"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 60,
       "difficulty": 1,
       "instructions": [
@@ -2988,7 +2952,7 @@
         "Slowly let that heel drop down below the level of the step until you feel a stretch through your calf.",
         "Hold gently, then rise back to the step edge and switch legs on another round."
       ],
-      "caution": "Hold a railing or wall the whole time and move slowly \u2014 don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
+      "caution": "Hold a railing or wall the whole time and move slowly — don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
       "id": "ca88ac04-f55d-45c9-9693-19f6829c6283"
     },
     {
@@ -3006,7 +2970,7 @@
         "Slowly let that heel drop down below the level of the step until you feel a stretch through your calf.",
         "Hold gently, then rise back to the step edge and switch legs on another round."
       ],
-      "caution": "Hold a railing or wall the whole time and move slowly \u2014 don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
+      "caution": "Hold a railing or wall the whole time and move slowly — don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
       "id": "2fc19eb8-63ab-4f73-859b-b5b6fad04ac8"
     },
     {
@@ -3206,7 +3170,7 @@
         "Try to walk your fingers toward each other behind your back, using a towel bridged between your hands if they don't meet.",
         "Hold, feeling a stretch through the back of your left upper arm, shoulder, and upper back, then release and switch sides on another round."
       ],
-      "caution": "Ease off or skip if you have a shoulder injury \u2014 don't force the hands to meet, a towel gap is fine.",
+      "caution": "Ease off or skip if you have a shoulder injury — don't force the hands to meet, a towel gap is fine.",
       "id": "8143f5d1-d84e-4265-8134-e92dd1dce26e"
     },
     {
@@ -3225,7 +3189,7 @@
         "Try to walk your fingers toward each other behind your back, using a towel bridged between your hands if they don't meet.",
         "Hold, feeling a stretch through the back of your right upper arm, shoulder, and upper back, then release and switch sides on another round."
       ],
-      "caution": "Ease off or skip if you have a shoulder injury \u2014 don't force the hands to meet, a towel gap is fine.",
+      "caution": "Ease off or skip if you have a shoulder injury — don't force the hands to meet, a towel gap is fine.",
       "id": "a306395b-08bf-4304-a785-d12d032dd445"
     },
     {
@@ -3278,7 +3242,7 @@
         "Hold the resisted press for a few seconds, breathing steadily, then ease off completely.",
         "Repeat the press-and-release for the full duration, then switch sides on another round."
       ],
-      "caution": "Use only mild, steady pressure \u2014 this is a gentle isometric hold, not a maximal push.",
+      "caution": "Use only mild, steady pressure — this is a gentle isometric hold, not a maximal push.",
       "id": "b7721974-7206-4913-b9d2-8d4f41db1034"
     },
     {
@@ -3297,7 +3261,7 @@
         "Hold the resisted press for a few seconds, breathing steadily, then ease off completely.",
         "Repeat the press-and-release for the full duration, then switch sides on another round."
       ],
-      "caution": "Use only mild, steady pressure \u2014 this is a gentle isometric hold, not a maximal push.",
+      "caution": "Use only mild, steady pressure — this is a gentle isometric hold, not a maximal push.",
       "id": "4a1b7329-be46-4b36-a2b5-4d0f06c15b78"
     },
     {
@@ -3390,7 +3354,7 @@
         "Lower your hips toward the floor and walk your hands forward, folding over your front leg if it's comfortable.",
         "Hold, breathing into the stretch through your left glute and the front of your right hip, then rise slowly and switch sides on another round."
       ],
-      "caution": "Skip or use a cushion under the front hip if you have knee pain \u2014 this is a deep hip-opener, not a beginner stretch.",
+      "caution": "Skip or use a cushion under the front hip if you have knee pain — this is a deep hip-opener, not a beginner stretch.",
       "id": "75c79a3b-c5d0-42b1-9c20-83f6efee0783"
     },
     {
@@ -3409,14 +3373,15 @@
         "Lower your hips toward the floor and walk your hands forward, folding over your front leg if it's comfortable.",
         "Hold, breathing into the stretch through your right glute and the front of your left hip, then rise slowly and switch sides on another round."
       ],
-      "caution": "Skip or use a cushion under the front hip if you have knee pain \u2014 this is a deep hip-opener, not a beginner stretch.",
+      "caution": "Skip or use a cushion under the front hip if you have knee pain — this is a deep hip-opener, not a beginner stretch.",
       "id": "42440164-bfff-4ca0-a0f6-f481181865d5"
     },
     {
       "name": "Bridge Pose",
       "type": "stretch",
       "targetBodyParts": [
-        "Abs",
+        "Left Abs",
+        "Right Abs",
         "Left Hip Flexors",
         "Right Hip Flexors",
         "Left Chest",
@@ -3430,7 +3395,7 @@
         "Clasp your hands underneath you and roll your shoulders in to open your chest, or keep arms flat by your sides.",
         "Hold, feeling the stretch across your hip flexors and chest, then lower your spine back down slowly, one vertebra at a time."
       ],
-      "caution": "Skip if you have neck or lower-back issues \u2014 keep the neck neutral and avoid turning your head while lifted.",
+      "caution": "Skip if you have neck or lower-back issues — keep the neck neutral and avoid turning your head while lifted.",
       "id": "abe45c7a-3b15-412e-856e-bc76e65d4eb2"
     },
     {
@@ -3448,17 +3413,13 @@
         "Keep both legs as straight as you can and square your hips toward the floor.",
         "Hold, feeling the stretch through the standing leg's hamstring, then lower slowly and switch sides on another round."
       ],
-      "caution": "Only lift as high as you can while keeping the standing leg straight and controlled \u2014 use a wall for balance.",
+      "caution": "Only lift as high as you can while keeping the standing leg straight and controlled — use a wall for balance.",
       "id": "1bed1844-6818-410c-a8b3-e1079f857bbd"
     },
     {
       "name": "Extended Exhale Breathing",
       "type": "breath",
-      "targetBodyParts": [
-        "Abs",
-        "Left Chest",
-        "Right Chest"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 120,
       "difficulty": 1,
       "instructions": [
@@ -3472,25 +3433,21 @@
     {
       "name": "Counting Down Sleep Breath",
       "type": "breath",
-      "targetBodyParts": [
-        "Abs"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 180,
       "difficulty": 1,
       "instructions": [
         "Lie down in bed or a comfortable reclined position and close your eyes.",
         "Inhale slowly through your nose, then exhale while silently counting 'ten.'",
         "Inhale again, then exhale while counting 'nine,' continuing to count down with each exhale.",
-        "If you lose track, simply restart from ten \u2014 the goal is a slow, wandering mind, not a perfect count."
+        "If you lose track, simply restart from ten — the goal is a slow, wandering mind, not a perfect count."
       ],
       "id": "cb84490b-b29c-433b-8115-3bef0cd12b30"
     },
     {
       "name": "Cooling Sitali Breath",
       "type": "breath",
-      "targetBodyParts": [
-        "Abs"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 90,
       "difficulty": 2,
       "instructions": [
@@ -3505,11 +3462,7 @@
     {
       "name": "Three-Part Breath (Dirga Pranayama)",
       "type": "breath",
-      "targetBodyParts": [
-        "Abs",
-        "Left Chest",
-        "Right Chest"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 150,
       "difficulty": 1,
       "instructions": [
@@ -3523,9 +3476,7 @@
     {
       "name": "Body Scan Breathing",
       "type": "breath",
-      "targetBodyParts": [
-        "Abs"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 180,
       "difficulty": 1,
       "instructions": [
@@ -3539,11 +3490,7 @@
     {
       "name": "Segmented Exhale Breathing (Viloma)",
       "type": "breath",
-      "targetBodyParts": [
-        "Abs",
-        "Left Chest",
-        "Right Chest"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 120,
       "difficulty": 2,
       "instructions": [
@@ -3557,11 +3504,7 @@
     {
       "name": "Progressive Relaxation Breath",
       "type": "breath",
-      "targetBodyParts": [
-        "Abs",
-        "Left Quadriceps",
-        "Right Quadriceps"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 180,
       "difficulty": 1,
       "instructions": [
@@ -3575,16 +3518,14 @@
     {
       "name": "Left-Nostril Calming Breath (Chandra Bhedana)",
       "type": "breath",
-      "targetBodyParts": [
-        "Abs"
-      ],
+      "targetBodyParts": [],
       "durationSeconds": 120,
       "difficulty": 2,
       "instructions": [
         "Sit comfortably and bring your right hand up, folding your index and middle fingers into your palm.",
         "Close your right nostril gently with your right thumb and inhale slowly through your left nostril only.",
         "Close your left nostril with your ring finger, release your thumb, and exhale slowly through your right nostril.",
-        "Continue inhaling only through the left and exhaling only through the right for the full duration \u2014 this pattern is traditionally used to calm and cool the body before rest."
+        "Continue inhaling only through the left and exhaling only through the right for the full duration — this pattern is traditionally used to calm and cool the body before rest."
       ],
       "id": "668913b8-bdb7-40a1-ae32-1b70a16afe26"
     },
@@ -3631,7 +3572,9 @@
         "Left Hip Flexors",
         "Right Hip Flexors",
         "Left Hamstrings",
-        "Right Hamstrings"
+        "Right Hamstrings",
+        "Left Hip",
+        "Right Hip"
       ],
       "durationSeconds": 45,
       "difficulty": 2,
@@ -3641,7 +3584,7 @@
         "Let the swing grow gradually taller as your hips loosen, without forcing the range of motion.",
         "After the set time, turn around and repeat with the other leg."
       ],
-      "caution": "Keep the motion controlled, not kicking \u2014 this is a warm-up mobilizer, not a max-range stretch.",
+      "caution": "Keep the motion controlled, not kicking — this is a warm-up mobilizer, not a max-range stretch.",
       "id": "e80fc7d8-0c6f-433f-9335-c2f26d5477b5"
     },
     {
@@ -3651,7 +3594,9 @@
         "Left Hip Flexors",
         "Right Hip Flexors",
         "Left Adductors",
-        "Right Adductors"
+        "Right Adductors",
+        "Left Hip",
+        "Right Hip"
       ],
       "durationSeconds": 40,
       "difficulty": 1,
@@ -3670,7 +3615,8 @@
       "targetBodyParts": [
         "Left Hip Flexors",
         "Left Quadriceps",
-        "Left Obliques"
+        "Left Obliques",
+        "Left Hip"
       ],
       "durationSeconds": 40,
       "difficulty": 2,
@@ -3689,7 +3635,8 @@
       "targetBodyParts": [
         "Right Hip Flexors",
         "Right Quadriceps",
-        "Right Obliques"
+        "Right Obliques",
+        "Right Hip"
       ],
       "durationSeconds": 40,
       "difficulty": 2,

@@ -11,7 +11,7 @@ struct ExerciseCategoryTests {
 
     @Test func singlePartMapsToExpectedCategory() {
         #expect(ExerciseCategory.categories(for: ["Left Quadriceps"]) == [.legs])
-        #expect(ExerciseCategory.categories(for: ["Abs"]) == [.core])
+        #expect(ExerciseCategory.categories(for: ["Left Abs"]) == [.core])
         #expect(ExerciseCategory.categories(for: ["Head"]) == [.neck])
     }
 
