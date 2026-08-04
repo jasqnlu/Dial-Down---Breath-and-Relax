@@ -184,7 +184,8 @@
         "Repeat 10 times to reset a forward-head posture."
       ],
       "caution": "Move gently and stop if you feel dizziness or sharp pain.",
-      "id": "6a6f8f08-3755-580b-96e2-086639c25980"
+      "id": "6a6f8f08-3755-580b-96e2-086639c25980",
+      "animationName": "chin_tuck_forward_head_reset.mp4"
     },
     {
       "name": "Seated Neck Rolls",
@@ -226,7 +227,8 @@
         "Repeat 2-3 times."
       ],
       "caution": "Move slowly, keep the stretch gentle, and stop immediately if you feel dizzy or lightheaded.",
-      "id": "dd059f56-473b-511b-8263-8351d760250a"
+      "id": "dd059f56-473b-511b-8263-8351d760250a",
+      "animationName": "neck_extension_look_up.mp4"
     },
     {
       "name": "Neck Flexion Stretch (Chin-to-Chest)",
@@ -245,7 +247,8 @@
         "Lift your head slowly back to neutral."
       ],
       "caution": "Never bounce or pull forcefully; ease off if you feel numbness or tingling in the arms.",
-      "id": "d5136dde-526c-5e9b-9997-ff316cbfb388"
+      "id": "d5136dde-526c-5e9b-9997-ff316cbfb388",
+      "animationName": "neck_flexion_chin_to_chest.mp4"
     },
     {
       "name": "Seated Neck Rotation",
@@ -570,7 +573,8 @@
         "Lower back down slowly to release."
       ],
       "caution": "Stop if you feel sharp or radiating lower-back pain; keep hips grounded throughout.",
-      "id": "9d9ab0a2-453e-5189-8484-e2faddbd1b14"
+      "id": "9d9ab0a2-453e-5189-8484-e2faddbd1b14",
+      "animationName": "cobra_stretch_prone_press_up.mp4"
     },
     {
       "name": "Standing Back Extension",
@@ -591,7 +595,8 @@
         "Return to standing tall and repeat 5-6 times."
       ],
       "caution": "Keep the arch gentle and controlled. Avoid if you have osteoporosis or acute back pain.",
-      "id": "058b6726-2144-5b09-ac04-c494d5bca2a7"
+      "id": "058b6726-2144-5b09-ac04-c494d5bca2a7",
+      "animationName": "standing_back_extension.mp4"
     },
     {
       "name": "Kneeling Abdominal Stretch (Camel-Lite)",
@@ -654,7 +659,8 @@
         "Hold for 20 seconds, keeping both sit bones grounded.",
         "Unwind slowly back to center."
       ],
-      "id": "2f9c7faa-f766-5d9e-af1d-245783b00543"
+      "id": "2f9c7faa-f766-5d9e-af1d-245783b00543",
+      "animationName": "left_seated_spinal_twist.mp4"
     },
     {
       "name": "Right Seated Spinal Twist",
@@ -675,7 +681,8 @@
         "Hold for 20 seconds, keeping both sit bones grounded.",
         "Unwind slowly back to center."
       ],
-      "id": "0b90a450-5de0-54ab-9d9d-09ed3292af26"
+      "id": "0b90a450-5de0-54ab-9d9d-09ed3292af26",
+      "animationName": "right_seated_spinal_twist.mp4"
     },
     {
       "name": "Child's Pose",
@@ -919,7 +926,8 @@
         "Hold for 15-20 seconds, feeling the stretch along your left side.",
         "Return to upright slowly and repeat."
       ],
-      "id": "6f5fc1ea-88b1-55bc-aa3c-1a917a4e9498"
+      "id": "6f5fc1ea-88b1-55bc-aa3c-1a917a4e9498",
+      "animationName": "left_standing_side_bend.mp4"
     },
     {
       "name": "Right Standing Side Bend",
@@ -937,7 +945,8 @@
         "Hold for 15-20 seconds, feeling the stretch along your right side.",
         "Return to upright slowly and repeat."
       ],
-      "id": "b8cc1936-4150-59b7-ba7b-50c8fb0eb7d8"
+      "id": "b8cc1936-4150-59b7-ba7b-50c8fb0eb7d8",
+      "animationName": "right_standing_side_bend.mp4"
     },
     {
       "name": "Left Kneeling Lat Stretch (Hands on Chair)",
@@ -995,7 +1004,8 @@
         "Rotate back to release and switch sides."
       ],
       "caution": "Keep the elbow straight but not locked hard, and stop if you feel elbow or shoulder pain.",
-      "id": "007311ec-b271-5172-b321-54995410b855"
+      "id": "007311ec-b271-5172-b321-54995410b855",
+      "animationName": "left_wall_bicep_stretch.mp4"
     },
     {
       "name": "Right Wall Bicep Stretch",
@@ -1015,7 +1025,8 @@
         "Rotate back to release and switch sides."
       ],
       "caution": "Keep the elbow straight but not locked hard, and stop if you feel elbow or shoulder pain.",
-      "id": "8c5ce4a8-423f-5f3a-bdcb-2d320df62608"
+      "id": "8c5ce4a8-423f-5f3a-bdcb-2d320df62608",
+      "animationName": "right_wall_bicep_stretch.mp4"
     },
     {
       "name": "Left Doorway Bicep Stretch",
@@ -1292,7 +1303,8 @@
         "Release your hands and shake them out."
       ],
       "caution": "Skip if this is uncomfortable on the wrists or shoulders; a partial version is fine.",
-      "id": "a90c1d0f-c3df-5b41-bc2d-f9782fe50f25"
+      "id": "a90c1d0f-c3df-5b41-bc2d-f9782fe50f25",
+      "animationName": "reverse_prayer_stretch.mp4"
     },
     {
       "name": "Prayer Stretch (Palms Together, Lower)",
@@ -2473,7 +2485,8 @@
         "Bend your knees more and roll up slowly, stacking one vertebra at a time."
       ],
       "caution": "Roll up slowly to avoid dizziness.",
-      "id": "c0c71649-0fac-5f8b-b32f-35f3ef208e3e"
+      "id": "c0c71649-0fac-5f8b-b32f-35f3ef208e3e",
+      "animationName": "standing_forward_fold_ragdoll.mp4"
     },
     {
       "name": "Left Standing Reach-Through Twist",

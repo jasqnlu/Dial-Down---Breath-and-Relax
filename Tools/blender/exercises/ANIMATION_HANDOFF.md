@@ -289,6 +289,114 @@ profile wrist wisps remain.
 
 ---
 
+## Second batch (2026-08-02): shared lib + 3 more exercises
+
+Generalized the pipeline off `clasped_hands_behind_back_muscleonly.py` (still
+kept, unmodified, as a working reference) into **`_lib.py`** — every function
+from that script (import/normalize/rig-build/weighting/render/export) minus
+the per-exercise config. A new exercise is now a ~50-line script that sets
+`EXERCISE`, `VIDEO_NAME`, `CAMERA_AZIMUTH`, `WORKED_KEYWORDS`, `POSES` (and
+optionally `ORTHO_SCALE_MULT`), adds `Tools/blender/exercises/` to
+`sys.path`, and calls `L.run(globals())`. Still paste-in compatible — the
+`sys.path.insert` line works identically pasted into the Scripting tab.
+
+Shipped: `neck_flexion_chin_to_chest.py`, `standing_forward_fold_ragdoll.py`,
+`left_standing_side_bend.py`. All three reuse the exact rig/skinning/
+highlight machinery — only pose angles, camera azimuth, and worked-muscle
+keywords differ per exercise.
+
+### Walkthrough: Neck Flexion Stretch (Chin-to-Chest) — first of this batch
+
+The simplest possible case: **one bone (`head`), one rotation axis.** Chosen
+deliberately as the first of the batch to validate the generalized `_lib.py`
+against exercise #1's known-good output before attempting anything with more
+moving parts.
+
+- **New axis convention needed.** All prior gotchas (esp. #6) were solved for
+  the ARM bones, which hang straight down (local Y = world −Z). The vertical
+  bones (`head`, `chest`, `spine`) point straight UP (local Y = world +Z) —
+  a different bone orientation, so the arm-bone sign conventions do NOT
+  transfer. Solved numerically with a throwaway probe script (build the rig,
+  apply a lone +20° local-axis rotation to `head`/`chest`/`spine`, print the
+  bone tail's world position for each of the 3 axes): **local X pitches a
+  vertical bone forward** (+X moves the tail toward −Y, i.e. front, and
+  slightly −Z) — the sign is POSITIVE for forward-pitch, opposite of the arm
+  bones' "+X = swing back" rule. Local Z bends the bone sideways (toward
+  world −X). Local Y is twist, as with the arms.
+- **Highlight precision:** the atlas has separate `Back Neck` / `Front Neck`
+  muscle objects; `WORKED_KEYWORDS = ("back neck",)` (not the broader
+  `"neck"`) highlights only the muscle actually stretched by a chin tuck.
+- **Camera:** shot from the side (`CAMERA_AZIMUTH = 90`) — a front camera
+  looks straight down the pitch axis, so a nod reads as foreshortening
+  instead of visible motion.
+- **No new failure modes.** Single rigid bone, no joint-spanning muscle, no
+  tearing risk — this one worked first try. Rendered result: clean forward
+  nod, `Back Neck` lights up orange, no artifacts.
+
+### The other two — what came up
+
+- **Standing Forward Fold (Ragdoll):** stacks the SAME forward-pitch rotation
+  on `spine` + `chest` (children down the `hips -> spine -> chest` chain) so
+  the torso hinges at the hips while legs stay planted. Two things that bit:
+  (1) **first render clipped the head and left huge dead space** — the fixed
+  camera framing (`ortho_scale = height * 1.15`) was tuned for an upright
+  rest pose, but the peak fold pushes the silhouette's depth extent (world Y)
+  far past the rest-pose bounding box, so the head landed near the frame
+  edge. Fixed by adding an `ORTHO_SCALE_MULT` override (`_lib.py`'s
+  `setup_render` now takes a multiplier, default 1.15; this exercise ships
+  1.7). (2) **arms need to counter-rotate to hang world-vertical** —
+  `upperarm.{L,R}` are children of `chest`, so they inherit its pitch; since
+  every rotation here is about local X (which stays parallel to world X
+  through the whole chain — pitching about X doesn't change what "X" is),
+  the chest's total world pitch is just `spine + chest` added up, and giving
+  the upperarms that sum negated exactly cancels it. Matches the instruction
+  "let your head, neck, and arms hang heavy."
+- **Left Standing Side Bend:** local Z instead of local X (sideways instead
+  of forward). Almost shipped a sign error here: the rendered peak frame was
+  briefly misread as bending the wrong way by eye. Settled it two ways
+  instead of trusting the image: (1) numeric — logged the `head` bone's peak
+  world position (`x = −0.603`) — and (2) a marker-cube probe rendering a
+  red cube at world +X and a blue one at −X through the actual front camera,
+  which showed **+X renders on screen-right**. Cross-checked against the
+  real mesh: `Left Obliques` centroid is at x=+0.13, `Right Obliques` at
+  x=−0.13 (read directly off the imported OBJ, not assumed from the rig's
+  own `.L`/`.R` bone-naming convention, which is a separate, arbitrary
+  choice made in `build_armature`). Conclusion: positive local-Z bends the
+  torso toward the subject's own right (screen-left) — correct for this
+  exercise, since "Left Standing Side Bend" means bending right to stretch
+  the left flank. **Lesson: don't eyeball left/right off a front-view render
+  — a face-on camera mirrors it. Verify with a coordinate probe.**
+
+### Fixed while at it
+`show_popup()` now no-ops when `bpy.app.background` is true — calling
+`popup_menu` with no window manager (any headless `-b` run) doesn't raise a
+Python exception, it **segfaults Blender on exit** (after every file is
+already written, so it's harmless but noisy — every headless run of the
+original clasped-hands script had this crash too, unnoticed because it
+happens post-export).
+
+## Third batch (2026-08-03): 10 more exercises
+
+Generated 10 more exercises reusing `_lib.py` and only already-validated bone-axis
+conventions (head/spine/chest pitch ±X, side-bend ±Z, twist ±Y; the clasped-hands
+arm-swing angles) — deliberately stayed off the hip/thigh/shin bones, which have
+no proven pose-authoring convention yet. Shipped: `neck_extension_look_up`,
+`chin_tuck_forward_head_reset`, `right_standing_side_bend`,
+`standing_back_extension`, `cobra_stretch_prone_press_up`,
+`left_seated_spinal_twist`, `right_seated_spinal_twist`, `reverse_prayer_stretch`,
+`left_wall_bicep_stretch`, `right_wall_bicep_stretch`. All 10 exported valid
+skinned glTF and rendered clean (no tearing) on first attempt — see
+`Tools/blender/generated/exercises/THIRD_BATCH_INSTRUCTIONS.md` for the full
+per-exercise writeup and instructions.
+
+**New gotcha:** the twist exercises (first use of local-Y on the *vertical*
+bones) exposed a blind spot in the `run()` sanity check — it logs the pose bone's
+peak **tail world position**, but a bone twisting about its own long axis barely
+moves its tail, so the log reads as a no-op even when the twist is real and
+correctly mirrored between the L/R pair. Verified correctness by eyeballing the
+rendered PNGs instead (confirmed the L/R pair are genuinely mirrored, not
+identical) — don't trust the tail-position log for twist-only poses.
+
 ## Related project context
 
 - Body Map architecture / SceneKit loading: `Breath - Relax &
