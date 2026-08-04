@@ -182,10 +182,15 @@ struct ExerciseListView: View {
 struct ExerciseRow: View {
     let exercise: Exercise
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var rowWidth: CGFloat = 0
 
-    /// The animation pane is 3/8 of the row's own width; the rest goes to stats.
-    private var thumbnailSide: CGFloat { rowWidth * 0.375 }
+    /// Fixed rather than proportional-to-row-width: a `GeometryReader`
+    /// measuring this view's own width, fed back into `@State` that this same
+    /// view's layout then depends on, is a measure→re-render→re-measure loop
+    /// — SwiftUI doesn't always settle it in one pass, and with many rows
+    /// alive at once (a `List`/`LazyVStack` of ~180 exercises) it can pin the
+    /// main thread relaying out indefinitely. A constant sidesteps the loop
+    /// entirely; the `stats` column still flexes to fill the rest of the row.
+    private let thumbnailSide: CGFloat = 120
 
     var difficultyLabel: String {
         switch exercise.difficulty {
@@ -219,13 +224,6 @@ struct ExerciseRow: View {
         }
         .padding(.vertical, 4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            GeometryReader { proxy in
-                Color.clear
-                    .onAppear { rowWidth = proxy.size.width }
-                    .onChange(of: proxy.size.width) { _, newValue in rowWidth = newValue }
-            }
-        )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(exercise.name), \(exercise.type.rawValue), \(exercise.durationFormatted), \(difficultyLabel)\(hasDemo ? ", has animated demo" : "")\(exercise.caution.map { ", caution: \($0)" } ?? "")")
     }

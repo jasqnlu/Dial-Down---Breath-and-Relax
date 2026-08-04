@@ -1,0 +1,18 @@
+imported 269 objects
+model bounds: (-0.374, -0.163, 0.0) .. (0.374, 0.163, 1.916)  height=1.916
+muscles: 250  (mapped=246 fallback=0  highlight=32 neutral=218  mitts=4)
+neck detected at z=1.657 (width=0.101); frac=0.864
+skin clip: 6562 -> 3218 verts kept (head cap)
+joined muscles -> 'Muscles' (78036 verts, 2 mat slots, 12 vgroups)
+peak spine tail world = (0.000, -0.163, 1.236)
+peak chest tail world = (0.000, -0.385, 1.295)
+peak head tail world = (0.000, -0.764, 1.342)
+peak upperarm.L tail world = (0.230, -0.385, 0.941)
+peak upperarm.R tail world = (-0.230, -0.385, 0.941)
+render: rest_demo -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/standing_forward_fold_ragdoll_rest_demo.png
+render: peak_demo -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/standing_forward_fold_ragdoll_peak_demo.png
+render: peak_front -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/standing_forward_fold_ragdoll_peak_front.png
+demo frames -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/_demo_frames_standing_forward_fold_ragdoll (encode to standing_forward_fold_ragdoll.mp4 next)
+[standing_forward_fold_ragdoll] built + exported.
+animated model : /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/standing_forward_fold_ragdoll.glb
+editable scene : /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/standing_forward_fold_ragdoll.blend

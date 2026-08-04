@@ -10,7 +10,7 @@ import Foundation
 /// own sub-heads are added separately by `MuscleHitResolver.candidates()` (from
 /// `MuscleGroup.muscleHeads`), so they are intentionally absent here. `Head`
 /// disambiguation is owned by `HeadZones`, so `Head` is absent too.
-enum RegionAdjacency {
+nonisolated enum RegionAdjacency {
     /// Directed edges, authored once per pair. Bilateral limbs list `L`; the
     /// build mirrors each to the matching `R` region automatically.
     private static let authored: [String: [String]] = {

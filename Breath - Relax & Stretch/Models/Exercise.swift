@@ -31,11 +31,25 @@ final class Exercise {
     /// Defaults to true — most stretches are bilateral — so the seed JSON only
     /// needs to specify `false` for the one-side-at-a-time exercises.
     var isBilateral: Bool = true
+    /// Raw persisted storage for `cueStyle` — a plain `String`, not the
+    /// `ExerciseCueStyle` enum directly. SwiftData's lightweight migration
+    /// cannot safely decode a custom enum-typed property added after real
+    /// data already exists: reading it on a pre-existing on-disk row throws
+    /// a forced-cast failure (`swift_dynamicCastFailure`), crashing the app
+    /// on launch. Every other field added after initial release (`seedID`,
+    /// `animationName`, `localVideoName`, `isBilateral`) is a primitive type
+    /// for exactly this reason. Mirrors the `posesData`/`poses` pattern below.
+    var cueStyleRaw: String = ExerciseCueStyle.hold.rawValue
+    var posesData: Data = Data()
+
     /// Whether this exercise is a static position held for the whole
     /// duration (.hold) or a rhythmic motion repeated throughout (.repeatMotion).
-    /// Drives the session player's cue badge. Defaults to `.hold`.
-    var cueStyle: ExerciseCueStyle = ExerciseCueStyle.hold
-    var posesData: Data = Data()
+    /// Drives the session player's cue badge. Defaults to `.hold` for any
+    /// unparseable/unexpected raw value (including a pre-migration row).
+    var cueStyle: ExerciseCueStyle {
+        get { ExerciseCueStyle(rawValue: cueStyleRaw) ?? .hold }
+        set { cueStyleRaw = newValue.rawValue }
+    }
 
     /// Stable identifier tying this row back to its entry in the bundled
     /// `SeedData.json` (the `"id"` field there), independent of `name`.

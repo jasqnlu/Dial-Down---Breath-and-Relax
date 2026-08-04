@@ -17,7 +17,13 @@ final class BodyMapMarking3DUITests: XCTestCase {
                                 "-auth.provider", "guest"]
         app.launchArguments += extraArgs
         app.launch()
-        app.descendants(matching: .any)["Body"].firstMatch.tap()
+        // Cold/fresh-install launches run seed insertion + up to 5 sequential
+        // SwiftData migration passes synchronously in `.onAppear` — wait that
+        // out before assuming the tab bar exists, or later steps fail against
+        // a still-launching app rather than testing what they mean to test.
+        let bodyTab = app.descendants(matching: .any)["Body"].firstMatch
+        _ = bodyTab.waitForExistence(timeout: 30)
+        bodyTab.tap()
         // Wait out the async OBJ parse ("Loading 3D model…" placeholder).
         sleep(6)
         return app
@@ -89,5 +95,33 @@ final class BodyMapMarking3DUITests: XCTestCase {
         markConfirmAndCapture(app, at: CGVector(dx: 0.58, dy: 0.62), stage: "04-viewer-right")
         XCTAssertTrue(sideVisible(app, prefix: "Left"),
                       "Viewer-right tap should surface a figure-Left region")
+    }
+
+    /// Reported freeze repro: mark a region (auto-navigates to its exercise
+    /// list via `showConfirmedExercises`), go Back to the body (re-driving
+    /// `BodySceneView` via `refocusToken`), then tap the "Find Exercises"
+    /// banner button, which pushes `BodyPartExercisesView` a SECOND time via
+    /// the separate `showMarkedExercises` navigationDestination on the same
+    /// stack. Asserts the list actually appears within a bounded wait rather
+    /// than hanging indefinitely.
+    @MainActor
+    func testFindExercisesAfterBackDoesNotHang() throws {
+        let app = launchBodyTab(extraArgs: ["-debugMarkMode", "YES"])
+        markConfirmAndCapture(app, at: CGVector(dx: 0.42, dy: 0.40), stage: "05-mark")
+
+        // Back to the body map — this is where refocusToken re-drives the scene.
+        app.navigationBars.buttons.firstMatch.tap()
+        sleep(2)
+        attach(app, "06-after-back")
+
+        let findButton = app.descendants(matching: .any)["Find exercises for marked areas"].firstMatch
+        XCTAssertTrue(findButton.waitForExistence(timeout: 8), "Find Exercises banner button not found")
+        findButton.tap()
+
+        // If this hangs, waitForExistence times out instead of the test itself
+        // hanging forever — that's the signal we're after.
+        let listAppeared = app.navigationBars.buttons.firstMatch.waitForExistence(timeout: 10)
+        attach(app, "07-after-find-exercises")
+        XCTAssertTrue(listAppeared, "BodyPartExercisesView did not appear within 10s — possible hang")
     }
 }

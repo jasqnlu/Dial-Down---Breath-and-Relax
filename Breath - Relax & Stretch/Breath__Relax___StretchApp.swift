@@ -284,15 +284,24 @@ struct BreathRelaxStretchApp: App {
         seedDataVersion = 6
     }
 
+    /// Unlike the other steps here, this one is NOT gated behind a one-time
+    /// version bump: new animated exercises get added to `SeedData.json` on an
+    /// ongoing basis (4 so far, 148 to go), each needing `animationName`
+    /// backfilled onto rows that were already seeded before that entry
+    /// existed. Gating this behind `seedDataVersion < 7` meant it only ever
+    /// ran once, on whichever launch first crossed v7 — any animation added
+    /// after a device passed that point would never backfill onto its
+    /// already-seeded row. `SeedMigrator.migrateV7` is naturally idempotent
+    /// (matches by seedID, only fills an empty `animationName`, no-ops
+    /// otherwise), so it's cheap and safe to just run on every launch.
     private func migrateSeedToV7IfNeeded() {
-        guard seedDataVersion < 7 else { return }
         if let rawExercises = loadSeedExercises() {
             let context = sharedModelContainer.mainContext
             if SeedMigrator.migrateV7(context: context, rawExercises: rawExercises) {
                 try? context.save()
             }
         }
-        seedDataVersion = 7
+        seedDataVersion = max(seedDataVersion, 7)
     }
 
     private func migrateSeedToV8IfNeeded() {

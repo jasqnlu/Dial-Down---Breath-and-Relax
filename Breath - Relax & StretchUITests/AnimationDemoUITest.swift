@@ -39,6 +39,41 @@ final class AnimationDemoUITest: XCTestCase {
         attach(app, "02-detail-with-animation")
     }
 
+    func testSecondBatchAnimationsInDetail() throws {
+        for (query, tag) in [
+            ("Neck Flexion", "01-neck-flexion"),
+            ("Standing Forward Fold", "02-forward-fold"),
+            ("Left Standing Side Bend", "03-side-bend"),
+        ] {
+            let app = XCUIApplication()
+            app.launchArguments += [
+                "-hasCompletedOnboarding", "YES",
+                "-hasSeenAppGuide", "YES",
+                "-auth.isSignedIn", "YES",
+                "-auth.provider", "guest",
+            ]
+            app.launch()
+
+            let exercisesTab = app.descendants(matching: .any)["Exercises"].firstMatch
+            XCTAssertTrue(exercisesTab.waitForExistence(timeout: 15), "Exercises tab not found")
+            exercisesTab.tap()
+
+            let search = app.textFields["Search exercises"]
+            XCTAssertTrue(search.waitForExistence(timeout: 10), "Search field not found")
+            search.tap()
+            search.typeText(query)
+
+            let rowPredicate = NSPredicate(format: "label BEGINSWITH %@", query)
+            let row = app.descendants(matching: .any).matching(rowPredicate).firstMatch
+            XCTAssertTrue(row.waitForExistence(timeout: 8), "\(query) row not found")
+            row.tap()
+            Thread.sleep(forTimeInterval: 1.5)   // detail card loop
+            attach(app, "\(tag)-detail")
+
+            app.terminate()
+        }
+    }
+
     private func attach(_ app: XCUIApplication, _ name: String) {
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = name

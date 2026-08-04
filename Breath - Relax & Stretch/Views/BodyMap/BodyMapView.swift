@@ -22,7 +22,6 @@ struct BodyMapView: View {
     @State private var isMarking = UserDefaults.standard.bool(forKey: "debugMarkMode")
     @StateObject private var markStore = BodyMarkStore()
     @State private var selectedSensation: SensationColor = sensationColors[0]
-    @State private var showMarkedExercises = false
     @State private var showLegend = false
 
     // MARK: - Single-focus confirm/disambiguate flow
@@ -33,11 +32,28 @@ struct BodyMapView: View {
     @State private var focusPoint: SIMD3<Float>?
     /// The currently highlighted candidate (its region box brightened).
     @State private var focusedRegion: String?
-    @State private var showConfirmedExercises = false
-    @State private var confirmedRegion = ""
+    /// The single exercise-list push target — a "Confirm" and the "Find
+    /// Exercises" banner used to drive TWO separate `navigationDestination
+    /// (isPresented:)` modifiers on the same stack, which is exactly the
+    /// pattern SwiftUI's own docs warn can misbehave (only one destination
+    /// should own a given push at a time). One `item`-driven destination for
+    /// both call sites removes that race entirely.
+    @State private var exercisesRoute: ExercisesRoute?
     /// Bumped when the exercise list is popped, to nudge BodySceneView to
     /// re-apply the zoom and re-project labels (the covered SCNView goes stale).
     @State private var refocusToken = 0
+
+    private enum ExercisesRoute: Identifiable, Hashable {
+        case confirmed(String)
+        case marked([String])
+
+        var id: String {
+            switch self {
+            case .confirmed(let region): return "confirmed:\(region)"
+            case .marked(let regions): return "marked:\(regions.joined(separator: ","))"
+            }
+        }
+    }
 
     private let impact = UIImpactFeedbackGenerator(style: .light)
 
@@ -102,7 +118,7 @@ struct BodyMapView: View {
                 } else if !markStore.marks.isEmpty && !isDisambiguating {
                     MarkedAreasBanner(
                         regionNames: markStore.markedRegions.sorted(),
-                        onFind:  { showMarkedExercises = true },
+                        onFind:  { exercisesRoute = .marked(markStore.markedRegions.sorted()) },
                         onClear: { withAnimation { markStore.clear() } }
                     )
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -114,16 +130,18 @@ struct BodyMapView: View {
             .navigationBarTitleDisplayMode(.inline)
             .animation(.easeInOut(duration: 0.2), value: markStore.marks.isEmpty)
             .animation(.easeInOut(duration: 0.2), value: isMarking)
-            .navigationDestination(isPresented: $showMarkedExercises) {
-                BodyPartExercisesView(bodyParts: markStore.markedRegions.sorted())
+            .navigationDestination(item: $exercisesRoute) { route in
+                switch route {
+                case .confirmed(let region):
+                    BodyPartExercisesView(bodyPart: region)
+                case .marked(let regions):
+                    BodyPartExercisesView(bodyParts: regions)
+                }
             }
-            .navigationDestination(isPresented: $showConfirmedExercises) {
-                BodyPartExercisesView(bodyPart: confirmedRegion)
-            }
-            .onChange(of: showConfirmedExercises) { _, showing in
+            .onChange(of: exercisesRoute) { oldValue, newValue in
                 // Popped back to the zoom — re-drive the scene so the body
                 // re-renders and the labels re-project (Phase C).
-                if !showing && !disambiguationCandidates.isEmpty {
+                if case .confirmed = oldValue, newValue == nil, !disambiguationCandidates.isEmpty {
                     refocusToken += 1
                 }
             }
@@ -272,8 +290,7 @@ struct BodyMapView: View {
         markStore.setMark(region: region, sensationID: selectedSensation.id, point: point)
         pendingMark = nil              // persisted mark now carries the dot
         isMarking = false
-        confirmedRegion = region
-        showConfirmedExercises = true
+        exercisesRoute = .confirmed(region)
     }
 
     private func cancelDisambiguation() {

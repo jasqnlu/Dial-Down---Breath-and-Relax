@@ -1,0 +1,14 @@
+imported 269 objects
+model bounds: (-0.374, -0.163, 0.0) .. (0.374, 0.163, 1.916)  height=1.916
+muscles: 250  (mapped=246 fallback=0  highlight=30 neutral=220  mitts=4)
+neck detected at z=1.657 (width=0.101); frac=0.864
+skin clip: 6562 -> 3218 verts kept (head cap)
+joined muscles -> 'Muscles' (78036 verts, 2 mat slots, 12 vgroups)
+peak head tail world = (0.000, 0.130, 1.888)
+render: rest_demo -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/neck_extension_look_up_rest_demo.png
+render: peak_demo -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/neck_extension_look_up_peak_demo.png
+render: peak_front -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/neck_extension_look_up_peak_front.png
+demo frames -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/_demo_frames_neck_extension_look_up (encode to neck_extension_look_up.mp4 next)
+[neck_extension_look_up] built + exported.
+animated model : /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/neck_extension_look_up.glb
+editable scene : /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/neck_extension_look_up.blend
