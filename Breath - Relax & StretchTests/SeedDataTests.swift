@@ -17,9 +17,20 @@ struct SeedDataTests {
             for part in (raw["targetBodyParts"] as? [String] ?? []) {
                 let isGroup = MuscleGroup(rawValue: part) != nil
                 let isHead = MuscleGroup.parentOfHead(part) != nil
-                #expect(isGroup || isHead,
+                let isJoint = JointRegion.isJoint(part)
+                #expect(isGroup || isHead || isJoint,
                         "\(raw["name"] ?? "?") targets unknown '\(part)'")
             }
+        }
+    }
+
+    @Test func everyJointRegionHasDedicatedExercises() throws {
+        let all = try Self.loadExercises()
+        for joint in JointRegion.allCases {
+            let hit = all.contains { raw in
+                (raw["targetBodyParts"] as? [String] ?? []).contains(joint.rawValue)
+            }
+            #expect(hit, "No seed exercise targets the '\(joint.rawValue)' joint directly")
         }
     }
 
@@ -46,6 +57,18 @@ struct SeedDataTests {
         for group in MuscleGroup.allCases where !fallbacks.contains(group) {
             #expect(counts[group.rawValue, default: 0] >= 3,
                     "\(group.rawValue) has only \(counts[group.rawValue, default: 0]) stretches")
+        }
+    }
+
+    /// Pure breathing exercises must never carry `targetBodyParts` — the Body
+    /// Map resolves regions to exercises purely from that field, so a
+    /// non-empty value on a `breath`-typed entry leaks it into whichever
+    /// muscle/joint regions it happens to name (regression for "Progressive
+    /// Relaxation Breath" appearing under Core/Legs regions).
+    @Test func breathExercisesHaveNoTargetBodyParts() throws {
+        for raw in try Self.loadExercises() where (raw["type"] as? String) == "breath" {
+            #expect((raw["targetBodyParts"] as? [String] ?? []).isEmpty,
+                    "\(raw["name"] ?? "?") is type 'breath' but has non-empty targetBodyParts")
         }
     }
 

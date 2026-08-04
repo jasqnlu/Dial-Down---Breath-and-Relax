@@ -82,7 +82,7 @@ struct BodyMapView: View {
 
                 // ── The body — one freely-rotatable 3D view in both modes ────
                 BodySceneView(facing: facing,
-                              style: .skin,
+                              style: .anatomy,
                               marks: displayMarks,
                               onRegionTap: regionTapHandler,
                               disambiguationCandidates: disambiguationCandidates,

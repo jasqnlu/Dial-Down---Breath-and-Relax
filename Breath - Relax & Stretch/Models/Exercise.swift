@@ -45,13 +45,44 @@ final class Exercise {
     /// Bundle-relative file name of Jason's self-filmed demo clip.
     var localVideoName: String? = nil
 
-    /// Resolved bundle URL — nil when unset OR the file isn't bundled,
-    /// so the UI can always fall back to the placeholder card.
-    var localVideoURL: URL? {
-        guard let name = localVideoName, !name.isEmpty else { return nil }
+    /// Bundle-relative file name of the generated 3D muscle-animation loop
+    /// (a baked, muted video). The scalable library tier; a filmed
+    /// `localVideoName` wins over it when both are present (see `demoVideoName`).
+    var animationName: String? = nil
+
+    /// Resolves a bundle-relative clip name to its URL — nil when the name is
+    /// unset/empty OR the file isn't bundled, so the UI can always fall back to
+    /// the placeholder card instead of a broken player.
+    private static func bundledClipURL(_ name: String?) -> URL? {
+        guard let name, !name.isEmpty else { return nil }
         let ns = name as NSString
         return Bundle.main.url(forResource: ns.deletingPathExtension,
                                withExtension: ns.pathExtension.isEmpty ? "mp4" : ns.pathExtension)
+    }
+
+    /// Resolved bundle URL for the filmed clip — nil when unset or not bundled.
+    var localVideoURL: URL? { Self.bundledClipURL(localVideoName) }
+
+    /// Resolved bundle URL for the generated animation loop.
+    var animationVideoURL: URL? { Self.bundledClipURL(animationName) }
+
+    /// The clip name to demo this exercise: a filmed clip (hero content) wins
+    /// over the generated animation. Pure name-level precedence — bundle
+    /// resolution happens in `demoVideoURL`.
+    var demoVideoName: String? {
+        if let name = localVideoName, !name.isEmpty { return name }
+        if let name = animationName, !name.isEmpty { return name }
+        return nil
+    }
+
+    /// Resolved bundle URL of the clip to play as this exercise's demo — the
+    /// filmed clip if bundled, otherwise the generated animation loop.
+    var demoVideoURL: URL? { localVideoURL ?? animationVideoURL }
+
+    /// Whether the demo clip is the generated 3D animation (a standing portrait)
+    /// rather than a filmed landscape clip. Drives the media card's aspect ratio.
+    var demoIsAnimation: Bool {
+        (localVideoName ?? "").isEmpty && !(animationName ?? "").isEmpty
     }
 
     /// Human-readable duration: "30s", "2m", "1m 30s"

@@ -9,7 +9,7 @@ enum MuscleGroup: String, CaseIterable, Codable {
     case leftDelts = "Left Shoulder",    rightDelts = "Right Shoulder"
     // Torso
     case leftChest = "Left Chest",       rightChest = "Right Chest"
-    case abs = "Abs"
+    case leftAbs = "Left Abs",           rightAbs = "Right Abs"
     case leftObliques = "Left Obliques", rightObliques = "Right Obliques"
     case leftLats = "Left Lats",         rightLats = "Right Lats"
     case spinalErectors = "Spinal Erectors"
@@ -36,7 +36,7 @@ enum MuscleGroup: String, CaseIterable, Codable {
         "Head": ["Head"], "Neck": ["Front Neck", "Back Neck"],
         "Left Shoulder": ["Left Shoulder"], "Right Shoulder": ["Right Shoulder"],
         "Chest": ["Left Chest", "Right Chest"],
-        "Core": ["Abs"],
+        "Core": ["Left Abs", "Right Abs"],
         "Upper Back": ["Left Trapezius", "Right Trapezius"],
         "Lower Back": ["Lower Back"],
         "Left Arm": ["Left Biceps", "Left Triceps"],
@@ -57,6 +57,16 @@ enum MuscleGroup: String, CaseIterable, Codable {
         "Left Shin": ["Left Tibialis"], "Right Shin": ["Right Tibialis"],
         "Left Calf": ["Left Calves"], "Right Calf": ["Right Calves"],
         "Left Foot": ["Left Foot"], "Right Foot": ["Right Foot"],
+        // Joint regions (Plan 3, 15-region set): the crossing-muscle fallback
+        // used by `RegionExerciseResolver` when a joint tap has no exercises
+        // tagged with the joint's own raw value directly. Elbow/Wrist/Knee/
+        // Ankle/Neck already appear above; these add the rest.
+        "Left Shoulder Joint": ["Left Shoulder", "Left Chest", "Left Lats", "Left Trapezius"],
+        "Right Shoulder Joint": ["Right Shoulder", "Right Chest", "Right Lats", "Right Trapezius"],
+        "Left Hip": ["Left Glutes", "Left Hip Flexors", "Left Adductors", "Left Hamstrings"],
+        "Right Hip": ["Right Glutes", "Right Hip Flexors", "Right Adductors", "Right Hamstrings"],
+        "Upper Spine": ["Spinal Erectors", "Left Trapezius", "Right Trapezius"],
+        "Lower Spine": ["Lower Back", "Spinal Erectors"],
     ]
 
     // MARK: - Muscle sub-heads

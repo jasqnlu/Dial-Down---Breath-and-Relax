@@ -26,14 +26,13 @@ struct HitboxDataTests {
         }
     }
 
-    @Test func jointBoxesExistWithAnatomicalSides() throws {
+    @Test func jointBoxesMatchJointRegionSet() throws {
         let joints = try loadBoxes("joint_hitboxes")
-        let expected = ["Elbow", "Wrist", "Knee", "Ankle"].flatMap { ["Left \($0)", "Right \($0)"] }
-        #expect(Set(joints.keys) == Set(expected))
+        #expect(Set(joints.keys) == JointRegion.allNames)
         for (name, box) in joints {
-            let centerX = (box.min[0] + box.max[0]) / 2
-            if name.hasPrefix("Left ")  { #expect(centerX > 0, "\(name)") }
-            if name.hasPrefix("Right ") { #expect(centerX < 0, "\(name)") }
+            let cx = (box.min[0] + box.max[0]) / 2
+            if name.hasPrefix("Left ")  { #expect(cx > 0, "\(name)") }
+            if name.hasPrefix("Right ") { #expect(cx < 0, "\(name)") }
         }
     }
 

@@ -3,104 +3,134 @@ import SceneKit
 
 // MARK: - Body Rig
 //
-// Owns the SceneKit scene graph for the rotatable 3D skin model:
+// Owns the SceneKit scene graph for the rotatable skin-covered body model:
 //   sceneRoot
 //     ├─ cameraNode        (static — never rotates)
 //     ├─ keyLight / fillLight / ambientLight  (static, world-fixed)
 //     └─ rigNode           (rotates around Y for the turntable effect)
-//          ├─ bodyNode     (the loaded mesh, pre-centred + pre-scaled)
+//          ├─ skinNode     (the skin shell, visible + opaque at rest)
+//          ├─ muscleNode   (grayscale muscle pieces, hidden at rest — revealed on tap)
 //          └─ marksNode    (marker-dot spheres, normalized-space coords)
 //
-// The mesh ships at native ZBrush export scale with no material/texture, so
-// this also recentres it (pivot = bounding-box centre), uniform-scales it to
-// a fixed height, and applies a skin-tone PBR material in code.
+// At rest, `skinNode` is the only visible surface (marking taps hit it) and
+// `muscleNode.isHidden == true` (hidden geometry is excluded from hit-testing).
+// A tap reveals the muscle layer: `muscleNode` unhides and fades in while
+// `skinNode` fades to a translucent scrim, then candidate muscles colorize.
 //
-// Confirmed empirically from the source OBJ (see decimation notes): Y is up,
-// the figure's face points toward +Z. Rotation 0 == front, π == back.
+// `BodySkinMuscle.obj` is PRE-NORMALIZED at export (Y-up, +Z-forward, height 2,
+// whole-body recentred), so pieces load at IDENTITY — never recentre/scale
+// them here or they'd drift from the hitboxes. Each muscle piece wears a
+// neutral grayscale PBR material at rest; candidate highlights tint it on
+// reveal. The skin piece wears a soft neutral skin-tone material.
+//
+// Y is up, the figure's face points toward +Z. Rotation 0 == front, π == back.
 // Anatomical left = world +X (the marking system's L/R convention).
 
-/// The 3D model style that renders the body. Skin is the only layer now —
-/// the mesh is exported from the Z-Anatomy Blender file's ZBrush OBJ.
-enum BodyModelStyle {
-    case skin
+nonisolated enum BodyModelStyle {
+    case anatomy
+    var resourceName: String { "BodySkinMuscle" }
+}
 
-    var resourceName: String {
-        switch self {
-        case .skin: return "BodyMale"
-        }
-    }
+/// Colour + blend constants for the muscle-reveal highlight, shared by the base
+/// material and the candidate tint so focused / unfocused / neutral states read
+/// as one system. Tints lerp the anatomical `baseTone` toward the candidate's
+/// `CandidatePalette` accent — keeping base shading visible so neighbouring
+/// heads never dissolve into one flat colour block (mirrors the HTML mockup).
+nonisolated enum MuscleHighlight {
+    /// Neutral grayscale the muscle layer wears at rest — colour is reserved for highlight.
+    static let baseTone = UIColor(white: 0.62, alpha: 1)
+    /// Soft neutral skin tone the skin shell wears at rest (a reasonable design
+    /// default — not spec'd exactly by the brief, easy to retune later).
+    static let skinTone = UIColor(red: 0.87, green: 0.74, blue: 0.64, alpha: 1)
+    static let unfocusedTint: CGFloat = 0.5
+    static let focusedTint: CGFloat = 0.8
+    static let unfocusedGlow: CGFloat = 0.12
+    static let focusedGlow: CGFloat = 0.42
+    /// Skin opacity while a reveal is active (fades to expose the muscle layer).
+    static let skinRevealedOpacity: CGFloat = 0.12
+    static let revealDuration: TimeInterval = 0.5
 
-    /// Programmatic PBR material — the mesh ships without textures, so colour
-    /// (skin tone) is applied in code.
-    func makeMaterial() -> SCNMaterial {
-        let m = SCNMaterial()
-        m.lightingModel = .physicallyBased
-        m.isDoubleSided = true
-        m.metalness.contents = 0.0
-        switch self {
-        case .skin:
-            m.diffuse.contents = UIColor(red: 0.89, green: 0.72, blue: 0.62, alpha: 1)
-            m.roughness.contents = 0.7
-        }
-        return m
+    /// Linear blend of two colours in RGB (t = 0 → a, t = 1 → b).
+    static func lerp(_ a: UIColor, _ b: UIColor, _ t: CGFloat) -> UIColor {
+        var ar: CGFloat = 0, ag: CGFloat = 0, ab: CGFloat = 0, aa: CGFloat = 0
+        var br: CGFloat = 0, bg: CGFloat = 0, bb: CGFloat = 0, ba: CGFloat = 0
+        a.getRed(&ar, green: &ag, blue: &ab, alpha: &aa)
+        b.getRed(&br, green: &bg, blue: &bb, alpha: &ba)
+        let r: CGFloat = ar + (br - ar) * t
+        let g: CGFloat = ag + (bg - ag) * t
+        let bl: CGFloat = ab + (bb - ab) * t
+        return UIColor(red: r, green: g, blue: bl, alpha: 1)
     }
 }
 
-/// Loads and caches the (multi-MB) body OBJ mesh off the main thread. An
-/// actor so concurrent loads — e.g. two `BodySceneView`s mounting at once, or
-/// a facing flip re-creating the rig mid-load — serialize on the shared
-/// template cache instead of racing.
+/// Parses and caches the (multi-MB) `BodySkinMuscle.obj` into per-object pieces
+/// off the main thread. An actor so concurrent loads — e.g. two `BodySceneView`s
+/// mounting at once, or a facing flip re-creating the rig mid-load — serialize
+/// on the shared `partsCache` instead of racing.
 actor BodyMeshLoader {
     static let shared = BodyMeshLoader()
+    private var partsCache: [AnatomyPiece]?
 
-    private var cache: [String: SCNNode] = [:]
-
-    /// Returns the cached template node for `style`, parsing the bundled OBJ
-    /// on first use. Runs on the actor's background executor, never the
-    /// main thread — the OBJ parse + triangulation is the most expensive
-    /// thing BodySceneView does, so this keeps it off the UI.
-    func template(for style: BodyModelStyle) -> SCNNode? {
-        if let cached = cache[style.resourceName] { return cached }
-        guard let node = Self.makeTemplateBodyNode(for: style) else { return nil }
-        cache[style.resourceName] = node
-        return node
+    struct AnatomyPiece {
+        let name: String
+        let layer: String            // "muscle" | "skin"
+        let group: String?
+        let head: String?
+        let faceZone: String?
+        let joint: String?
+        let sources: [SCNGeometrySource]
+        let element: SCNGeometryElement
     }
 
-    private static func makeTemplateBodyNode(for style: BodyModelStyle) -> SCNNode? {
-        guard let url = Bundle.main.url(forResource: style.resourceName, withExtension: "obj"),
-              let source = try? SCNScene(url: url, options: [.checkConsistency: true])
-        else {
-            return nil
-        }
-
-        let bodyNode = SCNNode()
-        for child in source.rootNode.childNodes {
-            bodyNode.addChildNode(child)
-        }
-
-        let (bmin, bmax) = bodyNode.boundingBox
-        let center = SCNVector3((bmin.x + bmax.x) / 2,
-                                 (bmin.y + bmax.y) / 2,
-                                 (bmin.z + bmax.z) / 2)
-        let height = CGFloat(bmax.y - bmin.y)
-        let scale = height > 0 ? Float(2.0 / height) : 1
-
-        // Recentre in LOCAL space via pivot (applied before scale), then scale —
-        // this avoids the order-of-operations trap of combining position+scale directly.
-        bodyNode.pivot = SCNMatrix4MakeTranslation(center.x, center.y, center.z)
-        bodyNode.scale = SCNVector3(scale, scale, scale)
-
-        applyMaterial(style.makeMaterial(), to: bodyNode)
-        return bodyNode
+    func anatomyParts() -> [AnatomyPiece]? {
+        if let partsCache { return partsCache }
+        guard let url = Bundle.main.url(forResource: BodyModelStyle.anatomy.resourceName, withExtension: "obj"),
+              let parts = Self.parseAnatomyOBJ(url: url) else { return nil }
+        partsCache = parts
+        return parts
     }
 
-    private static func applyMaterial(_ material: SCNMaterial, to node: SCNNode) {
-        if let geometry = node.geometry {
-            geometry.materials = [material]
+    /// Same contiguous-OBJ parser as before, but keeps EVERY mapped node (muscle,
+    /// skin) and tags it from the node map. Objects absent from the map or with
+    /// no faces are skipped.
+    private static func parseAnatomyOBJ(url: URL) -> [AnatomyPiece]? {
+        guard let text = try? String(contentsOf: url, encoding: .utf8) else { return nil }
+        var parts: [AnatomyPiece] = []
+        var name: String?
+        var vertBase = 0, globalV = 0
+        var positions: [SCNVector3] = [], normals: [SCNVector3] = []
+        var indices: [Int32] = []
+        func flush() {
+            guard let name, !indices.isEmpty, let layer = MuscleNodeNames.layerByNode[name] else { return }
+            let sources = [SCNGeometrySource(vertices: positions), SCNGeometrySource(normals: normals)]
+            let element = SCNGeometryElement(indices: indices, primitiveType: .triangles)
+            parts.append(AnatomyPiece(name: name, layer: layer,
+                                      group: MuscleNodeNames.groupByNode[name],
+                                      head: MuscleNodeNames.headByNode[name],
+                                      faceZone: MuscleNodeNames.faceZoneByNode[name],
+                                      joint: MuscleNodeNames.jointByNode[name],
+                                      sources: sources, element: element))
         }
-        for child in node.childNodes {
-            applyMaterial(material, to: child)
+        text.enumerateLines { line, _ in
+            if line.hasPrefix("v ") {
+                let c = line.dropFirst(2).split(separator: " ")
+                if c.count == 3, let x = Float(c[0]), let y = Float(c[1]), let z = Float(c[2]) { positions.append(SCNVector3(x, y, z)) }
+                globalV += 1
+            } else if line.hasPrefix("vn ") {
+                let c = line.dropFirst(3).split(separator: " ")
+                if c.count == 3, let x = Float(c[0]), let y = Float(c[1]), let z = Float(c[2]) { normals.append(SCNVector3(x, y, z)) }
+            } else if line.hasPrefix("f ") {
+                for tok in line.dropFirst(2).split(separator: " ") {
+                    let vStr = tok.prefix { $0 != "/" }
+                    if let g = Int(vStr) { indices.append(Int32(g - vertBase - 1)) }
+                }
+            } else if line.hasPrefix("o ") {
+                flush(); name = String(line.dropFirst(2)); vertBase = globalV
+                positions.removeAll(keepingCapacity: true); normals.removeAll(keepingCapacity: true); indices.removeAll(keepingCapacity: true)
+            }
         }
+        flush()
+        return parts.isEmpty ? nil : parts
     }
 }
 
@@ -108,16 +138,16 @@ final class BodyRig {
     let scene = SCNScene()
     let cameraNode = SCNNode()
     let rigNode = SCNNode()
-    /// Marker dots live under the rig (NOT bodyNode: bodyNode's children
-    /// inherit its raw-OBJ pivot/scale; rigNode children take
-    /// normalized-space coordinates directly and still rotate with the body).
+    /// Marker dots live directly under the rig: the anatomy pieces load at
+    /// identity (pre-normalized), and rigNode children take normalized-space
+    /// coordinates directly while still rotating with the body.
     let marksNode = SCNNode()
-    /// Translucent muscle-region highlight boxes shown during the confirm-step
-    /// disambiguation. Under the rig (like marks) so they rotate with the body
-    /// and track the muscle; drawn over the skin (depth-test off) so the
-    /// highlighted region reads as an x-ray patch rather than being occluded.
-    let overlayNode = SCNNode()
+    let muscleNode = SCNNode()   // muscle children — hidden at rest, revealed on tap
+    let skinNode = SCNNode()     // skin shell — visible + opaque at rest, fades on reveal
     let style: BodyModelStyle
+
+    /// every mapped piece, for O(1) candidate-highlight + hit-test reverse lookup.
+    private var nodesByName: [String: SCNNode] = [:]
 
     private(set) var loadFailed = false
     /// True once the (possibly cached) body mesh has been attached to
@@ -129,13 +159,19 @@ final class BodyRig {
     /// can be applied relative to the last committed value.
     var committedRotationY: CGFloat = 0
 
-    init(style: BodyModelStyle = .skin) {
+    init(style: BodyModelStyle = .anatomy) {
         self.style = style
         setUpCamera()
         setUpLights()
         scene.rootNode.addChildNode(rigNode)
         rigNode.addChildNode(marksNode)
-        rigNode.addChildNode(overlayNode)
+        rigNode.addChildNode(muscleNode)
+        rigNode.addChildNode(skinNode)
+        // Muscle layer starts hidden + fully transparent — isHidden excludes it
+        // from hit-testing, and opacity 0 means it doesn't flash full-strength
+        // the instant `loadIfNeeded` unhides it for a reveal.
+        muscleNode.isHidden = true
+        muscleNode.opacity = 0
         // Mesh loading is kicked off asynchronously by BodySceneView (see
         // `loadIfNeeded`) instead of here — parsing the OBJ is too heavy to
         // do synchronously on the main thread during View init.
@@ -198,22 +234,75 @@ final class BodyRig {
         scene.rootNode.addChildNode(ambientNode)
     }
 
-    /// Parses/fetches the cached mesh on `BodyMeshLoader`'s background actor,
-    /// then attaches a clone (geometry is shared copy-on-write) to `rigNode`
-    /// on the main actor. Idempotent — safe to call every time
-    /// `BodySceneView` appears; only the first call per rig instance does
-    /// anything since `isLoaded`/`loadFailed` short-circuit the rest.
+    /// Parses the skin+muscle mesh (background) and attaches one node per piece
+    /// with a base material; muscle pieces go under `muscleNode` (grayscale),
+    /// the skin piece under `skinNode` (soft neutral skin tone). Idempotent.
     @MainActor
     func loadIfNeeded() async {
         guard !isLoaded, !loadFailed else { return }
-        guard let template = await BodyMeshLoader.shared.template(for: style) else {
-            loadFailed = true
-            return
+        guard let parts = await BodyMeshLoader.shared.anatomyParts() else { loadFailed = true; return }
+        for part in parts {
+            let geometry = SCNGeometry(sources: part.sources, elements: [part.element])
+            let isSkin = part.layer == "skin"
+            geometry.materials = [isSkin ? Self.makeSkinMaterial() : Self.makeBaseMaterial()]
+            let node = SCNNode(geometry: geometry)
+            node.name = part.name
+            (isSkin ? skinNode : muscleNode).addChildNode(node)
+            nodesByName[part.name] = node
         }
-        // A node lives in one parent at a time, so each rig adds its own clone
-        // of the shared template (geometry is shared, transforms are fresh).
-        rigNode.addChildNode(template.clone())
         isLoaded = true
+    }
+
+    private static func makeBaseMaterial() -> SCNMaterial {
+        let m = SCNMaterial()
+        m.lightingModel = .physicallyBased
+        m.isDoubleSided = true
+        m.metalness.contents = 0.0
+        m.roughness.contents = 0.6
+        m.diffuse.contents = MuscleHighlight.baseTone
+        return m
+    }
+
+    private static func makeSkinMaterial() -> SCNMaterial {
+        let m = SCNMaterial()
+        m.lightingModel = .physicallyBased
+        m.isDoubleSided = true
+        m.metalness.contents = 0.0
+        m.roughness.contents = 0.75
+        m.diffuse.contents = MuscleHighlight.skinTone
+        return m
+    }
+
+    /// Reveals the muscle layer under the skin: unhides `muscleNode` immediately
+    /// (so it can render at 0 opacity instead of flashing full-strength), then
+    /// animates it in as `skinNode` fades to a translucent scrim, then colorizes
+    /// the disambiguation candidates. Mirrors the pre-anatomy-model app's
+    /// skin/muscle reveal, adapted to the single-OBJ per-node loader.
+    func reveal(_ candidates: [MarkCandidate], focused: String?) {
+        muscleNode.isHidden = false
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = MuscleHighlight.revealDuration
+        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        muscleNode.opacity = 1
+        skinNode.opacity = MuscleHighlight.skinRevealedOpacity
+        SCNTransaction.commit()
+        showCandidates(candidates, focused: focused)
+    }
+
+    /// Restores the opaque skin and hides the muscle layer again once the fade
+    /// completes (so marking taps go back to hitting only the skin), and resets
+    /// every muscle piece's tint.
+    func dismissReveal() {
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = MuscleHighlight.revealDuration
+        SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        muscleNode.opacity = 0
+        skinNode.opacity = 1
+        SCNTransaction.completionBlock = { [weak self] in
+            self?.muscleNode.isHidden = true
+        }
+        SCNTransaction.commit()
+        resetTints()
     }
 
     // MARK: - Marker dots
@@ -302,6 +391,10 @@ final class BodyRig {
         SCNTransaction.animationDuration = duration
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
         cameraNode.position = SCNVector3(camPos.x, camPos.y, camPos.z)
+        // `look(at:)` uses the world up-vector (0,1,0), so the camera never rolls
+        // around its view axis — focus stays a pure upright dolly (pinned by
+        // BodyRigFocusTests). Any apparent turn on select is dolly parallax (the
+        // dot is framed from its own outward normal), not a rig/camera rotation.
         cameraNode.look(at: SCNVector3(world.x, world.y, world.z))
         SCNTransaction.completionBlock = completion
         SCNTransaction.commit()
@@ -309,61 +402,107 @@ final class BodyRig {
 
     // MARK: - Candidate region highlights
 
-    /// Renders a translucent, tappable box for each disambiguation candidate,
-    /// colour-coded by index (matching the side-rail labels). The `focused`
-    /// region's box is brighter/more opaque — the "rough" highlight of the
-    /// muscle the user is about to pick. Boxes draw over the skin (depth-test
-    /// off) so they read as an x-ray patch, and carry a `candidate:<name>`
-    /// node name so taps hit-test straight to a region.
+    /// Highlights each disambiguation candidate on the real muscle mesh, colour-
+    /// coded by index (matching the side-rail labels). Each candidate's muscle
+    /// node(s) get a **light tint** (base anatomical shading lerped toward the
+    /// accent — subtle for unfocused, stronger for focused) plus an **emission
+    /// glow** that lifts the focused candidate, so adjacent heads stay distinct.
+    /// Candidates with no muscle geometry (face zones, joints) fall back to a
+    /// small accent dot at their anchor. Idempotent — resets prior tints first.
     func showCandidates(_ candidates: [MarkCandidate], focused: String?) {
-        overlayNode.childNodes.forEach { $0.removeFromParentNode() }
+        resetTints()
         for (i, c) in candidates.enumerated() {
-            let size = c.maxBound - c.minBound
-            let isPoint = !(size.x > 0 && size.y > 0 && size.z > 0)
             let isFocused = c.name == focused
-            let color = CandidatePalette.uiColor(i)
-
-            let m = SCNMaterial()
-            m.isDoubleSided = true
-            m.readsFromDepthBuffer = false     // always draw over the skin (x-ray)
-            m.writesToDepthBuffer = false
-
-            let geometry: SCNGeometry
-            if isPoint {
-                // Face zones carry no box — draw a solid dot at the anchor.
-                geometry = SCNSphere(radius: CGFloat(isFocused ? 0.028 : 0.022))
-                m.diffuse.contents = color
-                m.emission.contents = color.withAlphaComponent(isFocused ? 0.6 : 0.35)
+            let accent = CandidatePalette.uiColor(i)
+            let names = MuscleNodeNames.nodeNames(forRegion: c.name)
+            if names.isEmpty {
+                addCandidateDot(for: c, accent: accent, focused: isFocused)
             } else {
-                geometry = SCNBox(width: CGFloat(size.x), height: CGFloat(size.y),
-                                  length: CGFloat(size.z), chamferRadius: 0.01)
-                m.diffuse.contents = color.withAlphaComponent(isFocused ? 0.5 : 0.16)
-                m.emission.contents = color.withAlphaComponent(isFocused ? 0.4 : 0.1)
+                for n in names { if let node = nodesByName[n] { applyTint(accent, focused: isFocused, to: node) } }
             }
-            geometry.materials = [m]
-
-            let node = SCNNode(geometry: geometry)
-            node.name = "candidate:\(c.name)"
-            let center = isPoint ? c.point : (c.minBound + c.maxBound) / 2
-            node.position = SCNVector3(center.x, center.y, center.z)
-            node.renderingOrder = isFocused ? 21 : 20
-            overlayNode.addChildNode(node)
         }
     }
 
-    func clearCandidates() {
-        overlayNode.childNodes.forEach { $0.removeFromParentNode() }
+    /// Restores every muscle piece to its neutral base tone and removes any
+    /// transient candidate dots (face-zone fallbacks with no geometry). Leaves
+    /// the skin node's single tone untouched (it never gets tinted).
+    private func resetTints() {
+        for node in nodesByName.values where node.parent === muscleNode {
+            guard let m = node.geometry?.firstMaterial else { continue }
+            m.diffuse.contents = MuscleHighlight.baseTone
+            m.emission.intensity = 0
+        }
+        muscleNode.childNodes.filter { $0.name?.hasPrefix("cand-dot:") == true }.forEach { $0.removeFromParentNode() }
+    }
+
+    /// Tints one node toward `accent`; `focused` deepens the tint and glow.
+    private func applyTint(_ accent: UIColor, focused: Bool, to node: SCNNode) {
+        guard let m = node.geometry?.firstMaterial else { return }
+        let tint = focused ? MuscleHighlight.focusedTint : MuscleHighlight.unfocusedTint
+        m.diffuse.contents = MuscleHighlight.lerp(MuscleHighlight.baseTone, accent, tint)
+        m.emission.contents = accent
+        m.emission.intensity = focused ? MuscleHighlight.focusedGlow : MuscleHighlight.unfocusedGlow
+    }
+
+    /// On-body accent dot for a candidate with no mapped geometry (should be rare
+    /// now that joints/face zones resolve to real nodes).
+    private func addCandidateDot(for c: MarkCandidate, accent: UIColor, focused: Bool) {
+        let sphere = SCNSphere(radius: CGFloat(focused ? 0.028 : 0.022))
+        let m = SCNMaterial()
+        m.diffuse.contents = accent
+        m.emission.contents = accent
+        m.emission.intensity = focused ? 0.6 : 0.35
+        m.readsFromDepthBuffer = false
+        m.writesToDepthBuffer = false
+        sphere.materials = [m]
+        let node = SCNNode(geometry: sphere)
+        node.name = "cand-dot:\(c.name)"
+        node.position = SCNVector3(c.point.x, c.point.y, c.point.z)
+        node.renderingOrder = focused ? 21 : 20
+        muscleNode.addChildNode(node)
     }
 
     /// Restores the camera to a plain forward-facing shot at `distance` —
     /// used when disambiguation is cancelled or resolved.
+    ///
+    /// `focus()` deliberately dollies off the Z-axis, out along the tapped
+    /// dot's outward normal (see its doc comment). Snapping straight back to
+    /// (0,0,distance) in one animated beat swings the camera through that
+    /// same arc in reverse — which orbits the body and reads as the FIGURE
+    /// rotating, not the camera zooming out (the exact illusion `focus()`
+    /// guards against, unguarded on the way back). Retreating along the
+    /// current bearing first removes the orbit — the dot just recedes — then
+    /// the bearing snaps to dead-center instantly, once the camera is far
+    /// enough out for that jump to be imperceptible.
     func resetCamera(distance: CGFloat, duration: TimeInterval = 0.4) {
+        let receded = BodyRig.recededPosition(from: cameraNode.position, minDistance: distance)
+
         SCNTransaction.begin()
         SCNTransaction.animationDuration = duration
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        cameraNode.position = SCNVector3(0, 0, Float(distance))
+        cameraNode.position = receded
         cameraNode.look(at: SCNVector3(0, 0, 0))
+        SCNTransaction.completionBlock = { [weak self] in
+            guard let self else { return }
+            SCNTransaction.begin()
+            SCNTransaction.animationDuration = 0
+            self.cameraNode.position = SCNVector3(0, 0, Float(distance))
+            self.cameraNode.look(at: SCNVector3(0, 0, 0))
+            SCNTransaction.commit()
+        }
         SCNTransaction.commit()
+    }
+
+    /// Pure helper for `resetCamera`'s first phase: moves `position` straight
+    /// out along its own bearing (the horizontal direction from the origin
+    /// through it) to at least `minDistance`, preserving whatever azimuth the
+    /// focus dolly left the camera at. Degenerate only if the camera sits
+    /// exactly on the Y axis — falls back to the canonical +Z bearing then.
+    static func recededPosition(from position: SCNVector3, minDistance: CGFloat) -> SCNVector3 {
+        let current = SIMD3<Float>(Float(position.x), 0, Float(position.z))
+        let bearing = simd_length(current) > 1e-4 ? simd_normalize(current) : SIMD3<Float>(0, 0, 1)
+        let target = bearing * Float(max(defaultCameraDistance, minDistance))
+        return SCNVector3(target.x, 0, target.z)
     }
 
     /// Snap to the nearest equivalent of `target` (0 = front, π = back) via the
@@ -474,8 +613,8 @@ enum CandidatePalette {
 struct BodySceneView: View {
     let facing: BodyFacing
 
-    /// Which anatomy layer to render. Skin is the only layer.
-    var style: BodyModelStyle = .skin
+    /// Which anatomy layer to render. `.anatomy` is the only style.
+    var style: BodyModelStyle = .anatomy
 
     /// Current marks, rendered as marker-dot spheres on the body.
     var marks: [String: BodyMark] = [:]
@@ -526,7 +665,7 @@ struct BodySceneView: View {
     private var isFocused: Bool { !disambiguationCandidates.isEmpty }
 
     init(facing: BodyFacing,
-         style: BodyModelStyle = .skin,
+         style: BodyModelStyle = .anatomy,
          marks: [String: BodyMark] = [:],
          onRegionTap: ((String, SIMD3<Float>) -> Void)? = nil,
          disambiguationCandidates: [MarkCandidate] = [],
@@ -591,6 +730,13 @@ struct BodySceneView: View {
             }
         }
         .onAppear {
+            // Skip while disambiguating: the view also disappears/reappears
+            // when the exercise list is pushed/popped over it, and in that
+            // case `refocusToken` (below) owns the camera — it redoes the
+            // full off-axis dolly + look(at:). Stomping just `position.z`
+            // here would leave the camera's x/y and orientation mismatched,
+            // which reads as the body having rotated.
+            guard !isFocused else { return }
             rig.snap(to: facing.rotationY)
             rig.cameraNode.position.z = Float(cameraZ)
         }
@@ -610,15 +756,15 @@ struct BodySceneView: View {
         .onChange(of: disambiguationCandidates) { _, newCandidates in
             guard !newCandidates.isEmpty else {
                 pinPositions = [:]
-                rig.clearCandidates()
+                rig.dismissReveal()
                 rig.resetCamera(distance: cameraZ)
                 return
             }
             applyFocus(for: newCandidates)
         }
         .onChange(of: focusedRegion) { _, newFocus in
-            // Re-tint the boxes when the highlighted candidate changes; camera
-            // stays put (the dot is still the frame subject).
+            // Re-tint the muscle highlight when the focused candidate changes;
+            // camera stays put (the dot is still the frame subject).
             guard !disambiguationCandidates.isEmpty else { return }
             rig.showCandidates(disambiguationCandidates,
                                focused: newFocus ?? disambiguationCandidates.first?.name)
@@ -647,10 +793,10 @@ struct BodySceneView: View {
 
     // MARK: - Tap → region resolution
 
-    /// While focused (disambiguation), taps hit-test the translucent candidate
-    /// boxes so tapping a highlighted region on the body selects it directly.
-    /// Otherwise, taps mark — but only when a region-tap callback is installed,
-    /// so plain viewing never pays for hit-testing.
+    /// While focused (disambiguation), taps hit-test the revealed muscle mesh so
+    /// tapping a highlighted muscle on the body selects it directly. Otherwise,
+    /// taps mark — but only when a region-tap callback is installed, so plain
+    /// viewing never pays for hit-testing.
     private var tapHandler: ((CGPoint, SCNView) -> Void)? {
         if isFocused {
             return { point, view in handleCandidateHitTest(at: point, in: view) }
@@ -659,13 +805,24 @@ struct BodySceneView: View {
         return { point, view in handleTap(at: point, in: view) }
     }
 
-    /// Raycasts the candidate highlight boxes; the nearest hit whose node is a
-    /// `candidate:<name>` routes to the focus/select decision.
+    /// Raycasts the revealed muscle geometry; the nearest hit whose muscle node
+    /// (or face-zone fallback dot) maps to one of the CURRENT candidates routes
+    /// to the focus/select decision. Skin hits are skipped (they map to nothing),
+    /// so tapping the translucent skin over a candidate still selects the muscle.
     private func handleCandidateHitTest(at point: CGPoint, in view: SCNView) {
         let hits = view.hitTest(point, options: [.searchMode: SCNHitTestSearchMode.all.rawValue as NSNumber])
-        guard let hit = hits.first(where: { $0.node.name?.hasPrefix("candidate:") == true }),
-              let name = hit.node.name?.dropFirst("candidate:".count) else { return }
-        handleCandidateTap(String(name))
+        let candidateNames = Set(disambiguationCandidates.map(\.name))
+        for hit in hits {
+            guard let nodeName = hit.node.name else { continue }
+            if nodeName.hasPrefix("cand-dot:") {
+                let name = String(nodeName.dropFirst("cand-dot:".count))
+                if candidateNames.contains(name) { handleCandidateTap(name); return }
+            } else if let match = MuscleNodeNames.matchingCandidate(forNode: nodeName,
+                                                                    among: candidateNames) {
+                handleCandidateTap(match)
+                return
+            }
+        }
     }
 
     /// First tap on a candidate focuses/highlights it; a second tap on the
@@ -679,15 +836,14 @@ struct BodySceneView: View {
         }
     }
 
-    /// Renders the candidate highlight boxes, zooms onto the dot, and projects
-    /// the label anchors once the dolly settles. Shared by the initial confirm
-    /// and the return-from-navigation re-focus.
+    /// Zooms onto the tapped dot and reveals the muscle layer — fading the skin
+    /// to a translucent scrim while the muscle mesh fades in and each candidate
+    /// colorizes; projects the label anchors once the dolly settles. Shared by
+    /// the initial confirm and the return-from-navigation re-focus.
     private func applyFocus(for candidates: [MarkCandidate]) {
         guard let primary = candidates.first else { return }
-        rig.showCandidates(candidates, focused: focusedRegion ?? primary.name)
-        rig.focus(on: focusPoint ?? primary.point) {
-            projectPinPositions(for: candidates)
-        }
+        rig.focus(on: focusPoint ?? primary.point) { projectPinPositions(for: candidates) }
+        rig.reveal(candidates, focused: focusedRegion ?? primary.name)
     }
 
     /// Re-projects each candidate's rigNode-local anchor to on-screen points
@@ -708,10 +864,11 @@ struct BodySceneView: View {
         }
     }
 
-    /// Stage 1: raycast the skin mesh (marker dots are excluded explicitly,
-    /// so the first non-marker hit is the occlusion-correct surface point).
-    /// Stage 2: convert the world hit point to rigNode-local (normalized
-    /// model space, rotation factored out) and resolve it with pure math.
+    /// Stage 1: raycast the visible skin surface — the only unhidden geometry at
+    /// rest (marker dots are excluded explicitly, so the first non-marker hit is
+    /// the skin surface point). Stage 2: convert the world hit point to
+    /// rigNode-local (normalized model space, rotation factored out) and resolve
+    /// it with pure math.
     private func handleTap(at point: CGPoint, in view: SCNView) {
         guard let onRegionTap else { return }
         let hits = view.hitTest(point, options: [.searchMode: SCNHitTestSearchMode.all.rawValue as NSNumber])
@@ -879,7 +1036,7 @@ private struct CandidateRailOverlay: View {
 
 // MARK: - Preview
 
-#Preview("Skin") {
-    BodySceneView(facing: .front, style: .skin)
+#Preview("Anatomy") {
+    BodySceneView(facing: .front, style: .anatomy)
         .frame(height: 520)
 }
