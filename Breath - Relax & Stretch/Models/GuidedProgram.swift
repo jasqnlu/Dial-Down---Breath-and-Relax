@@ -17,15 +17,14 @@ struct GuidedProgram: Identifiable {
     let title: String
     let summary: String
     let icon: String
-    let isPro: Bool   // false = free for everyone (the starter program)
     let days: [ProgramDay]
 }
 
 extension GuidedProgram {
-    /// The single Pro program: a rotating 30-day mix of every goal category,
-    /// generated from the existing GoalMeta exercise pools rather than
-    /// hand-authored content.
-    static let proFullReset: GuidedProgram = {
+    /// A rotating 30-day mix of every goal category, generated from the
+    /// existing GoalMeta exercise pools rather than hand-authored content.
+    /// Free, like everything else in the app.
+    static let fullReset: GuidedProgram = {
         let pool = Array(Set(GoalMeta.all.flatMap(\.exerciseNames))).sorted()
         let days = (1...30).map { day -> ProgramDay in
             let offset = (day - 1) * 3
@@ -33,11 +32,10 @@ extension GuidedProgram {
             return ProgramDay(dayNumber: day, exerciseNames: names)
         }
         return GuidedProgram(
-            id: "pro_30day",
+            id: "program_30day_full_reset",
             title: "30-Day Full Reset",
             summary: "A rotating month of flexibility, stress relief, pain relief, and breathing work — just a few minutes a day.",
             icon: "calendar.badge.clock",
-            isPro: true,
             days: days
         )
     }()
@@ -62,7 +60,6 @@ extension GuidedProgram {
             title: "Your Starter Program",
             summary: "A free 3-day program built from your goals.",
             icon: "sparkles",
-            isPro: false,
             days: days
         )
     }

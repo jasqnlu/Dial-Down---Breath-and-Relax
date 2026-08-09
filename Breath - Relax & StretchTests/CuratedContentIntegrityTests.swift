@@ -2,7 +2,7 @@ import Testing
 import Foundation
 @testable import BreathRelaxStretch
 
-// ContentPack and GoalMeta (which GuidedProgram.proFullReset/starterProgram
+// ContentPack and GoalMeta (which GuidedProgram.fullReset/starterProgram
 // are both derived from) reference exercises by display-name string matched
 // against SeedData.json at render time, not by a compiler-checked reference.
 // TODO.md notes this was "manually verified once" — this test keeps it true
@@ -37,11 +37,11 @@ struct CuratedContentIntegrityTests {
         }
     }
 
-    @Test func proFullResetOnlyReferencesRealExerciseNames() throws {
+    @Test func fullResetOnlyReferencesRealExerciseNames() throws {
         let seedNames = try seedExerciseNames()
-        for day in GuidedProgram.proFullReset.days {
+        for day in GuidedProgram.fullReset.days {
             for name in day.exerciseNames {
-                #expect(seedNames.contains(name), "\"\(name)\" in proFullReset day \(day.dayNumber) doesn't match any seed exercise")
+                #expect(seedNames.contains(name), "\"\(name)\" in fullReset day \(day.dayNumber) doesn't match any seed exercise")
             }
         }
     }

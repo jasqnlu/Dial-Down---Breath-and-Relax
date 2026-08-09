@@ -1,23 +1,15 @@
 import SwiftUI
-import StoreKit
 
 // MARK: - ContentPacksView
+// Themed collections, all free. Kept as a browsing surface only — there
+// is no purchase concept anywhere in the app.
 
 struct ContentPacksView: View {
-    @ObservedObject private var store = StoreManager.shared
-    @State private var purchasingID: String?
-    @State private var errorMessage: String?
 
     var body: some View {
         List {
             ForEach(ContentPack.all) { pack in
                 packSection(pack)
-            }
-
-            if let errorMessage {
-                Text(errorMessage)
-                    .font(.luminaCaption)
-                    .foregroundStyle(.red)
             }
         }
         .listStyle(.insetGrouped)
@@ -27,7 +19,6 @@ struct ContentPacksView: View {
         .navigationTitle("Content Packs")
         .navigationBarTitleDisplayMode(.inline)
         .floatingTabBarClearance()
-        .task { await store.loadProducts() }
     }
 
     private func packSection(_ pack: ContentPack) -> some View {
@@ -50,40 +41,6 @@ struct ContentPacksView: View {
                 Spacer(minLength: 0)
             }
             .padding(.vertical, 4)
-
-            if store.owns(pack.id) {
-                Label("Unlocked", systemImage: "checkmark.circle.fill")
-                    .font(.luminaLabel)
-                    .foregroundStyle(.green)
-            } else if let product = store.product(for: pack.id) {
-                Button {
-                    purchase(product)
-                } label: {
-                    HStack {
-                        if purchasingID == pack.id {
-                            ProgressView()
-                        } else {
-                            Text("Buy for \(product.displayPrice)")
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(LuminaPillButtonStyle(compact: true))
-                .disabled(purchasingID != nil)
-            }
-        }
-    }
-
-    private func purchase(_ product: Product) {
-        purchasingID = product.id
-        errorMessage = nil
-        Task {
-            do {
-                try await store.purchase(product)
-            } catch {
-                errorMessage = error.localizedDescription
-            }
-            purchasingID = nil
         }
     }
 }

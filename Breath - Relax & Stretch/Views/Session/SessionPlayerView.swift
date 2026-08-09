@@ -17,8 +17,6 @@ struct SessionPlayerView: View {
 
     @AppStorage("totalSessionsCompleted") private var totalSessionsCompleted = 0
     @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
-    @AppStorage("hasSeenInitialPaywall") private var hasSeenInitialPaywall = false
-    @AppStorage("pendingInitialPaywall") private var pendingInitialPaywall = false
     @AppStorage("sessionDurationMultiplier") private var durationMultiplier: Double = 1.0
 
     @State private var currentIndex = 0
@@ -107,7 +105,6 @@ struct SessionPlayerView: View {
                 SessionSummaryView(pointsEarned: totalPointsEarned) {
                     onComplete?(totalPointsEarned)
                     dismiss()
-                    requestDeferredPaywallIfNeeded()
                 }
             } else if exercises.isEmpty {
                 ContentUnavailableView {
@@ -574,27 +571,14 @@ struct SessionPlayerView: View {
             totalSessionsCompleted: totalSessionsCompleted
         )
 
-        if totalSessionsCompleted == 3 && !hasSeenInitialPaywall {
-            hasSeenInitialPaywall = true
-            pendingInitialPaywall = true
-        } else {
-            let reviewMilestones: Set<Int> = [10, 25]
-            if reviewMilestones.contains(totalSessionsCompleted) {
-                shouldRequestReview = true
-            }
+        let reviewMilestones: Set<Int> = [10, 25]
+        if reviewMilestones.contains(totalSessionsCompleted) {
+            shouldRequestReview = true
         }
     }
 
     private func timeString(_ seconds: Int) -> String {
         String(format: "%d:%02d", seconds / 60, seconds % 60)
-    }
-
-    private func requestDeferredPaywallIfNeeded() {
-        guard pendingInitialPaywall else { return }
-        Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(350))
-            NotificationCenter.default.post(name: .deferredPaywallRequested, object: nil)
-        }
     }
 }
 
