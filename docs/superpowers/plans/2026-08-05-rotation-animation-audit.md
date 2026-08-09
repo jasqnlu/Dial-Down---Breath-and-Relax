@@ -38,7 +38,18 @@ between them):
 | same | local Y | twist along the bone's own long axis — **never used in any shipped exercise** |
 | `head`, `chest`, `spine` (point up, local Y = world +Z) | local X | +X = forward pitch (opposite sign meaning from the arm bones — do not reuse that intuition) |
 | same | local Z | +Z bends the bone toward the subject's own right |
-| same | local Y | twist — proven, used only by the two seated-spinal-twist exercises |
+| same | local Y | twist. **−Y = subject's own right, +Y = subject's own LEFT.** Widely used (both seated twists, both wall/doorway bicep stretches, wall corner pec, overhead reach, head rotation). |
+
+> **⚠️ Twist sign corrected 2026-08-08.** This table originally said `+Y`
+> twists toward the subject's *right*. It is the opposite, and four shipped
+> animations rotated backwards as a result. See "Finding 4" in §3b for the
+> probe that settled it. Anything below written before that date that implies
+> `+Y = right` is wrong.
+
+Also note (2026-08-08): **prefer `local-X` (flexion) to `local-Z` (abduction)
+on arm bones.** The source mesh is arms-down, so abduction drags a sheet of
+torso geometry outward — 85° tore the pec, 155° tore the lat. The same poses
+authored as forward flexion (to −150°) render cleanly.
 
 `hips`, `thigh.{L,R}`, `shin.{L,R}` exist in the armature and are mapped to
 muscle groups. **Update (2026-08-07): a static seated leg pose is now
@@ -67,11 +78,11 @@ own numeric-probe experiment before batch-authoring (see Tier C below).
 | 7 | Right Standing Side Bend | no | OK |
 | 8 | Standing Back Extension | no | OK |
 | 9 | Cobra Stretch (Prone Press-Up) | no | OK |
-| 10 | Left Seated Spinal Twist | **yes** | Was standing (no seated pose existed); **fixed 2026-08-07, see Finding 3** |
-| 11 | Right Seated Spinal Twist | **yes** | Same — **fixed 2026-08-07** |
+| 10 | Left Seated Spinal Twist | **yes** | Was standing (no seated pose existed); fixed 2026-08-07 (Finding 3). **Twisted the wrong way; re-fixed 2026-08-08 (Finding 4)** |
+| 11 | Right Seated Spinal Twist | **yes** | Same — fixed 2026-08-07, **re-fixed 2026-08-08 (Finding 4)** |
 | 12 | Reverse Prayer Stretch | no | **Gap, but not fixable** — see below (now flagged `animationIsApproximate` in the app so this is disclosed to users) |
-| 13 | Left Wall Bicep Stretch | no | **Gap — fixed 2026-08-07, see Finding 1** |
-| 14 | Right Wall Bicep Stretch | no | **Gap — fixed 2026-08-07, see Finding 1** |
+| 13 | Left Wall Bicep Stretch | no | Gap — fixed 2026-08-07 (Finding 1). **Twisted the wrong way; re-fixed 2026-08-08 (Finding 4)** |
+| 14 | Right Wall Bicep Stretch | no | Same — fixed 2026-08-07, **re-fixed 2026-08-08 (Finding 4)** |
 
 ### Finding 1 (fixed 2026-08-07): Wall Bicep Stretch (L/R) was missing its torso rotation
 
@@ -79,11 +90,15 @@ Instructions: *"Slowly rotate your torso away from the wall until you feel a
 stretch through the front of your left arm."* The shipped `POSES` only pitched
 `upperarm.L`/`.R` (0°→20°→45° on X) and flexed the forearm slightly — there
 was no `chest`/`spine` local-Y twist keyframe at all, even though that's the
-actual named motion. Fixed by adding a shallow `chest`/`spine` twist (8-15°,
-reusing the seated-spinal-twist sign convention: positive Y = twist right)
+actual named motion. Fixed by adding a shallow `chest`/`spine` twist (8-15°)
 alongside the existing arm pitch. Re-rendered, re-encoded, verified visually
 (extra far-side silhouette now visible past the profile line) and in the
 running app.
+
+> **⚠️ This fix twisted the wrong way and was itself corrected 2026-08-08.**
+> It reused the seated-spinal-twist convention believing positive Y = twist
+> right; positive Y is *left*, so the torso rotated toward the wall rather
+> than away from it. Signs are now negative. See Finding 4 in §3b.
 
 ### Finding 3 (fixed 2026-08-07): Seated Spinal Twist (L/R) wasn't actually seated
 
@@ -114,29 +129,38 @@ Filtered from all 217 exercises down to genuine rotation-primary movements
 foot-placement setup details, etc. that matched a rotation keyword but
 aren't the exercise's actual motion).
 
-### Tier A — proven conventions, ready to author now
+### Tier A — ✅ DONE 2026-08-08 (12 shipped, 6 reclassified)
 
-Torso twist (`chest`/`spine` local-Y, same convention as the shipped seated
-twists) combined with arm pitch/bend where needed:
+Was "proven conventions, ready to author now", and counted as 10 exercises —
+both wrong. It was **18** exercises (the count read table rows, but most rows
+are L/R pairs), and 3 of the rows turned out not to be Tier A at all. Outcome
+and findings in §3b.
 
-| Exercise | Proposed bones/axes |
+Torso twist (`chest`/`spine` local-Y) combined with arm pitch/bend:
+
+| Exercise | Status |
 |---|---|
-| Seated Spinal Rotation with Overhead Reach (L/R) | `spine`/`chest` Y-twist (reuse seated-twist angles) + `upperarm` reaching overhead + the now-proven static seated leg pose (thigh -90/shin +90) |
-| Left/Right Thread the Needle | `spine`/`chest` Y-twist (large, ~35-45°) + `upperarm` reaching under |
-| Left/Right Supine Chest Opener (Open Book) | `spine`/`chest` Y-twist + `upperarm` opening out to the side; new camera azimuth (lying pose) |
-| Left/Right Doorway Bicep Stretch | `spine`/`chest` Y-twist + `upperarm` pitch (shares the Wall Bicep Stretch fix above) |
-| Left/Right Wall Corner Pec Stretch | `spine`/`chest` Y-twist + `forearm` pinned pitch |
-| Left/Right Standing Reach-Through Twist | `spine`/`chest` Y-twist (larger range) + `upperarm` reaching down-and-across |
+| Seated Spinal Rotation with Overhead Reach (L/R) | ✅ shipped — but via `upperarm` local-X **flexion**, not the abduction originally proposed; abduction tore the lat |
+| Left/Right Doorway Bicep Stretch | ✅ shipped |
+| Left/Right Wall Corner Pec Stretch | ✅ shipped — abduction reduced and made flexion-dominant to stop the pec tearing |
+| Left/Right Thread the Needle | ❌ **not Tier A** → Tier B. Starts on hands and knees; no quadruped pose convention exists |
+| Left/Right Supine Chest Opener (Open Book) | ❌ **not Tier A** → Tier B. Lying; the plan flagged "new camera azimuth (lying pose)" without noting the *pose* is unproven |
+| Left/Right Standing Reach-Through Twist | ❌ **authored but not shipped** → Tier B. Three passes could not make the cross-body reach read; adduction past the midline collides with the arms-down torso. Scripts kept, with the failure documented in their docstrings |
 
-Head rotation (`head` local-Y twist, proven) alone or combined with the
-already-proven X (pitch) / Z (side-bend) axes:
+Head rotation (`head` local-Y twist) alone or combined with X (pitch) /
+Z (side-bend):
 
-| Exercise | Proposed bones/axes |
+| Exercise | Status |
 |---|---|
-| Seated Neck Rotation | `head` Y-twist only (turn to look over each shoulder) |
-| Left/Right Chin-to-Shoulder Diagonal Stretch | `head` X (nod down) + Y (turn) combined — individually proven, untested together |
-| Left/Right Scalene Neck Stretch | `head` Z (side tilt) + Y (slight rotate) combined — same caveat |
-| Seated Neck Rolls | `head` circular path through 4-8 keyframes combining X+Z (all proven axes, just more keyframes to trace a circle) |
+| Seated Neck Rotation | ✅ shipped — both directions in one clip, needs `PEAK_FRAME` override |
+| Left/Right Chin-to-Shoulder Diagonal Stretch | ✅ shipped — X+Y combination worked |
+| Left/Right Scalene Neck Stretch | ✅ shipped — first three-axis pose (X+Y+Z) |
+| Seated Neck Rolls | ✅ shipped — 9-keyframe circular path |
+
+All four render **standing**, not seated: the seated leg pose only reads from
+azimuth 45+, which conflicts with the camera angles that make head motion
+legible, and sitting is incidental to a neck stretch. This also matches the
+three neck animations already shipped.
 
 ### Tier B — needs one new axis-convention experiment first
 
@@ -150,6 +174,9 @@ numeric-probe-then-eyeball process used for every prior convention:
 | Left/Right Doorway External Rotation Stretch | same — `upperarm` Y-twist, opposite direction | |
 | Left/Right Supine Spinal Twist (Windshield Wipers) | `hips` local-Y twist | The twist here is driven by the lower body (knees falling to one side, shoulders pinned), not upper-torso twist like the seated version — needs `hips` bone twist, structurally analogous to the proven `spine`/`chest` convention but never tried on `hips`. |
 | Shoulder Roll | `upperarm` circular path combining X+Z+Y | Real shoulder rolls involve scapular elevation the rig can't represent (no scapula bone); this would be an approximation via the upperarm alone — medium confidence, validate visually before committing. |
+| Left/Right Thread the Needle *(moved from Tier A, 2026-08-08)* | **quadruped / hands-and-knees base pose** | The torso twist is proven; the base position is not. Nothing in the rig has ever been posed on all fours. |
+| Left/Right Supine Chest Opener (Open Book) *(moved from Tier A, 2026-08-08)* | **supine / lying base pose** | Same shape of problem. A lying convention would also serve the Supine Spinal Twists and Supine Figure-4 stretches, so it's worth more than these two exercises. |
+| Left/Right Standing Reach-Through Twist *(moved from Tier A, 2026-08-08)* | **cross-midline arm adduction** | Scripts already authored — only the reach fails to read. Adduction past the body's centre line collides with the torso because the source mesh is arms-down with no clearance. |
 
 ### Tier C — blocked on hip/thigh/shin convention research
 
@@ -257,22 +284,33 @@ base body position the rig has never represented, and are moved to Tier B:
 
 ## 4. Recommended order
 
-1. **Fix Finding 1** (Wall Bicep Stretch L/R torso twist) — small, isolated,
-   corrects two exercises already in the app.
-2. **Tier A batch** (10 exercises) — all proven conventions, same risk
-   profile as the third batch that already shipped. Straightforward: author
-   scripts, run Blender headless, eyeball renders, encode, wire into
-   `SeedData.json` + bundle (the `migrateV9` insert-missing migration added
-   in the previous session means these reach already-seeded devices
-   automatically once `animationName` is set).
-3. **Tier B experiments** (3 new axis conventions: arm-bone Y-twist,
-   `hips` Y-twist, compound shoulder-roll path) — one throwaway numeric
-   probe per convention before trusting it, per the handoff doc's own
-   process. Once validated, author the associated exercises.
-4. **Tier C research spike** (hip/thigh/shin convention) — separate,
-   larger effort; only start once Tier A/B are shipped. Until then, ship
-   the simplified torso-only versions of Runner's Lunge with Rotation and
-   World's Greatest Stretch if desired.
+1. ~~**Fix Finding 1** (Wall Bicep Stretch L/R torso twist)~~ — ✅ done
+   2026-08-07, then **re-fixed 2026-08-08** when the twist direction it
+   relied on turned out to be documented backwards (Finding 4).
+2. ~~**Tier A batch**~~ — ✅ done 2026-08-08. 12 of 18 shipped; 6 moved to
+   Tier B (see §3). 26 of 217 exercises now animated.
+
+**Next up:**
+
+3. **Tier B experiments** — now **6 conventions**, not 3. The original
+   three (arm-bone Y-twist for the Sleeper/External Rotation stretches,
+   `hips` Y-twist for the Supine Spinal Twists, compound shoulder-roll
+   path), plus three inherited from Tier A:
+   - **quadruped / hands-and-knees pose** → unblocks Thread the Needle (L/R)
+   - **supine / lying pose** → unblocks Supine Chest Opener (L/R), and would
+     also serve the Supine Spinal Twists and Supine Figure-4 stretches
+   - **cross-midline arm adduction** → unblocks Standing Reach-Through Twist
+     (L/R), whose scripts are already written and only need the reach to read
+
+   One throwaway numeric probe per convention before trusting it, per the
+   handoff doc's process — and per Finding 4, verify each one's *absolute*
+   direction against an exercise's written instructions, not just that the
+   L/R pair mirror each other.
+4. **Tier C research spike** (dynamic hip/thigh/shin motion) — unchanged.
+   Note the *static* seated pose is now proven and shipped; what remains
+   unproven is anything that moves the legs mid-clip. Until then, the
+   simplified torso-only versions of Runner's Lunge with Rotation and
+   World's Greatest Stretch are still available if wanted.
 5. **Tier D** — no action; these stay text-only unless the rig itself gets
    extended with wrist/finger/eye bones (a much bigger, separate project,
    not recommended right now given how few exercises need it).
