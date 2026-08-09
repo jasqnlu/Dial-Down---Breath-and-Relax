@@ -404,8 +404,12 @@ Audited all 14 shipped animations against their exercise's actual instructions
 `left_wall_bicep_stretch` / `right_wall_bicep_stretch` never rotated the
 torso despite the exercise being "rotate your torso away from the wall" —
 fixed by adding a `chest`/`spine` local-Y twist (small, 8-15 deg) alongside
-the existing arm pitch, reusing the seated-twist sign convention (positive Y
-= twist right, matching `left_seated_spinal_twist`'s direction).
+the existing arm pitch, reusing the seated-twist sign convention (believed at
+the time to be "positive Y = twist right", matching `left_seated_spinal_twist`).
+
+> **⚠️ That sign was wrong** — and so was the seated twist it copied. `+Y`
+> twists toward the subject's own LEFT. Corrected 2026-08-08; see the
+> "Twist direction" section below for the probe and the fix.
 
 **New proven convention: a static seated leg pose on `thigh.{L,R}`/
 `shin.{L,R}`.** These bones had "no proven pose-authoring convention" as of
@@ -455,6 +459,104 @@ held pose. Tier C in the rotation-audit plan (Standing Hip Circles, Runner's
 Lunge with Rotation, World's Greatest Stretch, Dynamic Standing Leg Swings,
 Cossack Squat) still needs its own probe before authoring.
 
+## Twist direction (2026-08-08): the documented sign was BACKWARDS
+
+**`+Y` on a vertical bone twists toward the subject's own LEFT, not right.**
+Everything written before this section that says otherwise is wrong.
+
+How the error survived: the third batch verified its twist exercises by
+eyeballing the rendered PNGs and "confirming the L/R pair are genuinely
+mirrored, not identical." That proves *symmetry*, not *direction* — a pair
+that both twist the wrong way is still perfectly mirrored. The tail-position
+log can't help either (a bone twisting about its own long axis barely moves
+its tail), so nothing ever actually pinned the sign down.
+
+Settled with `_twist_probe.py` (throwaway, deleted after use — recreate from
+this note). The trick is to measure a point that *does* move under a torso
+twist: the shoulder, i.e. the head of `upperarm.{L,R}`, which are children of
+`chest`. With `chest` local-Y = +45:
+
+```
+REST                 upperarm.L head = (+0.230, +0.000, +1.533)
+chest local-Y = +45  upperarm.L head = (+0.163, +0.163, +1.533)
+```
+
+The left shoulder moved to **y = +0.163**, i.e. BACKWARD (world −Y is the
+front). Left shoulder back + right shoulder forward = rotation toward the
+subject's own left. Cross-checked against mesh ground truth, not bone naming:
+`upperarm.L`'s head sits at x = +0.230, and the real `Left Obliques` centroid
+is at x = +0.13, so world +X genuinely is the subject's left.
+
+**Corrected convention: `−Y` = subject's right, `+Y` = subject's left.**
+
+Four shipped animations were rotating backwards and have been fixed:
+`left_seated_spinal_twist` ("twist to the right"), `right_seated_spinal_twist`
+("twist to the left"), and both wall bicep stretches ("rotate away from the
+wall"). `left_seated_spinal_twist`'s camera also moved 45 → 315, since the
+old azimuth was framed around the wrong-way rotation.
+
+**Lesson to generalise: mirrored is not correct.** For any bilateral pair,
+verify the ABSOLUTE direction of one side against the exercise's written
+instructions, then mirror. Checking only that L and R differ will happily
+pass two backwards animations.
+
+## Fourth batch (2026-08-08): Tier A of the rotation audit
+
+Shipped 12 new exercises, all on proven axes:
+`seated_neck_rotation`, `seated_neck_rolls`,
+`left/right_chin_to_shoulder_diagonal_stretch`,
+`left/right_scalene_neck_stretch`, `left/right_doorway_bicep_stretch`,
+`left/right_wall_corner_pec_stretch`,
+`seated_spinal_rotation_overhead_reach_left/right`.
+26 of 217 exercises now have animations (was 14).
+
+### New gotchas from this batch
+
+**1. Prefer `local-X` (flexion) over `local-Z` (abduction) on arm bones.**
+Gotcha #2 explains why the source mesh tears when arms lift: it's modeled
+arms-down, so torso vertices sit Euclidean-close to the arm bones. Lifting an
+arm *sideways* drags that neighbouring torso sheet outward into the classic
+"cape"; swinging it *forward* moves the arm off the torso surface instead of
+across it. Measured in practice: 85° of abduction on `upperarm` stretched the
+pec into a flat sheet, and 155° stretched the lat into a huge triangular
+cape. Re-authoring the same poses as forward flexion (`−X`, up to −150°)
+rendered cleanly. Shoulder flexion is also the anatomically correct path for
+an overhead reach, so this is rarely a compromise.
+
+**2. Camera azimuth and pose are coupled — a proven pose can still render as
+garbage.** The static seated leg pose only reads from azimuth 45+. The thigh
+points along world −Y, so any camera near azimuth 0 looks straight down its
+long axis and the leg collapses into an unreadable blob. The neck family is
+therefore rendered STANDING (their cameras are chosen for head legibility,
+and sitting is incidental to a neck stretch — unlike the seated twists, where
+bracing against folded legs is what isolates the spine).
+
+**3. Watch cumulative forward pitch on the head skin cap.** spine 45 + chest
+26 + head 20 = 91° drove the head cap down inside the chest mesh. Keep the
+total under ~60° or stop pitching the head.
+
+**4. Read the INSTRUCTIONS for direction, never the exercise name.** The
+naming convention is not consistent across families. `Left Standing Side Bend`
+names the side *stretched* (it bends right), but `Seated Spinal Rotation with
+Overhead Reach (Left)` and `Left Standing Reach-Through Twist` say "rotate
+your torso to the left" — they name the *direction*. Four exercises in this
+batch would have been silently backwards if authored off the name.
+
+### Deferred out of Tier A (the audit plan over-classified these)
+
+The plan listed these as "proven conventions, ready to author now", but each
+needs a base body position the rig has never represented:
+
+| Exercise | Blocker |
+|---|---|
+| Left/Right Thread the Needle | starts **on hands and knees** — no quadruped pose convention. Approximating it as a standing twist would render identically to Standing Reach-Through Twist. |
+| Left/Right Supine Chest Opener (Open Book) | **lying** — no supine pose convention |
+| Left/Right Standing Reach-Through Twist | scripts authored and kept, but NOT shipped: three passes could not make the cross-body reach read as travelling across the body toward the opposite ankle. Cross-midline adduction collides with the torso (arms-down mesh, no clearance). See the scripts' own docstrings. |
+
+Also note the audit plan's "Tier A batch (10 exercises)" undercounts — it
+counted table rows, but most rows are L/R pairs. Tier A was really 18
+exercises; 12 shipped, 6 deferred as above.
+
 ## Related project context
 
 - Body Map architecture / SceneKit loading: `Breath - Relax &
@@ -463,5 +565,14 @@ Cossack Squat) still needs its own probe before authoring.
 - Blender export pipeline that produces the app OBJ: `Tools/blender/export_skin_muscle.py`
   (welds skin patches, bakes app-space coords, tags muscles). Run `graphify
   query "..."` for codebase questions (see project `CLAUDE.md`).
-- Copyright/asset-sourcing analysis (Z-Anatomy is CC-BY-SA — share-alike
-  concern for a paid app): `docs/superpowers/plans/2026-07-12-exercise-video-animation.md`.
+- Copyright/asset-sourcing: **`ASSET_CREDITS.md` (repo root) is now the
+  authoritative record** — Z-Anatomy CC-BY-SA 4.0 over BodyParts3D CC-BY-SA
+  2.1 Japan, the full author list, the modifications statement, and the note
+  that **the rendered `.mp4` loops are themselves derivative works** carrying
+  the same terms. Two things settled there: CC-BY-SA *permits commercial use*
+  (the old "share-alike concern for a paid app" framing was misplaced — the
+  real obligations are attribution + share-alike on the assets), and none of
+  Z-Anatomy's NonCommercial-licensed reference models (inner ear, kidney) are
+  in this app's mesh, which was verified against `skinmuscle_node_names.json`
+  (269 nodes, layers = skin/muscle only). Broader video-sourcing analysis:
+  `docs/superpowers/plans/2026-07-12-exercise-video-animation.md`.

@@ -188,6 +188,73 @@ these as text-only (no animation), not attempting an approximation:
 
 ---
 
+---
+
+## 3b. Execution outcome (2026-08-08)
+
+**Shipped 12 exercises; 26 of 217 now have animations (was 14).**
+`seated_neck_rotation`, `seated_neck_rolls`,
+`left/right_chin_to_shoulder_diagonal_stretch`,
+`left/right_scalene_neck_stretch`, `left/right_doorway_bicep_stretch`,
+`left/right_wall_corner_pec_stretch`,
+`seated_spinal_rotation_overhead_reach_left/right`.
+
+### Finding 4 (found during execution): every shipped twist rotated BACKWARDS
+
+The biggest result of this batch is a correction, not a new animation. §1's
+table says `+Y` twists toward the subject's right. **It is the opposite.**
+A numeric probe on the shoulder position (`_twist_probe.py`; a twisting bone
+barely moves its own tail, so the usual sanity log is blind here) showed
+`chest +Y` swings the LEFT shoulder backward — a rotation toward the
+subject's own **left**.
+
+That invalidated all four shipped twist animations, including both fixes this
+plan itself recommended in §4.1:
+
+| Exercise | Instructions | Was doing | Fixed |
+|---|---|---|---|
+| Left Seated Spinal Twist | "twist to the right" | twisting left | ✅ |
+| Right Seated Spinal Twist | "twist to the left" | twisting right | ✅ |
+| Left Wall Bicep Stretch | rotate away from left-side wall | twisting left | ✅ |
+| Right Wall Bicep Stretch | rotate away from right-side wall | twisting right | ✅ |
+
+Root cause of the error surviving three batches: the twist exercises were
+verified by confirming the L/R renders were *mirrored*, which proves symmetry
+but not direction — two backwards animations mirror perfectly. **Verify one
+side's absolute direction against the written instructions, then mirror.**
+
+### Tier A was over-classified — 6 of its 18 exercises are not Tier A
+
+§3 says "Tier A batch (10 exercises)", counting table rows; most rows are L/R
+pairs, so Tier A was really **18 exercises**. Of those, 6 are blocked on a
+base body position the rig has never represented, and are moved to Tier B:
+
+| Exercise | Why it isn't Tier A |
+|---|---|
+| Left/Right Thread the Needle | starts **on hands and knees** — no quadruped convention. Faking it as a standing twist would duplicate Standing Reach-Through Twist. |
+| Left/Right Supine Chest Opener (Open Book) | **lying** — no supine convention (the plan already flagged "new camera azimuth (lying pose)" without noting the pose itself is unproven) |
+| Left/Right Standing Reach-Through Twist | scripts authored and kept but NOT shipped — three passes could not make the cross-body reach read; adduction past the midline collides with the arms-down torso |
+
+### Other findings worth carrying forward
+
+- **Prefer `local-X` (flexion) to `local-Z` (abduction) on arm bones.** 85° of
+  abduction tore the pec into a sheet; 155° tore the lat into a cape. The same
+  poses re-authored as forward flexion (up to −150°) render cleanly, and
+  flexion is the anatomically correct path for an overhead reach anyway.
+- **A proven pose can still render as garbage at the wrong camera azimuth.**
+  The seated leg pose only reads from azimuth 45+; near azimuth 0 the camera
+  looks straight down the thigh and it collapses. The neck family therefore
+  ships standing.
+- **Read instructions, not names, for direction.** `Left Standing Side Bend`
+  names the side stretched; `Seated Spinal Rotation (Left)` names the
+  direction. Four exercises here would have shipped backwards otherwise.
+- **Licensing:** added `ASSET_CREDITS.md` recording the Z-Anatomy CC BY-SA 4.0
+  provenance. The `.mp4` loops are renderings of that mesh and so are
+  derivative works carrying the same terms — easy to overlook since they
+  contain no mesh data. A code `LICENSE` file is still outstanding.
+
+---
+
 ## 4. Recommended order
 
 1. **Fix Finding 1** (Wall Bicep Stretch L/R torso twist) — small, isolated,
