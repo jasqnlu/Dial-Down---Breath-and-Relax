@@ -208,7 +208,8 @@
         "Avoid rolling the head all the way back; keep the motion in front."
       ],
       "caution": "Skip or shorten the range if you have a neck injury, disc issue, or feel any pinching.",
-      "id": "13c14934-a407-5a14-8c90-6f7d85d523dc"
+      "id": "13c14934-a407-5a14-8c90-6f7d85d523dc",
+      "animationName": "seated_neck_rolls.mp4"
     },
     {
       "name": "Neck Extension Stretch (Gentle Look-Up)",
@@ -269,7 +270,8 @@
         "Return to center and turn to look over your left shoulder.",
         "Hold, then return to center."
       ],
-      "id": "78190007-42c1-5e7a-9fdb-efae17df85bf"
+      "id": "78190007-42c1-5e7a-9fdb-efae17df85bf",
+      "animationName": "seated_neck_rotation.mp4"
     },
     {
       "name": "Left Levator Scapulae Stretch",
@@ -1046,7 +1048,8 @@
         "Hold for 15-20 seconds.",
         "Step back to release and switch sides."
       ],
-      "id": "45c12ffc-15ef-5356-b292-edaf4283f785"
+      "id": "45c12ffc-15ef-5356-b292-edaf4283f785",
+      "animationName": "left_doorway_bicep_stretch.mp4"
     },
     {
       "name": "Right Doorway Bicep Stretch",
@@ -1066,7 +1069,8 @@
         "Hold for 15-20 seconds.",
         "Step back to release and switch sides."
       ],
-      "id": "21572190-abc0-58ad-a7cf-b02dbcd7e22f"
+      "id": "21572190-abc0-58ad-a7cf-b02dbcd7e22f",
+      "animationName": "right_doorway_bicep_stretch.mp4"
     },
     {
       "name": "Clasped-Hands Behind-Back Stretch",
@@ -2270,7 +2274,8 @@
         "Release slowly and return to neutral."
       ],
       "caution": "Keep the pull light; skip if you have a neck injury or disc issue.",
-      "id": "69209589-1015-54cd-b89b-94b324601d25"
+      "id": "69209589-1015-54cd-b89b-94b324601d25",
+      "animationName": "left_chin_to_shoulder_diagonal_stretch.mp4"
     },
     {
       "name": "Right Chin-to-Shoulder Diagonal Stretch",
@@ -2289,7 +2294,8 @@
         "Release slowly and return to neutral."
       ],
       "caution": "Keep the pull light; skip if you have a neck injury or disc issue.",
-      "id": "ba2d9195-91ae-56b2-92db-d5ef842a20a0"
+      "id": "ba2d9195-91ae-56b2-92db-d5ef842a20a0",
+      "animationName": "right_chin_to_shoulder_diagonal_stretch.mp4"
     },
     {
       "name": "Left Sleeper Stretch (Internal Rotation)",
@@ -2424,7 +2430,8 @@
         "Step back to release and switch sides."
       ],
       "caution": "Don't push into shoulder pain. Avoid if you have a shoulder injury or instability.",
-      "id": "e06b4a3a-1a85-57f2-bd94-a41541bfe18f"
+      "id": "e06b4a3a-1a85-57f2-bd94-a41541bfe18f",
+      "animationName": "left_wall_corner_pec_stretch.mp4"
     },
     {
       "name": "Right Wall Corner Pec Stretch",
@@ -2443,7 +2450,8 @@
         "Step back to release and switch sides."
       ],
       "caution": "Don't push into shoulder pain. Avoid if you have a shoulder injury or instability.",
-      "id": "66fb424f-2da4-5971-97ec-eb43294199e4"
+      "id": "66fb424f-2da4-5971-97ec-eb43294199e4",
+      "animationName": "right_wall_corner_pec_stretch.mp4"
     },
     {
       "name": "Sphinx Pose",
@@ -3164,7 +3172,8 @@
         "Hold, feeling a light stretch along the left side of your neck, then release the anchor hand and return to center."
       ],
       "caution": "Keep the pull light and slow. Stop if you feel tingling, numbness, or sharp pain, which can signal nerve irritation rather than a muscle stretch.",
-      "id": "936cedc6-136d-4ede-9f68-b4177ef3e2ec"
+      "id": "936cedc6-136d-4ede-9f68-b4177ef3e2ec",
+      "animationName": "left_scalene_neck_stretch.mp4"
     },
     {
       "name": "Right Scalene Neck Stretch",
@@ -3183,7 +3192,8 @@
         "Hold, feeling a light stretch along the right side of your neck, then release the anchor hand and return to center."
       ],
       "caution": "Keep the pull light and slow. Stop if you feel tingling, numbness, or sharp pain, which can signal nerve irritation rather than a muscle stretch.",
-      "id": "bc22ed01-77ea-45dd-9d8e-69a562a4169f"
+      "id": "bc22ed01-77ea-45dd-9d8e-69a562a4169f",
+      "animationName": "right_scalene_neck_stretch.mp4"
     },
     {
       "name": "Temporalis Release",
@@ -4177,7 +4187,8 @@
       ],
       "caution": "Rotate only as far as feels comfortable, and avoid forcing the twist if you have a back condition.",
       "isBilateral": false,
-      "id": "24522605-8193-42c2-823d-93c9fdfde9bd"
+      "id": "24522605-8193-42c2-823d-93c9fdfde9bd",
+      "animationName": "seated_spinal_rotation_overhead_reach_left.mp4"
     },
     {
       "name": "Seated Spinal Rotation with Overhead Reach (Right)",
@@ -4200,7 +4211,8 @@
       ],
       "caution": "Rotate only as far as feels comfortable, and avoid forcing the twist if you have a back condition.",
       "isBilateral": false,
-      "id": "15b170e9-0210-45ba-bf45-08b16c8c91e4"
+      "id": "15b170e9-0210-45ba-bf45-08b16c8c91e4",
+      "animationName": "seated_spinal_rotation_overhead_reach_right.mp4"
     },
     {
       "name": "Standing Adductor Rock (Side-to-Side)",
