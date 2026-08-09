@@ -73,6 +73,15 @@ final class Exercise {
     /// `localVideoName` wins over it when both are present (see `demoVideoName`).
     var animationName: String? = nil
 
+    /// Whether the generated 3D animation is a known approximation of the
+    /// real movement — e.g. because the rig has no bone for the joint that
+    /// actually does the rotating (no wrist/hand/ankle/foot bone exists;
+    /// see `Tools/blender/exercises/ANIMATION_HANDOFF.md`). Drives a small
+    /// disclaimer under the media card so the animation isn't mistaken for
+    /// an exact demonstration. Defaults to false — most animations are
+    /// accurate; the seed JSON only needs to mark the known exceptions.
+    var animationIsApproximate: Bool = false
+
     /// Resolves a bundle-relative clip name to its URL — nil when the name is
     /// unset/empty OR the file isn't bundled, so the UI can always fall back to
     /// the placeholder card instead of a broken player.

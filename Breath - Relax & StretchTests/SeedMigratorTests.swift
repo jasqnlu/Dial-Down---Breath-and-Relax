@@ -335,4 +335,130 @@ struct SeedMigratorTests {
         let all = try context.fetch(FetchDescriptor<Exercise>())
         #expect(all[0].cueStyle == .hold)
     }
+
+    // MARK: - v9: brand-new exercises inserted for already-seeded installs
+
+    @Test func v9InsertsNewSeedExerciseNotYetOnDevice() throws {
+        let context = makeContext()
+        let existing = Exercise(
+            name: "Old Favorite", type: .stretch,
+            targetBodyParts: ["Left Quadriceps"], durationSeconds: 60,
+            difficulty: 1, instructions: ["a", "b", "c"]
+        )
+        existing.seedID = "old-favorite-id"
+        context.insert(existing)
+        try context.save()
+
+        let raw = [
+            rawExercise(id: "old-favorite-id", name: "Old Favorite"),
+            rawExercise(id: "new-tibialis-id", name: "Standing Tibialis Raise (Toe Lifts)"),
+        ]
+        let changed = SeedMigrator.migrateV9(context: context, rawExercises: raw)
+        #expect(changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all.count == 2)
+        let inserted = all.first { $0.seedID == "new-tibialis-id" }
+        #expect(inserted?.name == "Standing Tibialis Raise (Toe Lifts)")
+    }
+
+    @Test func v9IsNoOpWhenEverySeedExerciseAlreadyExists() throws {
+        let context = makeContext()
+        let existing = Exercise(
+            name: "Already Here", type: .stretch,
+            targetBodyParts: ["Left Quadriceps"], durationSeconds: 60,
+            difficulty: 1, instructions: ["a", "b", "c"]
+        )
+        existing.seedID = "already-here-id"
+        context.insert(existing)
+        try context.save()
+
+        let raw = [rawExercise(id: "already-here-id", name: "Already Here")]
+        let changed = SeedMigrator.migrateV9(context: context, rawExercises: raw)
+        #expect(!changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all.count == 1)
+    }
+
+    @Test func v9NeverTouchesUserCreatedExercises() throws {
+        let context = makeContext()
+        let custom = Exercise(
+            name: "My Custom Move", type: .stretch,
+            targetBodyParts: ["Left Quadriceps"], durationSeconds: 30,
+            difficulty: 1, instructions: ["x", "y", "z"]
+        )
+        context.insert(custom)   // no seedID
+        try context.save()
+
+        let raw = [rawExercise(id: "seed-1", name: "Some Seed")]
+        let changed = SeedMigrator.migrateV9(context: context, rawExercises: raw)
+        #expect(changed)   // inserts the missing seed row...
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all.count == 2)
+        let mine = all.first { $0.name == "My Custom Move" }
+        #expect(mine?.seedID == nil)   // ...without touching the user's row
+    }
+
+    // MARK: - v10: animationIsApproximate backfill
+
+    @Test func v10FlipsApproximateTrueForFlaggedExercise() throws {
+        let context = makeContext()
+        let exercise = Exercise(
+            name: "Reverse Prayer Stretch", type: .stretch,
+            targetBodyParts: ["Left Forearm"], durationSeconds: 45,
+            difficulty: 2, instructions: ["a", "b", "c"]
+        )
+        exercise.seedID = "reverse-prayer-id"
+        #expect(!exercise.animationIsApproximate)
+        context.insert(exercise)
+        try context.save()
+
+        var raw = rawExercise(id: "reverse-prayer-id", name: "Reverse Prayer Stretch")
+        raw["animationIsApproximate"] = true
+        let changed = SeedMigrator.migrateV10(context: context, rawExercises: [raw])
+        #expect(changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all[0].animationIsApproximate)
+    }
+
+    @Test func v10IsNoOpWhenBundleFlagMatchesAlready() throws {
+        let context = makeContext()
+        let exercise = Exercise(
+            name: "Accurate Move", type: .stretch,
+            targetBodyParts: ["Left Quadriceps"], durationSeconds: 60,
+            difficulty: 1, instructions: ["a", "b", "c"]
+        )
+        exercise.seedID = "accurate-id"
+        context.insert(exercise)
+        try context.save()
+
+        let raw = rawExercise(id: "accurate-id", name: "Accurate Move")
+        let changed = SeedMigrator.migrateV10(context: context, rawExercises: [raw])
+        #expect(!changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(!all[0].animationIsApproximate)
+    }
+
+    @Test func v10NeverTouchesUserCreatedExercises() throws {
+        let context = makeContext()
+        let custom = Exercise(
+            name: "My Custom Move", type: .stretch,
+            targetBodyParts: ["Left Quadriceps"], durationSeconds: 30,
+            difficulty: 1, instructions: ["x", "y", "z"]
+        )
+        context.insert(custom)   // no seedID
+        try context.save()
+
+        var raw = rawExercise(id: "seed-1", name: "Some Seed")
+        raw["animationIsApproximate"] = true
+        let changed = SeedMigrator.migrateV10(context: context, rawExercises: [raw])
+        #expect(!changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(!all[0].animationIsApproximate)
+    }
 }
