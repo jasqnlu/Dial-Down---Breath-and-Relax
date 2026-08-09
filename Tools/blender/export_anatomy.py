@@ -130,7 +130,7 @@ os.makedirs(OUT_DIR, exist_ok=True)
 depsgraph = bpy.context.evaluated_depsgraph_get()
 lines = [
     "# BodyAnatomy.obj — merged Z-Anatomy muscles + joints + head skin.",
-    "# CC-BY-SA 4.0 (Z-Anatomy) / CC-BY 4.0 (BodyParts3D).",
+    "# CC-BY-SA 4.0 (Z-Anatomy) / CC-BY-SA 2.1 Japan (BodyParts3D).",
     "# Pre-normalized to app model space (Y-up,+Z-fwd,height 2) — IDENTITY load.",
 ]
 v_offset = 0
