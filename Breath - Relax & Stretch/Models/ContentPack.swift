@@ -1,9 +1,10 @@
 import Foundation
 
 // MARK: - ContentPack
-// One-time-purchase exercise bundles. id matches a StoreManager.ProductID
-// non-consumable product. Exercise names are resolved against the live
-// Exercise table at render time, same pattern as GoalMeta.
+// Themed exercise bundles, free like the rest of the app (these were once
+// paid packs; the ids are retained so existing references stay stable).
+// Exercise names are resolved against the live Exercise table at render
+// time, same pattern as GoalMeta.
 
 struct ContentPack: Identifiable {
     let id: String
@@ -14,7 +15,7 @@ struct ContentPack: Identifiable {
 
     static let all: [ContentPack] = [
         ContentPack(
-            id: StoreManager.ProductID.deskWorkerPack,
+            id: "pack_deskworker",
             title: "Desk Worker Pack",
             summary: "Targeted relief for neck, shoulders, wrists, and lower back from sitting all day.",
             icon: "desktopcomputer",
@@ -34,7 +35,7 @@ struct ContentPack: Identifiable {
             ]
         ),
         ContentPack(
-            id: StoreManager.ProductID.athleteRecoveryPack,
+            id: "pack_athlete_recovery",
             title: "Athlete Recovery Pack",
             summary: "Deeper lower-body stretches and breathing for active recovery days.",
             icon: "figure.run",
@@ -54,7 +55,7 @@ struct ContentPack: Identifiable {
             ]
         ),
         ContentPack(
-            id: StoreManager.ProductID.bedtimePack,
+            id: "pack_bettersleep",
             title: "Better Sleep & Breathing Pack",
             summary: "Wind-down breathing techniques and gentle stretches to help you fall asleep faster.",
             icon: "moon.stars.fill",
@@ -73,7 +74,7 @@ struct ContentPack: Identifiable {
             ]
         ),
         ContentPack(
-            id: StoreManager.ProductID.runnerPack,
+            id: "pack_runner",
             title: "Runner's Warm-Up & Cooldown Pack",
             summary: "Dynamic mobility to open up before a run, plus targeted stretches to cool down after.",
             icon: "figure.run.circle.fill",

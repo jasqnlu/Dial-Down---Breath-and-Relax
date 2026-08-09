@@ -41,8 +41,6 @@ struct BreathingView: View {
 
     @AppStorage("totalSessionsCompleted") private var totalSessionsCompleted = 0
     @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
-    @AppStorage("hasSeenInitialPaywall") private var hasSeenInitialPaywall = false
-    @AppStorage("pendingInitialPaywall") private var pendingInitialPaywall = false
     @State private var shouldRequestReview = false
 
     // Fixed breathing-session routine ID (not tied to a real Routine record).
@@ -606,7 +604,6 @@ struct BreathingView: View {
         isRunning        = false
         isPaused         = false
         activeRunPlan    = .session(selectedRounds: totalRounds)
-        requestDeferredPaywallIfNeeded()
     }
 
     private func resetPreviewSession() {
@@ -645,22 +642,9 @@ struct BreathingView: View {
             totalSessionsCompleted: totalSessionsCompleted
         )
 
-        if totalSessionsCompleted == 3 && !hasSeenInitialPaywall {
-            hasSeenInitialPaywall = true
-            pendingInitialPaywall = true
-        } else {
-            let reviewMilestones: Set<Int> = [10, 25]
-            if reviewMilestones.contains(totalSessionsCompleted) {
-                shouldRequestReview = true
-            }
-        }
-    }
-
-    private func requestDeferredPaywallIfNeeded() {
-        guard pendingInitialPaywall else { return }
-        Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(350))
-            NotificationCenter.default.post(name: .deferredPaywallRequested, object: nil)
+        let reviewMilestones: Set<Int> = [10, 25]
+        if reviewMilestones.contains(totalSessionsCompleted) {
+            shouldRequestReview = true
         }
     }
 }

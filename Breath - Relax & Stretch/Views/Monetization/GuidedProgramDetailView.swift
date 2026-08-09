@@ -2,16 +2,13 @@ import SwiftUI
 import SwiftData
 
 // MARK: - GuidedProgramDetailView
-// Day 1 is always free to preview. Pro programs lock day 2 onward behind
-// the paywall.
+// Every day of every program is free — this app has no paid tier.
 
 struct GuidedProgramDetailView: View {
     let program: GuidedProgram
 
-    @ObservedObject private var store = StoreManager.shared
     @Query private var exercises: [Exercise]
     @State private var dayToPlay: ProgramDay?
-    @State private var showingPaywall = false
 
     var body: some View {
         List {
@@ -50,38 +47,21 @@ struct GuidedProgramDetailView: View {
                 SessionPlayerView(exercises: resolved)
             }
         }
-        .sheet(isPresented: $showingPaywall) {
-            PaywallView()
-        }
     }
 
     private func dayRow(_ day: ProgramDay) -> some View {
-        let isLocked = program.isPro && !store.isPro && day.dayNumber > 1
-
-        return Button {
-            if isLocked {
-                showingPaywall = true
-            } else {
-                dayToPlay = day
-            }
+        Button {
+            dayToPlay = day
         } label: {
             HStack {
                 Text("Day \(day.dayNumber)")
                     .font(.luminaCardTitle)
                     .foregroundStyle(Color.luminaOnSurface)
-                if day.dayNumber == 1 && program.isPro {
-                    Text("Free Preview")
-                        .font(.luminaCaption)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Color.luminaOrange.opacity(0.15), in: Capsule())
-                        .foregroundStyle(Color.luminaOrange)
-                }
                 Spacer()
                 Text("\(day.exerciseNames.count) exercises")
                     .font(.luminaCaption)
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
-                Image(systemName: isLocked ? "lock.fill" : "chevron.right")
+                Image(systemName: "chevron.right")
                     .font(.caption)
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
@@ -97,7 +77,7 @@ struct GuidedProgramDetailView: View {
 
 #Preview {
     NavigationStack {
-        GuidedProgramDetailView(program: .proFullReset)
+        GuidedProgramDetailView(program: .fullReset)
             .modelContainer(for: Exercise.self, inMemory: true)
     }
 }

@@ -4,11 +4,10 @@ import SwiftUI
 
 struct GuidedProgramsView: View {
     @AppStorage("onboardingGoals") private var goalsStr = ""
-    @ObservedObject private var store = StoreManager.shared
 
     private var programs: [GuidedProgram] {
         let goalIDs = Set(goalsStr.split(separator: ",").map(String.init))
-        return [.starterProgram(goalIDs: goalIDs), .proFullReset]
+        return [.starterProgram(goalIDs: goalIDs), .fullReset]
     }
 
     var body: some View {
@@ -47,15 +46,9 @@ struct GuidedProgramsView: View {
                 Spacer(minLength: 0)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Text(program.title)
-                            .font(.luminaTitle)
-                        if program.isPro && !store.isPro {
-                            Image(systemName: "lock.fill")
-                                .font(.luminaCaption)
-                        }
-                    }
-                    .foregroundStyle(.white)
+                    Text(program.title)
+                        .font(.luminaTitle)
+                        .foregroundStyle(.white)
                     Text(program.summary)
                         .font(.luminaCaption)
                         .foregroundStyle(.white.opacity(0.85))

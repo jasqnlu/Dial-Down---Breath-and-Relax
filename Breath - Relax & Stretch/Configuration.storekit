@@ -1,189 +1,99 @@
 {
-  "identifier" : "8F4A2B10-0000-0000-0000-000000000001",
-  "nonRenewingSubscriptions" : [],
-  "products" : [
+  "identifier": "8F4A2B10-0000-0000-0000-000000000001",
+  "nonRenewingSubscriptions": [],
+  "products": [
     {
-      "displayPrice" : "59.99",
-      "familyShareable" : false,
-      "internalID" : "2AB2C572-3A63-47D1-A3A4-C79D6A6BC555",
-      "localizations" : [
+      "displayPrice": "1.99",
+      "familyShareable": false,
+      "internalID": "5DDB8BEA-9919-4D75-94CD-86F4D798A7A8",
+      "localizations": [
         {
-          "description" : "Unlock Breath Pro forever — one payment, no renewals.",
-          "displayName" : "Lifetime Unlock",
-          "locale" : "en_US"
+          "description": "A small thank-you toward development.",
+          "displayName": "Small Tip",
+          "locale": "en_US"
         }
       ],
-      "productID" : "pro_lifetime",
-      "referenceName" : "Pro Lifetime",
-      "type" : "NonConsumable"
+      "productID": "tip_small",
+      "referenceName": "Tip Small",
+      "type": "Consumable"
     },
     {
-      "displayPrice" : "4.99",
-      "familyShareable" : false,
-      "internalID" : "AA8E4B2F-0412-4C5F-9AA5-DD299977C7D5",
-      "localizations" : [
+      "displayPrice": "4.99",
+      "familyShareable": false,
+      "internalID": "18EE3EB8-BCE2-42B1-8003-8A14D3EC2D95",
+      "localizations": [
         {
-          "description" : "Desk-worker focused stretches for neck, shoulders, wrists, and lower back.",
-          "displayName" : "Desk Worker Pack",
-          "locale" : "en_US"
+          "description": "A generous tip \u2014 genuinely appreciated.",
+          "displayName": "Medium Tip",
+          "locale": "en_US"
         }
       ],
-      "productID" : "pack_deskworker",
-      "referenceName" : "Desk Worker Pack",
-      "type" : "NonConsumable"
+      "productID": "tip_medium",
+      "referenceName": "Tip Medium",
+      "type": "Consumable"
     },
     {
-      "displayPrice" : "4.99",
-      "familyShareable" : false,
-      "internalID" : "80B8F28D-96AB-4FA4-997E-27ED4D832D93",
-      "localizations" : [
+      "displayPrice": "9.99",
+      "familyShareable": false,
+      "internalID": "1BD0CDDD-C9B1-4096-9C0F-68CB1E02027E",
+      "localizations": [
         {
-          "description" : "Deeper recovery stretches and breathing for athletes and active recovery days.",
-          "displayName" : "Athlete Recovery Pack",
-          "locale" : "en_US"
+          "description": "A very generous tip. Thank you for supporting open source.",
+          "displayName": "Large Tip",
+          "locale": "en_US"
         }
       ],
-      "productID" : "pack_athlete_recovery",
-      "referenceName" : "Athlete Recovery Pack",
-      "type" : "NonConsumable"
-    },
-    {
-      "displayPrice" : "2.99",
-      "familyShareable" : false,
-      "internalID" : "F1C7A9D4-6E2B-4A18-9C3F-1B8E5D4A2C60",
-      "localizations" : [
-        {
-          "description" : "Wind-down breathing techniques and gentle stretches to help you fall asleep faster.",
-          "displayName" : "Better Sleep & Breathing Pack",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "pack_bettersleep",
-      "referenceName" : "Better Sleep & Breathing Pack",
-      "type" : "NonConsumable"
-    },
-    {
-      "displayPrice" : "4.99",
-      "familyShareable" : false,
-      "internalID" : "3D9E6F2A-8B4C-4F71-A2D5-7C1A9E3B6F84",
-      "localizations" : [
-        {
-          "description" : "Dynamic mobility to open up before a run, plus targeted stretches to cool down after.",
-          "displayName" : "Runner's Warm-Up & Cooldown Pack",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "pack_runner",
-      "referenceName" : "Runner's Warm-Up & Cooldown Pack",
-      "type" : "NonConsumable"
+      "productID": "tip_large",
+      "referenceName": "Tip Large",
+      "type": "Consumable"
     }
   ],
-  "settings" : {
-    "_failTransactionsEnabled" : false,
-    "_locale" : "en_US",
-    "_storefront" : "USA",
-    "_storeKitErrors" : [
+  "settings": {
+    "_failTransactionsEnabled": false,
+    "_locale": "en_US",
+    "_storefront": "USA",
+    "_storeKitErrors": [
       {
-        "current" : null,
-        "name" : "Load Products"
+        "current": null,
+        "name": "Load Products"
       },
       {
-        "current" : null,
-        "name" : "Purchase"
+        "current": null,
+        "name": "Purchase"
       },
       {
-        "current" : null,
-        "name" : "Verification"
+        "current": null,
+        "name": "Verification"
       },
       {
-        "current" : null,
-        "name" : "App Store Sync"
+        "current": null,
+        "name": "App Store Sync"
       },
       {
-        "current" : null,
-        "name" : "Subscription Status"
+        "current": null,
+        "name": "Subscription Status"
       },
       {
-        "current" : null,
-        "name" : "App Transaction"
+        "current": null,
+        "name": "App Transaction"
       },
       {
-        "current" : null,
-        "name" : "Manage Subscriptions Sheet"
+        "current": null,
+        "name": "Manage Subscriptions Sheet"
       },
       {
-        "current" : null,
-        "name" : "Refund Request Sheet"
+        "current": null,
+        "name": "Refund Request Sheet"
       },
       {
-        "current" : null,
-        "name" : "Offer Code Redeem Sheet"
+        "current": null,
+        "name": "Offer Code Redeem Sheet"
       }
     ]
   },
-  "subscriptionGroups" : [
-    {
-      "id" : "B3AFBBCE-EF2C-4B6E-AB57-52AEBA5C7AAF",
-      "localizations" : [],
-      "name" : "Breath Pro",
-      "subscriptions" : [
-        {
-          "adHocOffers" : [],
-          "codeOffers" : [],
-          "displayPrice" : "3.99",
-          "familyShareable" : false,
-          "groupNumber" : 1,
-          "internalID" : "C864FCFA-E854-4352-98CC-96A89CB81237",
-          "introductoryOffer" : {
-            "displayPrice" : "0",
-            "internalID" : "18D48917-100F-4301-9E86-D45ED5E12C80",
-            "paymentMode" : "free",
-            "subscriptionPeriod" : "P1W"
-          },
-          "localizations" : [
-            {
-              "description" : "Full access to guided programs and content packs, billed monthly.",
-              "displayName" : "Pro Monthly",
-              "locale" : "en_US"
-            }
-          ],
-          "productID" : "pro_monthly",
-          "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "Pro Monthly",
-          "subscriptionGroupID" : "B3AFBBCE-EF2C-4B6E-AB57-52AEBA5C7AAF",
-          "type" : "RecurringSubscription"
-        },
-        {
-          "adHocOffers" : [],
-          "codeOffers" : [],
-          "displayPrice" : "24.99",
-          "familyShareable" : false,
-          "groupNumber" : 1,
-          "internalID" : "9E3560A7-C95E-4632-A870-E7048242539E",
-          "introductoryOffer" : {
-            "displayPrice" : "0",
-            "internalID" : "9150292E-5F39-4FAE-AEFF-C51D2264D3FE",
-            "paymentMode" : "free",
-            "subscriptionPeriod" : "P1W"
-          },
-          "localizations" : [
-            {
-              "description" : "Full access to guided programs and content packs, billed yearly. Best value.",
-              "displayName" : "Pro Annual",
-              "locale" : "en_US"
-            }
-          ],
-          "productID" : "pro_annual",
-          "recurringSubscriptionPeriod" : "P1Y",
-          "referenceName" : "Pro Annual",
-          "subscriptionGroupID" : "B3AFBBCE-EF2C-4B6E-AB57-52AEBA5C7AAF",
-          "type" : "RecurringSubscription"
-        }
-      ]
-    }
-  ],
-  "version" : {
-    "major" : 3,
-    "minor" : 0
+  "subscriptionGroups": [],
+  "version": {
+    "major": 3,
+    "minor": 0
   }
 }
