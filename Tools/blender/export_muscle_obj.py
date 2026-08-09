@@ -148,7 +148,7 @@ depsgraph = bpy.context.evaluated_depsgraph_get()
 
 lines = [
     "# BodyMuscle.obj — Z-Anatomy muscle subset for the Body Map reveal.",
-    "# Source: Z-Anatomy (CC-BY-SA 4.0) / BodyParts3D (CC-BY 4.0).",
+    "# Source: Z-Anatomy (CC-BY-SA 4.0) / BodyParts3D (CC-BY-SA 2.1 Japan).",
     "# Coords pre-normalized to the app's model space (Y-up, +Z-fwd, height 2,",
     "# whole-body recentred) — load with an IDENTITY transform. Do not re-scale.",
     "# One `o` group per muscle object; parse into one SCNNode each.",
