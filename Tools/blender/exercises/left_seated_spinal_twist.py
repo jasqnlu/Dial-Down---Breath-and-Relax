@@ -13,6 +13,15 @@ carries over from the arm bones without a new probe. Camera is angled 45 deg
 off front so BOTH shoulders' rotation is visible (a pure front or side view
 on an orthographic camera would hide most of a twist's silhouette change).
 
+Twist-direction correction (2026-08-08): this script twisted the wrong way.
+It used POSITIVE local-Y on the belief — inherited from ANIMATION_HANDOFF.md —
+that +Y rotates toward the subject's own right. A numeric probe
+(`_twist_probe.py`, see the handoff doc's "Twist direction" section) proved
+the opposite: +Y rotates toward the subject's own LEFT. This exercise's
+instructions say "gently twist to the RIGHT", so the signs are now negative.
+The doc's original claim was only ever checked by confirming the L/R renders
+were mirrored — which proves symmetry, not direction.
+
 Rotation-audit update (2026-08-07): originally had no seated pose (legs
 stayed in the standing rest pose, reading as a standing torso rotation
 despite the name). Added a static seated leg pose — see
@@ -35,7 +44,7 @@ OUT_DIR = os.path.join(REPO, "Tools/blender/generated/exercises")
 EXERCISE = "left_seated_spinal_twist"
 VIDEO_NAME = "left_seated_spinal_twist.mp4"
 
-CAMERA_AZIMUTH = 45
+CAMERA_AZIMUTH = 315
 
 WORKED_KEYWORDS = ("left oblique", "spinal erector", "lower back")
 
@@ -50,16 +59,16 @@ _SEATED = {
 
 POSES = {
     0: dict(_SEATED),
-    30: {**_SEATED, "spine": (0, r(15), 0)},
+    30: {**_SEATED, "spine": (0, r(-15), 0)},
     60: {
         **_SEATED,
-        "spine": (0, r(35), 0),
-        "chest": (0, r(10), 0),
+        "spine": (0, r(-35), 0),
+        "chest": (0, r(-10), 0),
     },
     90: {
         **_SEATED,
-        "spine": (0, r(35), 0),
-        "chest": (0, r(10), 0),
+        "spine": (0, r(-35), 0),
+        "chest": (0, r(-10), 0),
     },
     120: dict(_SEATED),
 }
