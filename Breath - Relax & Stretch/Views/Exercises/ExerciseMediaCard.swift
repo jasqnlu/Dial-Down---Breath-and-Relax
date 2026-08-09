@@ -12,19 +12,23 @@ struct ExerciseMediaCard: View {
     @State private var loopObserver: NSObjectProtocol?
 
     var body: some View {
-        Group {
+        VStack(spacing: 6) {
             if let url = exercise.demoVideoURL {
                 VideoPlayer(player: player)
                     // The generated animation is a standing portrait; filmed
                     // hero clips are landscape.
                     .aspectRatio(exercise.demoIsAnimation ? 4.0 / 5.0 : 16.0 / 9.0,
                                  contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.panel))
+                    .padding(.horizontal)
                     .onAppear { start(url: url) }
                     .onDisappear { stop() }
+
+                if exercise.demoIsAnimation && exercise.animationIsApproximate {
+                    AnimationAccuracyNote()
+                }
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.panel))
-        .padding(.horizontal)
     }
 
     private func start(url: URL) {

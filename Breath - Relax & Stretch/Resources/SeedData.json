@@ -1304,7 +1304,8 @@
       ],
       "caution": "Skip if this is uncomfortable on the wrists or shoulders; a partial version is fine.",
       "id": "a90c1d0f-c3df-5b41-bc2d-f9782fe50f25",
-      "animationName": "reverse_prayer_stretch.mp4"
+      "animationName": "reverse_prayer_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Prayer Stretch (Palms Together, Lower)",
@@ -4035,6 +4036,209 @@
       ],
       "caution": "Use light pressure only. Avoid if you have a skin condition or injury on the forehead.",
       "id": "aa6fd1ad-4d6e-4850-9ef5-1adcd1e3a3fb"
+    },
+    {
+      "name": "Physiological Sigh (Double Inhale Exhale)",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 90,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or stand comfortably with your shoulders relaxed.",
+        "Inhale deeply through your nose until your lungs feel full.",
+        "Without exhaling, take a second short, sharp inhale to top off your lungs completely.",
+        "Exhale slowly and fully through your mouth, letting your shoulders and jaw release.",
+        "Pause briefly, then begin the next double inhale.",
+        "Repeat the double-inhale, long-exhale pattern for the full duration."
+      ],
+      "id": "7c4855d3-d2f4-4484-9e5c-96d5bdc11b37"
+    },
+    {
+      "name": "Resonant Frequency Breathing (6 Breaths per Minute)",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 180,
+      "difficulty": 1,
+      "instructions": [
+        "Sit upright in a relaxed, supported position.",
+        "Inhale gently through your nose for a slow count of 5.",
+        "Exhale gently through your nose or mouth for a slow count of 5.",
+        "Keep the breath smooth and unforced \u2014 an even, unhurried rhythm matters more than precise counting.",
+        "Let your belly and chest rise and fall together naturally.",
+        "Continue the steady in-and-out rhythm for the full duration."
+      ],
+      "caution": "If counting to 5 feels strained, shorten the count until the breath feels comfortable.",
+      "id": "5377b398-d5be-4a8f-80aa-b9a81c20010c"
+    },
+    {
+      "name": "Right-Nostril Energizing Breath (Surya Bhedana)",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 120,
+      "difficulty": 2,
+      "instructions": [
+        "Sit tall in a comfortable cross-legged or chair position.",
+        "Rest your left hand on your knee and bring your right hand toward your nose.",
+        "Close your left nostril with your ring finger and inhale slowly through your right nostril.",
+        "Close your right nostril with your thumb, release your left nostril, and exhale slowly through the left side.",
+        "Continue inhaling through the right nostril and exhaling through the left for the full duration.",
+        "Let your breath stay smooth and unforced throughout."
+      ],
+      "caution": "Skip this practice if you have high blood pressure, feel anxious or overheated, or are practicing close to bedtime \u2014 it's energizing, not calming.",
+      "id": "e7107623-31f2-4b0c-af1f-8d037ee9cada"
+    },
+    {
+      "name": "Skull Shining Breath (Kapalabhati)",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 60,
+      "difficulty": 3,
+      "instructions": [
+        "Sit tall with a long spine and relaxed shoulders.",
+        "Take one slow, deep inhale to begin.",
+        "Sharply contract your lower belly to push a short, forceful exhale out through your nose.",
+        "Let the inhale that follows happen passively and naturally as your belly relaxes.",
+        "Continue the quick, rhythmic pumping exhales for about 20 pumps, then return to normal breathing and rest.",
+        "Repeat for one or two more rounds if comfortable, resting between each."
+      ],
+      "caution": "Avoid if pregnant, or if you have high blood pressure, a hernia, or recent abdominal or eye surgery. Stop immediately if you feel lightheaded.",
+      "id": "ddf35027-adec-41fb-bb50-f0979ebe51b2"
+    },
+    {
+      "name": "World's Greatest Stretch (Left Lead Leg)",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Hip Flexors",
+        "Left Hamstrings",
+        "Left Adductors",
+        "Spinal Erectors"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 3,
+      "instructions": [
+        "From standing, step your left foot forward into a deep lunge, extending your right leg straight behind you.",
+        "Place both hands on the floor inside your left foot to support your balance.",
+        "Drop your right hip toward the floor to deepen the stretch through the back leg's hip flexor.",
+        "Rotate your torso and reach your left arm toward the ceiling, opening your chest to the left.",
+        "Return your hand to the floor, then straighten your left leg to feel the stretch shift into the hamstring.",
+        "Bend the left knee again and repeat the reach-and-straighten cycle smoothly for the full duration."
+      ],
+      "caution": "Move within a pain-free range and skip the torso rotation if you feel any low-back strain.",
+      "isBilateral": false,
+      "id": "1c423cd9-d3b5-478b-9d2b-6cfaca359c46"
+    },
+    {
+      "name": "World's Greatest Stretch (Right Lead Leg)",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Right Hip Flexors",
+        "Right Hamstrings",
+        "Right Adductors",
+        "Spinal Erectors"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 3,
+      "instructions": [
+        "From standing, step your right foot forward into a deep lunge, extending your left leg straight behind you.",
+        "Place both hands on the floor inside your right foot to support your balance.",
+        "Drop your left hip toward the floor to deepen the stretch through the back leg's hip flexor.",
+        "Rotate your torso and reach your right arm toward the ceiling, opening your chest to the right.",
+        "Return your hand to the floor, then straighten your right leg to feel the stretch shift into the hamstring.",
+        "Bend the right knee again and repeat the reach-and-straighten cycle smoothly for the full duration."
+      ],
+      "caution": "Move within a pain-free range and skip the torso rotation if you feel any low-back strain.",
+      "isBilateral": false,
+      "id": "99ca6a60-4888-4177-96cd-40206064baa4"
+    },
+    {
+      "name": "Seated Spinal Rotation with Overhead Reach (Left)",
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Spinal Erectors",
+        "Left Obliques",
+        "Left Lats"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Sit tall on a chair or the floor with your feet grounded and spine long.",
+        "Reach your left arm straight overhead, lengthening the left side of your body.",
+        "Rest your right hand on your left knee or the chair for support.",
+        "Gently rotate your torso to the left, leading with your chest, while keeping the overhead reach.",
+        "Hold the rotation and reach, breathing slowly into the stretch along your side and back.",
+        "Release back to center with control."
+      ],
+      "caution": "Rotate only as far as feels comfortable, and avoid forcing the twist if you have a back condition.",
+      "isBilateral": false,
+      "id": "24522605-8193-42c2-823d-93c9fdfde9bd"
+    },
+    {
+      "name": "Seated Spinal Rotation with Overhead Reach (Right)",
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Spinal Erectors",
+        "Right Obliques",
+        "Right Lats"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Sit tall on a chair or the floor with your feet grounded and spine long.",
+        "Reach your right arm straight overhead, lengthening the right side of your body.",
+        "Rest your left hand on your right knee or the chair for support.",
+        "Gently rotate your torso to the right, leading with your chest, while keeping the overhead reach.",
+        "Hold the rotation and reach, breathing slowly into the stretch along your side and back.",
+        "Release back to center with control."
+      ],
+      "caution": "Rotate only as far as feels comfortable, and avoid forcing the twist if you have a back condition.",
+      "isBilateral": false,
+      "id": "15b170e9-0210-45ba-bf45-08b16c8c91e4"
+    },
+    {
+      "name": "Standing Adductor Rock (Side-to-Side)",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Adductors",
+        "Right Adductors"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 2,
+      "instructions": [
+        "Stand with your feet spread wide apart, toes pointing slightly outward.",
+        "Shift your weight onto your left leg, bending the left knee while keeping your right leg straight, feeling the stretch along the inner right thigh.",
+        "Rock your weight across to the right leg, bending the right knee while straightening the left leg.",
+        "Keep your chest lifted and hands resting on your thighs or hips for balance throughout.",
+        "Continue rocking smoothly side to side for the full duration."
+      ],
+      "id": "adeff7df-85fb-4f97-8c14-431aa808c8c2"
+    },
+    {
+      "name": "Standing Tibialis Raise (Toe Lifts)",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Tibialis",
+        "Right Tibialis"
+      ],
+      "durationSeconds": 40,
+      "difficulty": 1,
+      "instructions": [
+        "Stand tall with your feet hip-width apart, near a wall or chair for balance if needed.",
+        "Keeping your heels planted, lift the balls of your feet and toes up off the floor as high as you can.",
+        "Hold briefly at the top, feeling the engagement along the front of your shins.",
+        "Lower your toes back down with control.",
+        "Repeat the lift-and-lower rhythm for the full duration."
+      ],
+      "id": "37492316-8e25-4f91-a06a-de0b59895bf9"
     }
   ]
 }

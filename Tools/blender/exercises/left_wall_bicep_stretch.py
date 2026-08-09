@@ -11,6 +11,15 @@ extension) but only on ONE side, with the elbow kept nearly straight (a small
 -5 deg forearm angle, not the deep -28 deg fold used for the clasp) — the wall
 stretch extends the whole arm back and pins the hand on a wall behind, rather
 than folding the forearm to clasp the other hand.
+
+Rotation-audit fix: the shipped v1 of this script never rotated the torso,
+even though the exercise's own instructions are "slowly rotate your torso
+away from the wall." Added a chest/spine local-Y twist reusing the seated
+spinal twist's proven sign convention (positive Y = twist right) — rotating
+away from a wall behind the LEFT arm means twisting right, same direction as
+`left_seated_spinal_twist.py`, just a shallower peak angle (15/8 deg vs.
+35/10) since this is a secondary component of a bicep stretch, not a
+dedicated twist.
 """
 import sys
 import os
@@ -34,14 +43,21 @@ WORKED_KEYWORDS = ("left bicep",)
 
 POSES = {
     0: {},
-    30: {"upperarm.L": (r(20), 0, 0)},
+    30: {
+        "upperarm.L": (r(20), 0, 0),
+        "chest": (0, r(8), 0),
+    },
     60: {
         "upperarm.L": (r(45), 0, 0),
         "forearm.L": (r(-5), 0, 0),
+        "chest": (0, r(15), 0),
+        "spine": (0, r(8), 0),
     },
     90: {
         "upperarm.L": (r(45), 0, 0),
         "forearm.L": (r(-5), 0, 0),
+        "chest": (0, r(15), 0),
+        "spine": (0, r(8), 0),
     },
     120: {},
 }

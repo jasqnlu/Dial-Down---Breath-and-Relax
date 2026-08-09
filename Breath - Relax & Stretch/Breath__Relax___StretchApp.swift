@@ -200,6 +200,7 @@ struct BreathRelaxStretchApp: App {
             )
             exercise.seedID = raw["id"] as? String
             exercise.localVideoName = raw["localVideoName"] as? String
+            exercise.animationIsApproximate = raw["animationIsApproximate"] as? Bool ?? false
             if let posesRaw = raw["poses"],
                let posesData = try? JSONSerialization.data(withJSONObject: posesRaw) {
                 exercise.posesData = posesData
@@ -227,6 +228,8 @@ struct BreathRelaxStretchApp: App {
         migrateSeedToV6IfNeeded()
         migrateSeedToV7IfNeeded()
         migrateSeedToV8IfNeeded()
+        migrateSeedToV9IfNeeded()
+        migrateSeedToV10IfNeeded()
     }
 
     /// Loads the bundled seed JSON's exercise array, or nil if unavailable.
@@ -313,6 +316,35 @@ struct BreathRelaxStretchApp: App {
             }
         }
         seedDataVersion = 8
+    }
+
+    /// Like `migrateSeedToV7IfNeeded`, NOT gated behind a one-time version
+    /// bump: new exercises get added to `SeedData.json` on an ongoing basis,
+    /// and each one needs inserting into every already-seeded install.
+    /// `SeedMigrator.migrateV9` is idempotent (matches by seedID, only
+    /// inserts rows that aren't already present), so it's cheap and safe to
+    /// run on every launch.
+    private func migrateSeedToV9IfNeeded() {
+        if let rawExercises = loadSeedExercises() {
+            let context = sharedModelContainer.mainContext
+            if SeedMigrator.migrateV9(context: context, rawExercises: rawExercises) {
+                try? context.save()
+            }
+        }
+        seedDataVersion = max(seedDataVersion, 9)
+    }
+
+    /// Like `migrateSeedToV9IfNeeded`, NOT gated behind a one-time version
+    /// bump: which exercises get flagged `animationIsApproximate` can grow
+    /// as more rig limitations/animation bugs are found after this ships.
+    private func migrateSeedToV10IfNeeded() {
+        if let rawExercises = loadSeedExercises() {
+            let context = sharedModelContainer.mainContext
+            if SeedMigrator.migrateV10(context: context, rawExercises: rawExercises) {
+                try? context.save()
+            }
+        }
+        seedDataVersion = max(seedDataVersion, 10)
     }
 
     // MARK: - Remote catalog sync (best-effort, offline-first)

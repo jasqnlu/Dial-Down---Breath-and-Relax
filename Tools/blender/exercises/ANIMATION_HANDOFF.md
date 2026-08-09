@@ -397,6 +397,64 @@ correctly mirrored between the L/R pair. Verified correctness by eyeballing the
 rendered PNGs instead (confirmed the L/R pair are genuinely mirrored, not
 identical) — don't trust the tail-position log for twist-only poses.
 
+## Rotation audit (2026-08-05/07): Wall Bicep Stretch fix + seated leg pose
+
+Audited all 14 shipped animations against their exercise's actual instructions
+(see `docs/superpowers/plans/2026-08-05-rotation-animation-audit.md`). Found
+`left_wall_bicep_stretch` / `right_wall_bicep_stretch` never rotated the
+torso despite the exercise being "rotate your torso away from the wall" —
+fixed by adding a `chest`/`spine` local-Y twist (small, 8-15 deg) alongside
+the existing arm pitch, reusing the seated-twist sign convention (positive Y
+= twist right, matching `left_seated_spinal_twist`'s direction).
+
+**New proven convention: a static seated leg pose on `thigh.{L,R}`/
+`shin.{L,R}`.** These bones had "no proven pose-authoring convention" as of
+the third batch. Probed with a throwaway script
+(`Tools/blender/exercises/_seated_probe.py`, deleted after validating —
+recreate from this note if needed) applying a *constant* (not per-frame
+animated) offset held across the whole clip:
+
+```python
+"thigh.L": (r(-90), 0, 0),
+"thigh.R": (r(-90), 0, 0),
+"shin.L":  (r(90), 0, 0),
+"shin.R":  (r(90), 0, 0),
+```
+
+Result confirmed by both the tail-position log and eyeballing the render:
+thigh tail moved from knee-height to hip-height at world Y = -0.42 (i.e.
+swung forward to horizontal — recall azimuth-0's camera sits at world -Y, so
+-Y = front, confirming hip *flexion* not extension), and shin tail landed
+directly below at floor-adjacent height, i.e. the lower leg hangs straight
+down from a forward-bent knee exactly like sitting on a chair/floor edge.
+Render showed a convincing seated silhouette with no visible mesh tearing,
+though the knee crease geometry is a bit blockier/pinched than the small-
+angle poses used elsewhere (largest rotation applied anywhere in the rig
+so far) — acceptable at the app's render style/resolution.
+
+**Sign convention (thigh/shin, hip-flexion-and-knee-fold only, NOT yet
+validated for anything dynamic like a swing/circle):** thigh and shin hang
+down like the arm bones (not vertical like spine/chest/head), and empirically
+follow the *same* local-X convention as the arms: thigh -90 = hip flexes
+forward to horizontal (mirrors the arm's "-X = forward" for both L/R, no
+sign flip needed between sides since this is directly forward, not lateral);
+shin's follow-up local-X is relative to the thigh's already-rotated frame,
+and needs the *opposite* sign (+90) to fold the lower leg back down rather
+than up toward the torso — do not assume shin mirrors thigh's sign.
+
+Applied to `left_seated_spinal_twist.py` / `right_seated_spinal_twist.py`
+(previously rendered as a standing torso rotation despite the exercise name
+— the docstring said as much: "The rig has no seated pose, so this reads as
+a standing torso rotation"). The `_SEATED` leg offset is held constant at
+every keyframe (0/30/60/90/120) with the existing twist keyframes layered on
+top for spine/chest, same pattern as the probe.
+
+**Still unproven:** anything that moves the legs *dynamically* mid-clip
+(a lunge, a hip circle, a leg swing) — this convention only covers a static
+held pose. Tier C in the rotation-audit plan (Standing Hip Circles, Runner's
+Lunge with Rotation, World's Greatest Stretch, Dynamic Standing Leg Swings,
+Cossack Squat) still needs its own probe before authoring.
+
 ## Related project context
 
 - Body Map architecture / SceneKit loading: `Breath - Relax &
