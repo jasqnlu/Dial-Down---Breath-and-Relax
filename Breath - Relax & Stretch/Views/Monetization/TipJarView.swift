@@ -18,6 +18,10 @@ struct TipJarView: View {
     @State private var purchasingID: String?
     @State private var errorMessage: String?
     @State private var showThankYou = false
+    /// True once the initial `loadProducts()` call has returned (success or
+    /// failure), so the spinner only shows before that first response — not
+    /// forever if StoreKit comes back empty.
+    @State private var didAttemptLoad = false
 
     var body: some View {
         NavigationStack {
@@ -45,7 +49,10 @@ struct TipJarView: View {
                     Button("Close") { dismiss() }
                 }
             }
-            .task { await store.loadProducts() }
+            .task {
+                await store.loadProducts()
+                didAttemptLoad = true
+            }
             .alert("Thank you!", isPresented: $showThankYou) {
                 Button("You're welcome") { dismiss() }
             } message: {
@@ -81,9 +88,29 @@ struct TipJarView: View {
     @ViewBuilder
     private var tipOptions: some View {
         if store.products.isEmpty {
-            ProgressView()
+            if !didAttemptLoad {
+                ProgressView()
+                    .frame(maxWidth: .infinity, minHeight: 120)
+                    .accessibilityLabel("Loading tip options")
+            } else {
+                VStack(spacing: 6) {
+                    Image(systemName: "wifi.slash")
+                        .font(.title2)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        .accessibilityHidden(true)
+                    Text("Tips are temporarily unavailable")
+                        .font(.luminaCardTitle)
+                        .foregroundStyle(Color.luminaOnSurface)
+                    Text("Check your connection and try again in a bit — the rest of Breath works normally.")
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 .frame(maxWidth: .infinity, minHeight: 120)
-                .accessibilityLabel("Loading tip options")
+                .padding()
+                .luminaCard()
+            }
         } else {
             VStack(spacing: 12) {
                 ForEach(store.products, id: \.id) { product in
