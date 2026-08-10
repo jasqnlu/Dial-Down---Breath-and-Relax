@@ -315,18 +315,19 @@ base body position the rig has never represented, and are moved to Tier B:
    extended with wrist/finger/eye bones (a much bigger, separate project,
    not recommended right now given how few exercises need it).
 
-## 3c. Supine probe outcome (2026-08-09, two passes)
+## 3c. Supine probe outcome (2026-08-09, three passes)
 
-Ran the highest-value Tier B experiment (flat-on-the-back base pose), then a
-follow-up pass that fixed 2 of the 3 exercise families it initially couldn't
-unblock. Full derivation in `Tools/blender/exercises/ANIMATION_HANDOFF.md`'s
-"Supine pose probe" section — summary:
+Ran the highest-value Tier B experiment (flat-on-the-back base pose), then
+two follow-up passes that fixed all 3 exercise families it initially
+couldn't unblock. Full derivation in `Tools/blender/exercises/
+ANIMATION_HANDOFF.md`'s "Supine pose probe" section — summary:
 
 - **Proven and documented:** `hips` local-X = −90° (constant) tips the whole
   rig to lying flat, face-up. Top-down camera reads cleanly, matches the
   app's portrait clip aspect. This is the base convention for all supine
   work, landed in `_lib.py` as `apply_supine_base()` / `run_supine()`.
-- **Shipped (4 of 6), first pass failed but a different technique worked:**
+- **Shipped (all 6), first pass failed but a different technique worked
+  each time:**
   - Supine Chest Opener (L/R) is actually **side-lying**, not flat-on-back
     (instructions say "lie on your side") — a plan mis-scope caught this
     round. First pass tried a second `hips` pose-bone Y-rotation to "roll"
@@ -344,17 +345,28 @@ unblock. Full derivation in `Tools/blender/exercises/ANIMATION_HANDOFF.md`'s
     angle-dependent, not axis-forbidden). Also dropped the literal 90°
     "arms in a T-shape" (reproduced known abduction tearing) for 45°.
     Shipped as `right/left_supine_spinal_twist.py`.
-- **Still blocked, not reattempted:**
   - Supine Figure-4 (L/R) needs one shin to cross toward the opposite knee.
-    The convex-hulled foot "mitt" stretches into thin webbing at the swing
-    angle needed to actually reach — this is a bone-distance/joint-blend
-    problem, not an angle-magnitude one, so "just use a smaller angle" (what
-    fixed the spinal twist) doesn't apply here. Base bent-knee pose renders
-    fine on its own; only the cross itself fails.
+    The convex-hulled foot "mitt" stretched into thin webbing at the swing
+    angle needed to actually reach — NOT the same failure as the spinal
+    twist (that was angle-dependent; a Figure-4 cross needs a large swing
+    to reach, so "use a smaller angle" wasn't available). Root cause was
+    generic, not pose-specific: mitts were weighted with the same
+    joint-blend distance function used for stretchy muscle geometry, wrong
+    for a solid convex hull that shouldn't deform. Fixed in `_lib.py` with
+    `rigid_weight()` (100% to the mitt's one owning bone, no blending) —
+    re-tested the already-shipped chest-opener/spinal-twist clips first to
+    confirm no regression, then the same swing that tore before held its
+    shape cleanly. Getting the swing to not tear was one fix; a further
+    several rendered iterations were needed to make it read as an
+    anatomically clean figure-4 (thigh externally rotated to open the knee,
+    not just a shin swing). Shipped as `right/left_supine_figure_4.py`,
+    the shipped angles being the best rendered result rather than a
+    numerically-derived pose. Since the fix is pipeline-level, it should
+    also de-risk Thread the Needle's under-body arm reach (Tier B) — the
+    next exercise that would hit the same "large hand/foot swing" wall.
 
-Net: 4 of 6 target exercises shipped, verified in the running app (not just
-Blender renders) via `SupineExercisesUITests`. Supine Figure-4 remains open
-for a future session.
+Net: all 6 target exercises shipped, verified in the running app (not just
+Blender renders) via `SupineExercisesUITests`.
 
 ## 5. Per-exercise process (unchanged from the existing pipeline)
 

@@ -679,29 +679,54 @@ tearing. This is the convention to reuse for any future supine exercise.
    (knees fall left via `thigh` local-Z negative, head turns right via
    `head` local-Y negative) and `left_supine_spinal_twist.py` (mirror).
 
-**Still blocked — different failure mode, not attempted again:**
+**Third pass (same session) — fixed too, via a pipeline-level rigging fix,
+not a per-exercise pose trick:**
 
 3. **Ankle-over-knee cross, for Supine Figure-4.** Swinging one `shin` bone
    across the midline (large local-Z on top of its normal knee-fold) to
-   approximate resting an ankle near the opposite knee stretches the foot
+   approximate resting an ankle near the opposite knee stretched the foot
    "mitt" (the convex-hulled hand/foot club described in `_lib.py`) into
-   thin splayed webbing — it's far enough from the shin's own bone segment
-   that the joint-blend weighting doesn't hold it rigid at a large swing.
-   This is NOT the same failure as the windshield-wipers tearing (that was
-   angle-dependent and fixed by going smaller); a small-magnitude ankle
-   cross wouldn't actually reach the opposite knee, so there's no
-   equivalent "just use a smaller angle" fix. Not reattempted this session.
-   Options for next time: a shape-key-free approximation that doesn't
-   fully cross (resting the shin diagonally near, not on, the other knee),
-   or accepting a visible seam the way Reverse Prayer's wrist limitation
-   was accepted.
+   thin splayed webbing. This was NOT the same failure as the windshield-
+   wipers tearing (that was angle-dependent and fixed by going smaller); an
+   ankle cross needs a large swing to actually reach, so "use a smaller
+   angle" wasn't available. **Root cause turned out to be generic, not
+   specific to this pose:** mitts were weighted with the same joint-blend
+   distance function (`blend_weights()`) used for actual stretchy muscle
+   geometry — appropriate for a muscle belly that needs to deform across a
+   joint, wrong for a mitt, which is a solid convex hull that shouldn't
+   deform at all. A large swing left the mitt's far vertices pulled toward
+   whichever second-nearest bone the blend picked at the ROTATED pose, and
+   a rigid hull pulled by two competing weights is exactly what stretches
+   into webbing. **Fix:** added `rigid_weight()` to `_lib.py` — 100% of
+   every vertex to the mitt's one owning bone, no distance blending — and
+   routed the hull-building loop through it instead of `blend_weights()`.
+   Re-rendered the ALREADY-SHIPPED chest-opener/spinal-twist clips first to
+   confirm no regression (hands/feet still hold shape at the wrist/ankle
+   seam), then retried the same -45 to -60 degree ankle swing that
+   produced webbing before: held its shape cleanly through the whole
+   range. Getting the swing to not tear was one fix; getting it to read as
+   an anatomically clean "figure-4" (ankle resting near, not just crossing
+   near, the opposite knee) took several more rendered iterations of
+   hand-tuning `thigh`+`shin` together (the crossing leg needs the THIGH
+   externally rotated to open the knee out, not just a shin swing — tried
+   shin-only first, reads as a kick, not a cross). The shipped values are
+   the best rendered result this session, not a numerically-derived pose —
+   a reasonable approximation, not precise ankle-on-knee contact. Shipped
+   as `right/left_supine_figure_4.py`. Arms are kept in a relaxed forward
+   position rather than animating the "reach through and clasp the
+   opposite thigh" hand detail, which is out of scope for this pass.
 
-**Net result: 4 of the 6 target exercises shipped** (`right/left_
-supine_chest_opener`, `right/left_supine_spinal_twist`), verified in the
-running app via `SupineExercisesUITests` (all four open and play in
-`ExerciseMediaCard` with correct muscle-target chips), unit tests green.
-Supine Figure-4 (L/R) remains blocked on a different problem than the other
-two solved this round.
+Since the fix is a pipeline-level rigging change (not a pose trick specific
+to Figure-4), it should also de-risk any FUTURE exercise needing a large
+hand/foot swing to touch another body part — Thread the Needle's under-body
+arm reach (Tier B) being the next candidate that would have hit the same
+wall.
+
+**Net result: all 6 target exercises shipped** (`right/left_
+supine_chest_opener`, `right/left_supine_spinal_twist`,
+`right/left_supine_figure_4`), verified in the running app via
+`SupineExercisesUITests` (all six open and play in `ExerciseMediaCard` with
+correct muscle-target chips), unit tests green.
 
 ## Related project context
 
