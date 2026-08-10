@@ -4,6 +4,10 @@ muscles: 250  (mapped=246 fallback=0  highlight=27 neutral=223  mitts=4)
 neck detected at z=1.657 (width=0.101); frac=0.864
 skin clip: 6562 -> 3218 verts kept (head cap)
 joined muscles -> 'Muscles' (78036 verts, 2 mat slots, 12 vgroups)
+peak thigh.L tail world = (0.105, -0.422, 0.958)
+peak thigh.R tail world = (-0.105, -0.422, 0.958)
+peak shin.L tail world = (0.105, -0.422, 0.460)
+peak shin.R tail world = (-0.105, -0.422, 0.460)
 peak spine tail world = (0.000, 0.000, 1.303)
 peak chest tail world = (0.000, 0.000, 1.533)
 render: rest_demo -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/right_seated_spinal_twist_rest_demo.png
