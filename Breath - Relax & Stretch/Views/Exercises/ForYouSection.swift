@@ -174,18 +174,28 @@ struct GoalMeta {
     }
 
     static let all: [GoalMeta] = [
+        // Exercise names below are matched against SeedData.json at render
+        // time (see the file header comment). Several got lateralized into
+        // Left/Right pairs after these goals were first written — see
+        // CuratedContentIntegrityTests.
         GoalMeta(
             id: "flexibility",
             displayName: "Flexibility",
             exerciseNames: [
                 "Standing Hamstring Stretch",
-                "Hip Flexor Stretch",
-                "Standing Quad Stretch",
-                "Seated Figure-Four Stretch",
-                "Standing Side Stretch",
+                "Left Standing Hip-Flexor Stretch (Foot Elevated)",
+                "Right Standing Hip-Flexor Stretch (Foot Elevated)",
+                "Left Standing Quad Stretch",
+                "Right Standing Quad Stretch",
+                "Left Seated Figure-Four Stretch",
+                "Right Seated Figure-Four Stretch",
+                "Left Standing Crescent Moon Side Stretch",
+                "Right Standing Crescent Moon Side Stretch",
                 "Cat-Cow Flow",
-                "Seated Hamstring Stretch",
-                "Figure-4 Glute Stretch",
+                "Left Seated Hamstring Stretch",
+                "Right Seated Hamstring Stretch",
+                "Left Standing Figure-4 Stretch",
+                "Right Standing Figure-4 Stretch",
             ]
         ),
         GoalMeta(
@@ -193,7 +203,8 @@ struct GoalMeta {
             displayName: "Stress Relief",
             exerciseNames: [
                 "Shoulder Roll",
-                "Neck Side Stretch",
+                "Left Scalene Neck Stretch",
+                "Right Scalene Neck Stretch",
                 "Seated Neck Rolls",
                 "Eye Palming",
                 "Child's Pose",
@@ -207,12 +218,14 @@ struct GoalMeta {
             exerciseNames: [
                 "Cat-Cow Flow",
                 "Child's Pose",
-                "Knee-to-Chest Release",
+                "Double Knee-to-Chest Release",
                 "Pelvic Tilt",
-                "Glute Bridge",
-                "Seated Spinal Twist",
-                "Upper Back Cat-Cow",
-                "Supine Knee-to-Chest",
+                "Bridge Pose",
+                "Left Seated Spinal Twist",
+                "Right Seated Spinal Twist",
+                "Upper-Back Cat-Cow (Seated)",
+                "Left Single-Leg Supine Knee-to-Chest",
+                "Right Single-Leg Supine Knee-to-Chest",
             ]
         ),
         GoalMeta(
@@ -224,7 +237,7 @@ struct GoalMeta {
                 "4-7-8 Breathing",
                 "Diaphragmatic Breath with Counting",
                 "Alternate Nostril Breathing",
-                "Pursed Lip Breathing",
+                "Pursed-Lip Breathing",
             ]
         ),
         GoalMeta(
