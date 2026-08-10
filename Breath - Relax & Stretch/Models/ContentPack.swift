@@ -19,19 +19,28 @@ struct ContentPack: Identifiable {
             title: "Desk Worker Pack",
             summary: "Targeted relief for neck, shoulders, wrists, and lower back from sitting all day.",
             icon: "desktopcomputer",
+            // No-equipment stretches first, then the one exercise that needs a
+            // doorway. Names below are matched against SeedData.json, which
+            // lateralized most of these into Left/Right pairs after this pack
+            // was first written — see CuratedContentIntegrityTests.
             exerciseNames: [
                 "Chin Tuck (Forward Head Reset)",
                 "Seated Neck Rolls",
                 "Shoulder Roll",
-                "Doorway Chest Opener",
-                "Thoracic Open Book",
-                "Reverse Prayer Hands",
-                "Wrist Flexor Stretch",
+                "Reverse Prayer Stretch",
                 "Wrist Circles",
                 "Wrist & Forearm Release",
-                "Cross-Body Arm Stretch",
-                "Triceps & Elbow Stretch",
-                "Seated Spinal Twist",
+                "Left Wrist Flexor Stretch",
+                "Right Wrist Flexor Stretch",
+                "Left Cross-Body Rear Delt Stretch",
+                "Right Cross-Body Rear Delt Stretch",
+                "Left Overhead Triceps Stretch",
+                "Right Overhead Triceps Stretch",
+                "Left Seated Spinal Twist",
+                "Right Seated Spinal Twist",
+                "Left Standing Reach-Through Twist",
+                "Right Standing Reach-Through Twist",
+                "Doorway Shoulder & Chest Opener",
             ]
         ),
         ContentPack(
@@ -39,19 +48,27 @@ struct ContentPack: Identifiable {
             title: "Athlete Recovery Pack",
             summary: "Deeper lower-body stretches and breathing for active recovery days.",
             icon: "figure.run",
+            // No-equipment stretches first, then the ones that need a wall,
+            // chair, or step for balance/support. Names matched against
+            // SeedData.json — see CuratedContentIntegrityTests.
             exerciseNames: [
-                "Standing Quad Stretch",
                 "Standing Hamstring Stretch",
-                "Seated Hamstring Stretch",
-                "Hip Flexor Stretch",
-                "Seated Figure-Four Stretch",
-                "Figure-4 Glute Stretch",
-                "Glute Bridge",
+                "Left Seated Hamstring Stretch",
+                "Right Seated Hamstring Stretch",
+                "Left Seated Figure-Four Stretch",
+                "Right Seated Figure-Four Stretch",
+                "Bridge Pose",
                 "Pelvic Tilt",
                 "Cat-Cow Flow",
-                "Calf Stretch at Wall",
-                "Standing Calf Stretch",
                 "4-7-8 Breathing",
+                "Left Standing Quad Stretch",
+                "Right Standing Quad Stretch",
+                "Left Standing Figure-4 Stretch",
+                "Right Standing Figure-4 Stretch",
+                "Left Standing Hip-Flexor Stretch (Foot Elevated)",
+                "Right Standing Hip-Flexor Stretch (Foot Elevated)",
+                "Calf Stretch at Wall (Straight-Knee)",
+                "Bent-Knee Wall Calf Stretch (Soleus)",
             ]
         ),
         ContentPack(
