@@ -394,6 +394,26 @@ Net: both Thread the Needle exercises shipped (`right/left_
 thread_the_needle`), verified in the running app via
 `SupineExercisesUITests` (renamed to cover 8 exercises).
 
+## 3e. Standing Reach-Through Twist, fourth attempt (2026-08-09, same day): shipped
+
+Given a fourth attempt at the item three passes had already failed on
+(cross-midline arm adduction, deferred 2026-08-08, §3 above). Full
+derivation in `ANIMATION_HANDOFF.md`'s "Reach-through twist, second
+attempt" section — summary: every prior pass used `upperarm` local-Z
+(adduction) to cross the midline, the axis already documented to tear the
+torso mesh. The fix wasn't a different magnitude on that axis — it was
+dropping it entirely: pure local-X flexion (deep, -140°) on the reaching
+arm, with a much bigger `chest`/`spine` twist (35°+20° vs. the 8-15° used
+elsewhere) carrying the arm across via the torso's own rotation instead of
+the arm's. Clean on the first render with this approach.
+
+Shipped `right/left_standing_reach_through_twist.py` (overwriting the
+2026-08-08 NOT-SHIPPED versions), verified via a new
+`ReachThroughTwistUITests`. This closes out the last Tier A/B item with
+authored-but-unshipped scripts — remaining backlog (arm-bone Y-twist,
+`hips` local-Y twist beyond windshield-wipers, Tier C dynamic hip/thigh
+motion) is fully untried, not blocked-and-abandoned.
+
 ## 5. Per-exercise process (unchanged from the existing pipeline)
 
 1. Author a ~50-line `Tools/blender/exercises/<name>.py` script (`EXERCISE`,
