@@ -786,9 +786,46 @@ near the shoulder rather than extending out under the body. Shipped as
 `ExerciseMediaCard` with correct muscle-target chips.
 
 **All originally-scoped Tier B rotation-audit exercises building on a new
-base pose are now shipped**: supine (6) + quadruped (2) = 8. Cross-midline
-arm adduction (Standing Reach-Through Twist) remains the one Tier A/B item
-with authored-but-unshipped scripts, and arm-bone Y-twist (Sleeper Stretch,
+base pose are now shipped**: supine (6) + quadruped (2) = 8.
+
+## Reach-through twist, second attempt (2026-08-09, same day): shipped
+
+The cross-midline arm adduction that blocked Standing Reach-Through Twist
+(three failed passes, deferred 2026-08-08 with scripts kept but not
+shipped) got a fourth attempt, per the "one more try" ask after the
+quadruped work. **Fixed — and the fix was to stop trying to fix the same
+axis.** Every prior pass used `upperarm` local-Z (adduction) to swing the
+arm across the midline, which is documented elsewhere in this file as the
+axis that tears the torso (arms-down source mesh, no clearance for
+anything crossing the centerline). The fourth pass drops local-Z from the
+reaching arm ENTIRELY — pure local-X flexion, taken deep (-140°, already
+proven safe up to -150° for the chest-opener and wall-bicep work) — and
+lets the `chest`/`spine` TWIST do the work of carrying the arm across
+instead, using a much bigger twist angle (35°+20° cumulative) than the
+shallow 8-15° twists used elsewhere. Rendered clean on the first try with
+this approach: no tearing, and the reach genuinely reads as travelling
+down and across toward the opposite ankle from multiple camera angles
+(confirmed with 3 azimuths before committing to the shipped one).
+
+Lesson to generalize: the earlier three-pass failure was diagnosed
+correctly ("adduction collides with the torso") but the fix attempted each
+time was still local-Z, just at different magnitudes/combinations. The
+actual fix was recognizing the SAME visual effect (arm reads as crossing
+the body) is reachable via a completely different axis (the torso's own
+twist) that doesn't touch the failing one at all — same shape of insight
+as the supine chest-opener roll (object-level, not another pose-bone
+rotation) and the figure-4 mitt fix (rigid weighting, not a smaller angle).
+When an axis is documented as failing, look for a DIFFERENT axis that
+produces the same visual result, not a smaller/bigger version of the same
+one.
+
+Shipped `right/left_standing_reach_through_twist.py` (overwriting the
+NOT-SHIPPED scripts kept from 2026-08-08), verified in the running app via
+a new `ReachThroughTwistUITests` (parallel to `SeatedSpinalTwistUITests`) —
+both open and play in `ExerciseMediaCard` with correct muscle-target
+chips. Full unit suite still green.
+
+**Remaining Tier B/untried items**: arm-bone Y-twist (Sleeper Stretch,
 Doorway External Rotation) and `hips` local-Y twist for anything other
 than the windshield-wipers workaround remain fully untried.
 

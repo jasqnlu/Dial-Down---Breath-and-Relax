@@ -2523,7 +2523,8 @@
         "Hold for 10-15 seconds, then return to center.",
         "Repeat 3-4 times on this side before switching."
       ],
-      "id": "0cd20acc-c234-59f3-9c36-415582b8b12f"
+      "id": "0cd20acc-c234-59f3-9c36-415582b8b12f",
+      "animationName": "left_standing_reach_through_twist"
     },
     {
       "name": "Right Standing Reach-Through Twist",
@@ -2543,7 +2544,8 @@
         "Hold for 10-15 seconds, then return to center.",
         "Repeat 3-4 times on this side before switching."
       ],
-      "id": "5f20c7c5-815f-5b9d-a48a-045aacfb4638"
+      "id": "5f20c7c5-815f-5b9d-a48a-045aacfb4638",
+      "animationName": "right_standing_reach_through_twist"
     },
     {
       "name": "Left Overhead Reach Lat Stretch with Strap",
