@@ -671,6 +671,117 @@ def render_demo_video_supine(cam, out_dir, exercise, video_name, frame_end=FRAME
     return demo_frames_dir
 
 
+def apply_quadruped_base(arm_obj, drop=0.55):
+    """Lowers the whole rig onto hands and knees. Unlike the supine base
+    (which rotates the `hips` POSE BONE to tip the whole chain, since hips
+    stays at its own fixed world position under rotation alone), quadruped
+    needs the pelvis to physically be LOWER — no amount of rotating hips
+    changes where its own head sits in world space, since it's the
+    unparented root. So this is an OBJECT-level Z translation instead (same
+    kind of move as the supine roll being an object-level rotation, not a
+    pose-bone one): `arm_obj.location`, applied once, not animated.
+
+    `drop` was found by probe + render, not derived: 0.55 puts the knee
+    (thigh tail) right at floor level with `thigh` left near its standing
+    rest angle. This does NOT set spine/thigh/shin/head rotations — those
+    still need to be constant in every frame of the calling script's own
+    POSES dict (same pattern as the supine scripts' `_BASE`), since any
+    bone that appears in ANY frame of `animate()`'s POSES gets zeroed in
+    frames where it's absent. Proven base values (2026-08-09): `spine`
+    (r(95),0,0), `chest` (r(-5),0,0) [a small counter so the torso itself
+    reads flat], `thigh.{L,R}` (r(5),0,0), `shin.{L,R}` (r(100),0,0),
+    `head` (r(-10),0,0), `upperarm` (r(-68),0,0), `forearm` (r(25),0,0) for
+    whichever arm stays planted for support."""
+    arm_obj.location = Vector((0, 0, -drop))
+
+
+def run_quadruped(cfg):
+    """Like `run_supine`, but for exercises built on the quadruped base
+    pose (apply_quadruped_base): posed bounds are computed the same way,
+    but the camera is a normal level/azimuth shot (reusing
+    camera_for_azimuth) rather than top-down — a quadruped figure's
+    silhouette reads from the side, same as a standing one, just lower and
+    horizontal. cfg needs everything `run()` needs, plus `CAMERA_AZIMUTH`
+    (same meaning as in `run()`) and optionally `QUADRUPED_DROP` (default
+    0.55, see apply_quadruped_base)."""
+    exercise = cfg["EXERCISE"]
+    out_dir = cfg["OUT_DIR"]
+
+    def main():
+        clear_scene()
+        node_map = load_node_map(cfg["NODE_MAP"])
+        meshes = import_obj(cfg["APP_OBJ"])
+        lo, hi = normalize_orientation(meshes)
+        arm_obj, bone_segs = build_armature(lo, hi)
+        skin, muscle_objs, mat_skin, counts = build_figure(
+            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"])
+        log(f"muscles: {len(muscle_objs)}  (mapped={counts['mapped']} "
+            f"fallback={counts['fallback']}  highlight={counts['highlight']} "
+            f"neutral={counts['neutral']}  mitts={counts['mitts']})")
+
+        neck_z, neck_w = detect_neck_z(skin, lo, hi)
+        clip_skin_to_head(skin, neck_z)
+
+        muscles = join_muscles(muscle_objs)
+        add_armature(muscles, arm_obj)
+        bind_head_skin(skin, arm_obj, mat_skin)
+
+        apply_quadruped_base(arm_obj, cfg.get("QUADRUPED_DROP", 0.55))
+        bpy.context.view_layer.update()
+
+        animate(arm_obj, cfg["POSES"])
+        peak_frame = cfg.get("PEAK_FRAME", 60)
+        bpy.context.scene.frame_set(peak_frame)
+        bpy.context.view_layer.update()
+        for bone_name in cfg["POSES"].get(peak_frame, {}):
+            pb = arm_obj.pose.bones.get(bone_name)
+            if pb:
+                w = arm_obj.matrix_world @ pb.tail
+                log(f"peak {bone_name} tail world = ({w.x:.3f}, {w.y:.3f}, {w.z:.3f})")
+
+        plo, phi = world_bounds_of([muscles, skin])
+        log(f"posed bounds: {tuple(round(v, 3) for v in plo)} .. "
+            f"{tuple(round(v, 3) for v in phi)}")
+        center = Vector(((plo.x + phi.x) / 2, (plo.y + phi.y) / 2, (plo.z + phi.z) / 2))
+        span = max(phi.y - plo.y, phi.x - plo.x, phi.z - plo.z)
+        bpy.context.scene.frame_set(0)
+
+        stray_cam, _cz = setup_render(lo, hi, cfg.get("ORTHO_SCALE_MULT", 1.2))
+        bpy.data.objects.remove(stray_cam, do_unlink=True)
+        cam_data = bpy.data.cameras.new("Cam")
+        cam_data.type = 'ORTHO'
+        cam_data.ortho_scale = span * cfg.get("ORTHO_SCALE_MULT", 1.2)
+        cam = bpy.data.objects.new("Cam", cam_data)
+        bpy.context.collection.objects.link(cam)
+        bpy.context.scene.camera = cam
+        loc, rot = camera_for_azimuth(cfg["CAMERA_AZIMUTH"], center.z, radius=6.0)
+        # camera_for_azimuth orbits world X/Y=0 — valid here since
+        # apply_quadruped_base only translates in Z, so the figure's X/Y
+        # center stays at the origin.
+        cam.location = Vector(loc)
+        cam.rotation_euler = Euler(rot)
+
+        render_all_supine(cam, out_dir, exercise, peak_frame)
+        render_demo_video_supine(cam, out_dir, exercise, cfg["VIDEO_NAME"])
+        glb_path, blend_path = export(out_dir, exercise)
+
+        log(f"[{exercise}] built + exported.")
+        log(f"animated model : {glb_path}")
+        log(f"editable scene : {blend_path}")
+
+    try:
+        main()
+        write_log_file(out_dir, exercise)
+        show_popup(f"{exercise} exported ✓", 'CHECKMARK')
+    except BaseException as exc:
+        log("")
+        log(f"ERROR: {exc}")
+        log(traceback.format_exc())
+        write_log_file(out_dir, exercise)
+        show_popup(f"{exercise} FAILED - see details", 'ERROR')
+        raise
+
+
 def run_supine(cfg):
     """Like `run()`, but for exercises built on the supine base pose
     (apply_supine_base): the standing rest bounds are useless for camera

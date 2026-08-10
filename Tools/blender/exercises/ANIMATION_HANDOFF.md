@@ -728,6 +728,70 @@ supine_chest_opener`, `right/left_supine_spinal_twist`,
 `SupineExercisesUITests` (all six open and play in `ExerciseMediaCard` with
 correct muscle-target chips), unit tests green.
 
+## Quadruped pose probe (2026-08-09): first hands-and-knees pose, Thread the Needle shipped
+
+Followed up on the "should de-risk Thread the Needle" note above by
+actually attempting it — a genuinely new base pose, not a variant of the
+supine work, since nothing in the rig had ever been posed on all fours
+(originally Tier A in the rotation-audit plan, moved to Tier B 2026-08-08:
+"no quadruped pose convention exists").
+
+**First attempt (rotation only) put the pelvis floating in mid-air with the
+legs and arms dangling, nowhere near the ground.** Bending `spine` forward
+90°+ (reusing the proven "+X = forward pitch" convention) correctly
+horizontals the torso, but `hips` — the unparented root bone — doesn't
+move in world space under its OWN rotation, and I hadn't rotated it
+(deliberately, to keep the legs from tipping the way they did in the
+supine work). Result: the pelvis stayed pinned at standing hip height
+(~1.07 in these units) with nothing lowering it to a kneeling stance.
+
+**Fix: an OBJECT-level Z translation, `arm_obj.location = (0,0,-drop)`.**
+Same category of move as the supine roll being an object-level rotation
+rather than a pose-bone one — anything that needs to change the RIG'S
+overall position/orientation in world space, rather than a limb's pose
+relative to its parent, belongs on the object, not a bone. `drop=0.55`
+(found by probe + render, not derived) puts the knee at floor level with
+`thigh` left near its standing rest angle. Landed in `_lib.py` as
+`apply_quadruped_base()` / `run_quadruped()`, parallel to the supine
+entry points — camera is a normal level azimuth shot (reusing
+`camera_for_azimuth`) rather than top-down, since a quadruped figure reads
+from the side like a standing one, just lower and horizontal.
+
+**Getting the arm to reach the floor took several more iterations and
+confirmed the seated-pose lesson generalizes: bounds-driven algebra is
+unreliable this far into compound rotations.** The shoulder, after the
+spine's forward pitch, is no longer directly above the hand the way it is
+standing — an arm pitched by a rough estimate (-15°) left the wrist
+44% of body-height off the ground. The angle is very sensitive because it
+inherits the torso's already-large pitch: small forearm changes produced
+large world-space swings once the upperarm was already near -70°. Settled
+by iterating render + tail-position log together (not by computing it):
+`upperarm` -68°, `forearm` +25° puts the hand at the floor for a planted
+support arm.
+
+**Thread the Needle's reach-under motion is a genuine approximation, not a
+literal "hand slides through the gap."** The instructions describe the
+arm sliding underneath the torso; three passes on the unrelated Standing
+Reach-Through Twist already found that cross-midline arm adduction
+collides with this torso mesh (documented earlier in this file), so the
+same problem was expected here. What shipped instead: the reaching
+`upperarm` swings to -140° (well past the support arm's -68°, deep
+flexion) combined with a `chest`/`spine` twist (the already-proven
+local-Y convention) so that shoulder visibly lowers and the head turns
+down toward it — reads as "shoulder and ear toward the mat," the more
+prominent part of the instructions, at the cost of the arm curling up
+near the shoulder rather than extending out under the body. Shipped as
+`right/left_thread_the_needle.py`, verified via `SupineExercisesUITests`
+(renamed to cover 8 exercises now, all pass) — plays correctly in
+`ExerciseMediaCard` with correct muscle-target chips.
+
+**All originally-scoped Tier B rotation-audit exercises building on a new
+base pose are now shipped**: supine (6) + quadruped (2) = 8. Cross-midline
+arm adduction (Standing Reach-Through Twist) remains the one Tier A/B item
+with authored-but-unshipped scripts, and arm-bone Y-twist (Sleeper Stretch,
+Doorway External Rotation) and `hips` local-Y twist for anything other
+than the windshield-wipers workaround remain fully untried.
+
 ## Related project context
 
 - Body Map architecture / SceneKit loading: `Breath - Relax &
