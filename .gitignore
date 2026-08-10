@@ -45,3 +45,9 @@ __pycache__/
 
 # Git worktrees (subagent-driven-development isolation)
 .worktrees/
+
+# Blender pipeline staging output — regenerated on every render, not
+# deterministic byte-for-byte, and not what ships in the app (the app bundles
+# finished clips from Resources/Animations/ instead; see
+# Tools/blender/exercises/ANIMATION_HANDOFF.md).
+Tools/blender/generated/
