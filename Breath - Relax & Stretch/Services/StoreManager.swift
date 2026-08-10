@@ -37,6 +37,11 @@ final class StoreManager: ObservableObject {
 
     @Published private(set) var products: [Product] = []
 
+    /// Set when `loadProducts()` has run at least once and come back empty —
+    /// distinguishes "still loading" from "StoreKit gave us nothing" so the
+    /// UI isn't stuck showing a spinner forever. Cleared on a successful load.
+    @Published private(set) var productsLoadFailed = false
+
     /// Number of tips this user has given, persisted locally.
     ///
     /// Consumables do NOT appear in `Transaction.currentEntitlements` — unlike
@@ -83,9 +88,15 @@ final class StoreManager: ObservableObject {
             // Preserve the small → large ordering declared in ProductID.all;
             // StoreKit does not guarantee it returns products in request order.
             products = ProductID.all.compactMap { id in loaded.first { $0.id == id } }
+            // A request that succeeds but returns nothing (products not yet
+            // created in App Store Connect, or no StoreKit configuration
+            // selected in the scheme) is still a failure from the UI's
+            // perspective — there is nothing to buy.
+            productsLoadFailed = products.isEmpty
         } catch {
             Logger(subsystem: "com.jasonlu.breath", category: "storeKit")
                 .warning("Tip product load failed: \(error)")
+            productsLoadFailed = true
         }
     }
 
