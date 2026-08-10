@@ -565,6 +565,174 @@ def write_log_file(out_dir, exercise):
         pass
 
 
+def camera_topdown(center, height_above, span, ortho_scale_mult=1.15):
+    """Camera for a supine (lying) figure: positioned directly above the
+    posed figure's center, looking straight down. A bare Blender camera's
+    un-rotated view direction is already -Z (top-down) — this is *why*
+    camera_for_azimuth needs rot=(90,0,th) to reach its normal level shots —
+    so rotation stays (0,0,0) here. See ANIMATION_HANDOFF.md's "Supine pose
+    probe" section for the derivation and the render that validated it:
+    head at the top of the portrait frame, feet at the bottom, matching the
+    app's 4:5 clip aspect."""
+    cam_data = bpy.data.cameras.new("Cam")
+    cam_data.type = 'ORTHO'
+    cam_data.ortho_scale = span * ortho_scale_mult
+    cam = bpy.data.objects.new("Cam", cam_data)
+    bpy.context.collection.objects.link(cam)
+    bpy.context.scene.camera = cam
+    cam.location = Vector((center.x, center.y, height_above))
+    cam.rotation_euler = Euler((0, 0, 0))
+    return cam
+
+
+def apply_supine_base(arm_obj, roll_deg=0):
+    """Tips the whole rig from standing to lying flat, face-up, then
+    optionally rolls it onto its side around the now-horizontal length axis.
+
+    hips local-X = -90 (pose-bone rotation) tips the ENTIRE chain — every
+    other bone is a descendant of hips — from standing to lying flat,
+    face-up. Proven numerically + visually 2026-08-09 (see
+    ANIMATION_HANDOFF.md). This must also be included as a constant "hips":
+    (r(-90), 0, 0) entry in every frame of the script's own POSES dict (this
+    function only sets rest-frame defaults for bounds/camera setup before
+    `animate()` runs and overwrites it per keyframe).
+
+    roll_deg additionally rotates the ARMATURE OBJECT ITSELF (not another
+    pose-bone rotation) around world Y, the axis the body now lies along.
+    This is deliberately an object-level transform, not a second hips
+    pose-bone Euler component: stacking a second pose-bone rotation on an
+    already-pitched bone does NOT roll it onto its side (tried, and the body
+    just re-spins in the horizontal plane while staying face-up — composing
+    Euler angles in a bone's own already-rotated local frame is not
+    equivalent to a world-space roll). Object-level rotation composes in
+    true world space, applied after the internal pose, and does roll the
+    body around its own length axis correctly. +90 puts the RIGHT side up
+    (lying on the LEFT side); -90 puts the LEFT side up (lying on the RIGHT
+    side) — verified by bone-tail Z comparison, not assumed from the sign.
+    """
+    hb = arm_obj.pose.bones.get("hips")
+    hb.rotation_mode = 'XYZ'
+    hb.rotation_euler = Euler((r(-90), 0, 0))
+    arm_obj.rotation_mode = 'XYZ'
+    arm_obj.rotation_euler = Euler((0, r(roll_deg), 0))
+
+
+def render_all_supine(cam, out_dir, exercise, peak_frame=60):
+    scene = bpy.context.scene
+    scene.frame_set(0)
+    render_view(cam, None, out_dir, exercise, "rest_demo", cam.location, cam.rotation_euler)
+    scene.frame_set(peak_frame)
+    render_view(cam, None, out_dir, exercise, "peak_demo", cam.location, cam.rotation_euler)
+    scene.frame_set(0)
+
+
+def render_demo_video_supine(cam, out_dir, exercise, video_name, frame_end=FRAME_END, fps=FPS):
+    """Same as render_demo_video but reuses whatever camera/location the
+    caller already positioned (a top-down supine shot) instead of deriving
+    one from camera_for_azimuth, which assumes an orbiting-around-a-standing-
+    figure camera that doesn't apply once the figure is lying down."""
+    scene = bpy.context.scene
+    scene.render.film_transparent = False
+    sh = scene.display.shading
+    sh.background_type = 'VIEWPORT'
+    sh.background_color = (0.05, 0.08, 0.10)
+    scene.render.resolution_x = 512
+    scene.render.resolution_y = 640
+    scene.render.fps = fps
+    scene.frame_start = 0
+    scene.frame_end = frame_end - 1
+    scene.render.image_settings.file_format = 'PNG'
+    scene.render.image_settings.color_mode = 'RGB'
+    demo_frames_dir = os.path.join(out_dir, f"_demo_frames_{exercise}")
+    os.makedirs(demo_frames_dir, exist_ok=True)
+    for f in os.listdir(demo_frames_dir):
+        if f.endswith(".png"):
+            os.remove(os.path.join(demo_frames_dir, f))
+    scene.render.filepath = os.path.join(demo_frames_dir, "frame_")
+    bpy.ops.render.render(animation=True)
+    log(f"demo frames -> {demo_frames_dir} (encode to {video_name} next)")
+    return demo_frames_dir
+
+
+def run_supine(cfg):
+    """Like `run()`, but for exercises built on the supine base pose
+    (apply_supine_base): the standing rest bounds are useless for camera
+    sizing once the figure is lying down, so this recomputes bounds from the
+    POSED mesh and uses a fixed top-down camera instead of the azimuth-orbit
+    camera. cfg needs everything `run()` needs, plus `ROLL_DEG` (0 = flat on
+    the back; see apply_supine_base's docstring for signs)."""
+    exercise = cfg["EXERCISE"]
+    out_dir = cfg["OUT_DIR"]
+
+    def main():
+        clear_scene()
+        node_map = load_node_map(cfg["NODE_MAP"])
+        meshes = import_obj(cfg["APP_OBJ"])
+        lo, hi = normalize_orientation(meshes)
+        arm_obj, bone_segs = build_armature(lo, hi)
+        skin, muscle_objs, mat_skin, counts = build_figure(
+            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"])
+        log(f"muscles: {len(muscle_objs)}  (mapped={counts['mapped']} "
+            f"fallback={counts['fallback']}  highlight={counts['highlight']} "
+            f"neutral={counts['neutral']}  mitts={counts['mitts']})")
+
+        neck_z, neck_w = detect_neck_z(skin, lo, hi)
+        clip_skin_to_head(skin, neck_z)
+
+        muscles = join_muscles(muscle_objs)
+        add_armature(muscles, arm_obj)
+        bind_head_skin(skin, arm_obj, mat_skin)
+
+        apply_supine_base(arm_obj, cfg.get("ROLL_DEG", 0))
+        bpy.context.view_layer.update()
+
+        animate(arm_obj, cfg["POSES"])
+        peak_frame = cfg.get("PEAK_FRAME", 60)
+        bpy.context.scene.frame_set(peak_frame)
+        bpy.context.view_layer.update()
+        for bone_name in cfg["POSES"].get(peak_frame, {}):
+            pb = arm_obj.pose.bones.get(bone_name)
+            if pb:
+                w = arm_obj.matrix_world @ pb.tail
+                log(f"peak {bone_name} tail world = ({w.x:.3f}, {w.y:.3f}, {w.z:.3f})")
+
+        # Bounds from the POSED mesh at the peak frame (not the pre-pose
+        # standing rest bounds `run()` uses) — the figure's shape and extent
+        # changed completely once it's lying down.
+        plo, phi = world_bounds_of([muscles, skin])
+        log(f"posed bounds: {tuple(round(v, 3) for v in plo)} .. "
+            f"{tuple(round(v, 3) for v in phi)}")
+        center = Vector(((plo.x + phi.x) / 2, (plo.y + phi.y) / 2, (plo.z + phi.z) / 2))
+        span = max(phi.y - plo.y, phi.x - plo.x)
+        bpy.context.scene.frame_set(0)
+
+        # setup_render's own camera is standing-figure-sized and unwanted
+        # here (would leave an orphan camera baked into the export) — only
+        # its render-engine/resolution/shading side effects are needed.
+        stray_cam, _cz = setup_render(lo, hi, cfg.get("ORTHO_SCALE_MULT", 1.15))
+        bpy.data.objects.remove(stray_cam, do_unlink=True)
+        cam = camera_topdown(center, phi.z + 3.0, span, cfg.get("ORTHO_SCALE_MULT", 1.15))
+        render_all_supine(cam, out_dir, exercise, peak_frame)
+        render_demo_video_supine(cam, out_dir, exercise, cfg["VIDEO_NAME"])
+        glb_path, blend_path = export(out_dir, exercise)
+
+        log(f"[{exercise}] built + exported.")
+        log(f"animated model : {glb_path}")
+        log(f"editable scene : {blend_path}")
+
+    try:
+        main()
+        write_log_file(out_dir, exercise)
+        show_popup(f"{exercise} exported ✓", 'CHECKMARK')
+    except BaseException as exc:
+        log("")
+        log(f"ERROR: {exc}")
+        log(traceback.format_exc())
+        write_log_file(out_dir, exercise)
+        show_popup(f"{exercise} FAILED - see details", 'ERROR')
+        raise
+
+
 def run(cfg):
     """cfg is a dict (pass `globals()` from the per-exercise script) providing:
     REPO, APP_OBJ, NODE_MAP, OUT_DIR, EXERCISE, VIDEO_NAME, CAMERA_AZIMUTH,

@@ -536,7 +536,8 @@
         "Hold for 20-30 seconds, breathing into the stretch.",
         "Bring your arm back to the starting position and repeat as desired."
       ],
-      "id": "772d009f-383e-55a8-a216-6b3ac5df1800"
+      "id": "772d009f-383e-55a8-a216-6b3ac5df1800",
+      "animationName": "left_supine_chest_opener"
     },
     {
       "name": "Right Supine Chest Opener (Open Book)",
@@ -555,7 +556,8 @@
         "Hold for 20-30 seconds, breathing into the stretch.",
         "Bring your arm back to the starting position and repeat as desired."
       ],
-      "id": "94827d79-ea46-5ee0-a08d-0183528132c1"
+      "id": "94827d79-ea46-5ee0-a08d-0183528132c1",
+      "animationName": "right_supine_chest_opener"
     },
     {
       "name": "Cobra Stretch (Prone Press-Up)",
@@ -850,7 +852,8 @@
         "Hold for 20-30 seconds, breathing into the low back and side body.",
         "Bring your knees back to center to release."
       ],
-      "id": "a7b543d7-b093-59dd-a507-40598f54c8db"
+      "id": "a7b543d7-b093-59dd-a507-40598f54c8db",
+      "animationName": "left_supine_spinal_twist"
     },
     {
       "name": "Right Supine Spinal Twist (Windshield Wipers)",
@@ -870,7 +873,8 @@
         "Hold for 20-30 seconds, breathing into the low back and side body.",
         "Bring your knees back to center to release."
       ],
-      "id": "505c4252-9cbe-551a-9ce6-d296805c0105"
+      "id": "505c4252-9cbe-551a-9ce6-d296805c0105",
+      "animationName": "right_supine_spinal_twist"
     },
     {
       "name": "Left Standing Side Reach",

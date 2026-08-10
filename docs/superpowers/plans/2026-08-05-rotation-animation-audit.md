@@ -175,7 +175,7 @@ numeric-probe-then-eyeball process used for every prior convention:
 | Left/Right Supine Spinal Twist (Windshield Wipers) | `hips` local-Y twist | The twist here is driven by the lower body (knees falling to one side, shoulders pinned), not upper-torso twist like the seated version — needs `hips` bone twist, structurally analogous to the proven `spine`/`chest` convention but never tried on `hips`. |
 | Shoulder Roll | `upperarm` circular path combining X+Z+Y | Real shoulder rolls involve scapular elevation the rig can't represent (no scapula bone); this would be an approximation via the upperarm alone — medium confidence, validate visually before committing. |
 | Left/Right Thread the Needle *(moved from Tier A, 2026-08-08)* | **quadruped / hands-and-knees base pose** | The torso twist is proven; the base position is not. Nothing in the rig has ever been posed on all fours. |
-| Left/Right Supine Chest Opener (Open Book) *(moved from Tier A, 2026-08-08)* | **supine / lying base pose** | Same shape of problem. A lying convention would also serve the Supine Spinal Twists and Supine Figure-4 stretches, so it's worth more than these two exercises. |
+| Left/Right Supine Chest Opener (Open Book) *(moved from Tier A, 2026-08-08)* | **side-lying base pose** — see 2026-08-09 update below; this one isn't actually flat-on-the-back | Instructions say "lie on your **side**", not on the back — mis-scoped under "supine" originally. |
 | Left/Right Standing Reach-Through Twist *(moved from Tier A, 2026-08-08)* | **cross-midline arm adduction** | Scripts already authored — only the reach fails to read. Adduction past the body's centre line collides with the torso because the source mesh is arms-down with no clearance. |
 
 ### Tier C — blocked on hip/thigh/shin convention research
@@ -314,6 +314,47 @@ base body position the rig has never represented, and are moved to Tier B:
 5. **Tier D** — no action; these stay text-only unless the rig itself gets
    extended with wrist/finger/eye bones (a much bigger, separate project,
    not recommended right now given how few exercises need it).
+
+## 3c. Supine probe outcome (2026-08-09, two passes)
+
+Ran the highest-value Tier B experiment (flat-on-the-back base pose), then a
+follow-up pass that fixed 2 of the 3 exercise families it initially couldn't
+unblock. Full derivation in `Tools/blender/exercises/ANIMATION_HANDOFF.md`'s
+"Supine pose probe" section — summary:
+
+- **Proven and documented:** `hips` local-X = −90° (constant) tips the whole
+  rig to lying flat, face-up. Top-down camera reads cleanly, matches the
+  app's portrait clip aspect. This is the base convention for all supine
+  work, landed in `_lib.py` as `apply_supine_base()` / `run_supine()`.
+- **Shipped (4 of 6), first pass failed but a different technique worked:**
+  - Supine Chest Opener (L/R) is actually **side-lying**, not flat-on-back
+    (instructions say "lie on your side") — a plan mis-scope caught this
+    round. First pass tried a second `hips` pose-bone Y-rotation to "roll"
+    onto the side; that failed (body just re-spun flat in the horizontal
+    plane). Second pass rolled the ARMATURE OBJECT itself around world Y
+    instead of the bone — object-level rotation composes in true world
+    space, unlike stacking a second Euler angle on an already-rotated bone.
+    Worked on the first retry, shipped as `right/left_supine_chest_opener.py`.
+  - Supine Spinal Twist (L/R) needs the knees to swing while shoulders stay
+    planted. First pass tried counter-rotating `spine` against a `hips`
+    twist (didn't cancel — probed numerically) and then a direct `thigh`
+    swing at 25° (kept the torso fixed but tore geometry at the hip crease).
+    Second pass reused the direct-`thigh`-swing approach at 10-20° instead
+    of 25° — clean, no tearing (same lesson as the arm-abduction gotcha:
+    angle-dependent, not axis-forbidden). Also dropped the literal 90°
+    "arms in a T-shape" (reproduced known abduction tearing) for 45°.
+    Shipped as `right/left_supine_spinal_twist.py`.
+- **Still blocked, not reattempted:**
+  - Supine Figure-4 (L/R) needs one shin to cross toward the opposite knee.
+    The convex-hulled foot "mitt" stretches into thin webbing at the swing
+    angle needed to actually reach — this is a bone-distance/joint-blend
+    problem, not an angle-magnitude one, so "just use a smaller angle" (what
+    fixed the spinal twist) doesn't apply here. Base bent-knee pose renders
+    fine on its own; only the cross itself fails.
+
+Net: 4 of 6 target exercises shipped, verified in the running app (not just
+Blender renders) via `SupineExercisesUITests`. Supine Figure-4 remains open
+for a future session.
 
 ## 5. Per-exercise process (unchanged from the existing pipeline)
 

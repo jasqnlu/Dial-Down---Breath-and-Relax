@@ -557,6 +557,152 @@ Also note the audit plan's "Tier A batch (10 exercises)" undercounts — it
 counted table rows, but most rows are L/R pairs. Tier A was really 18
 exercises; 12 shipped, 6 deferred as above.
 
+## Supine pose probe (2026-08-09): base pose + two of three follow-ups solved, 4 exercises shipped
+
+Ran the Tier B "supine / lying pose" experiment the rotation-audit plan
+flagged as highest-value (would unblock Supine Chest Opener, Supine Spinal
+Twist, and Supine Figure-4, six exercises total). First pass shipped nothing
+(three follow-on techniques all failed — see the "NOT solved" writeups
+below, kept for the record since the failures themselves are useful data).
+**Second pass fixed two of the three** with different techniques and
+shipped 4 of the 6 exercises: `right/left_supine_chest_opener.py`
+(side-lying, via an object-level roll instead of a second hips pose-bone
+rotation) and `right/left_supine_spinal_twist.py` (flat-on-back, via a
+direct `thigh` swing instead of a hips-twist-plus-counter-rotation). Only
+Supine Figure-4 (L/R) remains blocked — the ankle-cross problem is a
+genuinely different failure mode (mesh stretching from bone-distance, not a
+rotation-composition or tearing-angle problem) and wasn't revisited.
+
+**Proven: `hips` local-X = −90° (held constant across the whole clip) tips
+the ENTIRE rig — spine/chest/head/arms/legs, everything downstream in the
+parent chain — from standing to lying flat.** Validated numerically (a
+throwaway `_supine_probe.py`, deleted after use — recreate from this note):
+at rest, hips/spine/chest/head tails all sit at x=0, climbing z from 1.07 to
+1.92. At `hips` local-X = −90, they all land at the SAME z (0.958) with y
+climbing from 0 to 0.958 — a flat horizontal line, exactly a lying silhouette.
+`+90` produces the mirror (also flat, but the front of the torso ends up
+facing the ground instead of the sky — see below).
+
+**Face-up (supine) vs face-down (prone) — the sign that matters:**
+`hips` local-X = **−90 → supine (face up)**, confirmed by rendering (below);
+`+90 → prone (face down)`. This follows the same "+X = forward pitch"
+convention already documented for spine/chest/head (forward = world −Y) —
+tipping forward past horizontal lands face-down, tipping backward lands
+face-up. Unlike the twist-direction sign (Finding 4), this one was right on
+the first guess, but was still verified rather than assumed, per the
+handoff's own process.
+
+**Camera: top-down, not the usual azimuth-around-vertical-axis orbit.**
+Once the figure is lying flat, an "azimuth" camera (which orbits a vertical
+axis at a fixed height, built for a standing figure) has nothing useful to
+frame — a lying figure is roughly flat in one plane. A camera positioned
+directly above the figure's center, pointed straight down (`rotation_euler =
+(0, 0, 0)` — a bare Blender camera's un-rotated view direction is already
+−Z, i.e. top-down, which is *why* `camera_for_azimuth` needs `rot=(90,0,th)`
+to reach its normal level shots), reads cleanly: head at the top of the
+portrait frame, feet at the bottom, matching the app's 4:5 clip aspect
+almost exactly. Rendered and eyeballed — full front-of-body muscle detail
+visible, face clearly pointing at the camera (confirming face-up), no
+tearing. This is the convention to reuse for any future supine exercise.
+
+**First-pass failures (kept for the record — useful negative results):**
+
+1. **Side-lying roll, for Supine Chest Opener.** Read the actual instructions
+   before trusting the exercise name: "Supine Chest Opener" instructs *"Lie
+   on your right/left side"* — side-lying (lateral), not flat-on-the-back.
+   The rotation-audit plan filed this under "the supine pose" without
+   checking that; it needed its own, different base pose. First attempt —
+   layering a `hips` local-Y rotation on top of the local-X −90 (hypothesis:
+   X tips flat, a subsequent Y "rolls" the now-horizontal body over onto its
+   side, the same way a person rolls over in bed) — **was wrong.** Rendered
+   `hips = (−90, −90, 0)`: the body stayed face-up, just reoriented 90° in
+   the horizontal plane. Euler XYZ composition on a bone already at −90 on X
+   does not behave like an intrinsic "roll around the new local axis" the
+   way the numbers suggested it should.
+
+2. **Coupled thigh/shin tilt ("windshield wipers"), for Supine Spinal
+   Twist.** First attempt: twist `hips` local-Y and counter-rotate `spine`
+   local-Y by the same amount, hoping the two cancel and leave the upper
+   body visually fixed. **They don't cancel** — probed numerically
+   (`hips_y=+25, spine_y=−25`) and the spine/chest/head tails moved
+   substantially (e.g. spine.x went from 0 to −0.146), proving simple
+   sign-negation across a parent/child Euler pair isn't equivalent to
+   canceling the parent's rotation once the parent already carries a large
+   unrelated rotation (the −90 base pitch). Second attempt: swing
+   `thigh.{L,R}` local-Z directly at 25° — kept the torso fixed (never
+   touched) but visibly pinched/tore at the hip crease, the same
+   "abduction tears geometry" failure mode documented for arm bones
+   (Gotcha #1, fourth-batch section above), generalizing to the hip joint.
+
+**Second pass — both fixed with different techniques, not more of the same:**
+
+1. **Side-lying roll — fixed via an OBJECT-level rotation, not a second
+   pose-bone rotation.** The failure above was stacking a second Euler
+   component onto the `hips` POSE BONE, which composes in the bone's own
+   already-rotated local frame — not the world-space "roll" the numbers
+   implied. Instead, after posing `hips` local-X = −90 (pose bone, as
+   before), rotate the ARMATURE OBJECT ITSELF around world Y (the axis the
+   body now lies along, established by the base-pose probe): `arm_obj.
+   rotation_euler = (0, r(roll_deg), 0)`. This is a genuinely different
+   space — object-level transforms compose in true world space, applied
+   after the internal pose — and it worked on the first retry: probed
+   numerically (X and Z swap between bones, Y — the length axis — stays
+   fixed) and confirmed by rendering, a clean side-lying profile with the
+   face correctly visible (confirming face-up-on-the-side, not face-down).
+   Sign: `roll_deg = +90` puts the RIGHT side up (lying on the LEFT side),
+   `−90` puts the LEFT side up — verified by comparing bone-tail Z, not
+   assumed. Landed in `_lib.py` as `apply_supine_base(arm_obj, roll_deg)`
+   and `run_supine(cfg)`, a parallel entry point to `run()` for anything
+   built on the supine base (recomputes camera bounds from the POSED mesh
+   instead of the standing rest pose, and uses a top-down camera instead of
+   the azimuth-orbit one `run()` assumes).
+   Shipped: `right_supine_chest_opener.py` (`ROLL_DEG=90`, right arm
+   sweeps from forward at shoulder height through overhead to behind via
+   local-X flexion, `chest` gets a shallow twist alongside) and
+   `left_supine_chest_opener.py` (mirror, `ROLL_DEG=-90`).
+
+2. **Windshield-wipers tilt — fixed by using a much smaller angle, not a
+   different axis.** The tearing at 25° was real, but re-tested at 10-15°
+   and it was clean (this is the same lesson as the arm-abduction gotcha:
+   the failure is angle-dependent, not axis-forbidden — smaller flexion-
+   adjacent angles are fine, it's specifically *large* abduction-like
+   swings that tear). Shipped at 20° at the peak keyframe (12° at the
+   quarter-keyframes) — visible without tearing. Also **dropped the
+   literal 90° "arms in a T-shape"** the instructions describe: reproduced
+   the same known abduction-tearing at that angle (a "cape" forming at both
+   armpits), so the shipped version uses 45° instead — a readable
+   approximation of "arms out to the sides," not a literal T. Sign for the
+   knee-swing and head-turn axes both confirmed by a coordinate probe
+   against the written instructions (not eyeballed off the render, which is
+   a mirrored top-down view and easy to misread — this is the same trap
+   Finding 4 already documents). Shipped: `right_supine_spinal_twist.py`
+   (knees fall left via `thigh` local-Z negative, head turns right via
+   `head` local-Y negative) and `left_supine_spinal_twist.py` (mirror).
+
+**Still blocked — different failure mode, not attempted again:**
+
+3. **Ankle-over-knee cross, for Supine Figure-4.** Swinging one `shin` bone
+   across the midline (large local-Z on top of its normal knee-fold) to
+   approximate resting an ankle near the opposite knee stretches the foot
+   "mitt" (the convex-hulled hand/foot club described in `_lib.py`) into
+   thin splayed webbing — it's far enough from the shin's own bone segment
+   that the joint-blend weighting doesn't hold it rigid at a large swing.
+   This is NOT the same failure as the windshield-wipers tearing (that was
+   angle-dependent and fixed by going smaller); a small-magnitude ankle
+   cross wouldn't actually reach the opposite knee, so there's no
+   equivalent "just use a smaller angle" fix. Not reattempted this session.
+   Options for next time: a shape-key-free approximation that doesn't
+   fully cross (resting the shin diagonally near, not on, the other knee),
+   or accepting a visible seam the way Reverse Prayer's wrist limitation
+   was accepted.
+
+**Net result: 4 of the 6 target exercises shipped** (`right/left_
+supine_chest_opener`, `right/left_supine_spinal_twist`), verified in the
+running app via `SupineExercisesUITests` (all four open and play in
+`ExerciseMediaCard` with correct muscle-target chips), unit tests green.
+Supine Figure-4 (L/R) remains blocked on a different problem than the other
+two solved this round.
+
 ## Related project context
 
 - Body Map architecture / SceneKit loading: `Breath - Relax &
