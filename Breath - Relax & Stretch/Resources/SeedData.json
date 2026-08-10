@@ -453,7 +453,8 @@
         "Hold for 20-30 seconds, breathing into your upper back.",
         "Slowly unwind and return to hands and knees."
       ],
-      "id": "7474a60c-53b0-573d-aa88-e606acaa4820"
+      "id": "7474a60c-53b0-573d-aa88-e606acaa4820",
+      "animationName": "left_thread_the_needle"
     },
     {
       "name": "Right Thread the Needle",
@@ -473,7 +474,8 @@
         "Hold for 20-30 seconds, breathing into your upper back.",
         "Slowly unwind and return to hands and knees."
       ],
-      "id": "b98e6327-ae2f-53e2-9bd1-98cc68ed30ba"
+      "id": "b98e6327-ae2f-53e2-9bd1-98cc68ed30ba",
+      "animationName": "right_thread_the_needle"
     },
     {
       "name": "Doorway Pec Stretch (Mid Chest)",

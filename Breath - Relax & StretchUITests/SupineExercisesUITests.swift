@@ -1,8 +1,9 @@
 import XCTest
 
-/// Verifies the six supine-pose animations (the 2026-08-09 Tier B probe:
-/// side-lying Chest Opener via an object-level roll, flat-on-back Spinal
-/// Twist via a small thigh-Z tilt, and Figure-4 via rigid mitt weighting)
+/// Verifies the eight new-base-pose animations from the 2026-08-09 Tier B
+/// work (side-lying Chest Opener via an object-level roll, flat-on-back
+/// Spinal Twist via a small thigh-Z tilt, Figure-4 via rigid mitt
+/// weighting, and Thread the Needle via the first quadruped base pose)
 /// actually open and play in the exercise detail screen, not just render
 /// cleanly in Blender.
 final class SupineExercisesUITests: XCTestCase {
@@ -14,7 +15,7 @@ final class SupineExercisesUITests: XCTestCase {
         add(shot)
     }
 
-    func testAllSixSupineAnimationsOpenAndPlay() throws {
+    func testAllEightAnimationsOpenAndPlay() throws {
         let names = [
             "Left Supine Chest Opener (Open Book)",
             "Right Supine Chest Opener (Open Book)",
@@ -22,6 +23,8 @@ final class SupineExercisesUITests: XCTestCase {
             "Right Supine Spinal Twist (Windshield Wipers)",
             "Left Supine Figure-4 Stretch",
             "Right Supine Figure-4 Stretch",
+            "Left Thread the Needle",
+            "Right Thread the Needle",
         ]
         for name in names {
             let app = XCUIApplication()

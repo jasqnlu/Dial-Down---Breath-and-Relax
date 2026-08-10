@@ -368,6 +368,32 @@ ANIMATION_HANDOFF.md`'s "Supine pose probe" section — summary:
 Net: all 6 target exercises shipped, verified in the running app (not just
 Blender renders) via `SupineExercisesUITests`.
 
+## 3d. Quadruped probe outcome (2026-08-09, same day)
+
+Followed the de-risking note above and attempted Thread the Needle — a
+genuinely new base pose (hands-and-knees), not a supine variant. Full
+derivation in `ANIMATION_HANDOFF.md`'s "Quadruped pose probe" section:
+
+- **Proven and documented:** an object-level Z translation
+  (`arm_obj.location`), not a pose-bone rotation, lowers the pelvis onto a
+  kneeling stance — `hips` is the unparented root, so rotating it alone
+  (as the supine base does) can't change where it sits in world space.
+  Landed in `_lib.py` as `apply_quadruped_base()` / `run_quadruped()`.
+- **Arm-to-floor reach angle found by iteration, not derivation** — same
+  lesson as the seated-pose work: once several large rotations compound,
+  small angle changes produce disproportionate world-space swings, so
+  probe + render beats hand algebra.
+- **Shipped with an honest caveat:** the reach-under motion is an
+  approximation, not a literal "arm slides through the gap under the
+  torso" — expected, since cross-midline arm adduction was already found
+  to collide with this mesh for the unrelated Standing Reach-Through
+  Twist. The shipped motion emphasizes the shoulder/head lowering toward
+  the mat instead.
+
+Net: both Thread the Needle exercises shipped (`right/left_
+thread_the_needle`), verified in the running app via
+`SupineExercisesUITests` (renamed to cover 8 exercises).
+
 ## 5. Per-exercise process (unchanged from the existing pipeline)
 
 1. Author a ~50-line `Tools/blender/exercises/<name>.py` script (`EXERCISE`,
