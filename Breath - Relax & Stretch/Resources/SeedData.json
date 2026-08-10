@@ -1409,7 +1409,8 @@
         "Hold for 20-30 seconds, feeling the stretch deep in your left hip and glute.",
         "Release and switch sides."
       ],
-      "id": "c6723b77-fc43-5ff3-bcf0-0693df05df21"
+      "id": "c6723b77-fc43-5ff3-bcf0-0693df05df21",
+      "animationName": "left_supine_figure_4"
     },
     {
       "name": "Right Supine Figure-4 Stretch",
@@ -1428,7 +1429,8 @@
         "Hold for 20-30 seconds, feeling the stretch deep in your right hip and glute.",
         "Release and switch sides."
       ],
-      "id": "73013368-058d-5d51-ba68-2851cb45adc9"
+      "id": "73013368-058d-5d51-ba68-2851cb45adc9",
+      "animationName": "right_supine_figure_4"
     },
     {
       "name": "Left Standing Figure-4 Stretch",

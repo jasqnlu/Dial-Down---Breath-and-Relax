@@ -352,6 +352,21 @@ def build_figure(meshes, arm_obj, bone_segs, node_map, worked_keywords):
             if len(chosen) > 1 and chosen[1][0] < chosen[0][0] * 2.0:
                 counts["blended_verts"] += 1
 
+    def rigid_weight(obj, bone):
+        """100% of every vertex to a single bone, no distance blending at
+        all. For hulled hand/foot 'mitts' ONLY — unlike muscle bellies,
+        which need to stretch across a joint (that's what blend_weights is
+        for), a mitt is a solid convex-hulled club that shouldn't deform.
+        blend_weights on a mitt pulls its far vertices toward whichever
+        second-nearest bone is closest AT THE ROTATED POSE, and a rigid
+        hull pulled by two competing weights is exactly what stretches into
+        thin webbing on a large swing (found 2026-08-09 trying to cross an
+        ankle over the opposite knee for Supine Figure-4 — see
+        ANIMATION_HANDOFF.md). A mitt rigidly attached to one bone can't
+        stretch no matter how far that bone rotates."""
+        vg = obj.vertex_groups.get(bone) or obj.vertex_groups.new(name=bone)
+        vg.add([v.index for v in obj.data.vertices], 1.0, 'REPLACE')
+
     for o in meshes:
         info = lookup(o.name) or {}
         if info.get("layer") == "skin" or o.name.lower().startswith("bodyskin"):
@@ -387,9 +402,11 @@ def build_figure(meshes, arm_obj, bone_segs, node_map, worked_keywords):
         muscle_objs.append(o)
 
     # Convex-hull each extremity cluster (hand, foot) into one solid mitt, then
-    # joint-blend weight it so its proximal end stays connected across the joint.
-    # (Forearms are NOT hulled — their convex hull comes out an ugly flat paddle;
-    # they keep their real geometry + joint-blend via the normal muscle path.)
+    # RIGIDLY weight it to its one owning bone (see rigid_weight's docstring —
+    # this used to be blend_weights, which stretched mitts into webbing on a
+    # large swing). (Forearms are NOT hulled — their convex hull comes out an
+    # ugly flat paddle; they keep their real geometry + joint-blend via the
+    # normal muscle path.)
     for key, entry in hull_objs.items():
         bone, objs = entry["bone"], entry["objs"]
         bpy.ops.object.select_all(action='DESELECT')
@@ -401,7 +418,7 @@ def build_figure(meshes, arm_obj, bone_segs, node_map, worked_keywords):
         mitt = bpy.context.view_layer.objects.active
         mitt.name = f"Club.{key}"
         convex_hull_object(mitt)
-        blend_weights(mitt, bone)
+        rigid_weight(mitt, bone)
         mitt.data.materials.clear()
         mitt.data.materials.append(mat_neutral)
         muscle_objs.append(mitt)
