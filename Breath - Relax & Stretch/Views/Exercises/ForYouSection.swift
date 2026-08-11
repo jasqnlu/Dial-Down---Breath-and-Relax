@@ -8,13 +8,10 @@ struct ForYouCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Image(systemName: exercise.type == .breath ? "wind" : "figure.mind.and.body")
-                .font(.system(size: 40))
-                .foregroundStyle(Color.luminaPrimary.opacity(0.55))
+            let category = ExerciseCategory.primary(for: exercise.targetBodyParts)
+            PoseGlyphIcon(exercise: exercise, category: category, size: 96)
                 .frame(maxWidth: .infinity)
                 .frame(height: 110)
-                .background(Color.luminaMintTint)
-                .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.panel, style: .continuous))
 
             Text(exercise.name)
                 .font(.luminaLabel)
