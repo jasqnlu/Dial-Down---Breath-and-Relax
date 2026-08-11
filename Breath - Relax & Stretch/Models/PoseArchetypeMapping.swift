@@ -44,32 +44,44 @@ enum PoseArchetypeMapping {
         "Runner's Lunge with Rotation (Right)": .standingTwist,
     ]
 
+    /// True for any name describing a lying-down position. Checked BEFORE
+    /// the `twist` / `forward fold` / `hamstring` clauses on purpose: the
+    /// initial 16 archetypes have no supine-twist or supine-fold pose, and
+    /// an honest "lying down" figure beats a confidently wrong seated one
+    /// (a seated glyph, complete with seat bar, for a supine exercise).
+    private static func isLyingDown(_ n: String) -> Bool {
+        n.contains("supine") || n.contains("reclined") || n.contains("lying")
+            || n.contains("legs up the wall") || n.contains("pelvic tilt")
+    }
+
     private static func classify(_ n: String) -> PoseArchetypeID {
         if n.contains("child's pose") { return .childsPose }
-        if n.contains("twist") {
-            return (n.contains("standing") || n.contains("lunge")) ? .standingTwist : .seatedTwist
-        }
-        if n.contains("neck") || n.contains("jaw") || n.contains("eye") || n.contains("temple")
-            || n.contains("temporalis") || n.contains("brow") || n.contains("forehead")
-            || n.contains("frontalis") || n.contains("tongue") || n.contains("20-20-20")
-            || n.contains("suboccipital") {
+        if n.contains("neck") || n.contains("chin") || n.contains("jaw") || n.contains("eye")
+            || n.contains("temple") || n.contains("temporalis") || n.contains("brow")
+            || n.contains("forehead") || n.contains("frontalis") || n.contains("tongue")
+            || n.contains("20-20-20") || n.contains("suboccipital") {
             return .seatedNeck
         }
-        if n.contains("figure-four") || n.contains("figure four") || n.contains("butterfly") {
+        if n.contains("figure-four") || n.contains("figure four") || n.contains("figure-4")
+            || n.contains("butterfly") {
             return .seatedFigureFour
-        }
-        if n.contains("side bend") || n.contains("side reach") || n.contains("crescent moon")
-            || n.contains("side stretch") {
-            return .standingSideBend
         }
         if n.contains("cat-cow") || n.contains("thread the needle") { return .quadruped }
         if n.contains("cobra") || n.contains("sphinx") || n.contains("prone") { return .prone }
         if n.contains("bridge") { return .bridge }
         if n.contains("knee-to-chest") || n.contains("happy baby") { return .supineKneeToChest }
+        // Lying-down check sits above twist / fold / hamstring deliberately.
+        if isLyingDown(n) { return .supineNeutral }
+        if n.contains("twist") {
+            return (n.contains("standing") || n.contains("lunge")) ? .standingTwist : .seatedTwist
+        }
+        if n.contains("side bend") || n.contains("side reach") || n.contains("crescent moon")
+            || n.contains("side stretch") {
+            return .standingSideBend
+        }
         if n.contains("forward fold") || n.contains("hamstring") || n.contains("ragdoll") {
             return n.contains("standing") ? .standingForwardFold : .seatedForwardFold
         }
-        if n.contains("supine") { return .supineNeutral }
         if n.contains("seated") { return .seatedNeutral }
         return .standingNeutral
     }
