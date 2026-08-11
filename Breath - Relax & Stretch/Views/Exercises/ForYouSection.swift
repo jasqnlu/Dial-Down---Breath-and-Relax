@@ -87,20 +87,9 @@ struct RecommendedCarousel: View {
 private struct RecommendedCard: View {
     let item: RecommendedExercise
 
-    private var icon: String {
-        item.exercise.type == .breath ? "wind" : "figure.mind.and.body"
-    }
-
     var body: some View {
         HStack(spacing: 14) {
-            Image(systemName: icon)
-                .font(.system(size: 30))
-                .foregroundStyle(item.category.accentColor)
-                .frame(width: 60, height: 60)
-                .background(
-                    RoundedRectangle(cornerRadius: LuminaRadius.chip, style: .continuous)
-                        .fill(item.category.accentColor.opacity(0.16))
-                )
+            PoseGlyphIcon(exercise: item.exercise, category: item.category, size: 60)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(item.category.rawValue.uppercased())
