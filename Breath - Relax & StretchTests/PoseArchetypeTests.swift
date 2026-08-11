@@ -31,4 +31,27 @@ struct PoseArchetypeTests {
             #expect(archetype.headRadius > 0, "\(id) has a non-positive headRadius")
         }
     }
+
+    @Test func everyArchetypeFitsInsideTheCircularBadge() {
+        // PoseGlyphIcon renders into a circle of radius 0.5 (normalized figure
+        // space), un-clipped. Every stroked point needs headroom for the
+        // stroke's own half-width; the head circle needs headroom for its
+        // own radius. This catches geometry that would render as a stray
+        // disc or clipped limb outside the badge, which no other test can see.
+        let strokeHalfWidth = 0.073 / 2  // matches PoseGlyphIcon's StrokeStyle lineWidth ratio
+        let center = CGPoint(x: 0.5, y: 0.5)
+        func distance(_ a: CGPoint, _ b: CGPoint) -> CGFloat {
+            (pow(a.x - b.x, 2) + pow(a.y - b.y, 2)).squareRoot()
+        }
+        for (id, archetype) in PoseArchetypeLibrary.all {
+            let headBudget = 0.5 - archetype.headRadius
+            #expect(distance(archetype.headCenter, center) <= headBudget,
+                     "\(id) head circle extends outside the badge")
+            let allStrokedPoints = archetype.limbs.flatMap { $0 } + archetype.jointDots
+            for point in allStrokedPoints {
+                #expect(distance(point, center) <= 0.5 - strokeHalfWidth,
+                         "\(id) has a point at \(point) outside the badge")
+            }
+        }
+    }
 }
