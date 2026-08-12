@@ -8,7 +8,7 @@ struct MotionAccentTests {
             let exercise = Exercise(name: name, type: .stretch,
                                     targetBodyParts: [], durationSeconds: 30,
                                     difficulty: 1, instructions: [])
-            #expect(MotionAccent.resolve(for: exercise) == .circular, name)
+            #expect(MotionAccent.resolve(for: exercise) == .circular)
         }
     }
 
@@ -17,7 +17,7 @@ struct MotionAccentTests {
             let exercise = Exercise(name: name, type: .stretch,
                                     targetBodyParts: [], durationSeconds: 30,
                                     difficulty: 1, instructions: [], cueStyle: .repeatMotion)
-            #expect(MotionAccent.resolve(for: exercise) == .none, name)
+            #expect(MotionAccent.resolve(for: exercise) == .none)
         }
     }
 
