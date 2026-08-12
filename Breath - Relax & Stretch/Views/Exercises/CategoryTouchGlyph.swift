@@ -8,6 +8,16 @@ struct CategoryTouchGlyph: View {
     let category: ExerciseCategory
     var size: CGFloat = 84
 
+    /// TouchGlyphArchetype's coordinate space already spans ~0.07–0.95
+    /// top-to-bottom (head to feet), so drawing it edge-to-edge across the
+    /// full `size` box left almost no breathing room once CategoryNode
+    /// stacks two lines of text underneath it inside the same circle —
+    /// unlike PoseGlyphIcon, which is the only thing in its badge. Insetting
+    /// every point by this fraction on each side keeps the figure clear of
+    /// its own box edges regardless of what `size` the caller passes.
+    private let contentInset: CGFloat = 0.11
+    private var contentScale: CGFloat { 1 - 2 * contentInset }
+
     private var archetype: TouchGlyphArchetype {
         TouchGlyphLibrary.all[category] ?? TouchGlyphLibrary.all[.core]!
     }
@@ -17,24 +27,44 @@ struct CategoryTouchGlyph: View {
             Circle().fill(category.accentColor.opacity(0.16))
 
             TouchGlyphPath(chains: [
-                archetype.spine, archetype.legLeft, archetype.legRight,
-                archetype.restingArm, archetype.pointingArm,
+                inset(archetype.spine), inset(archetype.legLeft), inset(archetype.legRight),
             ])
-            .stroke(category.accentColor, style: StrokeStyle(lineWidth: size * 0.066, lineCap: .round, lineJoin: .round))
+            .stroke(category.accentColor, style: StrokeStyle(lineWidth: size * 0.066 * contentScale, lineCap: .round, lineJoin: .round))
+
+            // Resting arm drawn dimmer than the pointing arm so the
+            // category-specific gesture — the whole point of this glyph
+            // family — reads as the salient shape instead of getting lost
+            // in a second, identical-looking limb.
+            TouchGlyphPath(chains: [inset(archetype.restingArm)])
+                .stroke(category.accentColor.opacity(0.55), style: StrokeStyle(lineWidth: size * 0.066 * contentScale, lineCap: .round, lineJoin: .round))
+
+            TouchGlyphPath(chains: [inset(archetype.pointingArm)])
+                .stroke(category.accentColor, style: StrokeStyle(lineWidth: size * 0.066 * contentScale, lineCap: .round, lineJoin: .round))
 
             Circle()
                 .fill(category.accentColor)
-                .frame(width: archetype.headRadius * 2 * size, height: archetype.headRadius * 2 * size)
-                .position(x: archetype.headCenter.x * size, y: archetype.headCenter.y * size)
+                .frame(width: archetype.headRadius * 2 * size * contentScale, height: archetype.headRadius * 2 * size * contentScale)
+                .position(insetPosition(archetype.headCenter))
 
             Circle()
                 .fill(category.accentColor)
-                .frame(width: size * 0.092, height: size * 0.092)
-                .overlay(Circle().strokeBorder(.white, lineWidth: size * 0.017))
-                .position(x: archetype.contactPoint.x * size, y: archetype.contactPoint.y * size)
+                .frame(width: size * 0.092 * contentScale, height: size * 0.092 * contentScale)
+                .overlay(Circle().strokeBorder(.white, lineWidth: size * 0.017 * contentScale))
+                .position(insetPosition(archetype.contactPoint))
         }
         .frame(width: size, height: size)
         .accessibilityHidden(true)
+    }
+
+    private func inset(_ p: CGPoint) -> CGPoint {
+        CGPoint(x: contentInset + p.x * contentScale, y: contentInset + p.y * contentScale)
+    }
+
+    private func inset(_ chain: [CGPoint]) -> [CGPoint] { chain.map(inset) }
+
+    private func insetPosition(_ p: CGPoint) -> CGPoint {
+        let normalized = inset(p)
+        return CGPoint(x: normalized.x * size, y: normalized.y * size)
     }
 }
 
