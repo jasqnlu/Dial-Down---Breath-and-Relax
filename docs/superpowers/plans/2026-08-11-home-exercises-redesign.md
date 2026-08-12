@@ -156,7 +156,7 @@ struct RoadmapWaveGeometryTests {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:Breath_-_Relax_-_StretchTests/RoadmapWaveGeometryTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests/RoadmapWaveGeometryTests"`
 Expected: FAIL — `RoadmapWaveGeometry` doesn't exist.
 
 - [ ] **Step 3: Implement `RoadmapWaveGeometry`**
@@ -296,7 +296,7 @@ the real signature if it's drifted.
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:Breath_-_Relax_-_StretchTests/RoadmapWaveRenderingTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests/RoadmapWaveRenderingTests"`
 Expected: FAIL — `RoadmapWave` doesn't exist.
 
 - [ ] **Step 3: Implement `RoadmapWaveShape` and `RoadmapWave`**
@@ -464,7 +464,7 @@ struct TouchGlyphLibraryTests {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:Breath_-_Relax_-_StretchTests/TouchGlyphLibraryTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests/TouchGlyphLibraryTests"`
 Expected: FAIL — types don't exist.
 
 - [ ] **Step 3: Implement `TouchGlyphArchetype` and the 8-entry library**
@@ -599,7 +599,7 @@ struct CategoryTouchGlyphRenderingTests {
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:Breath_-_Relax_-_StretchTests/CategoryTouchGlyphRenderingTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests/CategoryTouchGlyphRenderingTests"`
 Expected: FAIL — `CategoryTouchGlyph` doesn't exist.
 
 - [ ] **Step 3: Implement `CategoryTouchGlyph`**
@@ -708,7 +708,7 @@ Insert the glyph above the existing `VStack`, sized to leave room for the two li
 
 - [ ] **Step 6: Build and screenshot**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16'`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17'`
 Expected: BUILD SUCCEEDED. Then follow `.claude/skills/verify/SKILL.md` to launch on the Exercises tab
 (`-debugInitialTab 2`) and screenshot the category ring — confirm all 8 circles show a distinct touch gesture
 and the existing count/name text still fits without visual crowding.
@@ -771,10 +771,10 @@ Replace with:
 
 - [ ] **Step 2: Build, test, screenshot**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16'`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17'`
 Expected: BUILD SUCCEEDED.
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16'`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17'`
 Expected: full suite passes.
 
 Follow `.claude/skills/verify/SKILL.md`, launch on Home (`-debugInitialTab 0`), screenshot the hero. Confirm
@@ -852,7 +852,7 @@ writing this — match the property names/types exactly as they exist there.
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:Breath_-_Relax_-_StretchTests/ExerciseArtTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests/ExerciseArtTests"`
 Expected: FAIL — `ExerciseArt` doesn't exist.
 
 - [ ] **Step 3: Implement `ExerciseArt`**
@@ -971,7 +971,7 @@ struct ExerciseGridTileRenderingTests {
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:Breath_-_Relax_-_StretchTests/ExerciseGridTileRenderingTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests/ExerciseGridTileRenderingTests"`
 Expected: FAIL — types don't exist.
 
 - [ ] **Step 3: Implement `ExerciseGridTile`**
@@ -1146,7 +1146,7 @@ the tile's `onTap` at the same state instead of wrapping a `NavigationLink`.
 
 - [ ] **Step 2: Build, test, screenshot**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16'`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17'`
 Expected: BUILD SUCCEEDED.
 
 Follow `.claude/skills/verify/SKILL.md`, launch on Exercises (`-debugInitialTab 2`), type a search query,
@@ -1245,7 +1245,7 @@ visible when a group screen is pushed, fixing the gap described in the design sp
 
 - [ ] **Step 4: Build, test, screenshot**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16'`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17'`
 Expected: BUILD SUCCEEDED.
 
 Follow `.claude/skills/verify/SKILL.md`, launch on Exercises, zoom into a category, tap a satellite group node.
@@ -1393,7 +1393,7 @@ And add a `.navigationDestination` to the view's modifier chain (alongside the e
 
 - [ ] **Step 4: Build, test, screenshot**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16'`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17'`
 Expected: BUILD SUCCEEDED.
 
 Follow `.claude/skills/verify/SKILL.md`, tap a body region on the 3D model, tap "Find Exercises," screenshot
@@ -1475,12 +1475,12 @@ Replace with:
 
 - [ ] **Step 4: Build and test**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16'`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17'`
 Expected: BUILD SUCCEEDED — `Routine` is already an existing `@Model` type imported via SwiftData in this
 file's `import SwiftData`, no new import needed.
 
 Run the full test suite:
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16'`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17'`
 Expected: passes — with `pinnedWakeUpRoutineID` empty by default (fresh installs / existing tests), the new
 `if let pinnedSessionExercises` branch is always `nil` and every existing `sessionExercises`/hero test keeps
 its prior behavior unchanged.
@@ -1563,7 +1563,7 @@ struct CustomizeRoutineViewRenderingTests {
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:Breath_-_Relax_-_StretchTests/CustomizeRoutineViewRenderingTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests/CustomizeRoutineViewRenderingTests"`
 Expected: FAIL — `CustomizeRoutineView` doesn't exist.
 
 - [ ] **Step 3: Implement `CustomizeRoutineView`**
@@ -1860,10 +1860,10 @@ modifier on `TodayView.body`, add a sibling sheet:
 
 - [ ] **Step 3: Build, test, screenshot**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16'`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17'`
 Expected: BUILD SUCCEEDED.
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16'`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17'`
 Expected: full suite passes.
 
 Follow `.claude/skills/verify/SKILL.md`: launch on Home, tap Customize, confirm the sheet opens with today's
@@ -1948,7 +1948,7 @@ struct MiniRoutineStateTests {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:Breath_-_Relax_-_StretchTests/MiniRoutineStateTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests/MiniRoutineStateTests"`
 Expected: FAIL — `MiniRoutineState` doesn't exist.
 
 - [ ] **Step 3: Implement `MiniRoutineState`**
@@ -2101,7 +2101,7 @@ starting a session, rather than introducing a second presentation style.
 
 - [ ] **Step 4: Build, test, screenshot**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination 'platform=iOS Simulator,name=iPhone 16'`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17'`
 Expected: BUILD SUCCEEDED.
 
 Follow `.claude/skills/verify/SKILL.md`: tap a body region, confirm tapping a tile's body starts that single
