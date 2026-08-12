@@ -2323,7 +2323,8 @@
         "Release slowly and switch sides."
       ],
       "caution": "Press gently - this targets a sensitive area of the shoulder. Stop if you feel pinching.",
-      "id": "04e53950-50e2-500a-b118-63b704538881"
+      "id": "04e53950-50e2-500a-b118-63b704538881",
+      "animationName": "left_sleeper_stretch.mp4"
     },
     {
       "name": "Right Sleeper Stretch (Internal Rotation)",
@@ -2343,7 +2344,8 @@
         "Release slowly and switch sides."
       ],
       "caution": "Press gently - this targets a sensitive area of the shoulder. Stop if you feel pinching.",
-      "id": "ae4f6735-3600-5207-a271-ba9139640cf3"
+      "id": "ae4f6735-3600-5207-a271-ba9139640cf3",
+      "animationName": "right_sleeper_stretch.mp4"
     },
     {
       "name": "Left Doorway External Rotation Stretch",
@@ -2362,7 +2364,8 @@
         "Hold for 15-20 seconds, feeling the stretch in the front-outer left shoulder.",
         "Rotate back to release and switch sides."
       ],
-      "id": "4e531138-59be-589f-9f92-e02806481373"
+      "id": "4e531138-59be-589f-9f92-e02806481373",
+      "animationName": "left_doorway_external_rotation_stretch.mp4"
     },
     {
       "name": "Right Doorway External Rotation Stretch",
@@ -2381,7 +2384,8 @@
         "Hold for 15-20 seconds, feeling the stretch in the front-outer right shoulder.",
         "Rotate back to release and switch sides."
       ],
-      "id": "d033dc4e-2e38-5de1-8b56-d2b4f737f7b7"
+      "id": "d033dc4e-2e38-5de1-8b56-d2b4f737f7b7",
+      "animationName": "right_doorway_external_rotation_stretch.mp4"
     },
     {
       "name": "Left Overhead Shoulder Stretch with Strap",

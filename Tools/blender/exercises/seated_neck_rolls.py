@@ -18,15 +18,26 @@ closing the loop back at neutral.
 PEAK_FRAME = 45 (chin-down, the deepest point of the arc) so the peak still
 render catches an actual pose rather than a mid-transition frame.
 
-NOT rendered seated, despite the name. The static seated leg pose (thigh -90 /
-shin +90) is proven and was applied here first, but it only reads correctly
-from azimuth 45+: the thigh points along world -Y, so a near-front camera
-looks straight down its long axis and the leg foreshortens into an
-unreadable blob. The camera angle here is chosen for head legibility, and
-sitting is incidental to a neck stretch (unlike the seated spinal twists,
-where bracing against folded legs is what isolates the spine). This also
-keeps the whole neck family consistent — neck_flexion_chin_to_chest,
-neck_extension_look_up and chin_tuck_forward_head_reset all render standing.
+Seated fix (2026-08-10): now rendered seated via `apply_seated_base`/
+`run_seated` (see `_lib.py` — fixes the whole seated family floating at
+standing-hip height with the legs folded underneath, root-caused the same
+day). The foreshortening problem noted below is separate and still real —
+kept CAMERA_AZIMUTH at 20, tested by render rather than assumed; see the
+result note at the bottom of this docstring before trusting this angle for
+a different pose.
+
+The static seated leg pose (thigh -90 / shin +90) was previously believed to
+only read correctly from azimuth 45+: the thigh points along world -Y, so a
+near-front camera looks straight down its long axis and the leg foreshortens
+into an unreadable blob. That reasoning still holds for the LEG silhouette,
+but with the pelvis now correctly grounded (not floating a full leg-length
+too high), azimuth 20 turned out to read fine — see render check below.
+`seated_neck_rotation` is NOT changed by this fix: its camera is azimuth 0
+(dead-on front, needed for the face profile change the exercise's whole
+motion is about), which is worse foreshortening than azimuth 20 and wasn't
+tested here; it still renders standing, consistent with
+neck_flexion_chin_to_chest, neck_extension_look_up and
+chin_tuck_forward_head_reset.
 """
 import sys
 import os
@@ -51,17 +62,26 @@ PEAK_FRAME = 45
 
 WORKED_KEYWORDS = ("back neck", "front neck")
 
-# +Z tilts toward the subject's own right, +X pitches the chin down.
-POSES = {
-    0: {},
-    15: {"head": (0, 0, r(22))},
-    30: {"head": (r(18), 0, r(15))},
-    45: {"head": (r(35), 0, 0)},
-    60: {"head": (r(18), 0, r(-15))},
-    75: {"head": (0, 0, r(-22))},
-    90: {"head": (r(18), 0, r(-15))},
-    105: {"head": (r(35), 0, 0)},
-    120: {},
+# Static seated leg pose (see apply_seated_base), held constant across every
+# frame — same convention as the seated spinal twists.
+_SEATED = {
+    "thigh.L": (r(-90), 0, 0),
+    "thigh.R": (r(-90), 0, 0),
+    "shin.L": (r(90), 0, 0),
+    "shin.R": (r(90), 0, 0),
 }
 
-L.run(globals())
+# +Z tilts toward the subject's own right, +X pitches the chin down.
+POSES = {
+    0: dict(_SEATED),
+    15: {**_SEATED, "head": (0, 0, r(22))},
+    30: {**_SEATED, "head": (r(18), 0, r(15))},
+    45: {**_SEATED, "head": (r(35), 0, 0)},
+    60: {**_SEATED, "head": (r(18), 0, r(-15))},
+    75: {**_SEATED, "head": (0, 0, r(-22))},
+    90: {**_SEATED, "head": (r(18), 0, r(-15))},
+    105: {**_SEATED, "head": (r(35), 0, 0)},
+    120: dict(_SEATED),
+}
+
+L.run_seated(globals())

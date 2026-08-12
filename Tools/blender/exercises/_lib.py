@@ -782,6 +782,242 @@ def run_quadruped(cfg):
         raise
 
 
+def apply_seated_base(arm_obj, drop=0.46):
+    """Fixes the "seated" exercises rendering as a standing figure with its
+    legs floating mid-air (found 2026-08-10, reported as "none of them are
+    actually seated"). Root cause: the existing seated leg-fold convention
+    (`thigh.{L,R}` local-X = -90, `shin.{L,R}` local-X = +90, see
+    ANIMATION_HANDOFF.md's "Rotation audit" section) only rotates bones
+    BELOW `hips` — `hips` itself, the unparented root, never moves. Folding
+    the thigh from vertical to horizontal shortens the leg's vertical drop
+    by one thigh-length, but nothing lowers the pelvis to compensate, so the
+    whole rig keeps standing-height hip elevation with the legs folded
+    underneath it — anatomically like sitting on an invisible stool at
+    standing-hip height, not a normal seat. Same root cause class as
+    `apply_quadruped_base` (hips is the unparented root; posing its
+    descendants can't change where hips itself sits in world space), same
+    fix shape: an OBJECT-level Z translation, not a pose-bone rotation.
+
+    `drop` was found by probe (not derived): with the static seated leg pose
+    applied and no drop, `shin.{L,R}`'s tail (the foot) sits 0.46 world units
+    above the standing-rest floor (`lo.z`) — call it the pose's inherent
+    "hover height". Translating the whole armature object down by exactly
+    that amount brings the feet to the floor and drops the pelvis to
+    z=0.498 (~26% of standing height, in line with knee-to-floor/shin-length
+    reasoning), while chest/head lower by the same 0.46 units — correct,
+    since a real person's head does drop when they sit down, by the same
+    amount their hips do. This must be called once (not animated) AFTER
+    `build_armature`/`build_figure` and BEFORE `animate()`; the calling
+    script's own POSES dict still needs the constant `_SEATED` thigh/shin
+    entries in every frame (unchanged from the existing convention — this
+    function only adds the missing pelvis drop, it doesn't touch the leg
+    fold itself)."""
+    arm_obj.location = Vector((0, 0, -drop))
+
+
+def run_seated(cfg):
+    """Like `run_quadruped`, but for exercises built on the seated base pose
+    (apply_seated_base): posed bounds are recomputed after the pelvis drop
+    (the pre-pose standing bounds `run()` uses would frame far too much empty
+    space below the now-lower figure), camera is a normal level/azimuth shot
+    reusing `camera_for_azimuth`. cfg needs everything `run()` needs, plus
+    `CAMERA_AZIMUTH` and optionally `SEATED_DROP` (default 0.46, see
+    `apply_seated_base`)."""
+    exercise = cfg["EXERCISE"]
+    out_dir = cfg["OUT_DIR"]
+
+    def main():
+        clear_scene()
+        node_map = load_node_map(cfg["NODE_MAP"])
+        meshes = import_obj(cfg["APP_OBJ"])
+        lo, hi = normalize_orientation(meshes)
+        arm_obj, bone_segs = build_armature(lo, hi)
+        skin, muscle_objs, mat_skin, counts = build_figure(
+            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"])
+        log(f"muscles: {len(muscle_objs)}  (mapped={counts['mapped']} "
+            f"fallback={counts['fallback']}  highlight={counts['highlight']} "
+            f"neutral={counts['neutral']}  mitts={counts['mitts']})")
+
+        neck_z, neck_w = detect_neck_z(skin, lo, hi)
+        clip_skin_to_head(skin, neck_z)
+
+        muscles = join_muscles(muscle_objs)
+        add_armature(muscles, arm_obj)
+        bind_head_skin(skin, arm_obj, mat_skin)
+
+        apply_seated_base(arm_obj, cfg.get("SEATED_DROP", 0.46))
+        bpy.context.view_layer.update()
+
+        animate(arm_obj, cfg["POSES"])
+        peak_frame = cfg.get("PEAK_FRAME", 60)
+        bpy.context.scene.frame_set(peak_frame)
+        bpy.context.view_layer.update()
+        for bone_name in cfg["POSES"].get(peak_frame, {}):
+            pb = arm_obj.pose.bones.get(bone_name)
+            if pb:
+                w = arm_obj.matrix_world @ pb.tail
+                log(f"peak {bone_name} tail world = ({w.x:.3f}, {w.y:.3f}, {w.z:.3f})")
+
+        plo, phi = world_bounds_of([muscles, skin])
+        log(f"posed bounds: {tuple(round(v, 3) for v in plo)} .. "
+            f"{tuple(round(v, 3) for v in phi)}")
+        center = Vector(((plo.x + phi.x) / 2, (plo.y + phi.y) / 2, (plo.z + phi.z) / 2))
+        span = max(phi.y - plo.y, phi.x - plo.x, phi.z - plo.z)
+        bpy.context.scene.frame_set(0)
+
+        stray_cam, _cz = setup_render(lo, hi, cfg.get("ORTHO_SCALE_MULT", 1.2))
+        bpy.data.objects.remove(stray_cam, do_unlink=True)
+        cam_data = bpy.data.cameras.new("Cam")
+        cam_data.type = 'ORTHO'
+        cam_data.ortho_scale = span * cfg.get("ORTHO_SCALE_MULT", 1.2)
+        cam = bpy.data.objects.new("Cam", cam_data)
+        bpy.context.collection.objects.link(cam)
+        bpy.context.scene.camera = cam
+        loc, rot = camera_for_azimuth(cfg["CAMERA_AZIMUTH"], center.z, radius=6.0)
+        cam.location = Vector(loc)
+        cam.rotation_euler = Euler(rot)
+
+        render_all_supine(cam, out_dir, exercise, peak_frame)
+        render_demo_video_supine(cam, out_dir, exercise, cfg["VIDEO_NAME"])
+        glb_path, blend_path = export(out_dir, exercise)
+
+        log(f"[{exercise}] built + exported.")
+        log(f"animated model : {glb_path}")
+        log(f"editable scene : {blend_path}")
+
+    try:
+        main()
+        write_log_file(out_dir, exercise)
+        show_popup(f"{exercise} exported ✓", 'CHECKMARK')
+    except BaseException as exc:
+        log("")
+        log(f"ERROR: {exc}")
+        log(traceback.format_exc())
+        write_log_file(out_dir, exercise)
+        show_popup(f"{exercise} FAILED - see details", 'ERROR')
+        raise
+
+
+def run_supine_side(cfg):
+    """Like `run_quadruped`, but for exercises built on the supine base pose
+    (apply_supine_base) whose working motion is a HEIGHT change (toward/away
+    from the mat) rather than a horizontal sweep — found necessary for
+    Sleeper Stretch (2026-08-10): `run_supine`'s top-down orthographic camera
+    looks straight down world Z, so it is structurally blind to any Z-axis
+    motion (an ortho top-down view only shows the X/Y footprint; the working
+    "press the forearm down toward the floor" motion is exactly the axis
+    that camera can't see — confirmed by rendering it and seeing no visible
+    difference between rest and peak). Every other supine exercise so far
+    (chest opener, spinal twist, figure-4) happens to sweep horizontally, so
+    this gap was never hit before.
+
+    First attempt reused `camera_for_azimuth` verbatim (same as
+    run_quadruped) and produced an unusable render: that function orbits
+    around world Z at a fixed height, which is right for a standing or
+    quadruped figure (long axis = Z or X) but wrong here — `apply_supine_base`
+    always leaves the body's own long axis along world Y regardless of
+    `ROLL_DEG` (only the WIDTH axis rotates between X and Z), so a
+    Z-orbiting camera looks straight down the body's SHORTEST dimension and
+    frames it as a thin horizontal sliver in a tall portrait video, mostly
+    empty space. Fixed by orbiting around world Y instead (the body's own
+    long axis) with the camera's up vector set to world Y too, so the body's
+    full length maps to the portrait frame's tall dimension and the
+    forearm's Z swing reads as width — cfg needs everything `run_supine`
+    needs, plus `CAMERA_AZIMUTH` (here: rotation around the body's long Y
+    axis, not world Z — 0 views from directly in front)."""
+    exercise = cfg["EXERCISE"]
+    out_dir = cfg["OUT_DIR"]
+
+    def main():
+        clear_scene()
+        node_map = load_node_map(cfg["NODE_MAP"])
+        meshes = import_obj(cfg["APP_OBJ"])
+        lo, hi = normalize_orientation(meshes)
+        arm_obj, bone_segs = build_armature(lo, hi)
+        skin, muscle_objs, mat_skin, counts = build_figure(
+            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"])
+        log(f"muscles: {len(muscle_objs)}  (mapped={counts['mapped']} "
+            f"fallback={counts['fallback']}  highlight={counts['highlight']} "
+            f"neutral={counts['neutral']}  mitts={counts['mitts']})")
+
+        neck_z, neck_w = detect_neck_z(skin, lo, hi)
+        clip_skin_to_head(skin, neck_z)
+
+        muscles = join_muscles(muscle_objs)
+        add_armature(muscles, arm_obj)
+        bind_head_skin(skin, arm_obj, mat_skin)
+
+        apply_supine_base(arm_obj, cfg.get("ROLL_DEG", 0))
+        bpy.context.view_layer.update()
+
+        animate(arm_obj, cfg["POSES"])
+        peak_frame = cfg.get("PEAK_FRAME", 60)
+        bpy.context.scene.frame_set(peak_frame)
+        bpy.context.view_layer.update()
+        for bone_name in cfg["POSES"].get(peak_frame, {}):
+            pb = arm_obj.pose.bones.get(bone_name)
+            if pb:
+                w = arm_obj.matrix_world @ pb.tail
+                log(f"peak {bone_name} tail world = ({w.x:.3f}, {w.y:.3f}, {w.z:.3f})")
+
+        plo, phi = world_bounds_of([muscles, skin])
+        log(f"posed bounds: {tuple(round(v, 3) for v in plo)} .. "
+            f"{tuple(round(v, 3) for v in phi)}")
+        center = Vector(((plo.x + phi.x) / 2, (plo.y + phi.y) / 2, (plo.z + phi.z) / 2))
+        # Deliberately NOT the max-of-all-axes span run_quadruped uses: the
+        # body's long Y extent would dominate and zoom out so far the width
+        # (X/Z) swing we actually care about becomes a sliver. Frame on the
+        # width axes plus a little of the length so the figure still fits.
+        width_span = max(phi.x - plo.x, phi.z - plo.z)
+        length_span = phi.y - plo.y
+        bpy.context.scene.frame_set(0)
+
+        stray_cam, _cz = setup_render(lo, hi, cfg.get("ORTHO_SCALE_MULT", 1.2))
+        bpy.data.objects.remove(stray_cam, do_unlink=True)
+        cam_data = bpy.data.cameras.new("Cam")
+        cam_data.type = 'ORTHO'
+        # Portrait 512x640 (4:5) — fit the long Y axis vertically, the width
+        # axes horizontally, whichever is more constraining for that aspect.
+        cam_data.ortho_scale = max(length_span, width_span * (640 / 512)) * cfg.get("ORTHO_SCALE_MULT", 1.15)
+        cam = bpy.data.objects.new("Cam", cam_data)
+        bpy.context.collection.objects.link(cam)
+        bpy.context.scene.camera = cam
+        # Orbit around the body's own long axis (world Y — apply_supine_base
+        # always leaves it there regardless of ROLL_DEG), not world Z: a
+        # Z-orbiting camera looks down the SHORTEST body dimension here. Up
+        # vector is world Y so the body's full length maps to the portrait
+        # frame's tall dimension.
+        az = r(cfg["CAMERA_AZIMUTH"])
+        radius = 6.0
+        loc = center + Vector((radius * math.sin(az), 0, radius * math.cos(az)))
+        forward = (center - loc).normalized()
+        up = Vector((0, 1, 0))
+        z_local = -forward
+        right = up.cross(z_local)
+        cam.location = loc
+        cam.rotation_euler = Matrix((right, up, z_local)).transposed().to_euler()
+
+        render_all_supine(cam, out_dir, exercise, peak_frame)
+        render_demo_video_supine(cam, out_dir, exercise, cfg["VIDEO_NAME"])
+        glb_path, blend_path = export(out_dir, exercise)
+
+        log(f"[{exercise}] built + exported.")
+        log(f"animated model : {glb_path}")
+        log(f"editable scene : {blend_path}")
+
+    try:
+        main()
+        write_log_file(out_dir, exercise)
+        show_popup(f"{exercise} exported ✓", 'CHECKMARK')
+    except BaseException as exc:
+        log("")
+        log(f"ERROR: {exc}")
+        log(traceback.format_exc())
+        write_log_file(out_dir, exercise)
+        show_popup(f"{exercise} FAILED - see details", 'ERROR')
+        raise
+
+
 def run_supine(cfg):
     """Like `run()`, but for exercises built on the supine base pose
     (apply_supine_base): the standing rest bounds are useless for camera
