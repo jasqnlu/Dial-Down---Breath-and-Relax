@@ -354,6 +354,7 @@ private struct CategoryNode: View {
                 .overlay(Circle().strokeBorder(.white.opacity(0.50), lineWidth: 1.5))
                 .shadow(color: category.accentColor.opacity(isFocused ? 0.28 : 0.14), radius: isFocused ? 14 : 8)
             VStack(spacing: 3) {
+                CategoryTouchGlyph(category: category, size: diameter * 0.5)
                 Text(category.rawValue)
                     .font(.luminaLabel)
                     .foregroundStyle(Color.luminaOnSurface)
