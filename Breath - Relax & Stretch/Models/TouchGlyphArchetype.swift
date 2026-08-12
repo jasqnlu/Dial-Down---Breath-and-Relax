@@ -49,12 +49,12 @@ enum TouchGlyphLibrary {
             contactPoint: CGPoint(x: 0.48, y: 0.37)
         ),
         .back: archetype(
-            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.62, y: 0.40), CGPoint(x: 0.46, y: 0.51)],
-            contactPoint: CGPoint(x: 0.49, y: 0.52)
+            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.66, y: 0.44), CGPoint(x: 0.44, y: 0.58)],
+            contactPoint: CGPoint(x: 0.47, y: 0.59)
         ),
         .core: archetype(
-            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.58, y: 0.36), CGPoint(x: 0.47, y: 0.45)],
-            contactPoint: CGPoint(x: 0.49, y: 0.46)
+            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.56, y: 0.34), CGPoint(x: 0.48, y: 0.42)],
+            contactPoint: CGPoint(x: 0.49, y: 0.43)
         ),
         .arms: archetype(
             pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.42, y: 0.34), CGPoint(x: 0.34, y: 0.42)],
