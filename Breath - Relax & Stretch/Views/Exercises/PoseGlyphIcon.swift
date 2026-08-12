@@ -8,12 +8,15 @@ struct PoseGlyphIcon: View {
     let archetype: PoseArchetype
     let mirrored: Bool
     let color: Color
+    let motion: MotionAccent
     var size: CGFloat = 96
 
-    init(archetype: PoseArchetype, mirrored: Bool, color: Color, size: CGFloat = 96) {
+    init(archetype: PoseArchetype, mirrored: Bool, color: Color,
+         size: CGFloat = 96, motion: MotionAccent = .none) {
         self.archetype = archetype
         self.mirrored = mirrored
         self.color = color
+        self.motion = motion
         self.size = size
     }
 
@@ -25,12 +28,13 @@ struct PoseGlyphIcon: View {
             archetype: PoseArchetypeLibrary.all[id] ?? PoseArchetypeLibrary.all[.standingNeutral]!,
             mirrored: mirrored,
             color: category.accentColor,
-            size: size
+            size: size,
+            motion: MotionAccent.resolve(for: exercise)
         )
     }
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .bottomTrailing) {
             Circle().fill(color.opacity(0.16))
 
             if let seatRect = archetype.seatRect {
@@ -55,6 +59,12 @@ struct PoseGlyphIcon: View {
                 .fill(color)
                 .frame(width: archetype.headRadius * 2 * size, height: archetype.headRadius * 2 * size)
                 .position(x: mirroredX(archetype.headCenter.x) * size, y: archetype.headCenter.y * size)
+
+            if motion == .circular, size >= 48 {
+                MotionAccentBadge(color: color, size: size * 0.24)
+                    .padding(size * 0.04)
+                    .accessibilityHidden(true)
+            }
         }
         .frame(width: size, height: size)
         .accessibilityHidden(true)
@@ -62,6 +72,22 @@ struct PoseGlyphIcon: View {
 
     private func mirroredX(_ x: CGFloat) -> CGFloat {
         mirrored ? 1 - x : x
+    }
+}
+
+private struct MotionAccentBadge: View {
+    let color: Color
+    let size: CGFloat
+
+    var body: some View {
+        ZStack(alignment: .center) {
+            Circle().fill(color)
+            Image(systemName: "arrow.clockwise")
+                .font(.system(size: size * 0.49, weight: .bold))
+                .foregroundStyle(.white)
+                .minimumScaleFactor(0.7)
+        }
+        .frame(width: size, height: size)
     }
 }
 

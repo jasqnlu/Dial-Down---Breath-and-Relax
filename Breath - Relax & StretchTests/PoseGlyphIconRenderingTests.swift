@@ -19,4 +19,12 @@ struct PoseGlyphIconRenderingTests {
         let renderer = ImageRenderer(content: icon)
         #expect(renderer.cgImage != nil)
     }
+    @Test func circularAccentRendersAtProductionSizes() {
+        let archetype = PoseArchetypeLibrary.all[.standingNeutral]!
+        for size in [48, 60, 72, 96] {
+            let icon = PoseGlyphIcon(archetype: archetype, mirrored: false,
+                                     color: .orange, size: CGFloat(size), motion: .circular)
+            #expect(ImageRenderer(content: icon).cgImage != nil, "Failed at \(size)pt")
+        }
+    }
 }

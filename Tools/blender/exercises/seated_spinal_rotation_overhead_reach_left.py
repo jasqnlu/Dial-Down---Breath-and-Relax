@@ -79,4 +79,4 @@ POSES = {
     120: dict(_SEATED),
 }
 
-L.run(globals())
+L.run_seated(globals())

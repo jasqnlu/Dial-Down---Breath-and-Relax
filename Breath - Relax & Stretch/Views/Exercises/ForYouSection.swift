@@ -27,6 +27,13 @@ struct ForYouCard: View {
         .frame(width: 128)
         .padding(8)
         .luminaCard(padding: 0)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabel(for: exercise))
+    }
+
+    private func accessibilityLabel(for exercise: Exercise) -> String {
+        let motion = MotionAccent.resolve(for: exercise) == .circular ? ", circular motion" : ""
+        return "\(exercise.name), \(exercise.durationFormatted), \(exercise.type.rawValue)\(motion)"
     }
 }
 
@@ -118,7 +125,12 @@ private struct RecommendedCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .luminaCard(padding: 14)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(item.category.rawValue): \(item.exercise.name), \(item.exercise.durationFormatted)")
+        .accessibilityLabel(accessibilityLabel)
+    }
+
+    private var accessibilityLabel: String {
+        let motion = MotionAccent.resolve(for: item.exercise) == .circular ? ", circular motion" : ""
+        return "\(item.category.rawValue): \(item.exercise.name), \(item.exercise.durationFormatted), \(item.exercise.type.rawValue)\(motion)"
     }
 }
 
