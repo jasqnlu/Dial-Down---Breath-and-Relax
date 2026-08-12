@@ -37,32 +37,32 @@ enum TouchGlyphLibrary {
 
     static let all: [ExerciseCategory: TouchGlyphArchetype] = [
         .neck: archetype(
-            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.62, y: 0.30), CGPoint(x: 0.56, y: 0.22)],
-            contactPoint: CGPoint(x: 0.56, y: 0.225)
+            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.66, y: 0.24), CGPoint(x: 0.58, y: 0.20)],
+            contactPoint: CGPoint(x: 0.58, y: 0.195)
         ),
         .shoulders: archetype(
-            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.60, y: 0.36), CGPoint(x: 0.42, y: 0.28)],
-            contactPoint: CGPoint(x: 0.42, y: 0.28)
+            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.66, y: 0.30), CGPoint(x: 0.40, y: 0.26)],
+            contactPoint: CGPoint(x: 0.40, y: 0.26)
         ),
         .chest: archetype(
-            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.58, y: 0.34), CGPoint(x: 0.46, y: 0.37)],
-            contactPoint: CGPoint(x: 0.48, y: 0.37)
+            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.52, y: 0.32), CGPoint(x: 0.50, y: 0.36)],
+            contactPoint: CGPoint(x: 0.50, y: 0.36)
         ),
         .back: archetype(
             pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.66, y: 0.44), CGPoint(x: 0.44, y: 0.58)],
             contactPoint: CGPoint(x: 0.47, y: 0.59)
         ),
         .core: archetype(
-            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.56, y: 0.34), CGPoint(x: 0.48, y: 0.42)],
-            contactPoint: CGPoint(x: 0.49, y: 0.43)
+            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.54, y: 0.38), CGPoint(x: 0.50, y: 0.48)],
+            contactPoint: CGPoint(x: 0.50, y: 0.49)
         ),
         .arms: archetype(
             pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.42, y: 0.34), CGPoint(x: 0.34, y: 0.42)],
             contactPoint: CGPoint(x: 0.32, y: 0.44)
         ),
         .hipsGlutes: archetype(
-            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.60, y: 0.42), CGPoint(x: 0.58, y: 0.53)],
-            contactPoint: CGPoint(x: 0.58, y: 0.54)
+            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.68, y: 0.46), CGPoint(x: 0.62, y: 0.56)],
+            contactPoint: CGPoint(x: 0.62, y: 0.57)
         ),
         .legs: archetype(
             pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.58, y: 0.46), CGPoint(x: 0.50, y: 0.63)],
