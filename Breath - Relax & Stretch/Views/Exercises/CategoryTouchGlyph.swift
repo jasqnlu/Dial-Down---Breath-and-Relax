@@ -15,7 +15,7 @@ struct CategoryTouchGlyph: View {
     /// unlike PoseGlyphIcon, which is the only thing in its badge. Insetting
     /// every point by this fraction on each side keeps the figure clear of
     /// its own box edges regardless of what `size` the caller passes.
-    private let contentInset: CGFloat = 0.11
+    private let contentInset: CGFloat = 0.07
     private var contentScale: CGFloat { 1 - 2 * contentInset }
 
     private var archetype: TouchGlyphArchetype {
