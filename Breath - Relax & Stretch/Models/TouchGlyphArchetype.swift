@@ -36,33 +36,43 @@ enum TouchGlyphLibrary {
     }
 
     static let all: [ExerciseCategory: TouchGlyphArchetype] = [
+        // Reaches UP toward the head — the only upward gesture in the set.
         .neck: archetype(
-            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.66, y: 0.24), CGPoint(x: 0.58, y: 0.20)],
-            contactPoint: CGPoint(x: 0.58, y: 0.195)
+            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.72, y: 0.22), CGPoint(x: 0.62, y: 0.13)],
+            contactPoint: CGPoint(x: 0.62, y: 0.12)
         ),
+        // Sweeps nearly the full width horizontally at shoulder height:
+        // elbow far right, hand far left. Wide and flat, not diagonal.
         .shoulders: archetype(
-            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.66, y: 0.30), CGPoint(x: 0.40, y: 0.26)],
-            contactPoint: CGPoint(x: 0.40, y: 0.26)
+            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.74, y: 0.22), CGPoint(x: 0.30, y: 0.24)],
+            contactPoint: CGPoint(x: 0.29, y: 0.24)
         ),
+        // Deliberately the shortest reach of all 8 — barely leaves the
+        // shoulder. Its distinctiveness is length, not direction.
         .chest: archetype(
-            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.52, y: 0.32), CGPoint(x: 0.50, y: 0.36)],
-            contactPoint: CGPoint(x: 0.50, y: 0.36)
+            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.54, y: 0.30), CGPoint(x: 0.50, y: 0.33)],
+            contactPoint: CGPoint(x: 0.50, y: 0.34)
         ),
         .back: archetype(
             pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.66, y: 0.44), CGPoint(x: 0.44, y: 0.58)],
             contactPoint: CGPoint(x: 0.47, y: 0.59)
         ),
+        // Elbow flares LEFT before the hand returns to center — a mirror of
+        // .back's right-swinging elbow, so the two read differently even
+        // though their contact points land at similar heights.
         .core: archetype(
-            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.54, y: 0.38), CGPoint(x: 0.50, y: 0.48)],
-            contactPoint: CGPoint(x: 0.50, y: 0.49)
+            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.40, y: 0.38), CGPoint(x: 0.48, y: 0.50)],
+            contactPoint: CGPoint(x: 0.48, y: 0.51)
         ),
         .arms: archetype(
             pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.42, y: 0.34), CGPoint(x: 0.34, y: 0.42)],
             contactPoint: CGPoint(x: 0.32, y: 0.44)
         ),
+        // Swings wide to the RIGHT and stays there — the opposite side from
+        // .back's left-leaning lower-back reach (contact x=0.47).
         .hipsGlutes: archetype(
-            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.68, y: 0.46), CGPoint(x: 0.62, y: 0.56)],
-            contactPoint: CGPoint(x: 0.62, y: 0.57)
+            pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.78, y: 0.42), CGPoint(x: 0.70, y: 0.52)],
+            contactPoint: CGPoint(x: 0.70, y: 0.53)
         ),
         .legs: archetype(
             pointingArm: [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.58, y: 0.46), CGPoint(x: 0.50, y: 0.63)],
