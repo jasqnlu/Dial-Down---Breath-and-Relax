@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Motion-specific pose glyphs</title>
+  <style>
+    :root {
+      --ink: #d98a34;
+      --ink-soft: #fbe6d0;
+      --teal: #2aa39a;
+      --teal-soft: #d3ece9;
+      --purple: #7652b8;
+      --purple-soft: #e8def7;
+      --surface: #fbfaf8;
+      --surface-2: #f1eee9;
+      --text: #272522;
+      --muted: #726d65;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px 20px 56px;
+      color: var(--text);
+      background: var(--surface);
+      font: 15px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    }
+    main { width: min(920px, 100%); margin: 0 auto; }
+    h1 { margin: 0; font-size: 30px; letter-spacing: -0.03em; }
+    h2 { margin: 42px 0 14px; font-size: 20px; letter-spacing: -0.02em; }
+    p { max-width: 700px; color: var(--muted); }
+    .eyebrow {
+      margin: 0 0 6px;
+      color: var(--teal);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(260px, 360px) 1fr;
+      gap: 32px;
+      align-items: center;
+      padding: 24px;
+      background: var(--ink-soft);
+      border-radius: 28px;
+    }
+    .hero h2 { margin-top: 0; }
+    .hero p { color: #77552d; }
+    .hero-art { width: min(100%, 340px); margin: 0 auto; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .card {
+      min-width: 0;
+      padding: 16px;
+      background: white;
+      border: 1px solid #e6e1da;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px #3c2e1d0b;
+    }
+    .card h3 { margin: 10px 0 2px; font-size: 16px; }
+    .card p { margin: 0; font-size: 13px; }
+    .icon { width: 100%; aspect-ratio: 1; }
+    .caption {
+      margin-top: 20px;
+      padding: 16px 18px;
+      background: var(--surface-2);
+      border-radius: 16px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    svg { display: block; width: 100%; height: 100%; }
+    .figure { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+    .body-line { stroke-width: 7; }
+    .joint { fill: currentColor; stroke: none; }
+    .head { fill: currentColor; stroke: none; }
+    .seat { fill: #dfdad2; }
+    .motion-badge { fill: currentColor; }
+    .motion-arrow { fill: none; stroke: white; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+    .callout { fill: #fff; stroke: #b26d24; stroke-width: 1.5; }
+    .callout-text { fill: #77552d; font: 600 5px -apple-system, BlinkMacSystemFont, sans-serif; }
+    @media (max-width: 700px) {
+      body { padding: 20px 14px 40px; }
+      .hero { grid-template-columns: 1fr; gap: 8px; padding: 18px; }
+      .hero-art { max-width: 280px; }
+      .cards { grid-template-columns: 1fr 1fr; }
+      .card:last-child { grid-column: 1 / -1; max-width: calc(50% - 8px); }
+    }
+    @media (max-width: 430px) {
+      .cards { grid-template-columns: 1fr; }
+      .card:last-child { grid-column: auto; max-width: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Pose glyph exploration</p>
+    <h1>Make the pose tell the story</h1>
+    <p>
+      The glyph should show the exercise's defining action, not only the
+      general body position. The quad-stretch sample below uses one bent leg,
+      a reaching hand, and the held foot so it reads as an actual quad stretch
+      at a glance.
+    </p>
+
+    <section class="hero" aria-labelledby="quad-title">
+      <div class="hero-art">
+        <svg viewBox="0 0 100 100" role="img" aria-label="Standing quad stretch: a figure balances on one leg while holding the opposite foot behind the body">
+          <circle cx="50" cy="50" r="49" fill="var(--ink-soft)"/>
+          <g style="color: var(--ink)">
+            <!-- torso and support leg -->
+            <path class="figure body-line" d="M50 27 L49 50 L55 70 L55 91"/>
+            <!-- lifted leg: knee bends behind and the ankle comes up toward the hand -->
+            <path class="figure body-line" d="M49 50 L39 62 L45 74 L48 81"/>
+            <!-- reaching arm visibly holds the lifted foot -->
+            <path class="figure body-line" d="M48 29 L40 39 L48 81"/>
+            <!-- free arm extends for balance -->
+            <path class="figure body-line" d="M51 29 L65 38 L75 34"/>
+            <circle class="head" cx="50" cy="16" r="10"/>
+            <circle class="joint" cx="50" cy="27" r="3.4"/>
+            <circle class="joint" cx="39" cy="39" r="3.4"/>
+            <circle class="joint" cx="65" cy="38" r="3.4"/>
+            <circle class="joint" cx="49" cy="50" r="3.4"/>
+            <circle class="joint" cx="55" cy="70" r="3.4"/>
+            <circle class="joint" cx="39" cy="62" r="3.4"/>
+            <circle class="joint" cx="45" cy="74" r="3.4"/>
+            <circle class="joint" cx="48" cy="81" r="3.4"/>
+            <!-- heel/hand grip cue -->
+            <path class="figure" stroke-width="3" d="M44 79 Q48 75 52 79"/>
+          </g>
+          <g style="color: var(--ink)">
+            <circle class="motion-badge" cx="82" cy="82" r="13"/>
+            <path class="motion-arrow" d="M76 81 A7 7 0 1 1 80 88"/>
+            <path class="motion-arrow" d="M78 87 L81 91 L85 88"/>
+          </g>
+          <g>
+            <path class="callout" d="M7 26 H32 Q35 26 35 29 V36 Q35 39 32 39 H18 L12 44 V39 H10 Q7 39 7 36 Z"/>
+            <text class="callout-text" x="11" y="31">hand holds</text>
+            <text class="callout-text" x="11" y="36">lifted foot</text>
+          </g>
+        </svg>
+      </div>
+      <div>
+        <h2 id="quad-title">Standing Quad Stretch</h2>
+        <p>
+          The rear foot is intentionally lifted high and connected to the
+          reaching hand. The planted leg and balance arm make the silhouette
+          stable instead of looking like a generic standing figure.
+        </p>
+        <p>
+          This is the level of specificity to aim for: a viewer should be able
+          to name the exercise from the silhouette before reading the label.
+        </p>
+      </div>
+    </section>
+
+    <h2>More specific pose directions</h2>
+    <div class="cards">
+      <article class="card">
+        <div class="icon">
+          <svg viewBox="0 0 100 100" role="img" aria-label="Seated forward fold">
+            <circle cx="50" cy="50" r="49" fill="var(--teal-soft)"/>
+            <g style="color: var(--teal)">
+              <rect class="seat" x="19" y="70" width="62" height="6" rx="3"/>
+              <path class="figure body-line" d="M50 30 L50 53 L30 70 L17 70 M50 53 L69 70 L82 70"/>
+              <path class="figure body-line" d="M50 38 L38 49 L30 62 M50 38 L62 49 L69 62"/>
+              <circle class="head" cx="50" cy="20" r="10"/>
+              <circle class="joint" cx="50" cy="30" r="3.4"/><circle class="joint" cx="50" cy="53" r="3.4"/>
+              <circle class="joint" cx="38" cy="49" r="3.4"/><circle class="joint" cx="62" cy="49" r="3.4"/>
+            </g>
+          </svg>
+        </div>
+        <h3>Seated Forward Fold</h3>
+        <p>Torso folds toward extended legs; hands reach toward the feet.</p>
+      </article>
+
+      <article class="card">
+        <div class="icon">
+          <svg viewBox="0 0 100 100" role="img" aria-label="Standing overhead triceps stretch">
+            <circle cx="50" cy="50" r="49" fill="var(--purple-soft)"/>
+            <g style="color: var(--purple)">
+              <path class="figure body-line" d="M50 28 L50 54 L42 74 L40 92 M50 54 L59 74 L61 92"/>
+              <path class="figure body-line" d="M50 30 L40 24 L42 10 L50 17 M50 30 L60 24"/>
+              <circle class="head" cx="50" cy="17" r="10"/>
+              <circle class="joint" cx="50" cy="28" r="3.4"/><circle class="joint" cx="40" cy="24" r="3.4"/>
+              <circle class="joint" cx="42" cy="10" r="3.4"/><circle class="joint" cx="60" cy="24" r="3.4"/>
+              <circle class="joint" cx="50" cy="54" r="3.4"/>
+            </g>
+          </svg>
+        </div>
+        <h3>Overhead Triceps Stretch</h3>
+        <p>One elbow points up while the opposite hand reaches across to assist.</p>
+      </article>
+
+      <article class="card">
+        <div class="icon">
+          <svg viewBox="0 0 100 100" role="img" aria-label="Standing spinal twist with one arm reaching through">
+            <circle cx="50" cy="50" r="49" fill="#f4e6d8"/>
+            <g style="color: var(--ink)">
+              <path class="figure body-line" d="M50 29 L49 54 L42 73 L40 92 M49 54 L58 74 L60 92"/>
+              <path class="figure body-line" d="M50 31 L36 40 L24 50"/>
+              <path class="figure body-line" d="M50 31 L63 39 L76 33"/>
+              <circle class="head" cx="50" cy="18" r="10"/>
+              <circle class="joint" cx="50" cy="29" r="3.4"/>
+              <circle class="joint" cx="36" cy="40" r="3.4"/>
+              <circle class="joint" cx="63" cy="39" r="3.4"/>
+              <circle class="joint" cx="50" cy="54" r="3.4"/>
+            </g>
+          </svg>
+        </div>
+        <h3>Reach-Through Twist</h3>
+        <p>Asymmetric arms and a rotated torso make the twist visible.</p>
+      </article>
+    </div>
+
+    <div class="caption">
+      Design note: keep the shared circle, line weight, joint dots, and category
+      color so the icons remain one system. Change the skeleton geometry per
+      exercise archetype when the action itself is the important information.
+    </div>
+  </main>
+</body>
+</html>
