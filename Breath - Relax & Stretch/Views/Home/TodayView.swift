@@ -165,6 +165,16 @@ struct TodayView: View {
                         }
                         try? modelContext.save()
                     } else {
+                        // Delete the underlying Routine on unpin, not just the
+                        // AppStorage pointer to it — otherwise it survives as
+                        // an orphan in the CloudKit-synced store, and the next
+                        // re-pin (with the ID already cleared) would insert a
+                        // brand-new duplicate instead of ever finding it again.
+                        if let existingID = UUID(uuidString: pinnedWakeUpRoutineIDString),
+                           let existing = routines.first(where: { $0.uuid == existingID }) {
+                            modelContext.delete(existing)
+                            try? modelContext.save()
+                        }
                         pinnedWakeUpRoutineIDString = ""
                     }
                     pendingShowSessionAfterCustomize = true
