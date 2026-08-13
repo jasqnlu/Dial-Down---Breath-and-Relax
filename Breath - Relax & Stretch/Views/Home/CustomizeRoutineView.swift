@@ -1,15 +1,16 @@
 import SwiftUI
 
 /// Presented from the Home hero's Customize button. Lets the user preview
-/// today's session as a numbered roadmap, nudge each exercise's duration
-/// for today only, decide whether to pin this list as their permanent
-/// morning routine, and jump into the Exercises tab to add more.
+/// today's session as a numbered roadmap and decide whether to pin this
+/// list as their permanent Wake Up routine.
 ///
-/// Duration edits are local-only (`durationOverrides`) — Exercise is a
-/// shared SwiftData object, so this view must never write back to
-/// `exercise.durationSeconds` directly. See the "Explicitly deferred"
-/// section of docs/superpowers/plans/2026-08-11-home-exercises-redesign.md
-/// for why overrides aren't (yet) threaded into the session player.
+/// Per-exercise duration editing and "Add Exercises" are intentionally not
+/// interactive here: threading duration overrides into the session player,
+/// and the add-mode return flow, are both real features that haven't been
+/// built yet. Showing controls that looked live but silently discarded the
+/// edit on Begin was worse than not having them — see the "Explicitly
+/// deferred" section of
+/// docs/superpowers/plans/2026-08-11-home-exercises-redesign.md.
 struct CustomizeRoutineView: View {
     let title: String
     let exercises: [Exercise]
@@ -19,7 +20,6 @@ struct CustomizeRoutineView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var pinnedToggle: Bool
-    @State private var durationOverrides: [UUID: Int] = [:]
 
     init(title: String, exercises: [Exercise], isPinned: Bool,
          onAddExercisesRequested: @escaping () -> Void,
@@ -32,21 +32,12 @@ struct CustomizeRoutineView: View {
         self._pinnedToggle = State(initialValue: isPinned)
     }
 
-    private var totalSeconds: Int { exercises.reduce(0) { $0 + duration(for: $1) } }
+    private var totalSeconds: Int { exercises.reduce(0) { $0 + $1.durationSeconds } }
     private var totalMinutes: Int { max(1, Int((Double(totalSeconds) / 60).rounded())) }
-
-    private func duration(for exercise: Exercise) -> Int {
-        durationOverrides[exercise.uuid] ?? exercise.durationSeconds
-    }
 
     private func formatted(_ seconds: Int) -> String {
         let m = seconds / 60, s = seconds % 60
         return s == 0 ? "\(m):00" : "\(m):\(String(format: "%02d", s))"
-    }
-
-    private func adjust(_ exercise: Exercise, by delta: Int) {
-        let current = duration(for: exercise)
-        durationOverrides[exercise.uuid] = max(15, current + delta)
     }
 
     var body: some View {
@@ -65,27 +56,6 @@ struct CustomizeRoutineView: View {
                         ForEach(Array(exercises.enumerated()), id: \.element.uuid) { index, exercise in
                             exerciseRow(index: index, exercise: exercise)
                         }
-
-                        HStack {
-                            Spacer()
-                            Button(action: onAddExercisesRequested) {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "plus")
-                                        .font(.system(size: 8, weight: .bold))
-                                        .frame(width: 18, height: 18)
-                                        .background(Color.luminaMintTint, in: Circle())
-                                    Text("Add Exercises")
-                                }
-                                .font(.luminaLabel)
-                                .foregroundStyle(Color.luminaPrimary)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .overlay(Capsule().strokeBorder(Color.luminaOutline, style: StrokeStyle(lineWidth: 1.3, dash: [4, 3])))
-                            }
-                            .buttonStyle(.plain)
-                            Spacer()
-                        }
-                        .padding(.top, 6)
                     }
                 }
                 .padding()
@@ -159,26 +129,10 @@ struct CustomizeRoutineView: View {
 
             Spacer(minLength: 8)
 
-            HStack(spacing: 8) {
-                Button { adjust(exercise, by: -15) } label: {
-                    Image(systemName: "minus").font(.system(size: 11, weight: .bold))
-                }
-                .buttonStyle(.plain)
-                .frame(width: 24, height: 24)
-                .background(Color.luminaContainer, in: Circle())
-
-                Text(formatted(duration(for: exercise)))
-                    .font(.luminaLabel)
-                    .monospacedDigit()
-                    .frame(minWidth: 44)
-
-                Button { adjust(exercise, by: 15) } label: {
-                    Image(systemName: "plus").font(.system(size: 11, weight: .bold))
-                }
-                .buttonStyle(.plain)
-                .frame(width: 24, height: 24)
-                .background(Color.luminaContainer, in: Circle())
-            }
+            Text(formatted(exercise.durationSeconds))
+                .font(.luminaLabel)
+                .monospacedDigit()
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
         }
         .luminaCard(padding: 12)
     }

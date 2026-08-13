@@ -22,6 +22,7 @@ struct TodayView: View {
 
     @State private var showingSession = false
     @State private var showingCustomize = false
+    @State private var pendingShowSessionAfterCustomize = false
     @State private var isBreathingIn = false
     @State private var brokenStreakValue: Int? = nil
 
@@ -70,12 +71,17 @@ struct TodayView: View {
 
     /// Today's session: goal-based recommendations, falling back to the first
     /// few catalog exercises when no goals were picked during onboarding.
+    ///
+    /// The pinned routine only activates during Wake Up hours — it's named
+    /// after the AppStorage key (`pinnedWakeUpRoutineID`) and the hero's
+    /// literal "Wake Up" wording. Pinning from Unwind or the midday
+    /// fallback state must not leak into the other time-of-day sessions.
     private var sessionExercises: [Exercise] {
-        if let pinnedSessionExercises {
-            return pinnedSessionExercises
-        }
         switch timeOfDayFocus {
         case .wakeUp:
+            if let pinnedSessionExercises {
+                return pinnedSessionExercises
+            }
             let pool = GoalMeta.recommend(from: exercises, activeGoalIDs: ["wake_up"], limit: 4)
             if !pool.isEmpty { return pool }
         case .unwind:
@@ -125,25 +131,43 @@ struct TodayView: View {
         .sheet(isPresented: $showingSession) {
             SessionPlayerView(exercises: sessionExercises)
         }
-        .sheet(isPresented: $showingCustomize) {
+        .sheet(isPresented: $showingCustomize, onDismiss: {
+            // Present the session sheet only after Customize has fully
+            // dismissed — two sibling .sheet(isPresented:) modifiers can't
+            // both be driven true in the same tick, or the second one
+            // silently never appears.
+            if pendingShowSessionAfterCustomize {
+                pendingShowSessionAfterCustomize = false
+                showingSession = true
+            }
+        }) {
             CustomizeRoutineView(
                 title: timeOfDayFocus.heroTitle,
                 exercises: sessionExercises,
-                isPinned: pinnedSessionExercises != nil,
+                isPinned: timeOfDayFocus == .wakeUp && pinnedSessionExercises != nil,
                 onAddExercisesRequested: {
                     showingCustomize = false
                     NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
                 },
                 onDone: { exercises, pinned in
                     if pinned {
-                        let routine = Routine(name: timeOfDayFocus.heroTitle, exerciseIDs: exercises.map(\.uuid))
-                        modelContext.insert(routine)
+                        if let existingID = UUID(uuidString: pinnedWakeUpRoutineIDString),
+                           let existing = routines.first(where: { $0.uuid == existingID }) {
+                            // Update the already-pinned routine in place rather
+                            // than inserting a duplicate every time the user
+                            // re-pins from Customize.
+                            existing.exerciseIDs = exercises.map(\.uuid)
+                            existing.name = timeOfDayFocus.heroTitle
+                        } else {
+                            let routine = Routine(name: timeOfDayFocus.heroTitle, exerciseIDs: exercises.map(\.uuid))
+                            modelContext.insert(routine)
+                            pinnedWakeUpRoutineIDString = routine.uuid.uuidString
+                        }
                         try? modelContext.save()
-                        pinnedWakeUpRoutineIDString = routine.uuid.uuidString
                     } else {
                         pinnedWakeUpRoutineIDString = ""
                     }
-                    showingSession = true
+                    pendingShowSessionAfterCustomize = true
                 }
             )
         }
