@@ -21,6 +21,7 @@ struct TodayView: View {
     @AppStorage("pinnedWakeUpRoutineID") private var pinnedWakeUpRoutineIDString = ""
 
     @State private var showingSession = false
+    @State private var showingCustomize = false
     @State private var isBreathingIn = false
     @State private var brokenStreakValue: Int? = nil
 
@@ -123,6 +124,28 @@ struct TodayView: View {
         }
         .sheet(isPresented: $showingSession) {
             SessionPlayerView(exercises: sessionExercises)
+        }
+        .sheet(isPresented: $showingCustomize) {
+            CustomizeRoutineView(
+                title: timeOfDayFocus.heroTitle,
+                exercises: sessionExercises,
+                isPinned: pinnedSessionExercises != nil,
+                onAddExercisesRequested: {
+                    showingCustomize = false
+                    NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
+                },
+                onDone: { exercises, pinned in
+                    if pinned {
+                        let routine = Routine(name: timeOfDayFocus.heroTitle, exerciseIDs: exercises.map(\.uuid))
+                        modelContext.insert(routine)
+                        try? modelContext.save()
+                        pinnedWakeUpRoutineIDString = routine.uuid.uuidString
+                    } else {
+                        pinnedWakeUpRoutineIDString = ""
+                    }
+                    showingSession = true
+                }
+            )
         }
         .alert(
             "Streak Lost",
@@ -245,21 +268,31 @@ struct TodayView: View {
 
                 RoadmapWave(exercises: sessionExercises)
 
-                Button {
-                    showingSession = true
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "play.fill")
-                        Text("Begin")
+                HStack(spacing: 10) {
+                    Button {
+                        showingCustomize = true
+                    } label: {
+                        Text("Customize")
+                            .font(.luminaLabel)
                     }
-                    .font(.luminaCardTitle)
-                    .foregroundStyle(Color.luminaBlue)
-                    .padding(.horizontal, 28)
-                    .frame(height: 44)
-                    .background(.white, in: Capsule())
+                    .buttonStyle(LuminaPillButtonStyle(kind: .ghost, compact: true))
+
+                    Button {
+                        showingSession = true
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "play.fill")
+                            Text("Begin")
+                        }
+                        .font(.luminaCardTitle)
+                        .foregroundStyle(Color.luminaBlue)
+                        .padding(.horizontal, 28)
+                        .frame(height: 44)
+                        .background(.white, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Begin today's session: \(sessionExercises.count) exercises, \(mins) minutes")
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Begin today's session: \(sessionExercises.count) exercises, \(mins) minutes")
             }
             .foregroundStyle(.white)
             .padding(20)
