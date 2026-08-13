@@ -1,38 +1,36 @@
 import SwiftUI
 
 /// Presented from the Home hero's Customize button. Lets the user preview
-/// today's session as a numbered roadmap and decide whether to pin this
-/// list as their permanent Wake Up routine.
+/// today's session as a numbered roadmap, add more exercises via
+/// ExercisePickerSheet, and decide whether to pin the result as their
+/// permanent Wake Up routine.
 ///
-/// Per-exercise duration editing and "Add Exercises" are intentionally not
-/// interactive here: threading duration overrides into the session player,
-/// and the add-mode return flow, are both real features that haven't been
-/// built yet. Showing controls that looked live but silently discarded the
-/// edit on Begin was worse than not having them — see the "Explicitly
-/// deferred" section of
+/// Per-exercise duration editing is intentionally not interactive here:
+/// threading duration overrides into the session player is a real feature
+/// that hasn't been built yet. Showing a control that looked live but
+/// silently discarded the edit on Begin was worse than not having one —
+/// see the "Explicitly deferred" section of
 /// docs/superpowers/plans/2026-08-11-home-exercises-redesign.md.
 struct CustomizeRoutineView: View {
     let title: String
-    let exercises: [Exercise]
     let isPinned: Bool
-    let onAddExercisesRequested: () -> Void
     let onDone: (_ exercises: [Exercise], _ pinned: Bool) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var pinnedToggle: Bool
+    @State private var currentExercises: [Exercise]
+    @State private var showingPicker = false
 
     init(title: String, exercises: [Exercise], isPinned: Bool,
-         onAddExercisesRequested: @escaping () -> Void,
          onDone: @escaping (_ exercises: [Exercise], _ pinned: Bool) -> Void) {
         self.title = title
-        self.exercises = exercises
         self.isPinned = isPinned
-        self.onAddExercisesRequested = onAddExercisesRequested
         self.onDone = onDone
         self._pinnedToggle = State(initialValue: isPinned)
+        self._currentExercises = State(initialValue: exercises)
     }
 
-    private var totalSeconds: Int { exercises.reduce(0) { $0 + $1.durationSeconds } }
+    private var totalSeconds: Int { currentExercises.reduce(0) { $0 + $1.durationSeconds } }
     private var totalMinutes: Int { max(1, Int((Double(totalSeconds) / 60).rounded())) }
 
     private func formatted(_ seconds: Int) -> String {
@@ -44,16 +42,16 @@ struct CustomizeRoutineView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("\(exercises.count) EXERCISES · \(totalMinutes) MIN")
+                    Text("\(currentExercises.count) EXERCISES · \(totalMinutes) MIN")
                         .font(.luminaCaption)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
 
-                    RoadmapWave(exercises: exercises, numbered: true)
+                    RoadmapWave(exercises: currentExercises, numbered: true)
 
                     saveToggleRow
 
                     VStack(spacing: 10) {
-                        ForEach(Array(exercises.enumerated()), id: \.element.uuid) { index, exercise in
+                        ForEach(Array(currentExercises.enumerated()), id: \.element.uuid) { index, exercise in
                             exerciseRow(index: index, exercise: exercise)
                         }
                     }
@@ -71,10 +69,25 @@ struct CustomizeRoutineView: View {
                         Image(systemName: "xmark")
                     }
                 }
+                // Lives in the toolbar, not the scrolling list — a real
+                // XCUITest run caught the earlier in-list placement landing
+                // right against the fixed Begin bar below it (same class of
+                // bug as the floating-tab-bar/safeAreaInset issue Task 15
+                // hit): a tap meant for "Add Exercises" as the list's last
+                // row actually triggered Begin instead. The toolbar has no
+                // such neighbor and needs no scrolling to reach.
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingPicker = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel("Add Exercises")
+                }
             }
             .safeAreaInset(edge: .bottom) {
                 Button {
-                    onDone(exercises, pinnedToggle)
+                    onDone(currentExercises, pinnedToggle)
                     dismiss()
                 } label: {
                     HStack(spacing: 8) {
@@ -86,6 +99,11 @@ struct CustomizeRoutineView: View {
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(.regularMaterial)
+            }
+            .sheet(isPresented: $showingPicker) {
+                ExercisePickerSheet(excluding: currentExercises) { picked in
+                    currentExercises = CustomizeRoutineExerciseMerge.appending(picked, to: currentExercises)
+                }
             }
         }
     }

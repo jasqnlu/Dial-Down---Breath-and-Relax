@@ -145,10 +145,6 @@ struct TodayView: View {
                 title: timeOfDayFocus.heroTitle,
                 exercises: sessionExercises,
                 isPinned: timeOfDayFocus == .wakeUp && pinnedSessionExercises != nil,
-                onAddExercisesRequested: {
-                    showingCustomize = false
-                    NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
-                },
                 onDone: { exercises, pinned in
                     if pinned {
                         if let existingID = UUID(uuidString: pinnedWakeUpRoutineIDString),
