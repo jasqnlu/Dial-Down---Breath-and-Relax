@@ -68,19 +68,16 @@ struct ExerciseListView: View {
                 }
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 12) {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                         ForEach(searchResults.visible, id: \.uuid) { exercise in
-                            NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
-                                ExerciseRow(exercise: exercise)
+                            ExerciseGridTile(exercise: exercise) {
+                                selectedExercise = exercise
                             }
-                            .buttonStyle(.plain)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .luminaCard()
-                            .padding(.horizontal)
                         }
 
                         if searchResults.canLoadMore {
                             ProgressView()
+                                .gridCellColumns(2)
                                 .padding(.vertical, 12)
                                 .frame(maxWidth: .infinity)
                                 .onAppear {
@@ -88,6 +85,7 @@ struct ExerciseListView: View {
                                 }
                         }
                     }
+                    .padding(.horizontal)
                     .padding(.top, 8)
                 }
                 .overlay {
