@@ -130,7 +130,9 @@ struct RegionExerciseResolver {
 struct BodyPartExercisesView: View {
     let bodyParts: [String]
     @Query private var allExercises: [Exercise]
-    @State private var selectedExercise: Exercise?
+    @StateObject private var miniRoutine = MiniRoutineState()
+    @State private var quickStartExercise: Exercise?
+    @State private var showingMiniRoutineSession = false
 
     init(bodyPart: String)        { self.bodyParts = [bodyPart] }
     init(bodyParts: [String])     { self.bodyParts = bodyParts }
@@ -173,9 +175,24 @@ struct BodyPartExercisesView: View {
         }
         .navigationTitle(navTitle)
         .navigationBarTitleDisplayMode(.inline)
+        // `.safeAreaInset` stacks bottom-up in application order: the LAST
+        // one applied claims the outermost slot, right at the screen edge —
+        // exactly the 80pt zone the real floating `CustomTabBar` overlay
+        // occupies. `miniRoutineBar` must be applied BEFORE
+        // `.floatingTabBarClearance()` so it lands just above that reserved
+        // zone instead of underneath the tab bar (where its taps would be
+        // swallowed by the tab bar sitting on top of it).
+        .safeAreaInset(edge: .bottom) {
+            if !miniRoutine.exercises.isEmpty {
+                miniRoutineBar
+            }
+        }
         .floatingTabBarClearance()
-        .navigationDestination(item: $selectedExercise) { exercise in
-            ExerciseDetailView(exercise: exercise)
+        .sheet(item: $quickStartExercise) { exercise in
+            SessionPlayerView(exercises: [exercise])
+        }
+        .sheet(isPresented: $showingMiniRoutineSession) {
+            SessionPlayerView(exercises: miniRoutine.exercises)
         }
     }
 
@@ -188,8 +205,13 @@ struct BodyPartExercisesView: View {
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                 ForEach(exercises, id: \.uuid) { exercise in
-                    ExerciseGridTile(exercise: exercise) {
-                        selectedExercise = exercise
+                    ExerciseGridTile(
+                        exercise: exercise,
+                        badge: .add(isSelected: miniRoutine.contains(exercise))
+                    ) {
+                        quickStartExercise = exercise
+                    } onBadgeTap: {
+                        miniRoutine.toggle(exercise)
                     }
                 }
             }
@@ -200,6 +222,33 @@ struct BodyPartExercisesView: View {
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
         }
+    }
+
+    private var miniRoutineBar: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(miniRoutine.exercises.count) selected")
+                    .font(.luminaCardTitle)
+                let m = miniRoutine.totalSeconds / 60, s = miniRoutine.totalSeconds % 60
+                Text("\(m):\(String(format: "%02d", s)) mini routine")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
+            Spacer(minLength: 8)
+            Button {
+                showingMiniRoutineSession = true
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "play.fill")
+                    Text("Start")
+                }
+            }
+            .buttonStyle(LuminaPillButtonStyle(kind: .prominent, compact: true))
+        }
+        .padding(14)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
+        .padding(.horizontal)
+        .padding(.bottom, 8)
     }
 
     // A single tapped region is named directly ("Spinal Erectors") rather
