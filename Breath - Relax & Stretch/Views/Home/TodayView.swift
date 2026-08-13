@@ -225,6 +225,8 @@ struct TodayView: View {
                         .opacity(0.85)
                 }
 
+                RoadmapWave(exercises: sessionExercises)
+
                 Button {
                     showingSession = true
                 } label: {
