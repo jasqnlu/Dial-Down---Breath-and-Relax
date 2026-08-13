@@ -130,6 +130,7 @@ struct RegionExerciseResolver {
 struct BodyPartExercisesView: View {
     let bodyParts: [String]
     @Query private var allExercises: [Exercise]
+    @State private var selectedExercise: Exercise?
 
     init(bodyPart: String)        { self.bodyParts = [bodyPart] }
     init(bodyParts: [String])     { self.bodyParts = bodyParts }
@@ -152,45 +153,51 @@ struct BodyPartExercisesView: View {
                     description: Text(emptyDescription)
                 )
             } else {
-                List {
-                    if bodyParts.count > 1 {
-                        Section {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        if bodyParts.count > 1 {
                             Text(bodyParts.joined(separator: ", "))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        } header: {
-                            Text("Targeting")
+                                .font(.luminaCaption)
+                                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        }
+                        if !resolver.direct.isEmpty {
+                            exerciseSection(title: "\(resolver.direct.count) exercise\(resolver.direct.count == 1 ? "" : "s")", exercises: resolver.direct)
+                        }
+                        if !resolver.related.isEmpty {
+                            exerciseSection(title: relatedSectionTitle, footer: relatedFooterText, exercises: resolver.related)
                         }
                     }
-                    if !resolver.direct.isEmpty {
-                        Section {
-                            exerciseRows(resolver.direct)
-                        } header: {
-                            Text("\(resolver.direct.count) exercise\(resolver.direct.count == 1 ? "" : "s")")
-                        }
-                    }
-                    if !resolver.related.isEmpty {
-                        Section {
-                            exerciseRows(resolver.related)
-                        } header: {
-                            Text(relatedSectionTitle)
-                        } footer: {
-                            Text(relatedFooterText)
-                        }
-                    }
+                    .padding()
                 }
             }
         }
         .navigationTitle(navTitle)
         .navigationBarTitleDisplayMode(.inline)
         .floatingTabBarClearance()
+        .navigationDestination(item: $selectedExercise) { exercise in
+            ExerciseDetailView(exercise: exercise)
+        }
     }
 
     @ViewBuilder
-    private func exerciseRows(_ exercises: [Exercise]) -> some View {
-        ForEach(exercises, id: \.uuid) { exercise in
-            NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
-                ExerciseRow(exercise: exercise)
+    private func exerciseSection(title: String, footer: String? = nil, exercises: [Exercise]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                ForEach(exercises, id: \.uuid) { exercise in
+                    ExerciseGridTile(exercise: exercise) {
+                        selectedExercise = exercise
+                    }
+                }
+            }
+
+            if let footer {
+                Text(footer)
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
         }
     }
