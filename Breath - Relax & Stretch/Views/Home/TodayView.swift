@@ -14,9 +14,11 @@ struct TodayView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var exercises: [Exercise]
     @Query private var profiles: [UserProfile]
+    @Query private var routines: [Routine]
     @AppStorage("onboardingGoals") private var goalsStr = ""
     @AppStorage("onboardingAreas") private var onboardingAreas = ""
     @AppStorage("showStreakEmoji") private var showStreakEmoji = true
+    @AppStorage("pinnedWakeUpRoutineID") private var pinnedWakeUpRoutineIDString = ""
 
     @State private var showingSession = false
     @State private var isBreathingIn = false
@@ -52,9 +54,25 @@ struct TodayView: View {
         Set(goalsStr.split(separator: ",").map(String.init))
     }
 
+    /// The saved routine the user pinned via Customize ("Keep as my Wake Up
+    /// routine"), if any is set and it still resolves to at least one real
+    /// exercise. Checked before the goal-based fallback below.
+    private var pinnedSessionExercises: [Exercise]? {
+        guard let pinnedID = UUID(uuidString: pinnedWakeUpRoutineIDString),
+              let routine = routines.first(where: { $0.uuid == pinnedID }) else {
+            return nil
+        }
+        let byID = Dictionary(uniqueKeysWithValues: exercises.map { ($0.uuid, $0) })
+        let resolved = routine.exerciseIDs.compactMap { byID[$0] }
+        return resolved.isEmpty ? nil : resolved
+    }
+
     /// Today's session: goal-based recommendations, falling back to the first
     /// few catalog exercises when no goals were picked during onboarding.
     private var sessionExercises: [Exercise] {
+        if let pinnedSessionExercises {
+            return pinnedSessionExercises
+        }
         switch timeOfDayFocus {
         case .wakeUp:
             let pool = GoalMeta.recommend(from: exercises, activeGoalIDs: ["wake_up"], limit: 4)
