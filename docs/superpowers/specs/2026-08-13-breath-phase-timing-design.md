@@ -29,7 +29,7 @@ they keep the existing flat instruction-cycling from the Aug 1 spec.
 New pure value type:
 
 ```swift
-struct BreathPhase: Codable, Equatable {
+struct BreathPhaseStep: Codable, Equatable {
     let label: String   // "Inhale", "Hold", "Exhale"
     let seconds: Int
 }
@@ -43,8 +43,8 @@ added post-launch uses a primitive raw store + computed decode property for this
 ```swift
 var breathPatternData: Data = Data()
 
-var breathPattern: [BreathPhase] {
-    get { (try? JSONDecoder().decode([BreathPhase].self, from: breathPatternData)) ?? [] }
+var breathPattern: [BreathPhaseStep] {
+    get { (try? JSONDecoder().decode([BreathPhaseStep].self, from: breathPatternData)) ?? [] }
     set { breathPatternData = (try? JSONEncoder().encode(newValue)) ?? Data() }
 }
 ```
@@ -59,7 +59,7 @@ enum BreathPhaseCycle {
         let phaseIndex: Int
         let secondsRemainingInPhase: Int
     }
-    static func resolve(pattern: [BreathPhase], elapsedSeconds: Int) -> Resolved?
+    static func resolve(pattern: [BreathPhaseStep], elapsedSeconds: Int) -> Resolved?
 }
 ```
 
@@ -112,7 +112,7 @@ per-second countdown ("Inhale · 3"), the current phase is computed **inside the
    - Update `@State private var breathPhaseSecondsRemaining` to the resolved value every tick
      (drives the live "· 3" countdown).
    - If the resolved `phaseIndex` differs from the previous tick's (a transition): update
-     `@State private var currentBreathPhaseIndex`, play `soundCueBeep` (the same existing
+     `@State private var currentBreathPhaseStepIndex`, play `soundCueBeep` (the same existing
      sound, no new `SystemSoundID`), and call `VoiceCueService.shared.speak(phase.label)`.
 3. Pause: the tick loop already no-ops while `isPaused` (existing `guard`), so breath-phase
    state simply stops updating too — no separate pause handling needed.
