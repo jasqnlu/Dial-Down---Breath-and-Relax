@@ -335,4 +335,38 @@ enum SeedMigrator {
         }
         return changed
     }
+
+    /// v11 — backfills `Exercise.breathPattern` onto already-seeded rows,
+    /// matched by `seedID`. New installs already read `breathPattern` off the
+    /// bundle at seed-insert time; this only matters for users seeded before
+    /// the field existed. Unlike `migrateV7`/`migrateV9`/`migrateV10`, this IS
+    /// gated behind a one-time `seedDataVersion` bump (see the app's migration
+    /// ladder) — patterns are authored once per exercise, not an ever-growing
+    /// set added on every release, so there's no need to re-scan every launch.
+    @discardableResult
+    static func migrateV11(context: ModelContext, rawExercises: [[String: Any]]) -> Bool {
+        var patternBySeedID: [String: [BreathPhaseStep]] = [:]
+        for raw in rawExercises {
+            guard let id = raw["id"] as? String,
+                  let rawPattern = raw["breathPattern"] as? [[String: Any]], !rawPattern.isEmpty
+            else { continue }
+            let phases = rawPattern.compactMap { entry -> BreathPhaseStep? in
+                guard let label = entry["label"] as? String, let seconds = entry["seconds"] as? Int else { return nil }
+                return BreathPhaseStep(label: label, seconds: seconds)
+            }
+            guard !phases.isEmpty else { continue }
+            patternBySeedID[id] = phases
+        }
+
+        let existing = (try? context.fetch(FetchDescriptor<Exercise>())) ?? []
+        var changed = false
+        for exercise in existing {
+            guard let seedID = exercise.seedID,
+                  let pattern = patternBySeedID[seedID],
+                  exercise.breathPattern != pattern else { continue }
+            exercise.breathPattern = pattern
+            changed = true
+        }
+        return changed
+    }
 }
