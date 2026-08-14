@@ -205,6 +205,10 @@ struct BreathRelaxStretchApp: App {
                let posesData = try? JSONSerialization.data(withJSONObject: posesRaw) {
                 exercise.posesData = posesData
             }
+            if let breathPatternRaw = raw["breathPattern"],
+               let breathPatternData = try? JSONSerialization.data(withJSONObject: breathPatternRaw) {
+                exercise.breathPatternData = breathPatternData
+            }
             context.insert(exercise)
         }
         do {
@@ -230,6 +234,7 @@ struct BreathRelaxStretchApp: App {
         migrateSeedToV8IfNeeded()
         migrateSeedToV9IfNeeded()
         migrateSeedToV10IfNeeded()
+        migrateSeedToV11IfNeeded()
     }
 
     /// Loads the bundled seed JSON's exercise array, or nil if unavailable.
@@ -345,6 +350,17 @@ struct BreathRelaxStretchApp: App {
             }
         }
         seedDataVersion = max(seedDataVersion, 10)
+    }
+
+    private func migrateSeedToV11IfNeeded() {
+        guard seedDataVersion < 11 else { return }
+        if let rawExercises = loadSeedExercises() {
+            let context = sharedModelContainer.mainContext
+            if SeedMigrator.migrateV11(context: context, rawExercises: rawExercises) {
+                try? context.save()
+            }
+        }
+        seedDataVersion = 11
     }
 
     // MARK: - Remote catalog sync (best-effort, offline-first)
