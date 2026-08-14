@@ -265,7 +265,11 @@ struct SessionPlayerView: View {
                     .padding()
             }
 
-            instructionCue(for: exercise)
+            if let pattern = activeBreathPattern {
+                breathPhaseCue(pattern: pattern)
+            } else {
+                instructionCue(for: exercise)
+            }
 
             Text(timeString(secondsRemaining))
                 .font(.system(size: exerciseTimerSize, weight: .thin, design: .rounded))
@@ -353,6 +357,38 @@ struct SessionPlayerView: View {
                 .accessibilityLabel("Exercise instruction")
                 .accessibilityValue(exercise.instructions[index])
         }
+    }
+
+    @ViewBuilder
+    private func breathPhaseCue(pattern: [BreathPhaseStep]) -> some View {
+        let index = min(currentBreathPhaseStepIndex, pattern.count - 1)
+        let phase = pattern[index]
+
+        VStack(spacing: 8) {
+            Text("\(phase.label) · \(breathPhaseSecondsRemaining)")
+                .id(index)
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurface)
+                .monospacedDigit()
+                .transition(.asymmetric(
+                    insertion: .move(edge: .leading).combined(with: .opacity)
+                        .animation(.easeOut(duration: 0.35)),
+                    removal: .opacity
+                        .animation(.easeIn(duration: 0.25))
+                ))
+
+            HStack(spacing: 6) {
+                ForEach(Array(pattern.enumerated()), id: \.offset) { dotIndex, _ in
+                    Circle()
+                        .fill(dotIndex == index ? Color.luminaPrimary : Color.luminaOutline)
+                        .frame(width: 6, height: 6)
+                }
+            }
+        }
+        .padding(.horizontal, 32)
+        .padding(.top, 8)
+        .accessibilityLabel("Breath phase")
+        .accessibilityValue("\(phase.label), \(breathPhaseSecondsRemaining) seconds remaining, phase \(index + 1) of \(pattern.count)")
     }
 
     @ViewBuilder
