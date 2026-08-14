@@ -3,7 +3,11 @@ import SwiftData
 
 // MARK: - TodayView
 // The landing tab. One job: get the user into today's session in a single
-// tap, with their momentum (streak/minutes/points) visible at a glance.
+// tap. Momentum is a single glance, not a dashboard: the streak button in
+// the header's top-right is the only stat on this screen — the old
+// streak/minutes/points tile row and the starter-program promo card were
+// both removed as clutter competing with that one job (their content is
+// still reachable from Profile → Progress & Charts).
 // Visually it continues the AuthView motif — same teal→indigo gradient,
 // same breathing halo, same white pill button — so sign-in and home read
 // as one flow.
@@ -114,8 +118,6 @@ struct TodayView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     greetingHeader
                     heroCard
-                    statRow
-                    programCard
                     recommendedSection
                     forYouSection
                 }
@@ -240,18 +242,27 @@ struct TodayView: View {
 
             Spacer()
 
-            if let profile, profile.streak > 0 {
-                HStack(spacing: 4) {
-                    if showStreakEmoji { Text("🔥") }
-                    Text("\(profile.streak)")
-                        .font(.custom("ManropeExtraLight-Bold", size: 15, relativeTo: .subheadline))
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 7)
-                .background(Color.luminaCardFill, in: Capsule())
-                .accessibilityLabel("\(profile.streak) day streak")
-            }
+            streakButton
         }
+    }
+
+    /// The only stat on this screen — always visible (even at a 0 streak,
+    /// now that the removed stat-tile row isn't showing it as a fallback)
+    /// and a real NavigationLink into Progress & Charts, not just a
+    /// decorative badge.
+    private var streakButton: some View {
+        NavigationLink(destination: ProgressChartsView()) {
+            HStack(spacing: 4) {
+                if showStreakEmoji { Text("🔥") }
+                Text("\(profile?.streak ?? 0)")
+                    .font(.custom("ManropeExtraLight-Bold", size: 15, relativeTo: .subheadline))
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(Color.luminaCardFill, in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(profile?.streak ?? 0) day streak, view progress")
     }
 
     // MARK: - Hero: today's session
@@ -329,63 +340,6 @@ struct TodayView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
-    }
-
-    // MARK: - Stats
-
-    private var statRow: some View {
-        HStack(spacing: 10) {
-            statTile(value: "\(profile?.streak ?? 0)", label: "day streak")
-            statTile(value: "\(profile?.totalMinutes ?? 0)", label: "minutes")
-            statTile(value: "\(profile?.totalPoints ?? 0)", label: "points")
-        }
-    }
-
-    private func statTile(value: String, label: String) -> some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.luminaTitle)
-            Text(label)
-                .font(.luminaCaption)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 14)
-        .luminaCard(padding: 0)
-        .accessibilityElement(children: .combine)
-    }
-
-    // MARK: - Starter program
-
-    private var programCard: some View {
-        let program = GuidedProgram.starterProgram(goalIDs: activeGoalIDs)
-
-        return NavigationLink(destination: GuidedProgramDetailView(program: program)) {
-            HStack(spacing: 14) {
-                Image(systemName: program.icon)
-                    .font(.title3)
-                    .foregroundStyle(Color.accentColor)
-                    .frame(width: 40, height: 40)
-                    .background(Color.luminaMintTint, in: RoundedRectangle(cornerRadius: LuminaRadius.chip, style: .continuous))
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(program.title)
-                        .font(.luminaCardTitle)
-                        .foregroundStyle(.primary)
-                    Text("\(program.days.count) days · free")
-                        .font(.luminaCaption)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.tertiary)
-            }
-            .luminaCard(padding: 14)
-        }
-        .buttonStyle(.plain)
     }
 
     // MARK: - Recommended (rotating carousel)
