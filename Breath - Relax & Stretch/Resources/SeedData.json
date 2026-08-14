@@ -15,6 +15,11 @@
         "Exhale slowly through your mouth for 6 counts.",
         "Repeat for the full duration."
       ],
+      "breathPattern": [
+        {"label": "Inhale", "seconds": 4},
+        {"label": "Hold", "seconds": 2},
+        {"label": "Exhale", "seconds": 6}
+      ],
       "id": "2528b87c-95b0-5143-8c46-3b8320565370"
     },
     {
@@ -33,6 +38,12 @@
         "Hold for 4 counts.",
         "Repeat the cycle for the full duration."
       ],
+      "breathPattern": [
+        {"label": "Inhale", "seconds": 4},
+        {"label": "Hold", "seconds": 4},
+        {"label": "Exhale", "seconds": 4},
+        {"label": "Hold", "seconds": 4}
+      ],
       "id": "96903a29-2150-5848-a5cb-422770cd4600"
     },
     {
@@ -49,6 +60,11 @@
         "Hold your breath for 7 counts.",
         "Exhale completely through your mouth for 8 counts.",
         "This completes one cycle. Repeat 3-4 times."
+      ],
+      "breathPattern": [
+        {"label": "Inhale", "seconds": 4},
+        {"label": "Hold", "seconds": 7},
+        {"label": "Exhale", "seconds": 8}
       ],
       "id": "a262ed03-3f8e-5f38-bfc3-d5b560833c73"
     },
@@ -84,6 +100,10 @@
         "Exhale slowly through pursed lips for 4 counts.",
         "Repeat for the full duration."
       ],
+      "breathPattern": [
+        {"label": "Inhale", "seconds": 2},
+        {"label": "Exhale", "seconds": 4}
+      ],
       "id": "f1661f4f-3967-5b83-a894-d36a42185c80"
     },
     {
@@ -99,6 +119,10 @@
         "Feel only the belly hand rise as your diaphragm drops.",
         "Exhale through pursed lips, counting to 6.",
         "Repeat, gradually lengthening the count as it feels comfortable."
+      ],
+      "breathPattern": [
+        {"label": "Inhale", "seconds": 4},
+        {"label": "Exhale", "seconds": 6}
       ],
       "id": "3466f1c9-40ec-5b71-96c1-92323f236b55"
     },
