@@ -170,7 +170,11 @@ struct SessionPlayerView: View {
                     checkSideSwitch()
                     updateBreathPhaseStepIfNeeded()
                     breathTick += 1
-                    if breathTick % 4 == 0 { AudioServicesPlaySystemSound(soundTick) }
+                    // Legacy fixed-4s metronome; superseded by the authored
+                    // phase-transition beeps for pattern exercises, whose
+                    // phase boundaries don't align with a 4s grid (e.g.
+                    // 4-7-8 Breathing's 19s cycle) — suppress it there.
+                    if breathTick % 4 == 0, activeBreathPattern == nil { AudioServicesPlaySystemSound(soundTick) }
                 } else {
                     AudioServicesPlaySystemSound(soundCueBeep)
                     advanceToNext(completion: 1.0)
@@ -521,7 +525,12 @@ struct SessionPlayerView: View {
             sideSwitchPending = false
             sideSwitchLeadFromEnd = 0
         }
-        if let exercise = currentExercise {
+        if let exercise = currentExercise, activeBreathPattern == nil {
+            // Pattern exercises skip this announcement: VoiceCueService.speak
+            // interrupts (not queues) in-progress speech, so the phase-0
+            // announcement below would immediately cut off the exercise name
+            // before it finished. The exercise name is still shown as
+            // on-screen text; the phase label is the more actionable cue.
             VoiceCueService.shared.speak(exercise.name)
         }
         AudioServicesPlaySystemSound(soundCueBeep)
