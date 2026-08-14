@@ -71,10 +71,20 @@ struct SessionPlayerView: View {
     @State private var cueBadgePulsing = false
     @State private var instructionCueIndex = 0
     @State private var instructionCueTask: Task<Void, Never>? = nil
+    @State private var currentBreathPhaseStepIndex = 0
+    @State private var breathPhaseSecondsRemaining = 0
 
     var currentExercise: Exercise? {
         guard currentIndex < exercises.count else { return nil }
         return exercises[currentIndex]
+    }
+
+    /// Non-nil only for a Breath exercise with an authored pattern — everything
+    /// else (Stretch exercises, Breath exercises with no pattern yet) falls
+    /// back to the existing flat instructionCueTask cycling untouched.
+    private var activeBreathPattern: [BreathPhaseStep]? {
+        guard let pattern = currentExercise?.breathPattern, !pattern.isEmpty else { return nil }
+        return pattern
     }
 
     private var totalSessionSeconds: Int {
@@ -158,6 +168,7 @@ struct SessionPlayerView: View {
                 if remaining > 0 {
                     secondsRemaining = remaining
                     checkSideSwitch()
+                    updateBreathPhaseStepIfNeeded()
                     breathTick += 1
                     if breathTick % 4 == 0 { AudioServicesPlaySystemSound(soundTick) }
                 } else {
@@ -369,6 +380,16 @@ struct SessionPlayerView: View {
                 CautionCard(text: caution)
                     .padding(.horizontal)
             }
+            if let exercise = currentExercise, !exercise.breathPattern.isEmpty, !exercise.instructions.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(exercise.instructions, id: \.self) { line in
+                        Text(line)
+                            .font(.luminaCaption)
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    }
+                }
+                .padding(.horizontal)
+            }
             Spacer()
             Button("Skip") { skipGetReady() }
                 .buttonStyle(LuminaPillButtonStyle(kind: .ghost, compact: true))
@@ -470,7 +491,15 @@ struct SessionPlayerView: View {
         AudioServicesPlaySystemSound(soundCueBeep)
         instructionCueTask?.cancel()
         instructionCueIndex = 0
-        if let count = currentExercise?.instructions.count, count > 1 {
+        if let pattern = activeBreathPattern {
+            // Breath-pattern exercises are driven by the main 1Hz tick's
+            // BreathPhaseCycle computation (see the .task loop below), not
+            // a sleep-based task — reset to phase 0 and announce it here so
+            // the first phase is correct immediately, before the first tick.
+            currentBreathPhaseStepIndex = 0
+            breathPhaseSecondsRemaining = pattern[0].seconds
+            VoiceCueService.shared.speak(pattern[0].label)
+        } else if let count = currentExercise?.instructions.count, count > 1 {
             instructionCueTask = Task { @MainActor in
                 while !Task.isCancelled {
                     try? await Task.sleep(for: .seconds(3.5))
@@ -500,6 +529,25 @@ struct SessionPlayerView: View {
         impactMedium.impactOccurred()
         VoiceCueService.shared.speak("Switch sides")
         AudioServicesPlaySystemSound(soundCueBeep)
+    }
+
+    /// Called every 1Hz tick when a breath pattern is active. Derives the
+    /// current phase from elapsed time (not accumulated sleep), so it's
+    /// automatically correct after pause/resume or backgrounding — no
+    /// special-case handling needed, unlike instructionCueTask's cycling.
+    private func updateBreathPhaseStepIfNeeded() {
+        guard let pattern = activeBreathPattern, let exercise = currentExercise else { return }
+        let totalDuration = Self.scaledDuration(base: exercise.durationSeconds, multiplier: durationMultiplier)
+        let elapsed = max(0, totalDuration - secondsRemaining)
+        guard let resolved = BreathPhaseCycle.resolve(pattern: pattern, elapsedSeconds: elapsed) else { return }
+
+        breathPhaseSecondsRemaining = resolved.secondsRemainingInPhase
+        guard resolved.phaseIndex != currentBreathPhaseStepIndex else { return }
+        withAnimation(.easeOut(duration: 0.35)) {
+            currentBreathPhaseStepIndex = resolved.phaseIndex
+        }
+        AudioServicesPlaySystemSound(soundCueBeep)
+        VoiceCueService.shared.speak(pattern[resolved.phaseIndex].label)
     }
 
     /// Called when the app returns to the foreground. `Timer.publish` doesn't
