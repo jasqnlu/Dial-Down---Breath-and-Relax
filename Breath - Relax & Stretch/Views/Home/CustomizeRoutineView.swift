@@ -19,7 +19,7 @@ struct CustomizeRoutineView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var pinnedToggle: Bool
     @State private var currentExercises: [Exercise]
-    @State private var showingPicker = false
+    @EnvironmentObject private var pickingSession: ExercisePickingSession
 
     init(title: String, exercises: [Exercise], isPinned: Bool,
          onDone: @escaping (_ exercises: [Exercise], _ pinned: Bool) -> Void) {
@@ -78,11 +78,21 @@ struct CustomizeRoutineView: View {
                 // such neighbor and needs no scrolling to reach.
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        showingPicker = true
+                        pickingSession.begin(context: .init(
+                            title: title,
+                            isPinned: pinnedToggle,
+                            baseExercises: currentExercises
+                        ))
+                        dismiss()
+                        // Same "dismiss + switch to Exercises tab" need
+                        // SessionPlayerView already has (Views/Session/
+                        // SessionPlayerView.swift) — reusing the existing
+                        // notification rather than adding a second one.
+                        NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
                     } label: {
-                        Image(systemName: "plus")
+                        Label("Add Exercises", systemImage: "plus")
+                            .labelStyle(.titleAndIcon)
                     }
-                    .accessibilityLabel("Add Exercises")
                 }
             }
             .safeAreaInset(edge: .bottom) {
@@ -99,11 +109,6 @@ struct CustomizeRoutineView: View {
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(.regularMaterial)
-            }
-            .sheet(isPresented: $showingPicker) {
-                ExercisePickerSheet(excluding: currentExercises) { picked in
-                    currentExercises = CustomizeRoutineExerciseMerge.appending(picked, to: currentExercises)
-                }
             }
         }
     }
