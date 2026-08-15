@@ -53,6 +53,9 @@ struct HomeView: View {
         .onReceive(NotificationCenter.default.publisher(for: .browseExercisesRequested)) { _ in
             selectedTab = 2
         }
+        .onReceive(NotificationCenter.default.publisher(for: .exercisePickingFinished)) { _ in
+            selectedTab = 0
+        }
         .ignoresSafeArea(.keyboard)
         .sheet(item: pendingActionBinding) { action in
             switch action {

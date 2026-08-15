@@ -29,6 +29,8 @@ struct TodayView: View {
     @State private var pendingShowSessionAfterCustomize = false
     @State private var isBreathingIn = false
     @State private var brokenStreakValue: Int? = nil
+    @EnvironmentObject private var pickingSession: ExercisePickingSession
+    @State private var customizeOverride: (title: String, exercises: [Exercise], isPinned: Bool)?
 
     enum TimeOfDayFocus: Equatable {
         case wakeUp, unwind, none
@@ -144,10 +146,11 @@ struct TodayView: View {
             }
         }) {
             CustomizeRoutineView(
-                title: timeOfDayFocus.heroTitle,
-                exercises: sessionExercises,
-                isPinned: timeOfDayFocus == .wakeUp && pinnedSessionExercises != nil,
+                title: customizeOverride?.title ?? timeOfDayFocus.heroTitle,
+                exercises: customizeOverride?.exercises ?? sessionExercises,
+                isPinned: customizeOverride?.isPinned ?? (timeOfDayFocus == .wakeUp && pinnedSessionExercises != nil),
                 onDone: { exercises, pinned in
+                    customizeOverride = nil
                     if pinned {
                         if let existingID = UUID(uuidString: pinnedWakeUpRoutineIDString),
                            let existing = routines.first(where: { $0.uuid == existingID }) {
@@ -178,6 +181,11 @@ struct TodayView: View {
                     pendingShowSessionAfterCustomize = true
                 }
             )
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .exercisePickingFinished)) { _ in
+            guard let result = pickingSession.consumeFinished() else { return }
+            customizeOverride = (result.context.title, result.merged, result.context.isPinned)
+            showingCustomize = true
         }
         .alert(
             "Streak Lost",
