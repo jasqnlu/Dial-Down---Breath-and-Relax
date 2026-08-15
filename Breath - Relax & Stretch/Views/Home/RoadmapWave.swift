@@ -94,6 +94,11 @@ enum RoadmapWaveGeometry {
 }
 
 // MARK: - RoadmapWaveShape
+//
+// Kept temporarily alongside RoadmapWaveCurve below: RoadmapWave.body still
+// instantiates this (Task 3 rewires that call site to RoadmapWaveCurve and
+// removes this struct). Retained here only so the target keeps compiling
+// between Task 2 and Task 3.
 
 private struct RoadmapWaveShape: Shape {
     let count: Int
@@ -113,6 +118,62 @@ private struct RoadmapWaveShape: Shape {
             if step == 0 { path.move(to: point) } else { path.addLine(to: point) }
         }
         return path
+    }
+}
+
+// MARK: - RoadmapWaveCurve
+//
+// One Canvas-drawn path segment per inter-node span (not one continuous
+// Path for the whole timeline) so each span's stroke-width/opacity/blur can
+// be pushed toward `focusCenterX` independently — this, paired with the
+// node-level falloff in RoadmapWave's ForEach below, is what reads as the
+// camera zooming into a specific point on the curve rather than just that
+// point's icon growing while a flat, uniformly-styled line sits under it.
+struct RoadmapWaveCurve: View {
+    let count: Int
+    let midY: CGFloat
+    /// The x-coordinate, in this curve's own (unscrolled content)
+    /// coordinate space, currently centered in the viewport.
+    let focusCenterX: CGFloat
+
+    var body: some View {
+        Canvas { context, _ in
+            guard count > 1 else { return }
+            let stepsPerSegment = 16
+            let gradient = Gradient(colors: [Color.luminaGradientStart, Color.luminaGradientEnd])
+
+            for segment in 0..<(count - 1) {
+                var path = Path()
+                for step in 0...stepsPerSegment {
+                    let t = CGFloat(segment) + CGFloat(step) / CGFloat(stepsPerSegment)
+                    let point = CGPoint(
+                        x: RoadmapWaveGeometry.x(atContinuous: t),
+                        y: RoadmapWaveGeometry.y(atContinuous: t, midY: midY)
+                    )
+                    if step == 0 { path.move(to: point) } else { path.addLine(to: point) }
+                }
+
+                let midX = RoadmapWaveGeometry.x(atContinuous: CGFloat(segment) + 0.5)
+                let distance = abs(midX - focusCenterX)
+                let width = RoadmapWaveGeometry.segmentStrokeWidth(distance: distance)
+                let opacity = RoadmapWaveGeometry.segmentOpacity(distance: distance)
+                let blur = RoadmapWaveGeometry.segmentBlur(distance: distance)
+
+                context.drawLayer { layer in
+                    if blur > 0.01 { layer.addFilter(.blur(radius: blur)) }
+                    layer.opacity = opacity
+                    layer.stroke(
+                        path,
+                        with: .linearGradient(
+                            gradient,
+                            startPoint: CGPoint(x: RoadmapWaveGeometry.x(at: 0), y: midY),
+                            endPoint: CGPoint(x: RoadmapWaveGeometry.x(at: count - 1), y: midY)
+                        ),
+                        style: StrokeStyle(lineWidth: width, lineCap: .round)
+                    )
+                }
+            }
+        }
     }
 }
 

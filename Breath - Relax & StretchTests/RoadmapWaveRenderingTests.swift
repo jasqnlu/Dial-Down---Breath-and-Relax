@@ -41,4 +41,20 @@ struct RoadmapWaveRenderingTests {
         let renderer = ImageRenderer(content: RoadmapWave(exercises: []).frame(width: 360, height: 140))
         #expect(renderer.cgImage != nil)
     }
+
+    @Test func curveRendersAtAnOffCenterFocusWithoutCrashing() {
+        let renderer = ImageRenderer(content:
+            RoadmapWaveCurve(count: 5, midY: 100, focusCenterX: 340)
+                .frame(width: 600, height: 200)
+        )
+        #expect(renderer.cgImage != nil)
+    }
+
+    @Test func curveRendersWithASingleNodeWithoutCrashing() {
+        let renderer = ImageRenderer(content:
+            RoadmapWaveCurve(count: 1, midY: 100, focusCenterX: 24)
+                .frame(width: 200, height: 200)
+        )
+        #expect(renderer.cgImage != nil)
+    }
 }
