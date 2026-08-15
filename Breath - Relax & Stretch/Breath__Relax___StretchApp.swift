@@ -6,6 +6,7 @@ import os
 struct BreathRelaxStretchApp: App {
     @StateObject private var auth = AuthManager.shared
     @StateObject private var deepLinkRouter = DeepLinkRouter()
+    @StateObject private var pickingSession = ExercisePickingSession()
 
     /// Set (once, before any UI appears) when `sharedModelContainer` had to
     /// fall back to an in-memory store below. Read from `body`'s `.onAppear`
@@ -85,6 +86,7 @@ struct BreathRelaxStretchApp: App {
                     .preferredColorScheme(resolvedColorScheme)
                     .environmentObject(auth)
                     .environmentObject(deepLinkRouter)
+                    .environmentObject(pickingSession)
                     .onAppear {
                         let freshInstall = seedIfNeeded()
                         migrateSeedIfNeeded()
