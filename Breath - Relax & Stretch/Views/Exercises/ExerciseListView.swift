@@ -36,12 +36,19 @@ struct ExerciseListView: View {
             .background(Color.luminaSurface)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
-            .floatingTabBarClearance()
+            // `.safeAreaInset` stacks bottom-up in application order: the LAST
+            // one applied claims the outermost slot, right at the screen edge —
+            // exactly the 80pt zone the real floating `CustomTabBar` overlay
+            // occupies. `pickingBar` must be applied BEFORE
+            // `.floatingTabBarClearance()` so it lands just above that reserved
+            // zone instead of underneath the tab bar (where its taps would be
+            // swallowed by the tab bar sitting on top of it).
             .safeAreaInset(edge: .bottom) {
                 if pickingSession.isActive {
                     pickingBar
                 }
             }
+            .floatingTabBarClearance()
             .onChange(of: normalizedSearchText) { _, _ in
                 resetSearchPage()
             }
