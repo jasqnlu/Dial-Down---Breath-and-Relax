@@ -57,4 +57,13 @@ struct RoadmapWaveRenderingTests {
         )
         #expect(renderer.cgImage != nil)
     }
+
+    @Test func rendersWithManyExercisesAtCarouselWidthWithoutCrashing() {
+        // A width narrower than the full content forces the carousel's
+        // scroll/snap/focus machinery to actually engage, unlike the
+        // existing 360pt-wide tests which happen to fit everything.
+        let exercises = (0..<8).map { makeExercise(name: "Exercise \($0)", duration: 30 + $0 * 15) }
+        let renderer = ImageRenderer(content: RoadmapWave(exercises: exercises, numbered: true).frame(width: 320, height: 260))
+        #expect(renderer.cgImage != nil)
+    }
 }
