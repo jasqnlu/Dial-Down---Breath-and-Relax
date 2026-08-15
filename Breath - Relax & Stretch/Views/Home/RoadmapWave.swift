@@ -107,6 +107,13 @@ struct RoadmapWaveCurve: View {
     /// The x-coordinate, in this curve's own (unscrolled content)
     /// coordinate space, currently centered in the viewport.
     let focusCenterX: CGFloat
+    /// Leading offset for node 0, matching RoadmapWave's own viewport-
+    /// dependent `padding` (RoadmapWaveGeometry.viewportPadding) — not the
+    /// fixed `RoadmapWaveGeometry.leadingPadding` baked into `.x(at:)`/
+    /// `.x(atContinuous:)`. Those two padding notions diverge on any real
+    /// device width, so this curve must place its points using the same
+    /// `padding` the nodes use, or the path renders under the wrong x.
+    let padding: CGFloat
 
     var body: some View {
         Canvas { context, _ in
@@ -119,13 +126,13 @@ struct RoadmapWaveCurve: View {
                 for step in 0...stepsPerSegment {
                     let t = CGFloat(segment) + CGFloat(step) / CGFloat(stepsPerSegment)
                     let point = CGPoint(
-                        x: RoadmapWaveGeometry.x(atContinuous: t),
+                        x: padding + RoadmapWaveGeometry.nodeSpacing * t,
                         y: RoadmapWaveGeometry.y(atContinuous: t, midY: midY)
                     )
                     if step == 0 { path.move(to: point) } else { path.addLine(to: point) }
                 }
 
-                let midX = RoadmapWaveGeometry.x(atContinuous: CGFloat(segment) + 0.5)
+                let midX = padding + RoadmapWaveGeometry.nodeSpacing * (CGFloat(segment) + 0.5)
                 let distance = abs(midX - focusCenterX)
                 let width = RoadmapWaveGeometry.segmentStrokeWidth(distance: distance)
                 let opacity = RoadmapWaveGeometry.segmentOpacity(distance: distance)
@@ -138,8 +145,8 @@ struct RoadmapWaveCurve: View {
                         path,
                         with: .linearGradient(
                             gradient,
-                            startPoint: CGPoint(x: RoadmapWaveGeometry.x(at: 0), y: midY),
-                            endPoint: CGPoint(x: RoadmapWaveGeometry.x(at: count - 1), y: midY)
+                            startPoint: CGPoint(x: padding, y: midY),
+                            endPoint: CGPoint(x: padding + RoadmapWaveGeometry.nodeSpacing * CGFloat(count - 1), y: midY)
                         ),
                         style: StrokeStyle(lineWidth: width, lineCap: .round)
                     )
@@ -204,7 +211,7 @@ struct RoadmapWave: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             ZStack(alignment: .topLeading) {
-                RoadmapWaveCurve(count: exercises.count, midY: midY, focusCenterX: focusCenterX)
+                RoadmapWaveCurve(count: exercises.count, midY: midY, focusCenterX: focusCenterX, padding: padding)
 
                 ForEach(Array(exercises.enumerated()), id: \.offset) { index, exercise in
                     nodeView(index: index, exercise: exercise)
