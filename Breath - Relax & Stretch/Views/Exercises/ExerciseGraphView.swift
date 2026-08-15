@@ -135,6 +135,7 @@ struct ExerciseGraphView: View {
             // focused group like "General Chest" opened nothing.
             CategoryNode(category: category, count: categoryExercises.count, isFocused: isFocused)
                 .contentShape(Circle())
+                .accessibilityIdentifier("exerciseCategoryNode")
                 .onTapGesture { focus(on: category, index: index, categories: categories, center: center, scale: scale) }
                 .position(x: center.x + normalized.x * scale * categoryRadius,
                           y: center.y + normalized.y * scale * categoryRadius)
@@ -158,6 +159,7 @@ struct ExerciseGraphView: View {
                 }
                 .buttonStyle(.plain)
                 .contentShape(Circle())
+                .accessibilityIdentifier("exerciseGroupNode")
                 // `.disabled(!isFocused)` rather than `.allowsHitTesting`: the
                 // latter, applied before `.position` inside the scaled/offset
                 // canvas, left the button's hit region misaligned from where it
@@ -429,6 +431,18 @@ private struct ExerciseGroupCorpusSheet: View {
             .padding(.vertical, 8)
             .background(.regularMaterial)
         }
+        // This sheet is a PUSHED destination, so the picking bar
+        // `ExerciseListView` attaches to the NavigationStack root never
+        // reaches it — the bar has to be applied here too (see `PickingBar`).
+        // `.safeAreaInset` stacks bottom-up in application order, so the bar
+        // must come BEFORE `.floatingTabBarClearance()` to land just above the
+        // floating tab bar's reserved zone rather than underneath it.
+        .safeAreaInset(edge: .bottom) {
+            if pickingSession.isActive {
+                PickingBar()
+            }
+        }
+        .floatingTabBarClearance()
     }
 }
 

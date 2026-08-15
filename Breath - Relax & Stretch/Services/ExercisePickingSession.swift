@@ -72,6 +72,9 @@ final class ExercisePickingSession: ObservableObject {
         return lastFinished
     }
 
+    /// Not yet wired to any UI affordance — reserved for a future
+    /// "cancel picking" control. Intentionally kept (and unit-tested) rather
+    /// than removed as dead code.
     func cancel() {
         isActive = false
         picked = []
