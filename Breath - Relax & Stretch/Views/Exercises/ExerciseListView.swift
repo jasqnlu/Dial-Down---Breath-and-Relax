@@ -8,6 +8,7 @@ struct ExerciseListView: View {
     @State private var selectedExercise: Exercise?
     @State private var visibleSearchCount = ExerciseSearchResults.pageSize
     @FocusState private var isSearchFocused: Bool
+    @EnvironmentObject private var pickingSession: ExercisePickingSession
 
     private var normalizedSearchText: String {
         searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -36,6 +37,11 @@ struct ExerciseListView: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .floatingTabBarClearance()
+            .safeAreaInset(edge: .bottom) {
+                if pickingSession.isActive {
+                    pickingBar
+                }
+            }
             .onChange(of: normalizedSearchText) { _, _ in
                 resetSearchPage()
             }
@@ -70,8 +76,17 @@ struct ExerciseListView: View {
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                         ForEach(searchResults.visible, id: \.uuid) { exercise in
-                            ExerciseGridTile(exercise: exercise) {
-                                selectedExercise = exercise
+                            ExerciseGridTile(
+                                exercise: exercise,
+                                badge: pickingSession.isActive ? .add(isSelected: pickingSession.isPicked(exercise)) : .none
+                            ) {
+                                if pickingSession.isActive {
+                                    pickingSession.toggle(exercise)
+                                } else {
+                                    selectedExercise = exercise
+                                }
+                            } onBadgeTap: {
+                                if pickingSession.isActive { pickingSession.toggle(exercise) }
                             }
                         }
 
@@ -103,6 +118,35 @@ struct ExerciseListView: View {
 
     private func resetSearchPage() {
         visibleSearchCount = ExerciseSearchResults.pageSize
+    }
+
+    private var pickedMinutes: Int {
+        pickingSession.picked.isEmpty ? 0 : max(1, Int((Double(pickingSession.pickedTotalSeconds) / 60).rounded()))
+    }
+
+    private var pickingBar: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(pickingSession.picked.count) exercise\(pickingSession.picked.count == 1 ? "" : "s")")
+                    .font(.luminaCardTitle)
+                Text("\(pickedMinutes) min")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
+            Spacer(minLength: 8)
+            Button {
+                pickingSession.finish()
+                NotificationCenter.default.post(name: .exercisePickingFinished, object: nil)
+            } label: {
+                Text("Done")
+            }
+            .buttonStyle(LuminaPillButtonStyle(kind: .prominent, compact: true))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.regularMaterial)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(pickingSession.picked.count) exercises selected, \(pickedMinutes) minutes total. Done")
     }
 
     private var header: some View {

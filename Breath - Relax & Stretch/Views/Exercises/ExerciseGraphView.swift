@@ -389,12 +389,23 @@ private struct ExerciseGroupCorpusSheet: View {
     let selected: SelectedExerciseGraphGroup
     let onSelect: (Exercise) -> Void
 
+    @EnvironmentObject private var pickingSession: ExercisePickingSession
+
     var body: some View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                 ForEach(selected.group.exercises, id: \.uuid) { exercise in
-                    ExerciseGridTile(exercise: exercise) {
-                        onSelect(exercise)
+                    ExerciseGridTile(
+                        exercise: exercise,
+                        badge: pickingSession.isActive ? .add(isSelected: pickingSession.isPicked(exercise)) : .none
+                    ) {
+                        if pickingSession.isActive {
+                            pickingSession.toggle(exercise)
+                        } else {
+                            onSelect(exercise)
+                        }
+                    } onBadgeTap: {
+                        if pickingSession.isActive { pickingSession.toggle(exercise) }
                     }
                 }
             }
