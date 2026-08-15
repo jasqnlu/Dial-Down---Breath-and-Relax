@@ -10,23 +10,28 @@ import SwiftUI
 enum RoadmapWaveGeometry {
     static let nodeSpacing: CGFloat = 62
     static let amplitude: CGFloat = 24
+    /// Fallback padding for a zero/near-zero viewport width — see
+    /// `viewportPadding(visibleWidth:)`. Real layouts use the
+    /// viewport-derived padding, which every `padding:`-taking function
+    /// below takes as an explicit parameter rather than baking in.
     static let leadingPadding: CGFloat = 24
-    static let trailingPadding: CGFloat = 24
     static let minNodeSize: CGFloat = 36
     static let maxNodeSize: CGFloat = 58
 
-    static func totalWidth(count: Int) -> CGFloat {
-        let base = leadingPadding + trailingPadding
+    /// Total scrollable content width: symmetric `padding` on both sides so
+    /// node 0 and the last node can each reach the viewport center.
+    static func totalWidth(count: Int, padding: CGFloat) -> CGFloat {
+        let base = padding * 2
         guard count > 1 else { return base }
         return base + nodeSpacing * CGFloat(count - 1)
     }
 
-    static func x(at index: Int) -> CGFloat {
-        leadingPadding + nodeSpacing * CGFloat(index)
+    static func x(at index: Int, padding: CGFloat) -> CGFloat {
+        x(atContinuous: CGFloat(index), padding: padding)
     }
 
-    static func x(atContinuous t: CGFloat) -> CGFloat {
-        leadingPadding + nodeSpacing * t
+    static func x(atContinuous t: CGFloat, padding: CGFloat) -> CGFloat {
+        padding + nodeSpacing * t
     }
 
     static func y(at index: Int, midY: CGFloat) -> CGFloat {
@@ -68,6 +73,61 @@ enum RoadmapWaveGeometry {
         return half > leadingPadding ? half : leadingPadding
     }
 
+    /// The settled content-offset a scroll should snap to, given whatever
+    /// offset the deceleration would otherwise land on.
+    ///
+    /// Node *i* sits at content-x `x(at: i, padding:)`, and is centered in
+    /// the viewport when the content offset equals
+    /// `x(at: i, padding:) - containerWidth / 2`. So the lattice of valid
+    /// resting offsets is anchored at `padding - containerWidth / 2` (the
+    /// offset that centers node 0 — ≈ 0 once real geometry is known, since
+    /// `padding ≈ containerWidth / 2`), *not* at `padding`: anchoring at
+    /// `padding` shifts every interior stop by `padding mod nodeSpacing`
+    /// (~25pt on a 321pt viewport) while the clamped first/last pages still
+    /// look correct, which is exactly how that bug hid.
+    static func snappedContentOffset(proposed: CGFloat, padding: CGFloat, containerWidth: CGFloat) -> CGFloat {
+        let origin = padding - containerWidth / 2
+        let steps = ((proposed - origin) / nodeSpacing).rounded()
+        return max(0, origin + steps * nodeSpacing)
+    }
+
+    // MARK: - Headroom for the focused node
+    //
+    // The focused node is scaled to `focusScale(distance: 0)` about
+    // `focusAnchorY` (bottom-weighted, so growth goes up into headroom
+    // rather than down through the container's bottom edge — see
+    // RoadmapWave.nodeView). That growth still has to *fit*: without
+    // reserving space for it, the fully-scaled node — which on a crest
+    // (even indices, including node 0) already sits `amplitude` above the
+    // curve's midline — is clipped flat by the ScrollView's own frame.
+
+    static let focusAnchorY: CGFloat = 0.84
+    static let nodeStackSpacing: CGFloat = 8
+    static let orderBadgeSize: CGFloat = 15
+    static let durationLabelHeight: CGFloat = 16
+
+    /// Height of a node's label stack at its largest (badge + glyph +
+    /// duration label), i.e. the worst case the container has to fit.
+    static func nodeStackHeight(numbered: Bool) -> CGFloat {
+        (numbered ? orderBadgeSize + nodeStackSpacing : 0)
+            + maxNodeSize + nodeStackSpacing + durationLabelHeight
+    }
+
+    /// How far the focused node's stack reaches above its own center point
+    /// once scaled. The stack is centered on the node, so its top starts at
+    /// `h/2` above center and the anchor sits `(focusAnchorY - 0.5) * h`
+    /// below center; scaling multiplies the anchor→top distance.
+    static func focusTopExtent(numbered: Bool) -> CGFloat {
+        let h = nodeStackHeight(numbered: numbered)
+        return focusAnchorY * h * focusScale(distance: 0) - (focusAnchorY - 0.5) * h
+    }
+
+    /// The mirror of `focusTopExtent` below the node's center.
+    static func focusBottomExtent(numbered: Bool) -> CGFloat {
+        let h = nodeStackHeight(numbered: numbered)
+        return (1 - focusAnchorY) * h * focusScale(distance: 0) + (focusAnchorY - 0.5) * h
+    }
+
     static func focusScale(distance: CGFloat) -> CGFloat {
         max(0.48, 1.62 - (distance / nodeSpacing) * 0.85)
     }
@@ -78,6 +138,18 @@ enum RoadmapWaveGeometry {
 
     static func focusBlur(distance: CGFloat) -> CGFloat {
         min(2.1, max(0, (distance / nodeSpacing - 0.3) * 1.7))
+    }
+
+    /// Numbered-variant order badge: a continuous 0…1 ramp on the node's
+    /// focus scale, so the badge fades rather than popping.
+    ///
+    /// The ramp starts below the scale of an immediate neighbour
+    /// (`focusScale(distance: nodeSpacing)` ≈ 0.77) on purpose: the whole
+    /// point of the numbered variant is reading exercise *order*, so the
+    /// nodes either side of the focused one keep a faint but present
+    /// number, and only nodes two or more spacings out fade to nothing.
+    static func badgeOpacity(scale: CGFloat) -> CGFloat {
+        min(1, max(0, (scale - 0.62) / 0.5))
     }
 
     static func segmentStrokeWidth(distance: CGFloat) -> CGFloat {
@@ -108,11 +180,10 @@ struct RoadmapWaveCurve: View {
     /// coordinate space, currently centered in the viewport.
     let focusCenterX: CGFloat
     /// Leading offset for node 0, matching RoadmapWave's own viewport-
-    /// dependent `padding` (RoadmapWaveGeometry.viewportPadding) — not the
-    /// fixed `RoadmapWaveGeometry.leadingPadding` baked into `.x(at:)`/
-    /// `.x(atContinuous:)`. Those two padding notions diverge on any real
-    /// device width, so this curve must place its points using the same
-    /// `padding` the nodes use, or the path renders under the wrong x.
+    /// dependent `padding` (RoadmapWaveGeometry.viewportPadding). Passed
+    /// straight through to `RoadmapWaveGeometry.x(atContinuous:padding:)`
+    /// so this curve places its points on exactly the same lattice the
+    /// nodes use.
     let padding: CGFloat
 
     var body: some View {
@@ -126,13 +197,13 @@ struct RoadmapWaveCurve: View {
                 for step in 0...stepsPerSegment {
                     let t = CGFloat(segment) + CGFloat(step) / CGFloat(stepsPerSegment)
                     let point = CGPoint(
-                        x: padding + RoadmapWaveGeometry.nodeSpacing * t,
+                        x: RoadmapWaveGeometry.x(atContinuous: t, padding: padding),
                         y: RoadmapWaveGeometry.y(atContinuous: t, midY: midY)
                     )
                     if step == 0 { path.move(to: point) } else { path.addLine(to: point) }
                 }
 
-                let midX = padding + RoadmapWaveGeometry.nodeSpacing * (CGFloat(segment) + 0.5)
+                let midX = RoadmapWaveGeometry.x(atContinuous: CGFloat(segment) + 0.5, padding: padding)
                 let distance = abs(midX - focusCenterX)
                 let width = RoadmapWaveGeometry.segmentStrokeWidth(distance: distance)
                 let opacity = RoadmapWaveGeometry.segmentOpacity(distance: distance)
@@ -145,8 +216,8 @@ struct RoadmapWaveCurve: View {
                         path,
                         with: .linearGradient(
                             gradient,
-                            startPoint: CGPoint(x: padding, y: midY),
-                            endPoint: CGPoint(x: padding + RoadmapWaveGeometry.nodeSpacing * CGFloat(count - 1), y: midY)
+                            startPoint: CGPoint(x: RoadmapWaveGeometry.x(at: 0, padding: padding), y: midY),
+                            endPoint: CGPoint(x: RoadmapWaveGeometry.x(at: count - 1, padding: padding), y: midY)
                         ),
                         style: StrokeStyle(lineWidth: width, lineCap: .round)
                     )
@@ -182,12 +253,14 @@ struct RoadmapWave: View {
     @State private var contentOffsetX: CGFloat = 0
     @State private var viewportWidth: CGFloat = 0
 
+    /// Curve midline: one full amplitude (so crest nodes clear it) plus the
+    /// space the focused node needs *above* its own center once scaled.
     private var midY: CGFloat {
-        RoadmapWaveGeometry.amplitude + RoadmapWaveGeometry.maxNodeSize / 2 + (numbered ? 14 : 4)
+        RoadmapWaveGeometry.amplitude + RoadmapWaveGeometry.focusTopExtent(numbered: numbered)
     }
 
     private var contentHeight: CGFloat {
-        midY + RoadmapWaveGeometry.amplitude + RoadmapWaveGeometry.maxNodeSize / 2 + 22
+        midY + RoadmapWaveGeometry.amplitude + RoadmapWaveGeometry.focusBottomExtent(numbered: numbered)
     }
 
     private var durations: [Int] { exercises.map(\.durationSeconds) }
@@ -197,9 +270,7 @@ struct RoadmapWave: View {
     }
 
     private var totalWidth: CGFloat {
-        let base = padding * 2
-        guard exercises.count > 1 else { return base }
-        return base + RoadmapWaveGeometry.nodeSpacing * CGFloat(exercises.count - 1)
+        RoadmapWaveGeometry.totalWidth(count: exercises.count, padding: padding)
     }
 
     /// The x-coordinate (in content space) currently centered in the
@@ -226,7 +297,11 @@ struct RoadmapWave: View {
         }
         .background {
             GeometryReader { geo in
-                Color.clear.onAppear { viewportWidth = geo.size.width }
+                // Behind the scrolling content, so the glow reads as light
+                // *behind* the focused node's glyph rather than a wash over
+                // it. Fixed to the viewport, like the vignette.
+                focusGlow
+                    .onAppear { viewportWidth = geo.size.width }
                     .onChange(of: geo.size.width) { _, newWidth in viewportWidth = newWidth }
             }
         }
@@ -239,21 +314,26 @@ struct RoadmapWave: View {
     private func nodeView(index: Int, exercise: Exercise) -> some View {
         let category = ExerciseCategory.primary(for: exercise.targetBodyParts)
         let size = RoadmapWaveGeometry.nodeSize(forDuration: exercise.durationSeconds, in: durations)
-        let x = padding + RoadmapWaveGeometry.nodeSpacing * CGFloat(index)
+        let x = RoadmapWaveGeometry.x(at: index, padding: padding)
         let y = RoadmapWaveGeometry.y(at: index, midY: midY)
         let distance = abs(x - focusCenterX)
         let scale = RoadmapWaveGeometry.focusScale(distance: distance)
         let opacity = RoadmapWaveGeometry.focusOpacity(distance: distance)
         let blur = RoadmapWaveGeometry.focusBlur(distance: distance)
 
-        VStack(spacing: 8) {
+        VStack(spacing: RoadmapWaveGeometry.nodeStackSpacing) {
             if numbered {
                 Text("\(index + 1)")
                     .font(.system(size: 9, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
-                    .frame(width: 15, height: 15)
+                    .frame(width: RoadmapWaveGeometry.orderBadgeSize, height: RoadmapWaveGeometry.orderBadgeSize)
                     .background(Color.luminaPrimary, in: Circle())
-                    .opacity(scale > 1.05 ? 1 : 0)
+                    // Continuous ramp, not a binary cut: the badge fades in
+                    // smoothly as a node approaches focus (and stays legible
+                    // on the near neighbours, which matters on the numbered
+                    // variant whose whole job is showing exercise order)
+                    // instead of popping on for exactly one node mid-drag.
+                    .opacity(RoadmapWaveGeometry.badgeOpacity(scale: scale))
             }
             PoseGlyphIcon(exercise: exercise, category: category, size: size)
             Text(exercise.durationFormatted)
@@ -265,28 +345,57 @@ struct RoadmapWave: View {
         // further UP into open headroom above the curve, and leaves the
         // duration label roughly anchored — nodes on the low side of the
         // curve (odd indices, per RoadmapWaveGeometry.y) no longer grow
-        // downward into the container edge as they scale up.
-        .scaleEffect(scale, anchor: UnitPoint(x: 0.5, y: 0.84))
+        // downward into the container edge as they scale up. The container
+        // reserves matching space for that growth via
+        // RoadmapWaveGeometry.focusTopExtent/focusBottomExtent.
+        .scaleEffect(scale, anchor: UnitPoint(x: 0.5, y: RoadmapWaveGeometry.focusAnchorY))
         .opacity(opacity)
         .blur(radius: blur)
         .position(x: x, y: y)
         .zIndex(Double(scale))
     }
 
+    /// A soft halo behind whichever node is centered (the spec's "soft glow
+    /// behind the centered node", distinct from the page-wide vignette).
+    /// Centered on the viewport center — the same point the vignette is
+    /// centered on, and where the focused node always renders.
+    private var focusGlow: some View {
+        RadialGradient(
+            gradient: Gradient(colors: [
+                Color.luminaPrimary.opacity(0.28),
+                Color.luminaPrimary.opacity(0.12),
+                Color.clear,
+            ]),
+            center: .center,
+            startRadius: 0,
+            endRadius: RoadmapWaveGeometry.maxNodeSize * 1.1
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .allowsHitTesting(false)
+    }
+
     private var carouselVignette: some View {
         // Fixed over the viewport (this overlay does not scroll with the
         // content) — stays clear near center, dims toward the edges, like
         // looking through a lens centered on whichever node is focused.
+        //
+        // Deliberately a neutral multiply rather than a fade to an absolute
+        // colour: this renders over both a plain `luminaSurface` background
+        // (CustomizeRoutineView) and TodayView's saturated hero gradient, and
+        // any fixed colour that suits one paints an obviously wrong haze over
+        // the other. Multiplying black-at-opacity just darkens whatever is
+        // actually behind it.
         RadialGradient(
             gradient: Gradient(colors: [
                 Color.clear,
                 Color.clear,
-                Color.luminaSurface.opacity(0.55),
+                Color.black.opacity(0.34),
             ]),
             center: .center,
             startRadius: 10,
             endRadius: max(viewportWidth, 1) * 0.62
         )
+        .blendMode(.multiply)
         .allowsHitTesting(false)
     }
 
@@ -302,15 +411,18 @@ struct RoadmapWave: View {
 // `.scrollTargetBehavior(.paging)` snaps to multiples of the *container*
 // width — the wrong fit here, since RoadmapWaveGeometry.nodeSpacing is a
 // fixed constant independent of container width. This snaps to the
-// nearest node-spacing multiple instead, so a node always lands centered
-// in the viewport regardless of how wide that viewport is.
+// nearest node-*centering* offset instead (see
+// RoadmapWaveGeometry.snappedContentOffset, where the actual math lives so
+// it can be unit-tested), so a node always lands centered in the viewport
+// regardless of how wide that viewport is.
 private struct RoadmapPagingBehavior: ScrollTargetBehavior {
     let padding: CGFloat
 
     func updateTarget(_ target: inout ScrollTarget, context: TargetContext) {
-        let raw = target.rect.minX
-        let stepsFromStart = ((raw - padding) / RoadmapWaveGeometry.nodeSpacing).rounded()
-        let snapped = padding + stepsFromStart * RoadmapWaveGeometry.nodeSpacing
-        target.rect.origin.x = max(0, snapped)
+        target.rect.origin.x = RoadmapWaveGeometry.snappedContentOffset(
+            proposed: target.rect.minX,
+            padding: padding,
+            containerWidth: context.containerSize.width
+        )
     }
 }
