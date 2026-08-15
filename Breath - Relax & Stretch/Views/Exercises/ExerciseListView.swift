@@ -45,7 +45,7 @@ struct ExerciseListView: View {
             // swallowed by the tab bar sitting on top of it).
             .safeAreaInset(edge: .bottom) {
                 if pickingSession.isActive {
-                    pickingBar
+                    PickingBar()
                 }
             }
             .floatingTabBarClearance()
@@ -127,35 +127,6 @@ struct ExerciseListView: View {
         visibleSearchCount = ExerciseSearchResults.pageSize
     }
 
-    private var pickedMinutes: Int {
-        pickingSession.picked.isEmpty ? 0 : max(1, Int((Double(pickingSession.pickedTotalSeconds) / 60).rounded()))
-    }
-
-    private var pickingBar: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text("\(pickingSession.picked.count) exercise\(pickingSession.picked.count == 1 ? "" : "s")")
-                    .font(.luminaCardTitle)
-                Text("\(pickedMinutes) min")
-                    .font(.luminaCaption)
-                    .foregroundStyle(Color.luminaOnSurfaceVariant)
-            }
-            Spacer(minLength: 8)
-            Button {
-                pickingSession.finish()
-                NotificationCenter.default.post(name: .exercisePickingFinished, object: nil)
-            } label: {
-                Text("Done")
-            }
-            .buttonStyle(LuminaPillButtonStyle(kind: .prominent, compact: true))
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(.regularMaterial)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(pickingSession.picked.count) exercises selected, \(pickedMinutes) minutes total. Done")
-    }
-
     private var header: some View {
         HStack(spacing: 10) {
             searchBar
@@ -225,6 +196,53 @@ struct ExerciseListView: View {
         .shadow(color: Color.cyan.opacity(0.18), radius: 7, x: 0, y: 0)
         .shadow(color: Color.mint.opacity(0.10), radius: 11, x: 0, y: 0)
         .accessibilityElement(children: .contain)
+    }
+}
+
+/// The count/time/Done bar shown while an `ExercisePickingSession` is active.
+///
+/// Extracted into its own view because it has to be attached on BOTH the
+/// Exercises tab root (`ExerciseListView`, which owns the search-results grid)
+/// and on `ExerciseGroupCorpusSheet` — the pushed tile grid that is the primary
+/// picking surface. A `.safeAreaInset` applied to a NavigationStack's root
+/// never reaches its pushed destinations (the UINavigationController bridge
+/// owns those insets; see `HomeView.swift`'s `.floatingTabBarClearance()`
+/// note), so the bar genuinely has to be applied in both places.
+///
+/// Deliberately NOT wrapped in `.accessibilityElement(children: .combine)`:
+/// matching `BodyMapComponents.swift`'s `miniRoutineBar`, the counts and the
+/// action button stay separate elements so "Done" remains individually
+/// focusable and actionable for VoiceOver.
+struct PickingBar: View {
+    @EnvironmentObject private var pickingSession: ExercisePickingSession
+
+    private var pickedMinutes: Int {
+        pickingSession.picked.isEmpty ? 0 : max(1, Int((Double(pickingSession.pickedTotalSeconds) / 60).rounded()))
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(pickingSession.picked.count) exercise\(pickingSession.picked.count == 1 ? "" : "s")")
+                    .font(.luminaCardTitle)
+                    .accessibilityIdentifier("pickingBarCount")
+                Text("\(pickedMinutes) min")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    .accessibilityIdentifier("pickingBarMinutes")
+            }
+            Spacer(minLength: 8)
+            Button {
+                pickingSession.finish()
+                NotificationCenter.default.post(name: .exercisePickingFinished, object: nil)
+            } label: {
+                Text("Done")
+            }
+            .buttonStyle(LuminaPillButtonStyle(kind: .prominent, compact: true))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.regularMaterial)
     }
 }
 

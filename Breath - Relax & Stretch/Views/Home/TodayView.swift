@@ -144,6 +144,15 @@ struct TodayView: View {
                 pendingShowSessionAfterCustomize = false
                 showingSession = true
             }
+            // Cleared here rather than only in `onDone`, so it is cleared no
+            // matter HOW the re-presented Customize sheet was left (Done,
+            // swipe-to-dismiss, or the toolbar X). Left set, a stale override
+            // would silently win over the fresh `timeOfDayFocus` default the
+            // next time Customize is opened — possibly hours or a day later.
+            // Safe against the picking flow: its re-population happens in the
+            // `.exercisePickingFinished` `.onReceive` below, which fires from
+            // the NEXT session's Done, not from this dismissal.
+            customizeOverride = nil
         }) {
             CustomizeRoutineView(
                 title: customizeOverride?.title ?? timeOfDayFocus.heroTitle,

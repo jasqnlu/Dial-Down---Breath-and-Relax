@@ -53,6 +53,9 @@ struct ExerciseGridTile: View {
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(exercise.name), \(exercise.durationFormatted), \(exercise.type.rawValue)")
+        // Stable handle for UI tests (the visible label is seed-data
+        // dependent); has no effect on VoiceOver, which reads the label above.
+        .accessibilityIdentifier("exerciseGridTile")
     }
 
     @ViewBuilder
