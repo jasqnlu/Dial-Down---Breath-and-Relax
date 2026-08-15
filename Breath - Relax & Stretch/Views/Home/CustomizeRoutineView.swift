@@ -1,8 +1,9 @@
 import SwiftUI
 
 /// Presented from the Home hero's Customize button. Lets the user preview
-/// today's session as a numbered roadmap, add more exercises via
-/// ExercisePickerSheet, and decide whether to pin the result as their
+/// today's session as a numbered roadmap, add more exercises via a
+/// cross-tab picking session on the real Exercises tab (see
+/// ExercisePickingSession), and decide whether to pin the result as their
 /// permanent Wake Up routine.
 ///
 /// Per-exercise duration editing is intentionally not interactive here:
