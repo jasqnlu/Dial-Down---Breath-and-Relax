@@ -93,34 +93,6 @@ enum RoadmapWaveGeometry {
     }
 }
 
-// MARK: - RoadmapWaveShape
-//
-// Kept temporarily alongside RoadmapWaveCurve below: RoadmapWave.body still
-// instantiates this (Task 3 rewires that call site to RoadmapWaveCurve and
-// removes this struct). Retained here only so the target keeps compiling
-// between Task 2 and Task 3.
-
-private struct RoadmapWaveShape: Shape {
-    let count: Int
-    let midY: CGFloat
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        guard count > 1 else { return path }
-        let stepsPerSegment = 16
-        let totalSteps = (count - 1) * stepsPerSegment
-        for step in 0...totalSteps {
-            let t = CGFloat(step) / CGFloat(stepsPerSegment)
-            let point = CGPoint(
-                x: RoadmapWaveGeometry.x(atContinuous: t),
-                y: RoadmapWaveGeometry.y(atContinuous: t, midY: midY)
-            )
-            if step == 0 { path.move(to: point) } else { path.addLine(to: point) }
-        }
-        return path
-    }
-}
-
 // MARK: - RoadmapWaveCurve
 //
 // One Canvas-drawn path segment per inter-node span (not one continuous
@@ -180,15 +152,28 @@ struct RoadmapWaveCurve: View {
 // MARK: - RoadmapWave
 //
 // A session's exercises as duration-sized PoseGlyphIcon nodes on a
-// continuous curve, in a horizontal ScrollView. Node 0 always renders at
-// the leading edge (an un-scrolled ScrollView shows its content's leading
-// edge first in LTR layouts) — the user scrolls right to reveal the rest,
-// at any exercise count. Stays PoseGlyphIcon-only by design: this is
-// compact wayfinding, not the primary browsing surface, so it's exempt
-// from the general animation-vs-glyph size rule (see ExerciseArt, Task 6).
+// continuous curve, paging one exercise at a time in a horizontal
+// ScrollView: the centered node and the curve segment under it read as
+// zoomed in (larger, sharper, brighter), while neighbors recede (smaller,
+// blurred, dimmed toward a vignette). Node 0 always renders first (an
+// un-scrolled ScrollView shows its content's leading edge first in LTR
+// layouts), and the user pages right to bring each subsequent exercise
+// into focus. Spacing between nodes is fixed regardless of exercise count
+// (RoadmapWaveGeometry.nodeSpacing) — only the leading/trailing padding is
+// viewport-dependent, so node 0 and the last node can each reach dead
+// center. Stays PoseGlyphIcon-only by design: this is compact wayfinding,
+// not the primary browsing surface, so it's exempt from the general
+// animation-vs-glyph size rule (see ExerciseArt, Task 6).
 struct RoadmapWave: View {
     let exercises: [Exercise]
     var numbered: Bool = false
+
+    /// Continuous horizontal content-offset, read every scroll frame via
+    /// `.onScrollGeometryChange` — not just the settled post-snap position
+    /// — because the "glide" the carousel needs (nodes/curve scaling
+    /// *during* the drag, not only once it stops) needs per-frame position.
+    @State private var contentOffsetX: CGFloat = 0
+    @State private var viewportWidth: CGFloat = 0
 
     private var midY: CGFloat {
         RoadmapWaveGeometry.amplitude + RoadmapWaveGeometry.maxNodeSize / 2 + (numbered ? 14 : 4)
@@ -200,49 +185,125 @@ struct RoadmapWave: View {
 
     private var durations: [Int] { exercises.map(\.durationSeconds) }
 
+    private var padding: CGFloat {
+        RoadmapWaveGeometry.viewportPadding(visibleWidth: viewportWidth)
+    }
+
+    private var totalWidth: CGFloat {
+        let base = padding * 2
+        guard exercises.count > 1 else { return base }
+        return base + RoadmapWaveGeometry.nodeSpacing * CGFloat(exercises.count - 1)
+    }
+
+    /// The x-coordinate (in content space) currently centered in the
+    /// viewport — what every node/curve-segment measures its distance from.
+    private var focusCenterX: CGFloat {
+        contentOffsetX + viewportWidth / 2
+    }
+
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             ZStack(alignment: .topLeading) {
-                RoadmapWaveShape(count: exercises.count, midY: midY)
-                    .stroke(
-                        LinearGradient(colors: [Color.luminaGradientStart, Color.luminaGradientEnd], startPoint: .leading, endPoint: .trailing),
-                        style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
-                    )
+                RoadmapWaveCurve(count: exercises.count, midY: midY, focusCenterX: focusCenterX)
 
                 ForEach(Array(exercises.enumerated()), id: \.offset) { index, exercise in
-                    let category = ExerciseCategory.primary(for: exercise.targetBodyParts)
-                    let size = RoadmapWaveGeometry.nodeSize(forDuration: exercise.durationSeconds, in: durations)
-                    let x = RoadmapWaveGeometry.x(at: index)
-                    let y = RoadmapWaveGeometry.y(at: index, midY: midY)
-
-                    PoseGlyphIcon(exercise: exercise, category: category, size: size)
-                        .position(x: x, y: y)
-
-                    if numbered {
-                        Text("\(index + 1)")
-                            .font(.system(size: 9, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                            .frame(width: 15, height: 15)
-                            .background(Color.luminaPrimary, in: Circle())
-                            .position(x: x, y: y - size / 2 - 8)
-                    }
-
-                    Text(exercise.durationFormatted)
-                        .font(.luminaCaption)
-                        .foregroundStyle(Color.luminaOnSurfaceVariant)
-                        .position(x: x, y: y + size / 2 + 12)
+                    nodeView(index: index, exercise: exercise)
                 }
             }
-            .frame(width: RoadmapWaveGeometry.totalWidth(count: exercises.count), height: contentHeight)
+            .frame(width: totalWidth, height: contentHeight)
         }
         .frame(height: contentHeight)
+        .scrollTargetBehavior(RoadmapPagingBehavior(padding: padding))
+        .onScrollGeometryChange(for: CGFloat.self, of: { $0.contentOffset.x }) { _, newOffset in
+            contentOffsetX = newOffset
+        }
+        .background {
+            GeometryReader { geo in
+                Color.clear.onAppear { viewportWidth = geo.size.width }
+                    .onChange(of: geo.size.width) { _, newWidth in viewportWidth = newWidth }
+            }
+        }
+        .overlay { carouselVignette }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
+    }
+
+    @ViewBuilder
+    private func nodeView(index: Int, exercise: Exercise) -> some View {
+        let category = ExerciseCategory.primary(for: exercise.targetBodyParts)
+        let size = RoadmapWaveGeometry.nodeSize(forDuration: exercise.durationSeconds, in: durations)
+        let x = padding + RoadmapWaveGeometry.nodeSpacing * CGFloat(index)
+        let y = RoadmapWaveGeometry.y(at: index, midY: midY)
+        let distance = abs(x - focusCenterX)
+        let scale = RoadmapWaveGeometry.focusScale(distance: distance)
+        let opacity = RoadmapWaveGeometry.focusOpacity(distance: distance)
+        let blur = RoadmapWaveGeometry.focusBlur(distance: distance)
+
+        VStack(spacing: 8) {
+            if numbered {
+                Text("\(index + 1)")
+                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .frame(width: 15, height: 15)
+                    .background(Color.luminaPrimary, in: Circle())
+                    .opacity(scale > 1.05 ? 1 : 0)
+            }
+            PoseGlyphIcon(exercise: exercise, category: category, size: size)
+            Text(exercise.durationFormatted)
+                .font(.luminaCaption)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+        }
+        // Pivoting near the bottom of the stack (by the duration label)
+        // rather than dead-center means scaling up pushes the glyph
+        // further UP into open headroom above the curve, and leaves the
+        // duration label roughly anchored — nodes on the low side of the
+        // curve (odd indices, per RoadmapWaveGeometry.y) no longer grow
+        // downward into the container edge as they scale up.
+        .scaleEffect(scale, anchor: UnitPoint(x: 0.5, y: 0.84))
+        .opacity(opacity)
+        .blur(radius: blur)
+        .position(x: x, y: y)
+        .zIndex(Double(scale))
+    }
+
+    private var carouselVignette: some View {
+        // Fixed over the viewport (this overlay does not scroll with the
+        // content) — stays clear near center, dims toward the edges, like
+        // looking through a lens centered on whichever node is focused.
+        RadialGradient(
+            gradient: Gradient(colors: [
+                Color.clear,
+                Color.clear,
+                Color.luminaSurface.opacity(0.55),
+            ]),
+            center: .center,
+            startRadius: 10,
+            endRadius: max(viewportWidth, 1) * 0.62
+        )
+        .allowsHitTesting(false)
     }
 
     private var accessibilityLabel: String {
         guard !exercises.isEmpty else { return "No exercises" }
         let items = exercises.map { "\($0.name), \($0.durationFormatted)" }.joined(separator: "; ")
         return "\(exercises.count) exercise\(exercises.count == 1 ? "" : "s"): \(items)"
+    }
+}
+
+// MARK: - RoadmapPagingBehavior
+//
+// `.scrollTargetBehavior(.paging)` snaps to multiples of the *container*
+// width — the wrong fit here, since RoadmapWaveGeometry.nodeSpacing is a
+// fixed constant independent of container width. This snaps to the
+// nearest node-spacing multiple instead, so a node always lands centered
+// in the viewport regardless of how wide that viewport is.
+private struct RoadmapPagingBehavior: ScrollTargetBehavior {
+    let padding: CGFloat
+
+    func updateTarget(_ target: inout ScrollTarget, context: TargetContext) {
+        let raw = target.rect.minX
+        let stepsFromStart = ((raw - padding) / RoadmapWaveGeometry.nodeSpacing).rounded()
+        let snapped = padding + stepsFromStart * RoadmapWaveGeometry.nodeSpacing
+        target.rect.origin.x = max(0, snapped)
     }
 }
