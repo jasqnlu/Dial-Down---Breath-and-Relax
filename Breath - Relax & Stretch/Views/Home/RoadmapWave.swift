@@ -44,6 +44,53 @@ enum RoadmapWaveGeometry {
         let fraction = CGFloat(duration - minD) / CGFloat(maxD - minD)
         return minNodeSize + fraction * (maxNodeSize - minNodeSize)
     }
+
+    // MARK: - Carousel focus falloff
+    //
+    // Pure functions of pixel distance from the viewport's horizontal
+    // center to whichever node/curve-segment is being styled. Ported 1:1
+    // from the interactive HTML mockup reviewed before this shipped (see
+    // docs/superpowers/specs/2026-08-14-roadmap-carousel-exercise-picking-design.md)
+    // so the tuning here is deliberate, not arbitrary: the node's transform
+    // pivots near its duration label (RoadmapWave applies the scale with a
+    // bottom-weighted anchor), so distance-based growth pushes the glyph
+    // upward into headroom instead of the label into the container edge.
+
+    /// Leading/trailing padding needed so node 0 and the last node can each
+    /// reach the *center* of the viewport, not just its leading edge —
+    /// unlike `nodeSpacing`, this is legitimately viewport-dependent (the
+    /// "never fit to available width" invariant above is about spacing,
+    /// not padding). Falls back to the fixed `leadingPadding` for a
+    /// zero/near-zero width (e.g. a first layout pass before geometry is
+    /// known), so a node is never pushed off both edges at once.
+    static func viewportPadding(visibleWidth: CGFloat) -> CGFloat {
+        let half = visibleWidth / 2
+        return half > leadingPadding ? half : leadingPadding
+    }
+
+    static func focusScale(distance: CGFloat) -> CGFloat {
+        max(0.48, 1.62 - (distance / nodeSpacing) * 0.85)
+    }
+
+    static func focusOpacity(distance: CGFloat) -> CGFloat {
+        max(0.26, 1 - (distance / nodeSpacing) * 0.62)
+    }
+
+    static func focusBlur(distance: CGFloat) -> CGFloat {
+        min(2.1, max(0, (distance / nodeSpacing - 0.3) * 1.7))
+    }
+
+    static func segmentStrokeWidth(distance: CGFloat) -> CGFloat {
+        max(0.8, 5.8 - (distance / nodeSpacing) * 3.1)
+    }
+
+    static func segmentOpacity(distance: CGFloat) -> CGFloat {
+        max(0.24, 1 - (distance / nodeSpacing) * 0.58)
+    }
+
+    static func segmentBlur(distance: CGFloat) -> CGFloat {
+        min(1.8, max(0, (distance / nodeSpacing - 0.4) * 1.5))
+    }
 }
 
 // MARK: - RoadmapWaveShape

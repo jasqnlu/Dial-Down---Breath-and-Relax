@@ -58,4 +58,46 @@ struct RoadmapWaveGeometryTests {
         let expected = (RoadmapWaveGeometry.minNodeSize + RoadmapWaveGeometry.maxNodeSize) / 2
         #expect(RoadmapWaveGeometry.nodeSize(forDuration: 60, in: []) == expected)
     }
+
+    @Test func viewportPaddingIsHalfTheVisibleWidth() {
+        #expect(RoadmapWaveGeometry.viewportPadding(visibleWidth: 300) == 150)
+    }
+
+    @Test func viewportPaddingFallsBackToLeadingPaddingForTinyOrZeroWidth() {
+        #expect(RoadmapWaveGeometry.viewportPadding(visibleWidth: 0) == RoadmapWaveGeometry.leadingPadding)
+        #expect(RoadmapWaveGeometry.viewportPadding(visibleWidth: 20) == RoadmapWaveGeometry.leadingPadding)
+    }
+
+    @Test func focusScaleIsMaximalAtZeroDistanceAndClampedAtFloor() {
+        #expect(RoadmapWaveGeometry.focusScale(distance: 0) == 1.62)
+        #expect(RoadmapWaveGeometry.focusScale(distance: 10_000) == 0.48)
+    }
+
+    @Test func focusScaleDecreasesMonotonicallyWithDistance() {
+        let near = RoadmapWaveGeometry.focusScale(distance: RoadmapWaveGeometry.nodeSpacing * 0.5)
+        let far = RoadmapWaveGeometry.focusScale(distance: RoadmapWaveGeometry.nodeSpacing * 1.5)
+        #expect(near > far)
+    }
+
+    @Test func focusOpacityIsMaximalAtZeroDistanceAndClampedAtFloor() {
+        #expect(RoadmapWaveGeometry.focusOpacity(distance: 0) == 1.0)
+        #expect(RoadmapWaveGeometry.focusOpacity(distance: 10_000) == 0.26)
+    }
+
+    @Test func focusBlurIsZeroNearCenterAndClampedAtCeiling() {
+        #expect(RoadmapWaveGeometry.focusBlur(distance: 0) == 0)
+        #expect(RoadmapWaveGeometry.focusBlur(distance: 10_000) == 2.1)
+    }
+
+    @Test func segmentStrokeWidthIsWidestAtZeroDistanceAndClampedAtFloor() {
+        #expect(RoadmapWaveGeometry.segmentStrokeWidth(distance: 0) == 5.8)
+        #expect(RoadmapWaveGeometry.segmentStrokeWidth(distance: 10_000) == 0.8)
+    }
+
+    @Test func segmentOpacityAndBlurFollowTheSameFalloffShape() {
+        #expect(RoadmapWaveGeometry.segmentOpacity(distance: 0) == 1.0)
+        #expect(RoadmapWaveGeometry.segmentOpacity(distance: 10_000) == 0.24)
+        #expect(RoadmapWaveGeometry.segmentBlur(distance: 0) == 0)
+        #expect(RoadmapWaveGeometry.segmentBlur(distance: 10_000) == 1.8)
+    }
 }
