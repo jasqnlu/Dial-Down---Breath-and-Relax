@@ -145,6 +145,26 @@ struct ExerciseListView: View {
                     .font(.title3)
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
+
+            // Standalone entry into picking mode — no Customize context, so
+            // `PickingBar`'s action button reads "Continue" and opens
+            // `MiniRoutineReviewView` instead of merging into a routine.
+            // Toggling while already active cancels the picks, mirroring
+            // how tapping "Select" again is expected to back out.
+            Button {
+                if pickingSession.isActive {
+                    pickingSession.cancel()
+                } else {
+                    pickingSession.begin()
+                }
+            } label: {
+                Label(pickingSession.isActive ? "Cancel" : "Select",
+                      systemImage: pickingSession.isActive ? "xmark.circle" : "checkmark.circle")
+                    .labelStyle(.iconOnly)
+                    .font(.title3)
+                    .foregroundStyle(pickingSession.isActive ? Color.luminaPrimary : Color.luminaOnSurfaceVariant)
+            }
+            .accessibilityIdentifier("exerciseSelectToggle")
         }
         .padding(.horizontal)
         .padding(.top, 8)
@@ -215,6 +235,7 @@ struct ExerciseListView: View {
 /// focusable and actionable for VoiceOver.
 struct PickingBar: View {
     @EnvironmentObject private var pickingSession: ExercisePickingSession
+    @State private var showingReview = false
 
     private var pickedMinutes: Int {
         pickingSession.picked.isEmpty ? 0 : max(1, Int((Double(pickingSession.pickedTotalSeconds) / 60).rounded()))
@@ -233,16 +254,30 @@ struct PickingBar: View {
             }
             Spacer(minLength: 8)
             Button {
-                pickingSession.finish()
-                NotificationCenter.default.post(name: .exercisePickingFinished, object: nil)
+                if pickingSession.hasContext {
+                    // Customize's "Add Exercises" flow — unchanged: merge
+                    // straight back into the routine being built there.
+                    pickingSession.finish()
+                    NotificationCenter.default.post(name: .exercisePickingFinished, object: nil)
+                } else {
+                    // Standalone picking, started from this tab's own
+                    // "Select" button — review before committing to one of
+                    // the three destinations.
+                    showingReview = true
+                }
             } label: {
-                Text("Done")
+                Text(pickingSession.hasContext ? "Done" : "Continue")
             }
             .buttonStyle(LuminaPillButtonStyle(kind: .prominent, compact: true))
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(.regularMaterial)
+        .sheet(isPresented: $showingReview) {
+            MiniRoutineReviewView(pickedExercises: pickingSession.picked) {
+                pickingSession.cancel()
+            }
+        }
     }
 }
 

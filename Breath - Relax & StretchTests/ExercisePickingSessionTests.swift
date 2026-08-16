@@ -99,4 +99,41 @@ struct ExercisePickingSessionTests {
         #expect(session.picked.isEmpty)
         #expect(session.finish() == nil)
     }
+
+    // MARK: - Standalone (no-context) picking, entered from the Exercises
+    // tab's own "Select" button rather than Customize's "Add Exercises".
+
+    @Test func standaloneBeginActivatesWithoutContext() {
+        let session = ExercisePickingSession()
+        session.begin()
+        #expect(session.isActive == true)
+        #expect(session.picked.isEmpty)
+        #expect(session.hasContext == false)
+    }
+
+    @Test func contextualBeginReportsHasContext() {
+        let session = ExercisePickingSession()
+        session.begin(context: makeContext())
+        #expect(session.hasContext == true)
+    }
+
+    @Test func standaloneBeginClearsAnyPriorPicks() {
+        let session = ExercisePickingSession()
+        session.begin()
+        session.toggle(makeExercise(name: "A", duration: 30))
+        session.begin()
+        #expect(session.picked.isEmpty)
+    }
+
+    @Test func finishOnStandaloneSessionReturnsNil() {
+        let session = ExercisePickingSession()
+        session.begin()
+        session.toggle(makeExercise(name: "A", duration: 30))
+        #expect(session.finish() == nil)
+        // finish() must not have a merge side effect on a contextless
+        // session — picking mode stays active for the review screen to
+        // read `picked` from.
+        #expect(session.isActive == true)
+        #expect(session.picked.count == 1)
+    }
 }
