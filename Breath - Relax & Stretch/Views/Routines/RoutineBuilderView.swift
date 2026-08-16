@@ -5,20 +5,28 @@ import os
 struct RoutineBuilderView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var auth: AuthManager
 
     @Query private var exercises: [Exercise]
-    @Query private var allRoutines: [Routine]
 
     var routineToEdit: Routine? = nil
+    /// Exercise IDs to fold in on appear — e.g. a set just picked in the
+    /// Exercises tab's standalone picking mode (see
+    /// `MiniRoutineReviewView`). Appended after `routineToEdit`'s existing
+    /// exercises (or seeded fresh when creating), de-duped via
+    /// `RoutineIDMerge` so a pick that's already in the routine isn't
+    /// doubled.
+    var initialExerciseIDs: [UUID] = []
+    /// Called right after a successful save (create or update), before
+    /// `dismiss()`. Distinct from dismissal itself so a caller driving this
+    /// view from a review flow (`MiniRoutineReviewView`) can tell "saved"
+    /// apart from "cancelled" — the sheet's own `onDismiss` fires either way
+    /// and can't make that distinction.
+    var onSaved: (() -> Void)? = nil
 
     @State private var routineName = ""
     @State private var selectedIDs: [UUID] = []
-    @State private var isPublic = false
     @State private var showingExercisePicker = false
     @State private var indexPendingRemoval: Int?
-
-    private let maxPublicRoutines = 3
 
     private var isEditing: Bool { routineToEdit != nil }
 
@@ -28,14 +36,6 @@ struct RoutineBuilderView: View {
 
     private var totalDuration: Int {
         selectedExercises.reduce(0) { $0 + $1.durationSeconds }
-    }
-
-    private var myPublicCount: Int {
-        allRoutines.filter { $0.isPublic && $0.authorID == auth.backendID && $0.uuid != routineToEdit?.uuid }.count
-    }
-
-    private var publishLimitReached: Bool {
-        myPublicCount >= maxPublicRoutines
     }
 
     var body: some View {
@@ -95,28 +95,6 @@ struct RoutineBuilderView: View {
                         }
                     }
                 }
-
-                Section {
-                    Toggle("Publish to Community", isOn: $isPublic)
-                        .font(.luminaBody)
-                        .tint(Color.luminaPrimary)
-                        .disabled(!isPublic && publishLimitReached)
-                } footer: {
-                    if isPublic {
-                        Text("Your routine will appear in the community library. You've used \(myPublicCount) of \(maxPublicRoutines) publish slots.")
-                            .font(.luminaCaption)
-                            .foregroundStyle(Color.luminaOnSurfaceVariant)
-                    } else if publishLimitReached {
-                        Text("You've reached the \(maxPublicRoutines)-routine publish limit. Un-publish an existing routine to free a slot.")
-                            .font(.luminaCaption)
-                            .foregroundStyle(.red)
-                    } else {
-                        let remaining = maxPublicRoutines - myPublicCount
-                        Text("Share this routine with the community (\(remaining) publish slot\(remaining == 1 ? "" : "s") remaining).")
-                            .font(.luminaCaption)
-                            .foregroundStyle(Color.luminaOnSurfaceVariant)
-                    }
-                }
             }
             .scrollContentBackground(.hidden)
             .background(Color.luminaSurface)
@@ -160,8 +138,9 @@ struct RoutineBuilderView: View {
             .onAppear {
                 if let r = routineToEdit {
                     routineName  = r.name
-                    selectedIDs  = r.exerciseIDs
-                    isPublic     = r.isPublic
+                    selectedIDs  = RoutineIDMerge.appending(initialExerciseIDs, to: r.exerciseIDs)
+                } else if !initialExerciseIDs.isEmpty {
+                    selectedIDs = RoutineIDMerge.appending(initialExerciseIDs, to: selectedIDs)
                 }
             }
         }
@@ -171,15 +150,10 @@ struct RoutineBuilderView: View {
         if let r = routineToEdit {
             r.name        = routineName
             r.exerciseIDs = selectedIDs
-            r.isPublic    = isPublic
-            r.authorName  = isPublic ? auth.displayName : nil
         } else {
             let routine = Routine(
                 name: routineName,
-                exerciseIDs: selectedIDs,
-                authorID: auth.backendID,
-                authorName: isPublic ? auth.displayName : nil,
-                isPublic: isPublic
+                exerciseIDs: selectedIDs
             )
             modelContext.insert(routine)
 
@@ -190,6 +164,7 @@ struct RoutineBuilderView: View {
 
         do {
             try modelContext.save()
+            onSaved?()
         } catch {
             Logger(subsystem: "com.jasonlu.breath", category: "routineBuilder").warning("Save failed: \(error)")
         }
