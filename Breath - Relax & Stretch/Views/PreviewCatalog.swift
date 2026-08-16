@@ -24,7 +24,7 @@ private func sampleExercise() -> Exercise {
 }
 
 private func sampleRoutine() -> Routine {
-    Routine(name: "Morning Wake-Up", exerciseIDs: [], isPublic: false)
+    Routine(name: "Morning Wake-Up", exerciseIDs: [])
 }
 
 // MARK: - Auth screens
