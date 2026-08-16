@@ -26,6 +26,13 @@ final class ExercisePickingSession: ObservableObject {
     @Published private(set) var picked: [Exercise] = []
     private var context: Context?
 
+    /// True when this session was started from Customize's "Add Exercises"
+    /// (via `begin(context:)`) rather than standalone from the Exercises
+    /// tab's own "Select" button (via `begin()`). `PickingBar` reads this to
+    /// decide whether its action button merges into Customize ("Done") or
+    /// opens the mini-routine review screen ("Continue").
+    var hasContext: Bool { context != nil }
+
     /// Set by `finish()`, read (once) by whoever re-presents Customize
     /// after the `.exercisePickingFinished` notification — kept separate
     /// from `isActive`/`picked` (which are cleared by `finish()`) so a
@@ -35,6 +42,16 @@ final class ExercisePickingSession: ObservableObject {
 
     func begin(context: Context) {
         self.context = context
+        picked = []
+        isActive = true
+    }
+
+    /// Starts picking with no Customize context — entered from the
+    /// Exercises tab's own "Select" toolbar button. `finish()` is a no-op
+    /// for this session (there's nothing to merge into); the caller reads
+    /// `picked` directly once picking wraps up via the review screen.
+    func begin() {
+        context = nil
         picked = []
         isActive = true
     }

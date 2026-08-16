@@ -131,8 +131,12 @@ struct BodyPartExercisesView: View {
     let bodyParts: [String]
     @Query private var allExercises: [Exercise]
     @StateObject private var miniRoutine = MiniRoutineState()
-    @State private var quickStartExercise: Exercise?
+    @State private var selectedExercise: Exercise?
     @State private var showingMiniRoutineSession = false
+
+    private var isShowingDetail: Binding<Bool> {
+        Binding(get: { selectedExercise != nil }, set: { if !$0 { selectedExercise = nil } })
+    }
 
     init(bodyPart: String)        { self.bodyParts = [bodyPart] }
     init(bodyParts: [String])     { self.bodyParts = bodyParts }
@@ -188,8 +192,10 @@ struct BodyPartExercisesView: View {
             }
         }
         .floatingTabBarClearance()
-        .sheet(item: $quickStartExercise) { exercise in
-            SessionPlayerView(exercises: [exercise])
+        .navigationDestination(isPresented: isShowingDetail) {
+            if let selectedExercise {
+                ExerciseDetailView(exercise: selectedExercise)
+            }
         }
         .sheet(isPresented: $showingMiniRoutineSession) {
             SessionPlayerView(exercises: miniRoutine.exercises)
@@ -209,7 +215,7 @@ struct BodyPartExercisesView: View {
                         exercise: exercise,
                         badge: .add(isSelected: miniRoutine.contains(exercise))
                     ) {
-                        quickStartExercise = exercise
+                        selectedExercise = exercise
                     } onBadgeTap: {
                         miniRoutine.toggle(exercise)
                     }
