@@ -7,7 +7,6 @@ struct RoutineListView: View {
     @Environment(\.modelContext) private var modelContext
 
     @State private var showingBuilder  = false
-    @State private var showingBrowser  = false
     @State private var routineToPlay: Routine?
     @State private var routineToEdit: Routine?
     @State private var routinePendingDelete: Routine?
@@ -74,15 +73,6 @@ struct RoutineListView: View {
                         Image(systemName: "plus")
                     }
                 }
-                // Community browsing needs the backend; hide the entry point
-                // rather than showing a screen that can't load.
-                if SupabaseService.isConfigured {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button { showingBrowser = true } label: {
-                            Label("Browse", systemImage: "globe")
-                        }
-                    }
-                }
             }
             .overlay {
                 if routines.isEmpty {
@@ -98,9 +88,7 @@ struct RoutineListView: View {
                                 .foregroundStyle(Color.luminaOnSurface)
                         }
                     } description: {
-                        Text(SupabaseService.isConfigured
-                            ? "Create your own or borrow one from the library."
-                            : "Create your own routine from your favorite exercises.")
+                        Text("Create your own routine from your favorite exercises.")
                             .font(.luminaBody)
                             .foregroundStyle(Color.luminaOnSurfaceVariant)
                     }
@@ -112,10 +100,6 @@ struct RoutineListView: View {
             }
             .sheet(item: $routineToEdit) { routine in
                 RoutineBuilderView(routineToEdit: routine)
-                    .environmentObject(AuthManager.shared)
-            }
-            .sheet(isPresented: $showingBrowser) {
-                BorrowRoutineView()
                     .environmentObject(AuthManager.shared)
             }
             .confirmationDialog(
@@ -209,14 +193,6 @@ struct RoutineRow: View {
                 HStack(spacing: 12) {
                     Label("\(resolvedCount) exercise\(resolvedCount == 1 ? "" : "s")",
                           systemImage: "list.number")
-                    if routine.isPublic {
-                        Label("Public", systemImage: "globe")
-                            .foregroundStyle(.blue)
-                    }
-                    if routine.borrowCount > 0 {
-                        Label("\(routine.borrowCount)", systemImage: "arrow.triangle.branch")
-                            .foregroundStyle(.secondary)
-                    }
                 }
                 .font(.luminaCaption)
                 .foregroundStyle(.secondary)
