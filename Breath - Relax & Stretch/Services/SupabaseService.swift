@@ -99,18 +99,6 @@ actor SupabaseService {
         return try JSONDecoder().decode([RemoteExercise].self, from: data)
     }
 
-    // MARK: - Public Routines
-
-    /// Fetches all routines marked is_public = true.
-    func fetchPublicRoutines() async throws -> [RemoteRoutine] {
-        let data = try await get(path: "/rest/v1/routines?select=*&is_public=eq.true&order=name")
-        return try JSONDecoder().decode([RemoteRoutine].self, from: data)
-    }
-
-    // Note: the write-side counterpart of this fetch (uploadRoutine) was
-    // removed as dead code — nothing in the app called it. See
-    // supabase_schema.sql for the matching RLS policy removal.
-
     // MARK: - Community (leaderboard / public profile)
 
     /// Upserts the local profile to a public-readable table so it can appear
