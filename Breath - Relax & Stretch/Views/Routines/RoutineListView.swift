@@ -14,22 +14,6 @@ struct RoutineListView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section {
-                    NavigationLink(destination: GuidedProgramsView()) {
-                        entryRow(title: "Guided Programs", systemImage: "calendar.badge.clock")
-                    }
-                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-
-                    NavigationLink(destination: ContentPacksView()) {
-                        entryRow(title: "Content Packs", systemImage: "shippingbox.fill")
-                    }
-                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                }
-
                 ForEach(routines) { routine in
                     RoutineRow(routine: routine, resolvedCount: resolvedExercises(for: routine).count) {
                         routineToPlay = routine
