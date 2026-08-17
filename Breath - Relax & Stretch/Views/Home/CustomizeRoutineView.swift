@@ -121,7 +121,7 @@ struct CustomizeRoutineView: View {
                 .frame(width: 34, height: 34)
                 .background(Color.luminaMintTint, in: RoundedRectangle(cornerRadius: LuminaRadius.chip, style: .continuous))
             VStack(alignment: .leading, spacing: 1) {
-                Text("Keep as my \(title) routine")
+                Text("Keep as my Today routine")
                     .font(.luminaCardTitle)
                 Text("Starts your day automatically · off = just for today")
                     .font(.luminaCaption)

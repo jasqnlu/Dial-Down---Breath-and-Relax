@@ -22,7 +22,7 @@ struct TodayView: View {
     @AppStorage("onboardingGoals") private var goalsStr = ""
     @AppStorage("onboardingAreas") private var onboardingAreas = ""
     @AppStorage("showStreakEmoji") private var showStreakEmoji = true
-    @AppStorage("pinnedWakeUpRoutineID") private var pinnedWakeUpRoutineIDString = ""
+    @AppStorage("pinnedTodayRoutineID") private var pinnedTodayRoutineIDString = ""
 
     @State private var showingSession = false
     @State private var showingCustomize = false
@@ -62,11 +62,11 @@ struct TodayView: View {
         Set(goalsStr.split(separator: ",").map(String.init))
     }
 
-    /// The saved routine the user pinned via Customize ("Keep as my Wake Up
-    /// routine"), if any is set and it still resolves to at least one real
-    /// exercise. Checked before the goal-based fallback below.
+    /// The saved "Today" routine the user pinned via Customize ("Keep as my
+    /// Today routine"), if any is set and it still resolves to at least one
+    /// real exercise. Checked before any time-of-day-based recommendation.
     private var pinnedSessionExercises: [Exercise]? {
-        guard let pinnedID = UUID(uuidString: pinnedWakeUpRoutineIDString),
+        guard let pinnedID = UUID(uuidString: pinnedTodayRoutineIDString),
               let routine = routines.first(where: { $0.uuid == pinnedID }) else {
             return nil
         }
@@ -75,19 +75,25 @@ struct TodayView: View {
         return resolved.isEmpty ? nil : resolved
     }
 
-    /// Today's session: goal-based recommendations, falling back to the first
-    /// few catalog exercises when no goals were picked during onboarding.
+    /// Whether the hero card is currently showing the pinned "Today"
+    /// routine rather than a time-of-day/goal-based recommendation — drives
+    /// the "Pinned as Today" tag next to the hero title.
+    private var isPinnedActive: Bool {
+        pinnedSessionExercises != nil
+    }
+
+    /// Today's session: the pinned "Today" routine if one is set, else
+    /// goal-based recommendations, falling back to the first few catalog
+    /// exercises when no goals were picked during onboarding.
     ///
-    /// The pinned routine only activates during Wake Up hours — it's named
-    /// after the AppStorage key (`pinnedWakeUpRoutineID`) and the hero's
-    /// literal "Wake Up" wording. Pinning from Unwind or the midday
-    /// fallback state must not leak into the other time-of-day sessions.
+    /// The pin now applies regardless of time of day — a single "Today"
+    /// routine, not one scoped to Wake Up hours.
     private var sessionExercises: [Exercise] {
+        if let pinnedSessionExercises {
+            return pinnedSessionExercises
+        }
         switch timeOfDayFocus {
         case .wakeUp:
-            if let pinnedSessionExercises {
-                return pinnedSessionExercises
-            }
             let pool = GoalMeta.recommend(from: exercises, activeGoalIDs: ["wake_up"], limit: 4)
             if !pool.isEmpty { return pool }
         case .unwind:
@@ -157,21 +163,21 @@ struct TodayView: View {
             CustomizeRoutineView(
                 title: customizeOverride?.title ?? timeOfDayFocus.heroTitle,
                 exercises: customizeOverride?.exercises ?? sessionExercises,
-                isPinned: customizeOverride?.isPinned ?? (timeOfDayFocus == .wakeUp && pinnedSessionExercises != nil),
+                isPinned: customizeOverride?.isPinned ?? isPinnedActive,
                 onDone: { exercises, pinned in
                     customizeOverride = nil
                     if pinned {
-                        if let existingID = UUID(uuidString: pinnedWakeUpRoutineIDString),
+                        if let existingID = UUID(uuidString: pinnedTodayRoutineIDString),
                            let existing = routines.first(where: { $0.uuid == existingID }) {
                             // Update the already-pinned routine in place rather
                             // than inserting a duplicate every time the user
                             // re-pins from Customize.
                             existing.exerciseIDs = exercises.map(\.uuid)
-                            existing.name = timeOfDayFocus.heroTitle
+                            existing.name = "Today"
                         } else {
-                            let routine = Routine(name: timeOfDayFocus.heroTitle, exerciseIDs: exercises.map(\.uuid))
+                            let routine = Routine(name: "Today", exerciseIDs: exercises.map(\.uuid))
                             modelContext.insert(routine)
-                            pinnedWakeUpRoutineIDString = routine.uuid.uuidString
+                            pinnedTodayRoutineIDString = routine.uuid.uuidString
                         }
                         try? modelContext.save()
                     } else {
@@ -180,12 +186,12 @@ struct TodayView: View {
                         // an orphan in the CloudKit-synced store, and the next
                         // re-pin (with the ID already cleared) would insert a
                         // brand-new duplicate instead of ever finding it again.
-                        if let existingID = UUID(uuidString: pinnedWakeUpRoutineIDString),
+                        if let existingID = UUID(uuidString: pinnedTodayRoutineIDString),
                            let existing = routines.first(where: { $0.uuid == existingID }) {
                             modelContext.delete(existing)
                             try? modelContext.save()
                         }
-                        pinnedWakeUpRoutineIDString = ""
+                        pinnedTodayRoutineIDString = ""
                     }
                     pendingShowSessionAfterCustomize = true
                 }
@@ -223,6 +229,16 @@ struct TodayView: View {
             }
         }
         .onAppear {
+            // One-time migration: the pin used to be scoped to Wake Up hours
+            // only, under this key. Carry an existing pin forward under the
+            // new key rather than silently dropping it for upgrading users.
+            // The old key is left in place (unused) rather than deleted —
+            // there's no reader left for it either way.
+            if pinnedTodayRoutineIDString.isEmpty,
+               let legacy = UserDefaults.standard.string(forKey: "pinnedWakeUpRoutineID"),
+               !legacy.isEmpty {
+                pinnedTodayRoutineIDString = legacy
+            }
             if !reduceMotion { isBreathingIn = true }
             if let profile {
                 let broken = GamificationService.checkForBrokenStreak(for: profile)
@@ -317,8 +333,18 @@ struct TodayView: View {
 
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(timeOfDayFocus.heroTitle)
-                        .font(.luminaTitle)
+                    HStack(spacing: 8) {
+                        Text(timeOfDayFocus.heroTitle)
+                            .font(.luminaTitle)
+                        if isPinnedActive {
+                            Label("Pinned as Today", systemImage: "bookmark.fill")
+                                .font(.luminaCaption)
+                                .fontWeight(.semibold)
+                                .padding(.horizontal, 9)
+                                .padding(.vertical, 3)
+                                .background(.white.opacity(0.22), in: Capsule())
+                        }
+                    }
                     Text("\(sessionExercises.count) exercises · \(mins) min")
                         .font(.luminaSubheadline)
                         .opacity(0.85)
