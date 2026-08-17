@@ -37,6 +37,37 @@ struct ForYouCard: View {
     }
 }
 
+// MARK: - Premade routine card
+
+struct PremadeRoutineCard: View {
+    let routine: PremadeRoutine
+    let meta: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Image(systemName: routine.icon)
+                .font(.system(size: 17, weight: .medium))
+                .foregroundStyle(Color.luminaPrimary)
+                .frame(width: 40, height: 40)
+                .background(Color.luminaMintTint, in: Circle())
+
+            Text(routine.title)
+                .font(.luminaCardTitle)
+                .foregroundStyle(Color.luminaOnSurface)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text(meta)
+                .font(.luminaCaption)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+        }
+        .padding(12)
+        .frame(width: 132, alignment: .leading)
+        .luminaCard(padding: 0)
+    }
+}
+
 // MARK: - Recommended carousel
 //
 // A rotating carousel of specific exercises drawn from the user's chosen

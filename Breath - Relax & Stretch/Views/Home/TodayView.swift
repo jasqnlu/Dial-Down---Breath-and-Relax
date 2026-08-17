@@ -27,6 +27,7 @@ struct TodayView: View {
     @State private var showingSession = false
     @State private var showingCustomize = false
     @State private var pendingShowSessionAfterCustomize = false
+    @State private var selectedPremadeRoutine: PremadeRoutine?
     @State private var isBreathingIn = false
     @State private var brokenStreakValue: Int? = nil
     @EnvironmentObject private var pickingSession: ExercisePickingSession
@@ -127,6 +128,7 @@ struct TodayView: View {
                     greetingHeader
                     heroCard
                     recommendedSection
+                    premadeRoutinesSection
                     forYouSection
                 }
                 .padding(.horizontal, 20)
@@ -201,6 +203,12 @@ struct TodayView: View {
             guard let result = pickingSession.consumeFinished() else { return }
             customizeOverride = (result.context.title, result.merged, result.context.isPinned)
             showingCustomize = true
+        }
+        .sheet(item: $selectedPremadeRoutine) { routine in
+            RoutineBuilderView(
+                initialExerciseIDs: routine.resolvedExercises(in: exercises).map(\.uuid),
+                initialName: routine.title
+            )
         }
         .alert(
             "Streak Lost",
@@ -397,6 +405,38 @@ struct TodayView: View {
                 RecommendedCarousel(items: items)
             }
         }
+    }
+
+    // MARK: - Premade Routines
+
+    @ViewBuilder
+    private var premadeRoutinesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Premade Routines")
+                .font(.luminaTitle)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(alignment: .top, spacing: 12) {
+                    ForEach(PremadeRoutine.all) { routine in
+                        Button {
+                            selectedPremadeRoutine = routine
+                        } label: {
+                            PremadeRoutineCard(routine: routine, meta: premadeMeta(for: routine))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+        }
+    }
+
+    private func premadeMeta(for routine: PremadeRoutine) -> String {
+        let resolved = routine.resolvedExercises(in: exercises)
+        guard !resolved.isEmpty else { return "Unavailable" }
+        let totalSecs = resolved.reduce(0) { $0 + $1.durationSeconds }
+        let mins = max(1, Int((Double(totalSecs) / 60).rounded()))
+        return "\(resolved.count) exercise\(resolved.count == 1 ? "" : "s") · \(mins) min"
     }
 
     // MARK: - For You
