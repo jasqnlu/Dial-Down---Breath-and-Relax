@@ -33,6 +33,12 @@ struct RoutineBuilderView: View {
     @State private var selectedIDs: [UUID] = []
     @State private var showingExercisePicker = false
     @State private var indexPendingRemoval: Int?
+    /// Guards the "creating new" onAppear branch so initialExerciseIDs/
+    /// initialName are only seeded once. Without this, a future dismiss-and-
+    /// re-present of this same sheet (e.g. after a cross-tab exercise pick)
+    /// would re-fire onAppear and silently overwrite a name the user had
+    /// already typed.
+    @State private var didApplySeed = false
 
     private var isEditing: Bool { routineToEdit != nil }
 
@@ -145,7 +151,8 @@ struct RoutineBuilderView: View {
                 if let r = routineToEdit {
                     routineName  = r.name
                     selectedIDs  = RoutineIDMerge.appending(initialExerciseIDs, to: r.exerciseIDs)
-                } else if !initialExerciseIDs.isEmpty || initialName != nil {
+                } else if !didApplySeed && (!initialExerciseIDs.isEmpty || initialName != nil) {
+                    didApplySeed = true
                     selectedIDs = RoutineIDMerge.appending(initialExerciseIDs, to: selectedIDs)
                     if let initialName {
                         routineName = initialName

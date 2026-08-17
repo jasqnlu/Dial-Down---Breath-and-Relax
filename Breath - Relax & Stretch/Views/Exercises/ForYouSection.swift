@@ -41,7 +41,7 @@ struct ForYouCard: View {
 
 struct PremadeRoutineCard: View {
     let routine: PremadeRoutine
-    let meta: String
+    let meta: (count: Int, minutes: Int)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -58,9 +58,15 @@ struct PremadeRoutineCard: View {
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text(meta)
-                .font(.luminaCaption)
-                .foregroundStyle(Color.luminaOnSurfaceVariant)
+            if let meta {
+                Text("\(meta.count) exercise\(meta.count == 1 ? "" : "s") · \(meta.minutes) min")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            } else {
+                Text("Unavailable")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
         }
         .padding(12)
         .frame(width: 132, alignment: .leading)

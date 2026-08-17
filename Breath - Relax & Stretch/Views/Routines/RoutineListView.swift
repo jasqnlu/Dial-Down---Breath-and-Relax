@@ -89,11 +89,9 @@ struct RoutineListView: View {
             }
             .sheet(isPresented: $showingBuilder) {
                 RoutineBuilderView()
-                    .environmentObject(AuthManager.shared)
             }
             .sheet(item: $routineToEdit) { routine in
                 RoutineBuilderView(routineToEdit: routine)
-                    .environmentObject(AuthManager.shared)
             }
             .confirmationDialog(
                 "Delete this routine?",

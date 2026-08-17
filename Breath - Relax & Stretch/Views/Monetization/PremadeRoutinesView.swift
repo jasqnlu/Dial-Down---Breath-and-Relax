@@ -13,12 +13,14 @@ struct PremadeRoutinesView: View {
 
     var body: some View {
         List(PremadeRoutine.all) { routine in
+            let meta = metaInfo(for: routine)
             Button {
                 selectedRoutine = routine
             } label: {
-                PremadeRoutineRow(routine: routine, meta: meta(for: routine))
+                PremadeRoutineRow(routine: routine, meta: meta)
             }
             .buttonStyle(.plain)
+            .disabled(meta == nil)
             .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
@@ -37,18 +39,22 @@ struct PremadeRoutinesView: View {
         }
     }
 
-    private func meta(for routine: PremadeRoutine) -> String {
+    /// The raw (count, minutes) behind the row's meta line, or nil if the
+    /// routine currently resolves to zero exercises. Kept as data rather
+    /// than a formatted String so the call site can render a `Text` literal
+    /// that participates in localization — see PremadeRoutineRow.
+    private func metaInfo(for routine: PremadeRoutine) -> (count: Int, minutes: Int)? {
         let resolved = routine.resolvedExercises(in: exercises)
-        guard !resolved.isEmpty else { return "Unavailable" }
+        guard !resolved.isEmpty else { return nil }
         let totalSecs = resolved.reduce(0) { $0 + $1.durationSeconds }
         let mins = max(1, Int((Double(totalSecs) / 60).rounded()))
-        return "\(resolved.count) exercise\(resolved.count == 1 ? "" : "s") · \(mins) min"
+        return (resolved.count, mins)
     }
 }
 
 private struct PremadeRoutineRow: View {
     let routine: PremadeRoutine
-    let meta: String
+    let meta: (count: Int, minutes: Int)?
 
     var body: some View {
         HStack(spacing: 14) {
@@ -66,9 +72,15 @@ private struct PremadeRoutineRow: View {
                     .font(.luminaCaption)
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
                     .lineLimit(2)
-                Text(meta)
-                    .font(.luminaCaption)
-                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+                if let meta {
+                    Text("\(meta.count) exercise\(meta.count == 1 ? "" : "s") · \(meta.minutes) min")
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                } else {
+                    Text("Unavailable")
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                }
             }
 
             Spacer(minLength: 0)

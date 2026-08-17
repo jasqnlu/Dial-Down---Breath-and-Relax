@@ -124,14 +124,27 @@ struct PremadeRoutine: Identifiable {
         // name it can produce is already covered by
         // everyGoalMetaExerciseNameExistsInSeedCatalog, so there's no new
         // hand-typed-name drift risk to introduce.
+        //
+        // One name per goal (in GoalMeta.all's order), deduped, so the result
+        // is a genuine cross-goal sweep rather than an alphabetical slice
+        // that happens to cluster on one or two goals. Falls back to a
+        // goal's second name if its first collides with an earlier goal's
+        // pick, rather than dropping the goal or reintroducing a global sort.
         {
-            let pool = Array(Set(GoalMeta.all.flatMap(\.exerciseNames))).sorted()
+            var seen = Set<String>()
+            var picks: [String] = []
+            for goal in GoalMeta.all {
+                if let name = goal.exerciseNames.first(where: { !seen.contains($0) }) {
+                    seen.insert(name)
+                    picks.append(name)
+                }
+            }
             return PremadeRoutine(
                 id: "premade_full_body_reset",
                 title: "Full Body Reset",
                 summary: "No particular theme — a balanced sweep across flexibility, breathing, and posture.",
                 icon: "sparkles",
-                exerciseNames: Array(pool.prefix(6))
+                exerciseNames: picks
             )
         }(),
     ]
