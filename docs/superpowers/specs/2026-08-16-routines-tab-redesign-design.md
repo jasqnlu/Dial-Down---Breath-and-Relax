@@ -44,7 +44,7 @@ Starting set (renames existing packs to match the requested naming, adds one net
 | `pack_athlete_recovery` | Athletic Recovery | was "Athlete Recovery Pack" |
 | `pack_bettersleep` | Better Sleep & Breathing | unchanged |
 | `pack_runner` | Runner's Warm-Up & Cooldown | unchanged |
-| `pack_fullbody_reset` | Full Body Reset | **new** — no theme, a balanced sweep across flexibility/breathing/posture |
+| `premade_full_body_reset` | Full Body Reset | **new** — no theme, a balanced sweep across flexibility/breathing/posture |
 
 IDs are kept from `ContentPack` where they carry over, so nothing referencing them by string breaks.
 
