@@ -25,6 +25,15 @@ struct CuratedContentIntegrityTests {
             }
         }
     }
+
+    @Test func everyPremadeRoutineExerciseNameExistsInSeedCatalog() throws {
+        let seedNames = try seedExerciseNames()
+        for routine in PremadeRoutine.all {
+            for name in routine.exerciseNames {
+                #expect(seedNames.contains(name), "\"\(name)\" in \(routine.title) doesn't match any seed exercise")
+            }
+        }
+    }
 }
 
 private final class BundleToken {}
