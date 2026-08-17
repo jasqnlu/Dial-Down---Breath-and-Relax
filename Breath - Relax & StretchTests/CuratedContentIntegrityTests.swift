@@ -28,7 +28,9 @@ struct CuratedContentIntegrityTests {
 
     @Test func everyPremadeRoutineExerciseNameExistsInSeedCatalog() throws {
         let seedNames = try seedExerciseNames()
+        #expect(PremadeRoutine.all.count == 5)
         for routine in PremadeRoutine.all {
+            #expect(!routine.exerciseNames.isEmpty, "\(routine.title) has no exercise names")
             for name in routine.exerciseNames {
                 #expect(seedNames.contains(name), "\"\(name)\" in \(routine.title) doesn't match any seed exercise")
             }

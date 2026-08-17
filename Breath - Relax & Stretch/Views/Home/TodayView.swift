@@ -418,12 +418,14 @@ struct TodayView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: 12) {
                     ForEach(PremadeRoutine.all) { routine in
+                        let meta = premadeMeta(for: routine)
                         Button {
                             selectedPremadeRoutine = routine
                         } label: {
-                            PremadeRoutineCard(routine: routine, meta: premadeMeta(for: routine))
+                            PremadeRoutineCard(routine: routine, meta: meta)
                         }
                         .buttonStyle(.plain)
+                        .disabled(meta == nil)
                     }
                 }
                 .padding(.vertical, 2)
@@ -431,12 +433,16 @@ struct TodayView: View {
         }
     }
 
-    private func premadeMeta(for routine: PremadeRoutine) -> String {
+    /// The raw (count, minutes) behind the card's meta line, or nil if the
+    /// routine currently resolves to zero exercises. Kept as data rather
+    /// than a formatted String so the call site can render a `Text` literal
+    /// that participates in localization — see PremadeRoutineCard.
+    private func premadeMeta(for routine: PremadeRoutine) -> (count: Int, minutes: Int)? {
         let resolved = routine.resolvedExercises(in: exercises)
-        guard !resolved.isEmpty else { return "Unavailable" }
+        guard !resolved.isEmpty else { return nil }
         let totalSecs = resolved.reduce(0) { $0 + $1.durationSeconds }
         let mins = max(1, Int((Double(totalSecs) / 60).rounded()))
-        return "\(resolved.count) exercise\(resolved.count == 1 ? "" : "s") · \(mins) min"
+        return (resolved.count, mins)
     }
 
     // MARK: - For You
