@@ -16,6 +16,12 @@ struct RoutineBuilderView: View {
     /// `RoutineIDMerge` so a pick that's already in the routine isn't
     /// doubled.
     var initialExerciseIDs: [UUID] = []
+    /// Suggested name to pre-fill when creating a brand-new routine from a
+    /// template (e.g. a tapped PremadeRoutine card) — nil for the normal
+    /// create/edit flows, which leave the name field blank or pull it from
+    /// `routineToEdit`. Never applied when `routineToEdit` is set — editing
+    /// an existing routine always keeps its own name.
+    var initialName: String? = nil
     /// Called right after a successful save (create or update), before
     /// `dismiss()`. Distinct from dismissal itself so a caller driving this
     /// view from a review flow (`MiniRoutineReviewView`) can tell "saved"
@@ -139,8 +145,11 @@ struct RoutineBuilderView: View {
                 if let r = routineToEdit {
                     routineName  = r.name
                     selectedIDs  = RoutineIDMerge.appending(initialExerciseIDs, to: r.exerciseIDs)
-                } else if !initialExerciseIDs.isEmpty {
+                } else if !initialExerciseIDs.isEmpty || initialName != nil {
                     selectedIDs = RoutineIDMerge.appending(initialExerciseIDs, to: selectedIDs)
+                    if let initialName {
+                        routineName = initialName
+                    }
                 }
             }
         }
