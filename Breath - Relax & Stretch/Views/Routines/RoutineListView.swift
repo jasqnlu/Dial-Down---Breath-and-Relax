@@ -14,6 +14,15 @@ struct RoutineListView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section {
+                    NavigationLink(destination: PremadeRoutinesView()) {
+                        entryRow(title: "Premade Routines", systemImage: "sparkles")
+                    }
+                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                }
+
                 ForEach(routines) { routine in
                     RoutineRow(routine: routine, resolvedCount: resolvedExercises(for: routine).count) {
                         routineToPlay = routine
