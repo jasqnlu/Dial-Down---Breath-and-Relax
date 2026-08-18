@@ -33,6 +33,10 @@ struct RoutineBuilderView: View {
     @State private var selectedIDs: [UUID] = []
     @State private var showingExercisePicker = false
     @State private var indexPendingRemoval: Int?
+    /// Per-exercise duration overrides, keyed by exercise UUID — seconds.
+    /// Absent key means "use the exercise's own durationSeconds." Persisted
+    /// onto `Routine.exerciseDurationOverrides` on save.
+    @State private var durationOverrides: [UUID: Int] = [:]
     /// Guards the "creating new" onAppear branch so initialExerciseIDs/
     /// initialName are only seeded once. Without this, a future dismiss-and-
     /// re-present of this same sheet (e.g. after a cross-tab exercise pick)
@@ -47,7 +51,24 @@ struct RoutineBuilderView: View {
     }
 
     private var totalDuration: Int {
-        selectedExercises.reduce(0) { $0 + $1.durationSeconds }
+        selectedExercises.reduce(0) { $0 + duration(for: $1) }
+    }
+
+    /// The exercise's duration after applying this form's own override, if
+    /// any — the single point every duration read in this view goes
+    /// through, mirroring SessionPlayerView's `effectiveDuration(for:)`.
+    private func duration(for exercise: Exercise) -> Int {
+        durationOverrides[exercise.uuid] ?? exercise.durationSeconds
+    }
+
+    private func adjustDuration(for exercise: Exercise, by delta: Int) {
+        let next = max(5, duration(for: exercise) + delta)
+        durationOverrides[exercise.uuid] = next
+    }
+
+    private func formattedDuration(_ seconds: Int) -> String {
+        let m = seconds / 60, s = seconds % 60
+        return s == 0 ? "\(m):00" : "\(m):\(String(format: "%02d", s))"
     }
 
     var body: some View {
@@ -70,11 +91,12 @@ struct RoutineBuilderView: View {
                                     Text(exercise.name)
                                         .font(.luminaCardTitle)
                                         .foregroundStyle(Color.luminaOnSurface)
-                                    Text("\(exercise.durationFormatted) · \(exercise.type.rawValue)")
+                                    Text(exercise.type.rawValue)
                                         .font(.luminaCaption)
                                         .foregroundStyle(Color.luminaOnSurfaceVariant)
                                 }
                                 Spacer()
+                                durationStepper(for: exercise)
                                 Button(role: .destructive) {
                                     indexPendingRemoval = index
                                 } label: {
@@ -151,6 +173,7 @@ struct RoutineBuilderView: View {
                 if let r = routineToEdit {
                     routineName  = r.name
                     selectedIDs  = RoutineIDMerge.appending(initialExerciseIDs, to: r.exerciseIDs)
+                    durationOverrides = r.exerciseDurationOverrides
                 } else if !didApplySeed && (!initialExerciseIDs.isEmpty || initialName != nil) {
                     didApplySeed = true
                     selectedIDs = RoutineIDMerge.appending(initialExerciseIDs, to: selectedIDs)
@@ -166,10 +189,12 @@ struct RoutineBuilderView: View {
         if let r = routineToEdit {
             r.name        = routineName
             r.exerciseIDs = selectedIDs
+            r.exerciseDurationOverrides = durationOverrides
         } else {
             let routine = Routine(
                 name: routineName,
-                exerciseIDs: selectedIDs
+                exerciseIDs: selectedIDs,
+                exerciseDurationOverrides: durationOverrides
             )
             modelContext.insert(routine)
 
@@ -186,6 +211,44 @@ struct RoutineBuilderView: View {
         }
 
         dismiss()
+    }
+
+    private func durationStepper(for exercise: Exercise) -> some View {
+        HStack(spacing: 6) {
+            // Outline icon here (vs. the row's own filled "minus.circle.fill"
+            // remove button) so the two destructive-looking minus icons in
+            // the same row read as visually distinct actions.
+            Button {
+                adjustDuration(for: exercise, by: -5)
+            } label: {
+                Image(systemName: "minus.circle")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.luminaPrimary)
+
+            Text(formattedDuration(duration(for: exercise)))
+                .font(.luminaCaption)
+                .monospacedDigit()
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                .frame(minWidth: 40)
+
+            Button {
+                adjustDuration(for: exercise, by: 5)
+            } label: {
+                Image(systemName: "plus.circle")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.luminaPrimary)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(exercise.name) duration, \(formattedDuration(duration(for: exercise)))")
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: adjustDuration(for: exercise, by: 5)
+            case .decrement: adjustDuration(for: exercise, by: -5)
+            @unknown default: break
+            }
+        }
     }
 }
 
