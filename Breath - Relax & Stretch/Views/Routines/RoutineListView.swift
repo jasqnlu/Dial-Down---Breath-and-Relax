@@ -100,6 +100,10 @@ struct RoutineListView: View {
                 RoutineBuilderView(routineToEdit: routine)
             }
             .onReceive(NotificationCenter.default.publisher(for: .exercisePickingFinished)) { _ in
+                // Peek first and check originTab before consuming — Customize (Home,
+                // tab 0) can also finish a pick, and this same notification fires at
+                // every mounted listener. See TodayView.swift's identical handler for
+                // the full rationale.
                 guard let result = pickingSession.lastFinished, result.context.originTab == 4 else { return }
                 _ = pickingSession.consumeFinished()
                 let editingRoutine = result.context.editingRoutineID.flatMap { id in
