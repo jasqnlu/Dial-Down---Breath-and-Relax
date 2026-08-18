@@ -82,7 +82,10 @@ struct CustomizeRoutineView: View {
                         pickingSession.begin(context: .init(
                             title: title,
                             isPinned: pinnedToggle,
-                            baseExercises: currentExercises
+                            baseExercises: currentExercises,
+                            originTab: 0,
+                            editingRoutineID: nil,
+                            durationOverrides: [:]
                         ))
                         dismiss()
                         // Same "dismiss + switch to Exercises tab" need

@@ -200,7 +200,8 @@ struct TodayView: View {
             )
         }
         .onReceive(NotificationCenter.default.publisher(for: .exercisePickingFinished)) { _ in
-            guard let result = pickingSession.consumeFinished() else { return }
+            guard let result = pickingSession.lastFinished, result.context.originTab == 0 else { return }
+            _ = pickingSession.consumeFinished()
             customizeOverride = (result.context.title, result.merged, result.context.isPinned)
             showingCustomize = true
         }
