@@ -9,6 +9,11 @@ struct SessionPlayerView: View {
     var routineID: UUID = UUID()
     var isBorrowedRoutine: Bool = false   // true when playing a forked public routine
     var onComplete: ((Int) -> Void)? = nil
+    /// Per-exercise duration overrides from the Routine being played, keyed
+    /// by exercise UUID — absent key means "use the exercise's own
+    /// durationSeconds." Empty by default for sessions not started from a
+    /// saved routine (quick sessions, mini-routines, premade previews).
+    var durationOverrides: [UUID: Int] = [:]
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -89,7 +94,7 @@ struct SessionPlayerView: View {
 
     private var totalSessionSeconds: Int {
         exercises.reduce(0) { total, exercise in
-            total + Self.scaledDuration(base: exercise.durationSeconds, multiplier: durationMultiplier)
+            total + Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
         }
     }
 
@@ -97,9 +102,9 @@ struct SessionPlayerView: View {
         guard currentIndex < exercises.count else { return totalSessionSeconds }
 
         let completed = exercises.prefix(currentIndex).reduce(0) { total, exercise in
-            total + Self.scaledDuration(base: exercise.durationSeconds, multiplier: durationMultiplier)
+            total + Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
         }
-        let currentDuration = Self.scaledDuration(base: exercises[currentIndex].durationSeconds, multiplier: durationMultiplier)
+        let currentDuration = Self.scaledDuration(base: effectiveDuration(for: exercises[currentIndex]), multiplier: durationMultiplier)
         let currentElapsed = max(0, min(currentDuration, currentDuration - secondsRemaining))
         return completed + currentElapsed
     }
@@ -448,8 +453,20 @@ struct SessionPlayerView: View {
         max(1, Int(Double(base) * multiplier))
     }
 
+    /// The exercise's duration after applying this session's routine-level
+    /// override, if any — the single point every duration read in this view
+    /// goes through, so `durationOverrides` and the speed multiplier compose
+    /// correctly no matter which call site reads it.
+    private func effectiveDuration(for exercise: Exercise) -> Int {
+        durationOverrides[exercise.uuid] ?? exercise.durationSeconds
+    }
+
+    private func effectiveDuration(for exercise: Exercise?) -> Int? {
+        exercise.map { effectiveDuration(for: $0) }
+    }
+
     private func breathingCycleDuration(for exercise: Exercise) -> Double {
-        let scaled = Self.scaledDuration(base: exercise.durationSeconds, multiplier: durationMultiplier)
+        let scaled = Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
         // Breath exercises in the stretch player do not carry a phase model,
         // so tie the visual cadence to the exercise length instead of a fixed
         // 4s pulse. Longer holds breathe more slowly; short drills stay lively.
@@ -505,12 +522,12 @@ struct SessionPlayerView: View {
     }
 
     private func skipCompletion() -> Double {
-        guard let duration = currentExercise?.durationSeconds else { return 0.5 }
+        guard let duration = effectiveDuration(for: currentExercise) else { return 0.5 }
         return GamificationService.skipCompletion(elapsedSeconds: duration - secondsRemaining, durationSeconds: duration)
     }
 
     private func startExercise() {
-        let baseDuration = currentExercise?.durationSeconds ?? 60
+        let baseDuration = effectiveDuration(for: currentExercise) ?? 60
         let duration = Self.scaledDuration(base: baseDuration, multiplier: durationMultiplier)
         secondsRemaining = duration
         phaseEndDate = Date().addingTimeInterval(TimeInterval(duration))
@@ -582,7 +599,7 @@ struct SessionPlayerView: View {
     /// special-case handling needed, unlike instructionCueTask's cycling.
     private func updateBreathPhaseStepIfNeeded() {
         guard let pattern = activeBreathPattern, let exercise = currentExercise else { return }
-        let totalDuration = Self.scaledDuration(base: exercise.durationSeconds, multiplier: durationMultiplier)
+        let totalDuration = Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
         let elapsed = max(0, totalDuration - secondsRemaining)
         guard let resolved = BreathPhaseCycle.resolve(pattern: pattern, elapsedSeconds: elapsed) else { return }
 
