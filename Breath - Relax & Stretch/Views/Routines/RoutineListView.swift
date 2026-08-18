@@ -121,7 +121,8 @@ struct RoutineListView: View {
                     SessionPlayerView(
                         exercises: resolved,
                         routineID: routine.uuid,
-                        isBorrowedRoutine: routine.borrowedFromID != nil
+                        isBorrowedRoutine: routine.borrowedFromID != nil,
+                        durationOverrides: routine.exerciseDurationOverrides
                     )
                 }
             }
