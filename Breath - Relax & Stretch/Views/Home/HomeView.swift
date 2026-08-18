@@ -55,6 +55,11 @@ struct HomeView: View {
             selectedTab = 2
         }
         .onReceive(NotificationCenter.default.publisher(for: .exercisePickingFinished)) { _ in
+            // Peek only — never call consumeFinished() here. The actual
+            // destination screen (TodayView, RoutineListView, ...) still needs
+            // to read and consume this same single-slot published value; if
+            // HomeView consumed it first, whichever destination's own handler
+            // fires second would find nothing there.
             guard let result = pickingSession.lastFinished else { return }
             selectedTab = result.context.originTab
         }
