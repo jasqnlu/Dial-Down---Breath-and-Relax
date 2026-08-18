@@ -55,13 +55,16 @@ struct HomeView: View {
             selectedTab = 2
         }
         .onReceive(NotificationCenter.default.publisher(for: .exercisePickingFinished)) { _ in
-            // Peek only — never call consumeFinished() here. The actual
-            // destination screen (TodayView, RoutineListView, ...) still needs
-            // to read and consume this same single-slot published value; if
-            // HomeView consumed it first, whichever destination's own handler
-            // fires second would find nothing there.
-            guard let result = pickingSession.lastFinished else { return }
-            selectedTab = result.context.originTab
+            // Read lastFinishedOriginTab, NOT lastFinished — the destination
+            // screen's own handler consumes lastFinished (clearing it), and
+            // NotificationCenter delivery order between sibling .onReceive
+            // subscribers on this same notification isn't guaranteed. If we
+            // peeked at lastFinished here and the destination's handler ran
+            // first, we'd find nil and silently skip the tab switch.
+            // lastFinishedOriginTab is never consumed, so it's always safe
+            // to read regardless of ordering.
+            guard let originTab = pickingSession.lastFinishedOriginTab else { return }
+            selectedTab = originTab
         }
         .ignoresSafeArea(.keyboard)
         .sheet(item: pendingActionBinding) { action in
