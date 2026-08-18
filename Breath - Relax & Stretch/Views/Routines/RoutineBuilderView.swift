@@ -23,6 +23,21 @@ struct RoutineBuilderView: View {
     /// `routineToEdit`. Never applied when `routineToEdit` is set — editing
     /// an existing routine always keeps its own name.
     var initialName: String? = nil
+    /// Which HomeView tab index to return to after a cross-tab "Add
+    /// Exercise" round trip — must match wherever THIS view was actually
+    /// presented from. Defaults to 4 (Routines), the common case
+    /// (RoutineListView, PremadeRoutinesView); callers presenting this view
+    /// from a different tab (e.g. TodayView's premade-routine sheet, tab 0)
+    /// must override it, or the user gets returned to the wrong tab.
+    var pickingOriginTab: Int = 4
+    /// Whether "Add Exercise" should be offered at all. False for
+    /// call sites where the cross-tab picking flow would conflict with an
+    /// already-in-progress `ExercisePickingSession` this view is nested
+    /// inside (MiniRoutineReviewView's two RoutineBuilderView sheets) —
+    /// starting a second cross-tab session there would silently discard
+    /// the outer review flow's own picks and leave two sheets fighting
+    /// over one dismiss path.
+    var allowsCrossTabAddExercise: Bool = true
     /// Called right after a successful save (create or update), before
     /// `dismiss()`. Distinct from dismissal itself so a caller driving this
     /// view from a review flow (`MiniRoutineReviewView`) can tell "saved"
@@ -45,10 +60,10 @@ struct RoutineBuilderView: View {
     /// onto `Routine.exerciseDurationOverrides` on save.
     @State private var durationOverrides: [UUID: Int] = [:]
     /// Guards the "creating new" onAppear branch so initialExerciseIDs/
-    /// initialName are only seeded once. Without this, a future dismiss-and-
-    /// re-present of this same sheet (e.g. after a cross-tab exercise pick)
-    /// would re-fire onAppear and silently overwrite a name the user had
-    /// already typed.
+    /// initialName are only seeded once, even if onAppear re-fires for
+    /// this same sheet instance. (A cross-tab exercise pick re-presents via
+    /// the restoredState branch instead, which short-circuits before this
+    /// branch runs — restoredState is checked first in onAppear.)
     @State private var didApplySeed = false
 
     private var isEditing: Bool { routineToEdit != nil }
@@ -116,25 +131,27 @@ struct RoutineBuilderView: View {
                     }
                     .onMove { selectedIDs.move(fromOffsets: $0, toOffset: $1) }
 
-                    Button {
-                        pickingSession.begin(context: .init(
-                            title: routineName,
-                            isPinned: false,
-                            baseExercises: selectedExercises,
-                            originTab: 4,
-                            editingRoutineID: routineToEdit?.uuid,
-                            durationOverrides: durationOverrides
-                        ))
-                        dismiss()
-                        // Same "dismiss + switch to Exercises tab" need
-                        // CustomizeRoutineView's own Add Exercises button
-                        // has — reusing the existing notification rather
-                        // than adding a second one.
-                        NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
-                    } label: {
-                        Label("Add Exercise", systemImage: "plus.circle")
-                            .font(.luminaBody)
-                            .foregroundStyle(Color.luminaPrimary)
+                    if allowsCrossTabAddExercise {
+                        Button {
+                            pickingSession.begin(context: .init(
+                                title: routineName,
+                                isPinned: false,
+                                baseExercises: selectedExercises,
+                                originTab: pickingOriginTab,
+                                editingRoutineID: routineToEdit?.uuid,
+                                durationOverrides: durationOverrides
+                            ))
+                            dismiss()
+                            // Same "dismiss + switch to Exercises tab" need
+                            // CustomizeRoutineView's own Add Exercises button
+                            // has — reusing the existing notification rather
+                            // than adding a second one.
+                            NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
+                        } label: {
+                            Label("Add Exercise", systemImage: "plus.circle")
+                                .font(.luminaBody)
+                                .foregroundStyle(Color.luminaPrimary)
+                        }
                     }
                 } header: {
                     HStack {
@@ -173,7 +190,9 @@ struct RoutineBuilderView: View {
                 presenting: indexPendingRemoval
             ) { index in
                 Button("Remove", role: .destructive) {
+                    let removedID = selectedIDs[index]
                     selectedIDs.remove(at: index)
+                    durationOverrides.removeValue(forKey: removedID)
                     indexPendingRemoval = nil
                 }
                 Button("Cancel", role: .cancel) {}

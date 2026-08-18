@@ -67,7 +67,7 @@ struct MiniRoutineReviewView: View {
                 }
             }
             .sheet(isPresented: $showingNewRoutineBuilder) {
-                RoutineBuilderView(initialExerciseIDs: pickedExercises.map(\.uuid)) {
+                RoutineBuilderView(initialExerciseIDs: pickedExercises.map(\.uuid), allowsCrossTabAddExercise: false) {
                     onFinished()
                     dismiss()
                 }
@@ -185,7 +185,7 @@ private struct RoutineChooserView: View {
                 }
             }
             .sheet(item: $routineToAddTo) { routine in
-                RoutineBuilderView(routineToEdit: routine, initialExerciseIDs: pickedExercises.map(\.uuid)) {
+                RoutineBuilderView(routineToEdit: routine, initialExerciseIDs: pickedExercises.map(\.uuid), allowsCrossTabAddExercise: false) {
                     onSaved()
                     dismiss()
                 }
