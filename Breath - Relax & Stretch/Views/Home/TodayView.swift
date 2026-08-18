@@ -83,6 +83,19 @@ struct TodayView: View {
         pinnedSessionExercises != nil
     }
 
+    /// The pinned "Today" routine's per-exercise duration overrides, or
+    /// empty when nothing is pinned — threaded into SessionPlayerView so
+    /// durations customized (and saved) via Customize actually take effect
+    /// during playback, not just in the preview.
+    private var sessionDurationOverrides: [UUID: Int] {
+        guard let pinnedID = UUID(uuidString: pinnedTodayRoutineIDString),
+              let routine = routines.first(where: { $0.uuid == pinnedID }),
+              pinnedSessionExercises != nil else {
+            return [:]
+        }
+        return routine.exerciseDurationOverrides
+    }
+
     /// Today's session: the pinned "Today" routine if one is set, else
     /// goal-based recommendations, falling back to the first few catalog
     /// exercises when no goals were picked during onboarding.
@@ -141,7 +154,7 @@ struct TodayView: View {
             .floatingTabBarClearance()
         }
         .sheet(isPresented: $showingSession) {
-            SessionPlayerView(exercises: sessionExercises)
+            SessionPlayerView(exercises: sessionExercises, durationOverrides: sessionDurationOverrides)
         }
         .sheet(isPresented: $showingCustomize, onDismiss: {
             // Present the session sheet only after Customize has fully
@@ -166,7 +179,7 @@ struct TodayView: View {
                 title: customizeOverride?.title ?? timeOfDayFocus.heroTitle,
                 exercises: customizeOverride?.exercises ?? sessionExercises,
                 isPinned: customizeOverride?.isPinned ?? isPinnedActive,
-                onDone: { exercises, pinned in
+                onDone: { exercises, pinned, durationOverrides in
                     customizeOverride = nil
                     if pinned {
                         if let existingID = UUID(uuidString: pinnedTodayRoutineIDString),
@@ -176,8 +189,13 @@ struct TodayView: View {
                             // re-pins from Customize.
                             existing.exerciseIDs = exercises.map(\.uuid)
                             existing.name = "Today"
+                            existing.exerciseDurationOverrides = durationOverrides
                         } else {
-                            let routine = Routine(name: "Today", exerciseIDs: exercises.map(\.uuid))
+                            let routine = Routine(
+                                name: "Today",
+                                exerciseIDs: exercises.map(\.uuid),
+                                exerciseDurationOverrides: durationOverrides
+                            )
                             modelContext.insert(routine)
                             pinnedTodayRoutineIDString = routine.uuid.uuidString
                         }
