@@ -1,29 +1,29 @@
 import SwiftUI
 
 /// Presented from the Home hero's Customize button. Lets the user preview
-/// today's session as a numbered roadmap, add more exercises via a
-/// cross-tab picking session on the real Exercises tab (see
-/// ExercisePickingSession), and decide whether to pin the result as their
-/// permanent Wake Up routine.
-///
-/// Per-exercise duration editing is intentionally not interactive here:
-/// threading duration overrides into the session player is a real feature
-/// that hasn't been built yet. Showing a control that looked live but
-/// silently discarded the edit on Begin was worse than not having one —
-/// see the "Explicitly deferred" section of
-/// docs/superpowers/plans/2026-08-11-home-exercises-redesign.md.
+/// today's session as a numbered roadmap, adjust each exercise's duration
+/// or remove it, add more exercises via a cross-tab picking session on the
+/// real Exercises tab (see ExercisePickingSession), and decide whether to
+/// pin the result as their permanent Today routine — in which case the
+/// duration overrides are saved onto that routine too.
 struct CustomizeRoutineView: View {
     let title: String
     let isPinned: Bool
-    let onDone: (_ exercises: [Exercise], _ pinned: Bool) -> Void
+    let onDone: (_ exercises: [Exercise], _ pinned: Bool, _ durationOverrides: [UUID: Int]) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var pinnedToggle: Bool
     @State private var currentExercises: [Exercise]
+    @State private var indexPendingRemoval: Int?
+    /// Per-exercise duration overrides, keyed by exercise UUID — seconds.
+    /// Absent key means "use the exercise's own durationSeconds." Passed
+    /// back through `onDone` so the caller can save it onto the pinned
+    /// Today routine and thread it into today's SessionPlayerView.
+    @State private var durationOverrides: [UUID: Int] = [:]
     @EnvironmentObject private var pickingSession: ExercisePickingSession
 
     init(title: String, exercises: [Exercise], isPinned: Bool,
-         onDone: @escaping (_ exercises: [Exercise], _ pinned: Bool) -> Void) {
+         onDone: @escaping (_ exercises: [Exercise], _ pinned: Bool, _ durationOverrides: [UUID: Int]) -> Void) {
         self.title = title
         self.isPinned = isPinned
         self.onDone = onDone
@@ -31,8 +31,20 @@ struct CustomizeRoutineView: View {
         self._currentExercises = State(initialValue: exercises)
     }
 
-    private var totalSeconds: Int { currentExercises.reduce(0) { $0 + $1.durationSeconds } }
+    private var totalSeconds: Int { currentExercises.reduce(0) { $0 + duration(for: $1) } }
     private var totalMinutes: Int { max(1, Int((Double(totalSeconds) / 60).rounded())) }
+
+    /// The exercise's duration after applying this session's own override,
+    /// if any — mirrors RoutineBuilderView's/SessionPlayerView's identically
+    /// named helper.
+    private func duration(for exercise: Exercise) -> Int {
+        durationOverrides[exercise.uuid] ?? exercise.durationSeconds
+    }
+
+    private func adjustDuration(for exercise: Exercise, by delta: Int) {
+        let next = max(5, duration(for: exercise) + delta)
+        durationOverrides[exercise.uuid] = next
+    }
 
     private func formatted(_ seconds: Int) -> String {
         let m = seconds / 60, s = seconds % 60
@@ -99,9 +111,27 @@ struct CustomizeRoutineView: View {
                     }
                 }
             }
+            .confirmationDialog(
+                "Remove this exercise?",
+                isPresented: Binding(
+                    get: { indexPendingRemoval != nil },
+                    set: { if !$0 { indexPendingRemoval = nil } }
+                ),
+                presenting: indexPendingRemoval
+            ) { index in
+                Button("Remove", role: .destructive) {
+                    let removedID = currentExercises[index].uuid
+                    currentExercises.remove(at: index)
+                    durationOverrides.removeValue(forKey: removedID)
+                    indexPendingRemoval = nil
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: { index in
+                Text("\"\(currentExercises[index].name)\" will be removed from this routine.")
+            }
             .safeAreaInset(edge: .bottom) {
                 Button {
-                    onDone(currentExercises, pinnedToggle)
+                    onDone(currentExercises, pinnedToggle, durationOverrides)
                     dismiss()
                 } label: {
                     HStack(spacing: 8) {
@@ -156,11 +186,54 @@ struct CustomizeRoutineView: View {
 
             Spacer(minLength: 8)
 
-            Text(formatted(exercise.durationSeconds))
+            durationStepper(for: exercise)
+
+            Button(role: .destructive) {
+                indexPendingRemoval = index
+            } label: {
+                Image(systemName: "minus.circle.fill")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.red)
+        }
+        .luminaCard(padding: 12)
+    }
+
+    /// Same stepper as RoutineBuilderView's identically named helper — 5s
+    /// floor, 5s step, outline icons (vs. the row's own filled destructive
+    /// remove button) so the two minus icons in the row read as distinct.
+    private func durationStepper(for exercise: Exercise) -> some View {
+        HStack(spacing: 6) {
+            Button {
+                adjustDuration(for: exercise, by: -5)
+            } label: {
+                Image(systemName: "minus.circle")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.luminaPrimary)
+
+            Text(formatted(duration(for: exercise)))
                 .font(.luminaLabel)
                 .monospacedDigit()
                 .foregroundStyle(Color.luminaOnSurfaceVariant)
+                .frame(minWidth: 40)
+
+            Button {
+                adjustDuration(for: exercise, by: 5)
+            } label: {
+                Image(systemName: "plus.circle")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.luminaPrimary)
         }
-        .luminaCard(padding: 12)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(exercise.name) duration, \(formatted(duration(for: exercise)))")
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: adjustDuration(for: exercise, by: 5)
+            case .decrement: adjustDuration(for: exercise, by: -5)
+            @unknown default: break
+            }
+        }
     }
 }

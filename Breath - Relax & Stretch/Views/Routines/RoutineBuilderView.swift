@@ -108,25 +108,10 @@ struct RoutineBuilderView: View {
                 Section {
                     ForEach(selectedIDs.indices, id: \.self) { index in
                         if let exercise = exercises.first(where: { $0.uuid == selectedIDs[index] }) {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(exercise.name)
-                                        .font(.luminaCardTitle)
-                                        .foregroundStyle(Color.luminaOnSurface)
-                                    Text(exercise.type.rawValue)
-                                        .font(.luminaCaption)
-                                        .foregroundStyle(Color.luminaOnSurfaceVariant)
-                                }
-                                Spacer()
-                                durationStepper(for: exercise)
-                                Button(role: .destructive) {
-                                    indexPendingRemoval = index
-                                } label: {
-                                    Image(systemName: "minus.circle.fill")
-                                }
-                                .buttonStyle(.plain)
-                                .foregroundStyle(.red)
-                            }
+                            exerciseRow(index: index, exercise: exercise)
+                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
                         }
                     }
                     .onMove { selectedIDs.move(fromOffsets: $0, toOffset: $1) }
@@ -249,6 +234,41 @@ struct RoutineBuilderView: View {
         }
 
         dismiss()
+    }
+
+    /// Same row look as CustomizeRoutineView's exerciseRow (numbered badge +
+    /// PoseGlyphIcon + card) so the two "edit a routine's exercises" screens
+    /// read as one design, not two — plus the stepper and remove button
+    /// this screen already had.
+    private func exerciseRow(index: Int, exercise: Exercise) -> some View {
+        HStack(spacing: 12) {
+            Text("\(index + 1)")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                .frame(width: 22, height: 22)
+                .background(Color.luminaContainer, in: Circle())
+
+            let category = ExerciseCategory.primary(for: exercise.targetBodyParts)
+            PoseGlyphIcon(exercise: exercise, category: category, size: 46)
+
+            Text(exercise.name)
+                .font(.luminaCardTitle)
+                .foregroundStyle(Color.luminaOnSurface)
+                .lineLimit(1)
+
+            Spacer(minLength: 8)
+
+            durationStepper(for: exercise)
+
+            Button(role: .destructive) {
+                indexPendingRemoval = index
+            } label: {
+                Image(systemName: "minus.circle.fill")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.red)
+        }
+        .luminaCard(padding: 12)
     }
 
     private func durationStepper(for exercise: Exercise) -> some View {
