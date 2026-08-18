@@ -9,8 +9,8 @@ struct ExercisePickingSessionTests {
         )
     }
 
-    private func makeContext(base: [Exercise] = []) -> ExercisePickingSession.Context {
-        .init(title: "Wake Up", isPinned: false, baseExercises: base, originTab: 0, editingRoutineID: nil, durationOverrides: [:])
+    private func makeContext(base: [Exercise] = [], originTab: Int = 0) -> ExercisePickingSession.Context {
+        .init(title: "Wake Up", isPinned: false, baseExercises: base, originTab: originTab, editingRoutineID: nil, durationOverrides: [:])
     }
 
     @Test func startsInactiveWithNoPicks() {
@@ -88,6 +88,24 @@ struct ExercisePickingSessionTests {
 
         #expect(session.consumeFinished() != nil)
         #expect(session.consumeFinished() == nil)
+    }
+
+    /// HomeView's tab-switch handler reads `lastFinishedOriginTab`, not
+    /// `lastFinished`, because the destination screen's own notification
+    /// handler may consume `lastFinished` first. Guard that the origin tab
+    /// survives that consumption.
+    @Test func lastFinishedOriginTabIsSetAndSurvivesConsumeFinished() {
+        let session = ExercisePickingSession()
+        #expect(session.lastFinishedOriginTab == nil)
+
+        session.begin(context: makeContext(originTab: 4))
+        session.toggle(makeExercise(name: "A", duration: 30))
+        _ = session.finish()
+
+        #expect(session.lastFinishedOriginTab == 4)
+        _ = session.consumeFinished()
+        #expect(session.lastFinished == nil)
+        #expect(session.lastFinishedOriginTab == 4)
     }
 
     @Test func cancelDeactivatesAndClearsPicksWithoutMerging() {

@@ -58,6 +58,19 @@ final class ExercisePickingSession: ObservableObject {
     /// listener that reacts to the notification a beat later still has
     /// something to read.
     @Published private(set) var lastFinished: FinishedResult?
+    /// The origin tab of the most recent `finish()` — set alongside
+    /// `lastFinished` but NEVER cleared by `consumeFinished()`. HomeView's
+    /// tab-switch handler reads this instead of `lastFinished?.context
+    /// .originTab`, because NotificationCenter delivery order across
+    /// sibling `.onReceive` subscribers on the same notification is not
+    /// guaranteed — if the destination screen's own handler happens to
+    /// consume (and thus nil out) `lastFinished` before HomeView's handler
+    /// runs, a read of `lastFinished` here would silently fail and skip
+    /// the tab switch. This value is safe to leave stale between finishes;
+    /// it's only ever read reactively from the same notification that set
+    /// it, and the next `finish()` always overwrites it before the next
+    /// notification fires.
+    @Published private(set) var lastFinishedOriginTab: Int?
 
     func begin(context: Context) {
         self.context = context
@@ -97,6 +110,7 @@ final class ExercisePickingSession: ObservableObject {
         let merged = CustomizeRoutineExerciseMerge.appending(picked, to: context.baseExercises)
         let result = FinishedResult(context: context, merged: merged)
         lastFinished = result
+        lastFinishedOriginTab = context.originTab
         isActive = false
         picked = []
         self.context = nil
