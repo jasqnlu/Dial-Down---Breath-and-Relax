@@ -211,7 +211,8 @@ struct TodayView: View {
         .sheet(item: $selectedPremadeRoutine) { routine in
             RoutineBuilderView(
                 initialExerciseIDs: routine.resolvedExercises(in: exercises).map(\.uuid),
-                initialName: routine.title
+                initialName: routine.title,
+                pickingOriginTab: 0
             )
         }
         .alert(

@@ -74,11 +74,13 @@ private func sampleRoutine() -> Routine {
 #Preview("Routine List") {
     RoutineListView()
         .modelContainer(makeContainer())
+        .environmentObject(ExercisePickingSession())
 }
 
 #Preview("Routine Builder") {
     RoutineBuilderView()
         .modelContainer(makeContainer())
+        .environmentObject(ExercisePickingSession())
 }
 
 // MARK: - Session
