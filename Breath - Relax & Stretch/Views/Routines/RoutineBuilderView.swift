@@ -5,6 +5,7 @@ import os
 struct RoutineBuilderView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var pickingSession: ExercisePickingSession
 
     @Query private var exercises: [Exercise]
 
@@ -28,10 +29,16 @@ struct RoutineBuilderView: View {
     /// apart from "cancelled" — the sheet's own `onDismiss` fires either way
     /// and can't make that distinction.
     var onSaved: (() -> Void)? = nil
+    /// Exact form state to restore after a cross-tab "Add Exercise" round
+    /// trip — a hard replace, not a merge. Set only by RoutineListView's
+    /// re-presentation after `.exercisePickingFinished`; nil for every
+    /// other entry into this view. When set, takes priority over
+    /// `routineToEdit`/`initialExerciseIDs`/`initialName` entirely — see
+    /// this task's design note for why a merge here would be wrong.
+    var restoredState: (name: String, exerciseIDs: [UUID], durationOverrides: [UUID: Int])? = nil
 
     @State private var routineName = ""
     @State private var selectedIDs: [UUID] = []
-    @State private var showingExercisePicker = false
     @State private var indexPendingRemoval: Int?
     /// Per-exercise duration overrides, keyed by exercise UUID — seconds.
     /// Absent key means "use the exercise's own durationSeconds." Persisted
@@ -110,7 +117,20 @@ struct RoutineBuilderView: View {
                     .onMove { selectedIDs.move(fromOffsets: $0, toOffset: $1) }
 
                     Button {
-                        showingExercisePicker = true
+                        pickingSession.begin(context: .init(
+                            title: routineName,
+                            isPinned: false,
+                            baseExercises: selectedExercises,
+                            originTab: 4,
+                            editingRoutineID: routineToEdit?.uuid,
+                            durationOverrides: durationOverrides
+                        ))
+                        dismiss()
+                        // Same "dismiss + switch to Exercises tab" need
+                        // CustomizeRoutineView's own Add Exercises button
+                        // has — reusing the existing notification rather
+                        // than adding a second one.
+                        NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
                     } label: {
                         Label("Add Exercise", systemImage: "plus.circle")
                             .font(.luminaBody)
@@ -144,11 +164,6 @@ struct RoutineBuilderView: View {
                         .disabled(routineName.isEmpty || selectedIDs.isEmpty)
                 }
             }
-            .sheet(isPresented: $showingExercisePicker) {
-                ExercisePickerView(allExercises: Array(exercises), selectedIDs: selectedIDs) { id in
-                    if !selectedIDs.contains(id) { selectedIDs.append(id) }
-                }
-            }
             .confirmationDialog(
                 "Remove this exercise?",
                 isPresented: Binding(
@@ -170,7 +185,11 @@ struct RoutineBuilderView: View {
                 }
             }
             .onAppear {
-                if let r = routineToEdit {
+                if let restoredState {
+                    routineName       = restoredState.name
+                    selectedIDs       = restoredState.exerciseIDs
+                    durationOverrides = restoredState.durationOverrides
+                } else if let r = routineToEdit {
                     routineName  = r.name
                     selectedIDs  = RoutineIDMerge.appending(initialExerciseIDs, to: r.exerciseIDs)
                     durationOverrides = r.exerciseDurationOverrides
@@ -248,69 +267,6 @@ struct RoutineBuilderView: View {
             case .decrement: adjustDuration(for: exercise, by: -5)
             @unknown default: break
             }
-        }
-    }
-}
-
-// MARK: - Exercise picker sheet
-
-struct ExercisePickerView: View {
-    @Environment(\.dismiss) private var dismiss
-    let allExercises: [Exercise]
-    let selectedIDs: [UUID]
-    let onSelect: (UUID) -> Void
-    @State private var searchText = ""
-
-    private var filtered: [Exercise] {
-        allExercises.filter { searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText) }
-    }
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 0) {
-                    exerciseRows(filtered)
-                }
-            }
-            .background(Color.luminaSurface.ignoresSafeArea())
-            .searchable(text: $searchText)
-            .navigationTitle("Add Exercise")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func exerciseRows(_ items: [Exercise]) -> some View {
-        ForEach(items, id: \.uuid) { ex in
-            Button {
-                onSelect(ex.uuid)
-                dismiss()
-            } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(ex.name)
-                            .font(.luminaCardTitle)
-                            .foregroundStyle(Color.luminaOnSurface)
-                        Text("\(ex.durationFormatted) · \(ex.type.rawValue)")
-                            .font(.luminaCaption)
-                            .foregroundStyle(Color.luminaOnSurfaceVariant)
-                    }
-                    Spacer()
-                    if selectedIDs.contains(ex.uuid) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(Color.luminaPrimary)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
-            }
-            .buttonStyle(.plain)
-            Divider().padding(.leading)
         }
     }
 }
