@@ -5,11 +5,17 @@ struct RoutineListView: View {
     @Query private var routines: [Routine]
     @Query private var exercises: [Exercise]
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var pickingSession: ExercisePickingSession
 
     @State private var showingBuilder  = false
     @State private var routineToPlay: Routine?
     @State private var routineToEdit: Routine?
     @State private var routinePendingDelete: Routine?
+    /// Snapshot to restore into RoutineBuilderView after a cross-tab
+    /// "Add Exercise" round trip — set by the `.exercisePickingFinished`
+    /// handler below, consumed by the `showingBuilderAfterPick` sheet.
+    @State private var builderRestoredState: (routineToEdit: Routine?, name: String, exerciseIDs: [UUID], durationOverrides: [UUID: Int])?
+    @State private var showingBuilderAfterPick = false
 
     var body: some View {
         NavigationStack {
@@ -92,6 +98,30 @@ struct RoutineListView: View {
             }
             .sheet(item: $routineToEdit) { routine in
                 RoutineBuilderView(routineToEdit: routine)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .exercisePickingFinished)) { _ in
+                guard let result = pickingSession.lastFinished, result.context.originTab == 4 else { return }
+                _ = pickingSession.consumeFinished()
+                let editingRoutine = result.context.editingRoutineID.flatMap { id in
+                    routines.first(where: { $0.uuid == id })
+                }
+                builderRestoredState = (
+                    routineToEdit: editingRoutine,
+                    name: result.context.title,
+                    exerciseIDs: result.merged.map(\.uuid),
+                    durationOverrides: result.context.durationOverrides
+                )
+                showingBuilderAfterPick = true
+            }
+            .sheet(isPresented: $showingBuilderAfterPick, onDismiss: {
+                builderRestoredState = nil
+            }) {
+                RoutineBuilderView(
+                    routineToEdit: builderRestoredState?.routineToEdit,
+                    restoredState: builderRestoredState.map {
+                        (name: $0.name, exerciseIDs: $0.exerciseIDs, durationOverrides: $0.durationOverrides)
+                    }
+                )
             }
             .confirmationDialog(
                 "Delete this routine?",
