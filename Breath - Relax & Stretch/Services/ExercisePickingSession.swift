@@ -15,6 +15,25 @@ final class ExercisePickingSession: ObservableObject {
         let title: String
         let isPinned: Bool
         let baseExercises: [Exercise]
+        /// Which HomeView tab index started this picking session — read by
+        /// HomeView's `.exercisePickingFinished` handler so it returns to
+        /// whichever tab is actually waiting to re-present its sheet, not
+        /// always Home. CustomizeRoutineView always passes 0 (Today); the
+        /// RoutineBuilderView call site (Routines tab) passes 4.
+        let originTab: Int
+        /// The Routine being edited when picking started, if any — nil for
+        /// a brand-new routine (or for CustomizeRoutineView, which has no
+        /// underlying Routine at all until it's pinned). Carried through so
+        /// RoutineListView can tell "update" from "create" apart after the
+        /// cross-tab round trip.
+        let editingRoutineID: UUID?
+        /// Per-exercise duration overrides already set on the routine
+        /// before picking started, keyed by exercise UUID — carried
+        /// through so re-presenting the routine builder doesn't silently
+        /// discard custom durations already set on exercises already in
+        /// the list. Always empty for CustomizeRoutineView, which doesn't
+        /// support duration overrides.
+        let durationOverrides: [UUID: Int]
     }
 
     struct FinishedResult {

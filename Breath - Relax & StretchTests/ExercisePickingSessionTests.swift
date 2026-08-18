@@ -10,7 +10,7 @@ struct ExercisePickingSessionTests {
     }
 
     private func makeContext(base: [Exercise] = []) -> ExercisePickingSession.Context {
-        .init(title: "Wake Up", isPinned: false, baseExercises: base)
+        .init(title: "Wake Up", isPinned: false, baseExercises: base, originTab: 0, editingRoutineID: nil, durationOverrides: [:])
     }
 
     @Test func startsInactiveWithNoPicks() {

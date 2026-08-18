@@ -4,6 +4,7 @@ import SwiftData
 struct HomeView: View {
     @EnvironmentObject private var auth: AuthManager
     @EnvironmentObject private var router: DeepLinkRouter
+    @EnvironmentObject private var pickingSession: ExercisePickingSession
     @Environment(\.scenePhase) private var scenePhase
     @Query private var exercises: [Exercise]
     @AppStorage("onboardingGoals") private var goalsStr = ""
@@ -54,7 +55,8 @@ struct HomeView: View {
             selectedTab = 2
         }
         .onReceive(NotificationCenter.default.publisher(for: .exercisePickingFinished)) { _ in
-            selectedTab = 0
+            guard let result = pickingSession.lastFinished else { return }
+            selectedTab = result.context.originTab
         }
         .ignoresSafeArea(.keyboard)
         .sheet(item: pendingActionBinding) { action in
