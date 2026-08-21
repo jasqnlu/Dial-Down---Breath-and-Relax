@@ -401,7 +401,9 @@
         "Roll them back and down in a slow circle, squeezing the shoulder blades together at the back.",
         "Complete 5 backward rolls, then 5 forward rolls."
       ],
-      "id": "3751fbd0-f483-527e-aa28-9857095d7a51"
+      "id": "3751fbd0-f483-527e-aa28-9857095d7a51",
+      "animationName": "shoulder_roll.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Left Cross-Body Rear Delt Stretch",
@@ -1235,7 +1237,8 @@
         "Release slowly and switch sides."
       ],
       "caution": "Ease off if you feel shoulder pinching; a longer towel makes this gentler.",
-      "id": "5904c838-99c3-5192-9d0f-080a2e973048"
+      "id": "5904c838-99c3-5192-9d0f-080a2e973048",
+      "animationName": "left_towel_assisted_triceps_stretch.mp4"
     },
     {
       "name": "Right Towel-Assisted Triceps Stretch",
@@ -1256,7 +1259,8 @@
         "Release slowly and switch sides."
       ],
       "caution": "Ease off if you feel shoulder pinching; a longer towel makes this gentler.",
-      "id": "d23b9ce5-75ac-591c-81d6-b761c4b70b5e"
+      "id": "d23b9ce5-75ac-591c-81d6-b761c4b70b5e",
+      "animationName": "right_towel_assisted_triceps_stretch.mp4"
     },
     {
       "name": "Left Wrist Flexor Stretch",
@@ -1274,7 +1278,9 @@
         "Hold for 15-20 seconds, feeling the stretch along the inner forearm.",
         "Release and switch sides."
       ],
-      "id": "29fe7232-d133-5233-a529-6ea1d5e04a42"
+      "id": "29fe7232-d133-5233-a529-6ea1d5e04a42",
+      "animationName": "left_wrist_flexor_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Right Wrist Flexor Stretch",
@@ -1292,7 +1298,9 @@
         "Hold for 15-20 seconds, feeling the stretch along the inner forearm.",
         "Release and switch sides."
       ],
-      "id": "903e096a-0223-58c2-aff3-7354990aaf00"
+      "id": "903e096a-0223-58c2-aff3-7354990aaf00",
+      "animationName": "right_wrist_flexor_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Left Wrist Extensor Stretch",
@@ -1310,7 +1318,9 @@
         "Hold for 15-20 seconds, feeling the stretch along the top of the forearm.",
         "Release and switch sides."
       ],
-      "id": "7b84ffe1-cc90-5ad2-b55b-5a06910ae77f"
+      "id": "7b84ffe1-cc90-5ad2-b55b-5a06910ae77f",
+      "animationName": "left_wrist_extensor_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Right Wrist Extensor Stretch",
@@ -1328,7 +1338,9 @@
         "Hold for 15-20 seconds, feeling the stretch along the top of the forearm.",
         "Release and switch sides."
       ],
-      "id": "06398809-c1ec-5875-a3f6-f97910bfe209"
+      "id": "06398809-c1ec-5875-a3f6-f97910bfe209",
+      "animationName": "right_wrist_extensor_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Reverse Prayer Stretch",
@@ -1390,7 +1402,9 @@
         "Reverse direction for 10 circles counter-clockwise.",
         "Shake your hands out gently to finish."
       ],
-      "id": "b1d30153-3e92-5934-bca8-19a6a28ed83d"
+      "id": "b1d30153-3e92-5934-bca8-19a6a28ed83d",
+      "animationName": "wrist_circles.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Left Seated Figure-Four Stretch",
