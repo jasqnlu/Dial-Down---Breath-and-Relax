@@ -1167,6 +1167,38 @@ since it inherits the chest's lateral bend as a child bone).
 
 57/217 exercises now have animations (was 51 before this batch).
 
+## Eighth batch (2026-08-20, same day): 6 more exercises, 23 of 30
+
+`sphinx_pose` (reuses cobra_stretch_prone_press_up.py's standing-arch
+fallback for prone poses, gentler; flagged `animationIsApproximate` since
+substituting standing for prone is a bigger simplification than most
+unflagged approximations in this family), `prayer_push_against_wall`
+(hands stay apart at forward reach, unlike prayer_stretch's midline clasp),
+`left/right_cow_face_arm_stretch` (first exercise to combine two
+independently-proven arm poses on opposite arms at once — the overhead
+triceps drop-behind-the-head shape on one side, the clasped-hands
+behind-the-back reach on the other), `legs_up_the_wall` (first exercise to
+raise the legs to fully vertical), `reverse_prayer_shoulder_mobiliser`
+(same pose as reverse_prayer_stretch.py, different highlight tags).
+
+**One review-driven camera fix:** `legs_up_the_wall`'s first render used
+`CAMERA_AZIMUTH = 0`, copying left_sleeper_stretch.py's "0 views from
+directly in front" claim by analogy. That claim only holds for a ROLLED
+(side-lying) pose, where the roll has already moved the body's front-facing
+direction into the plane `run_supine_side`'s camera orbits (X/Z). This
+exercise stays flat (never rolled), so azimuth 0 put the camera on the same
+world-Z axis the legs swing toward — foreshortening the whole motion away,
+the same failure class `run_supine_side` exists to avoid, just triggered by
+copying a sibling's camera number instead of solving for this exercise's
+own motion plane. Fixed by solving properly: azimuth 90 views the Y-Z plane
+(where the leg swing actually happens) edge-on. Generalizes past this one
+script: a camera angle proven for one pose is only proven for THAT pose's
+geometry (rolled vs. flat, in this case) — copy the reasoning, re-derive the
+number, don't copy the number.
+
+63/217 exercises now have animations (was 57 before this batch). 23 of this
+session's 30-exercise target shipped so far; 7 more to go.
+
 ## Related project context
 
 - Body Map architecture / SceneKit loading: `Breath - Relax &
