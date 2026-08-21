@@ -829,6 +829,202 @@ chips. Full unit suite still green.
 Doorway External Rotation) and `hips` local-Y twist for anything other
 than the windshield-wipers workaround remain fully untried.
 
+## Supine Spinal Twist hip-crease tear (2026-08-19)
+
+Reported as "visual glitch/tearing" in the shipped `right/left_
+supine_spinal_twist` clips. Not the windshield-wipers swing-angle tearing
+already documented above (that was fixed and re-verified 2026-08-09) — this
+was a base-pose bug: `thigh.{L,R}` local-X = `-90`, composed on top of the
+`-90` base pitch already sitting on `hips`, folded the knees into a tighter
+tuck than any other shipped supine exercise. It tore a visible dark gap
+between the thighs at the hip crease, seen from the top-down supine
+camera — present even at frame 0 (rest), before any windshield-wiper
+motion, so `SupineExercisesUITests` (which only checks the clip opens and
+plays, not its pixel content) never caught it.
+
+Confirmed by reposing the already-built `.blend` (no rebuild needed — vertex
+weights are baked once from the rest pose in `build_figure`/`blend_weights`,
+independent of the animated pose) at several `thigh` local-X angles: `-90`
+tore, `-75`/`-60`/`-45` were all clean at rest. Picked `-75` (closest to the
+original, keeps the "knees bent" read as tucked as possible) and re-checked
+it clean at the peak twist pose too. Fix: dropped the constant base fold in
+both scripts' `POSES` from `-90` to `-75`, re-ran both scripts headless,
+re-encoded both `.mp4`s via `encode_mp4.swift`, replaced the two files in
+`Resources/Animations/`.
+
+Lesson for future supine/bent-knee poses: the top-down supine camera looks
+straight into the hip crease in a way no azimuth (side) camera ever does —
+a fold angle that reads fine from the side (e.g. `apply_seated_base`'s own
+`-90` thigh fold) can still tear when viewed top-down. Render and zoom into
+the actual crease before shipping a new bent-knee supine pose, don't just
+eyeball the full-body thumbnail.
+
+**Follow-up, same day: the tear fix shipped without watching the motion.**
+The check above only compared still frames (rest + peak) before and after —
+it never played the clip back. Reported again as "the body's legs are
+swinging" — watching a 3x3 grid sampled across the full 4s clip (not just
+one frame) showed why: the whole leg (thigh+shin, rigid, no independent
+knee articulation) swings sideways from the hip like a pendulum, and
+untucking the base fold from `-90` to `-75` above made it worse — the same
+degrees of `thigh` local-Z now lever a longer, less-foreshortened leg, so
+the feet sweep further at the same angle. The swing amplitude itself (peak
+20°, quarter 12°) had silently drifted from this script's own docstring,
+which always claimed "kept small, 10deg" — apparently changed during the
+2026-08-09 tearing fix and never reconciled with the comment. Fix: reduced
+to peak 10° / quarter 6°, matching the stale docstring claim, and this time
+re-checked the full frame-grid across the whole clip (not just rest/peak
+stills) before re-shipping.
+
+**Process lesson, not just a pose lesson:** for any exercise whose defect is
+about motion (tearing during a swing, a swing reading as too big/small/
+wrong), verifying a `rest_demo`/`peak_demo` still pair is necessary but not
+sufficient — sample frames across the whole clip (a `fps=10` extract into a
+3x3 grid worked well) and actually look at the motion arc before calling it
+fixed.
+
+## Supine Spinal Twist reads as standing, not lying down (2026-08-19, same day)
+
+Reported a third time on this exercise, after the tearing and swing-amplitude
+fixes above: the shot itself looked like a standing figure in a T-pose, not
+someone lying down. This was a real, previously-unquestioned bug in
+`camera_topdown` (the shared camera every ROLL_DEG=0 supine exercise uses) —
+an orthographic straight-down camera is mathematically IDENTICAL in
+silhouette to a front view of a standing figure. No pose tuning could have
+fixed it; every earlier fix on this exercise only ever touched the pose.
+
+**Fix: `camera_oblique_supine` in `_lib.py`** — an elevated, pulled-back,
+angled-down PERSPECTIVE camera, replacing `camera_topdown` for the flat
+ROLL_DEG=0 family specifically (`right/left_supine_spinal_twist`,
+`right/left_supine_figure_4` — figure-4 hasn't been re-rendered yet, same fix
+applies whenever it's touched next). ROLL_DEG!=0 exercises (chest-opener,
+sleeper-stretch) keep `camera_topdown` — the side roll itself already
+provides depth cues an orthographic top-down shot lacks, so they don't have
+this bug. See `camera_oblique_supine`'s own docstring in `_lib.py` for the
+full tuning derivation (why a flat colored floor plane was tried and
+rejected, why the azimuth has to stay small or it foreshortens the exercise's
+own motion away, the `shift_y` recentering trick).
+
+**Two more defects surfaced by the SAME camera change, each requiring its own
+fix — a reminder that changing one axis of a render (camera) can regress
+axes that were already correct (pose):**
+
+1. The oblique camera looks into the hip crease from the side, where the
+   -75 fold (clean from directly overhead) tore again. Angle sweep re-run
+   against the new camera: -45 was the first clean angle from both views.
+2. At -45, a NEW defect appeared that was never a tear (confirmed by
+   checking a transparent-background render for a literal hole, and by a
+   one-off Cycles/EEVEE comparison render) — a solid near-black blob at the
+   inner knee/hip. Ruled out lighting config first (FLAT shading, several
+   MATCAP presets, `shadow_intensity` at 0 — all still showed it except
+   FLAT, which also removes the muscle-definition shading the app needs).
+   The EEVEE render showed a fainter version of the same patch, which is
+   the tell: a real, deep self-shadow crevice in the geometry at that fold
+   angle that Workbench's no-fill-light single directional shading renders
+   as flat black instead of a soft gray. Shallower angles reduce the
+   crevice itself — swept again, -20 was the first fully clean angle.
+
+Net change from the original shipped version: base thigh fold -90 → -20
+(a much shallower "knees bent" than originally authored — every tighter
+angle re-tried reintroduced either the tear or the blob), swing peak 20° →
+10°, arm angle 45° → 25°, camera top-down → oblique. Re-verified the full
+`fps=10` 3x3 frame-grid one more time at each step, specifically re-checking
+the hip-crease region (not just eyeballing the whole figure) since that's
+where two of these three defects lived.
+
+**If Figure-4 (or any new ROLL_DEG=0 supine exercise) is touched next:**
+expect to re-run this same angle-vs-camera sweep rather than assuming
+whatever thigh fold Figure-4 currently ships with is still safe — the
+tear/blob thresholds are a property of the (pose, camera) pair, not the
+pose alone, and Figure-4 was never re-rendered against the new camera.
+
+## Getting closer to a real 90-degree bent knee (2026-08-20, same day)
+
+The -20 fold above was clean but didn't read as an actual bent-knee
+position — asked to get closer to a real 90 degrees. Instead of continuing
+to trade the angle down (the pattern in every fix above), went at the root:
+`blend_weights`'s defaults (`BLEND_TOP_K=2`, `BLEND_POWER=4.0`) were tuned
+against ordinary single-joint folds; this hip fold is a compound one
+(`thigh` local-X composed on top of the `-90` already on `hips`) that no
+other exercise's joints ever attempt, so the default blend was arguably
+undertuned for it from the start rather than the angle being the real
+problem.
+
+**Method:** vertex weights are baked once in `build_figure`, from the
+REST-pose mesh, independent of the animated pose — so testing a different
+`BLEND_TOP_K`/`BLEND_POWER` requires a full rebuild from the OBJ each time
+(unlike the earlier pose-only sweeps, which could reuse an already-built
+`.blend`). Copied `_lib.py` to a scratch location, edited the constants
+there, and ran a throwaway script importing the scratch copy — kept the
+real `_lib.py` untouched until a setting was proven, so a bad experiment
+couldn't corrupt the shared module mid-sweep.
+
+**Result:** `top_k=3, power=1.5` (more candidate bones per vertex, gentler
+distance falloff so the blend reaches further) closed nearly all of the
+-75 crease that the default `top_k=2, power=4.0` left open, and was also
+visibly better than the default at a literal -90. But -90 itself never
+fully closed, even pushed to `top_k=4`/`power=1.5` — strong evidence this
+is a real geometric limit (very likely a modeling-time seam between the
+thigh and hip meshes in the source OBJ, where they were never made to
+overlap enough to survive an extreme fold) rather than something a
+skinning-weight blend can indefinitely paper over by throwing more blend
+at it.
+
+**Shipped:** added `blend_top_k`/`blend_power` as optional parameters on
+`build_figure`/`blend_weights`, defaulting to the original module constants
+— every other exercise's build is byte-for-byte unaffected. `run_supine`
+passes `top_k=3, power=1.5` automatically whenever `ROLL_DEG==0` (see its
+docstring in `_lib.py`). Re-tightened the base fold from -20 back to -75
+(not all the way to -90) — the same -75 that tore under the OLD default
+blend right after the camera fix above, but holds clean-enough under the
+new one. A faint crease is still visible on close zoom at -75 (see the
+frame-grid zoom used to verify it) — better than every earlier -75 attempt,
+not a total elimination.
+
+**For Figure-4 or any future ROLL_DEG=0 exercise:** the wider blend is
+already automatic via `run_supine` (nothing extra to opt into), but the
+same "-90 never fully closes" ceiling likely applies — expect to sweep the
+fold angle again rather than assuming -75 (or any specific number) is
+universally safe; it's tuned against this exercise's specific geometry
+extent, not derived from a general formula.
+
+## Camera azimuth made the flat lying figure read as diagonal (2026-08-20, same day)
+
+Reported as "rotate the hips so it's flat" — a mismatch between what the
+words point at (the `hips` bone, already fixed at exactly -90, perfectly
+flat in world space) and what was actually wrong (the CAMERA's azimuth
+offset, `camera_oblique_supine`'s `xfrac=0.2`, which rotated the figure's
+projected long axis away from vertical in-frame — the figure read as
+propped up at a diagonal, like sitting up, not lying flat left-to-right in
+the portrait frame). Confirmed the intended meaning with a clarifying
+question before touching anything, since "hips" could also have meant the
+knee-bend angle (the previous fix) or the pelvis/torso shape itself — each
+would have pointed at a different file.
+
+**Fix:** `camera_oblique_supine`'s `xfrac` default dropped from `0.2` to
+`0.0` — camera centered directly behind the feet, no azimuth swing. This
+was the exact tradeoff the function's own docstring called out when 0.2 was
+picked over 0 (see the "reads as standing" fix above): 0 was rejected then
+because it views the windshield-wipers knee-swing more head-on, closer to
+foreshortening the motion away. Re-checked that concern directly this time
+— diffed a rendered rest/peak pair at `xfrac=0` and the swing is still
+visibly different frame to frame, just less dramatic than at 0.2. Given the
+choice between "motion reads a bit more subtly" and "figure reads as
+sitting up instead of lying flat," flat won.
+
+Also re-checked the hip crease and the self-shadow blob at the new camera
+angle (yet another camera change, same lesson as before: re-verify both
+known failure modes any time the viewing angle changes) — both still clean
+at `xfrac=0` with the -75 fold and the wider blend weights from the fix
+above.
+
+**Lesson: when a user's wording names a specific part ("the hips"), verify
+what they're pointing AT before assuming they mean the part literally** —
+here it named the one bone in the whole rig that was already exactly
+correct, and the real defect was one layer removed (the camera). A single
+clarifying question (three concrete options: camera-diagonal, knees-too-
+bent, or pelvis-itself-looks-wrong) settled it in one round trip instead of
+guessing and re-rendering.
+
 ## Related project context
 
 - Body Map architecture / SceneKit loading: `Breath - Relax &
