@@ -422,7 +422,9 @@
         "Release and lower your arm slowly."
       ],
       "caution": "Stop if you feel shoulder pinching. Avoid if you have a rotator-cuff injury.",
-      "id": "a09b5916-2d18-5fa1-a685-1345fa11cd8d"
+      "id": "a09b5916-2d18-5fa1-a685-1345fa11cd8d",
+      "animationName": "left_cross_body_rear_delt_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Right Cross-Body Rear Delt Stretch",
@@ -441,7 +443,9 @@
         "Release and lower your arm slowly."
       ],
       "caution": "Stop if you feel shoulder pinching. Avoid if you have a rotator-cuff injury.",
-      "id": "736ec882-9876-5494-95ee-545d895e0448"
+      "id": "736ec882-9876-5494-95ee-545d895e0448",
+      "animationName": "right_cross_body_rear_delt_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Doorway Shoulder & Chest Opener",
@@ -463,7 +467,8 @@
         "Hold for 20-30 seconds, then step back to release."
       ],
       "caution": "Don't push into shoulder pain. Avoid if you have a shoulder injury or instability.",
-      "id": "e84da743-58c5-5f9f-88bb-0429d0396e8e"
+      "id": "e84da743-58c5-5f9f-88bb-0429d0396e8e",
+      "animationName": "doorway_shoulder_and_chest_opener.mp4"
     },
     {
       "name": "Left Thread the Needle",
@@ -527,7 +532,8 @@
         "Step back to release and repeat with the opposite foot forward."
       ],
       "caution": "Don't push into shoulder pain. Avoid if you have a shoulder injury or instability.",
-      "id": "81d88380-b5ef-5554-aeaa-74aefdf276be"
+      "id": "81d88380-b5ef-5554-aeaa-74aefdf276be",
+      "animationName": "doorway_pec_stretch_mid_chest.mp4"
     },
     {
       "name": "High Doorway Chest Stretch (Upper Chest)",
@@ -549,7 +555,8 @@
         "Step back to release."
       ],
       "caution": "Keep the lean gentle - this raised-arm position loads the shoulder more than the low variant.",
-      "id": "d57f0a14-1586-500c-b82a-41da26f51adc"
+      "id": "d57f0a14-1586-500c-b82a-41da26f51adc",
+      "animationName": "high_doorway_chest_stretch_upper_chest.mp4"
     },
     {
       "name": "Left Supine Chest Opener (Open Book)",
@@ -1196,7 +1203,8 @@
         "Hold for 20 seconds.",
         "Release and switch sides."
       ],
-      "id": "4596532a-e63d-5f02-a07f-e67a5ae89bd9"
+      "id": "4596532a-e63d-5f02-a07f-e67a5ae89bd9",
+      "animationName": "left_cross_body_elbow_pull.mp4"
     },
     {
       "name": "Right Cross-Body Elbow Pull",
@@ -1216,7 +1224,8 @@
         "Hold for 20 seconds.",
         "Release and switch sides."
       ],
-      "id": "0a9187ca-4104-5c45-a23d-04440f75a5b1"
+      "id": "0a9187ca-4104-5c45-a23d-04440f75a5b1",
+      "animationName": "right_cross_body_elbow_pull.mp4"
     },
     {
       "name": "Left Towel-Assisted Triceps Stretch",
@@ -2667,7 +2676,9 @@
         "Turn your head away from your left arm to add a gentle stretch through the whole limb.",
         "Hold for 15-20 seconds and switch sides."
       ],
-      "id": "7aef75e2-2df9-5488-b33f-5d97d2b82aed"
+      "id": "7aef75e2-2df9-5488-b33f-5d97d2b82aed",
+      "animationName": "left_extended_fingers_bicep_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Right Extended-Fingers Bicep Stretch",
@@ -2686,7 +2697,9 @@
         "Turn your head away from your right arm to add a gentle stretch through the whole limb.",
         "Hold for 15-20 seconds and switch sides."
       ],
-      "id": "faed889c-53e1-5fb2-9c03-5d63636a3f45"
+      "id": "faed889c-53e1-5fb2-9c03-5d63636a3f45",
+      "animationName": "right_extended_fingers_bicep_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Left Behind-Head Strap-Assisted Triceps Stretch",
