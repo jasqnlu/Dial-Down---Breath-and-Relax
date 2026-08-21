@@ -2740,7 +2740,8 @@
         "Hold for 15-20 seconds without forcing, then release and switch sides."
       ],
       "caution": "Ease off if you feel shoulder pinching.",
-      "id": "cbd42227-4127-539d-9b31-4866a9f3f5e7"
+      "id": "cbd42227-4127-539d-9b31-4866a9f3f5e7",
+      "animationName": "left_behind_head_strap_assisted_triceps_stretch.mp4"
     },
     {
       "name": "Right Behind-Head Strap-Assisted Triceps Stretch",
@@ -2760,7 +2761,8 @@
         "Hold for 15-20 seconds without forcing, then release and switch sides."
       ],
       "caution": "Ease off if you feel shoulder pinching.",
-      "id": "0e22da6c-8daf-595f-ac28-116d5fd7daa6"
+      "id": "0e22da6c-8daf-595f-ac28-116d5fd7daa6",
+      "animationName": "right_behind_head_strap_assisted_triceps_stretch.mp4"
     },
     {
       "name": "Prayer Push Against Wall",
@@ -2924,7 +2926,8 @@
         "Hold for 20 seconds, then release and switch sides."
       ],
       "caution": "Useful if you can't reach your ankle directly; never force the range.",
-      "id": "25d596f5-9bf6-5920-87e7-c5f45bac956f"
+      "id": "25d596f5-9bf6-5920-87e7-c5f45bac956f",
+      "animationName": "left_reclined_quad_stretch_with_strap.mp4"
     },
     {
       "name": "Right Reclined Quad Stretch with Strap",
@@ -2943,7 +2946,8 @@
         "Hold for 20 seconds, then release and switch sides."
       ],
       "caution": "Useful if you can't reach your ankle directly; never force the range.",
-      "id": "3dd8b817-0c86-586f-8f48-968869449f9f"
+      "id": "3dd8b817-0c86-586f-8f48-968869449f9f",
+      "animationName": "right_reclined_quad_stretch_with_strap.mp4"
     },
     {
       "name": "Left Doorframe Hamstring Stretch",
@@ -3178,7 +3182,8 @@
         "Keeping that elbow straight, slowly lean your torso slightly forward and away from the planted hand.",
         "Hold, feeling a stretch through the front of your upper arm and wrist, then release slowly."
       ],
-      "id": "ba874d42-727e-4c7a-889a-a3547fba2ddd"
+      "id": "ba874d42-727e-4c7a-889a-a3547fba2ddd",
+      "animationName": "left_seated_behind_hip_bicep_stretch.mp4"
     },
     {
       "name": "Right Seated Behind-Hip Bicep Stretch",
@@ -3196,7 +3201,8 @@
         "Keeping that elbow straight, slowly lean your torso slightly forward and away from the planted hand.",
         "Hold, feeling a stretch through the front of your upper arm and wrist, then release slowly."
       ],
-      "id": "a7c6db16-df4a-4919-a4b1-cf3673896a2e"
+      "id": "a7c6db16-df4a-4919-a4b1-cf3673896a2e",
+      "animationName": "right_seated_behind_hip_bicep_stretch.mp4"
     },
     {
       "name": "Left Wall-Assisted Overhead Triceps Stretch",
@@ -3214,7 +3220,8 @@
         "Reach back and rest your elbow lightly against the wall, using its gentle resistance to ease the elbow into a deeper bend.",
         "Hold, feeling the stretch through the back of your upper arm, then lower slowly and switch sides on another round."
       ],
-      "id": "7050babc-0363-4c87-ad88-117caa284084"
+      "id": "7050babc-0363-4c87-ad88-117caa284084",
+      "animationName": "left_wall_assisted_overhead_triceps_stretch.mp4"
     },
     {
       "name": "Right Wall-Assisted Overhead Triceps Stretch",
@@ -3232,7 +3239,8 @@
         "Reach back and rest your elbow lightly against the wall, using its gentle resistance to ease the elbow into a deeper bend.",
         "Hold, feeling the stretch through the back of your upper arm, then lower slowly and switch sides on another round."
       ],
-      "id": "47bf2bc5-7c2a-45a2-83d5-3c5235df753e"
+      "id": "47bf2bc5-7c2a-45a2-83d5-3c5235df753e",
+      "animationName": "right_wall_assisted_overhead_triceps_stretch.mp4"
     },
     {
       "name": "Left Step-Edge Calf Drop Stretch",
@@ -3251,7 +3259,9 @@
         "Hold gently, then rise back to the step edge and switch legs on another round."
       ],
       "caution": "Hold a railing or wall the whole time and move slowly \u2014 don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
-      "id": "ca88ac04-f55d-45c9-9693-19f6829c6283"
+      "id": "ca88ac04-f55d-45c9-9693-19f6829c6283",
+      "animationName": "left_step_edge_calf_drop_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Right Step-Edge Calf Drop Stretch",
@@ -3270,7 +3280,9 @@
         "Hold gently, then rise back to the step edge and switch legs on another round."
       ],
       "caution": "Hold a railing or wall the whole time and move slowly \u2014 don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
-      "id": "2fc19eb8-63ab-4f73-859b-b5b6fad04ac8"
+      "id": "2fc19eb8-63ab-4f73-859b-b5b6fad04ac8",
+      "animationName": "right_step_edge_calf_drop_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Left Scalene Neck Stretch",
@@ -3409,7 +3421,9 @@
         "Hold, feeling a stretch along the sole and arch of your foot.",
         "Release slowly, then repeat on the other side on another round."
       ],
-      "id": "8193d6e7-e24e-4c4c-bb03-3bdaa2be18d5"
+      "id": "8193d6e7-e24e-4c4c-bb03-3bdaa2be18d5",
+      "animationName": "left_plantar_fascia_stretch_toe_raise.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Right Plantar Fascia Stretch (Toe Raise)",
@@ -3427,7 +3441,9 @@
         "Hold, feeling a stretch along the sole and arch of your foot.",
         "Release slowly, then repeat on the other side on another round."
       ],
-      "id": "3966e57e-0f8d-42a8-bbb3-0eed3813ddf3"
+      "id": "3966e57e-0f8d-42a8-bbb3-0eed3813ddf3",
+      "animationName": "right_plantar_fascia_stretch_toe_raise.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Left Standing Crescent Moon Side Stretch",
