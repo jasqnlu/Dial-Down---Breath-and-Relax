@@ -1025,6 +1025,65 @@ clarifying question (three concrete options: camera-diagonal, knees-too-
 bent, or pelvis-itself-looks-wrong) settled it in one round trip instead of
 guessing and re-rendering.
 
+## Fifth batch (2026-08-20): 5 exercises + a head-twist sign bug found in review
+
+Started the next batch of exercises (target: 30, working through the 177
+seed exercises still without an animation). Picked the lowest-risk next 5 —
+close analogues of already-shipped families, to validate the batch workflow
+before spending render/probe time on riskier poses: `left/
+right_levator_scapulae_stretch` (neck pitch+turn, same two axes as
+`left/right_chin_to_shoulder_diagonal_stretch`), `left/
+right_upper_trapezius_stretch` (neck side-bend only, same axis as the
+scalene family), `standing_chest_expansion_stretch` (arms clasped behind
+the LOWER back with straight arms — geometrically close to
+`clasped_hands_behind_back`/`reverse_prayer_stretch`, just less elbow
+flexion). All 5 built clean (skins:1, anims:1, 0 fallback muscles, no
+tearing in the rendered frames).
+
+**Bug found while reviewing the new Levator Scapulae scripts against their
+own reference pose (chin_to_shoulder_diagonal): the head bone's local-Y
+twist sign was backwards in 4 already-shipped exercises.**
+`left/right_chin_to_shoulder_diagonal_stretch.py` and `left/
+right_scalene_neck_stretch.py` (fourth batch, 2026-08-08) were authored on
+the belief that `head` local-Y follows its own convention, independent of
+the "Twist direction" fix already documented above for chest/spine
+(`+Y = subject's own LEFT`) — that fix's own note only lists 4 corrected
+exercises (both seated spinal twists, both wall bicep stretches), and never
+re-checked the head bone specifically.
+
+Settled with a throwaway numeric probe (`_head_twist_probe.py`, scratchpad,
+recreate from this note if needed — same technique as the original chest
+twist probe, adapted to the head): built the figure, posed `head` local-Y
+alone at +30, and tracked which side of the head-skin cap moved toward the
+front camera (world −Y). The vertex on the subject's own RIGHT side (world
+−X, per the already-established "+X = subject's left" fact) moved to −Y
+(forward); the LEFT-side vertex moved to +Y (backward). Front-side-forward
+on the right = a turn toward the subject's own right happens under
+**negative** Y, not positive — the head bone was never actually an
+exception, it just never got audited after the chest/spine fix landed.
+
+**Fixed 4 shipped exercises** (`left/right_chin_to_shoulder_diagonal_stretch`,
+`left/right_scalene_neck_stretch`) by flipping the sign of `head`'s Y
+component only (X pitch and Z side-bend were never in question — this bug
+is specific to the twist axis). Re-rendered and re-encoded all 4 clips;
+replaced the bundled mp4s. New `left/right_levator_scapulae_stretch.py`
+shipped with the corrected sign from the start.
+
+**Lesson to generalize further than the original "Twist direction" section:
+a sign convention proven for one bone in a chain is not automatically proven
+for every bone in that chain** — even though local-Y = twist is true for
+*any* bone regardless of orientation (Gotcha #6), which specific world
+direction that twist resolves to for a CHILD bone (head, a child of chest)
+still needs its own check, because the probe that established the chest/
+spine sign only ever moved a chest-relative landmark (the shoulder). Head
+inherited the same sign here, but that was confirmed, not assumed.
+
+45 of 217 exercises now have animations (was 40 before this batch — see the
+running total via `python3 -c "import json;
+d=json.load(open('Breath - Relax & Stretch/Resources/SeedData.json'));
+print(sum(1 for e in d['exercises'] if e.get('animationName')))"`). 25 more
+to go to hit this batch's 30-exercise target.
+
 ## Related project context
 
 - Body Map architecture / SceneKit loading: `Breath - Relax &

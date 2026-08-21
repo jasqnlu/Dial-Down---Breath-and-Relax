@@ -12,10 +12,19 @@ twists). Each axis is individually validated; combining them is new, so the
 render is eyeballed rather than trusted from the tail-position log.
 
 Instruction: "turn your chin diagonally down toward your RIGHT armpit" — so a
-LEFT-named stretch turns the head to the subject's own right (+Y) while
-nodding down (+X). That matches the app's bilateral naming convention, where
+LEFT-named stretch turns the head to the subject's own right while nodding
+down (+X). That matches the app's bilateral naming convention, where
 "Left <stretch>" means the LEFT side is the side being stretched, not the
 direction of travel (same as Left Standing Side Bend, which bends right).
+
+**Sign correction (2026-08-20):** originally shipped with +Y for "turn
+right," on the belief the head bone's twist sign was independent of the
+chest/spine convention. A numeric probe
+(left_levator_scapulae_stretch.py's `_head_twist_probe.py`) proved the head
+bone follows the SAME "+Y = subject's own left" convention already
+documented for chest/spine (ANIMATION_HANDOFF.md's "Twist direction"
+section) — it was never actually an exception, it just never got re-checked
+after that fix landed. Turning right is -Y, not +Y; corrected here.
 
 Highlight: the atlas has no sided neck groups (only Back Neck / Front Neck),
 so the side-specific part of the highlight comes from Left Trapezius, which
@@ -54,9 +63,9 @@ WORKED_KEYWORDS = ("back neck", "left trapezius")
 
 POSES = {
     0: {},
-    30: {"head": (r(15), r(20), 0)},
-    60: {"head": (r(30), r(40), 0)},
-    90: {"head": (r(30), r(40), 0)},
+    30: {"head": (r(15), r(-20), 0)},
+    60: {"head": (r(30), r(-40), 0)},
+    90: {"head": (r(30), r(-40), 0)},
     120: {},
 }
 

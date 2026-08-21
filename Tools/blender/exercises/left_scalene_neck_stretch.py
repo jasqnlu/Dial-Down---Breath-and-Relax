@@ -17,8 +17,12 @@ Mapping the instructions to axes:
     This is the dominant motion and gets the largest angle.
   * "Rotate your chin slightly UPWARD" -> -X (negative pitches the chin up,
     per neck_extension_look_up.py).
-  * "...and toward the RIGHT side" -> +Y (positive twists toward the
-    subject's own right).
+  * "...and toward the RIGHT side" -> -Y. **Sign correction (2026-08-20):**
+    originally shipped as +Y on the (wrong) belief that positive twists
+    toward the subject's own right — see
+    left_levator_scapulae_stretch.py's docstring for the numeric probe that
+    settled it: the head bone follows the same "+Y = subject's own left"
+    convention as chest/spine, it was never a bone-specific exception.
 A LEFT-named stretch tilting right is the app's usual bilateral convention:
 the name is the side being STRETCHED, not the direction of travel.
 
@@ -57,9 +61,9 @@ WORKED_KEYWORDS = ("front neck", "left trapezius")
 
 POSES = {
     0: {},
-    30: {"head": (r(-4), r(8), r(14))},
-    60: {"head": (r(-8), r(15), r(30))},
-    90: {"head": (r(-8), r(15), r(30))},
+    30: {"head": (r(-4), r(-8), r(14))},
+    60: {"head": (r(-8), r(-15), r(30))},
+    90: {"head": (r(-8), r(-15), r(30))},
     120: {},
 }
 
