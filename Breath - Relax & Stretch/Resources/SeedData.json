@@ -681,7 +681,8 @@
         "Flow slowly between the two, following your breath.",
         "Repeat 8-10 times."
       ],
-      "id": "e247c2cd-e0b5-53d8-9381-289b429e5906"
+      "id": "e247c2cd-e0b5-53d8-9381-289b429e5906",
+      "animationName": "cat_cow_flow.mp4"
     },
     {
       "name": "Left Seated Spinal Twist",
@@ -747,7 +748,8 @@
         "Hold and breathe deeply for the full duration."
       ],
       "caution": "Skip if kneeling causes knee pain, or widen the knees to make room for the belly if needed.",
-      "id": "edd92bc9-8867-5d71-8fa0-9c2ac3f61512"
+      "id": "edd92bc9-8867-5d71-8fa0-9c2ac3f61512",
+      "animationName": "childs_pose.mp4"
     },
     {
       "name": "Left Single-Leg Supine Knee-to-Chest",
@@ -876,7 +878,8 @@
         "Rock slowly side to side to massage the lower back.",
         "Hold for 20-30 seconds and breathe deeply."
       ],
-      "id": "38f2451e-4dcc-5c6e-87f8-a7dfef37d92e"
+      "id": "38f2451e-4dcc-5c6e-87f8-a7dfef37d92e",
+      "animationName": "happy_baby_pose.mp4"
     },
     {
       "name": "Left Supine Spinal Twist (Windshield Wipers)",
@@ -2167,7 +2170,8 @@
         "Come forward off your heels to release."
       ],
       "caution": "Keep this gentle if you have ankle or knee sensitivity; reduce how far you sit back.",
-      "id": "af65a8c2-dba3-58c2-892e-d4c9769f2479"
+      "id": "af65a8c2-dba3-58c2-892e-d4c9769f2479",
+      "animationName": "kneeling_tibialis_stretch.mp4"
     },
     {
       "name": "Left Standing Tibialis Stretch (Toe Point)",
@@ -2186,7 +2190,8 @@
         "Hold for 15-20 seconds.",
         "Release and switch sides."
       ],
-      "id": "d2be8052-d5e0-5799-b25e-912c62ef5e28"
+      "id": "d2be8052-d5e0-5799-b25e-912c62ef5e28",
+      "animationName": "left_standing_tibialis_stretch_toe_point.mp4"
     },
     {
       "name": "Right Standing Tibialis Stretch (Toe Point)",
@@ -2205,7 +2210,8 @@
         "Hold for 15-20 seconds.",
         "Release and switch sides."
       ],
-      "id": "099c9efc-828a-5d4e-9d8d-9244a99eff17"
+      "id": "099c9efc-828a-5d4e-9d8d-9244a99eff17",
+      "animationName": "right_standing_tibialis_stretch_toe_point.mp4"
     },
     {
       "name": "Shin & Ankle Mobiliser",
@@ -2787,7 +2793,9 @@
         "Hold for 15-20 seconds, then uncross and switch sides."
       ],
       "caution": "Keep a soft bend in the knees and hold a wall nearby if you feel unsteady.",
-      "id": "fa99dc94-30de-5a86-b422-b9916b19bf85"
+      "id": "fa99dc94-30de-5a86-b422-b9916b19bf85",
+      "animationName": "left_standing_crossed_leg_fold.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Right Standing Crossed-Leg Fold",
@@ -2806,7 +2814,9 @@
         "Hold for 15-20 seconds, then uncross and switch sides."
       ],
       "caution": "Keep a soft bend in the knees and hold a wall nearby if you feel unsteady.",
-      "id": "ec5ce892-d678-5390-8867-dcf61650f0a3"
+      "id": "ec5ce892-d678-5390-8867-dcf61650f0a3",
+      "animationName": "right_standing_crossed_leg_fold.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Left Couch Stretch",
