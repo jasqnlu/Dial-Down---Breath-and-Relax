@@ -892,6 +892,60 @@ an orthographic straight-down camera is mathematically IDENTICAL in
 silhouette to a front view of a standing figure. No pose tuning could have
 fixed it; every earlier fix on this exercise only ever touched the pose.
 
+## Tenth batch (2026-08-21): 71 -> 131, session target reached
+
+Continued the 130-exercise push across seven reviewed batches (batches
+10-16 in this session's numbering), each individually rendered
+(skins:1/anims:1, 0 fallback muscles, checked for tearing), visually
+reviewed against the exercise's own written instructions before wiring,
+and verified against the full test suite before committing.
+
+Shipped, by shape: prop-only pose reuses (towel/wall/strap variants of
+already-proven overhead-triceps and doorway-chest poses — no new
+mechanics, just different assistive-prop framing in the instructions);
+new small-angle conventions (shoulder-height horizontal adduction for
+cross-body poses, `thigh` HIP EXTENSION for the first time — standing
+tibialis toe-point and step-edge calf drop — verified clean on first
+render); new base-pose combinations (chair-sit + thigh abduction for
+seated figure-four, asymmetric left/right leg poses in the seated family,
+a side-lying deep knee fold reusing sleeper_stretch's `ROLL_DEG`
+convention); and the first real use of the PRONE half of the supine-probe
+finding (`hips` local-X = +90, Prone Neck Retraction) — previously only
+theorized in this doc, never rendered.
+
+**New pipeline limitation surfaced and documented, not fixed:** hand/foot
+"mitts" always render in the neutral material
+(`mitt.data.materials.append(mat_neutral)` in `build_figure`) regardless
+of `WORKED_KEYWORDS` — a `Left Foot`/`Right Hand`-targeted exercise can
+never show its target muscle highlighted, only the surrounding limb. Hit
+directly on Left/Right Plantar Fascia Stretch (0 highlight objects in the
+log, not a bug — confirmed by reading the mitt-coloring code). Flagged
+`animationIsApproximate` for those two rather than silently shipping an
+unhighlighted clip. Worth a real fix (per-mitt highlight material keyed
+off whether the ORIGINAL pre-hull muscles were in the highlight set)
+if more foot/hand-targeted exercises come up.
+
+**Approximation classes used this batch, for future reference:**
+- Downward-Facing Dog: substituted a very deep standing forward fold for
+  the actual raised-hip inverted-V (this rig can't lift the pelvis above
+  a straight-leg stance the way `apply_quadruped_base`'s object-level drop
+  lifts it for a KNEELING stance).
+- Standing IT Band Side Stretch / Standing Crossed-Leg Fold: a small
+  constant thigh angle standing in for literal ankle-crossing contact.
+- Wrist/ankle-joint motions (wrist circles, toe-point, toe-raise): this
+  rig has no independent wrist or ankle joint (rigid mitt on the
+  forearm/shin bone), so any exercise whose actual mechanism is at the
+  wrist or ankle can only show the limb holding a static/near-static
+  position with the target muscle highlighted, never the joint motion
+  itself.
+
+131/217 exercises now have animations (was 71 at the start of this
+session's push). 86 exercises remain unanimated — mostly breathing
+techniques and jaw/eye/face micro-exercises (no rig precedent for either;
+see "Related project context" below for the scope discussion), plus a
+handful of harder leg poses (kneeling hip-flexor lunges, Bridge Pose,
+Cossack Squat) that need their own base-pose probes before attempting.
+
 **Fix: `camera_oblique_supine` in `_lib.py`** — an elevated, pulled-back,
 angled-down PERSPECTIVE camera, replacing `camera_topdown` for the flat
 ROLL_DEG=0 family specifically (`right/left_supine_spinal_twist`,
