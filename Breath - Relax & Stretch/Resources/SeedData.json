@@ -1433,7 +1433,9 @@
         "Release and switch sides."
       ],
       "caution": "Keep the crossed ankle relaxed rather than pressing on the knee joint itself.",
-      "id": "38945874-9c94-5816-a744-ec46b2db827d"
+      "id": "38945874-9c94-5816-a744-ec46b2db827d",
+      "animationName": "left_seated_figure_four_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Right Seated Figure-Four Stretch",
@@ -1453,7 +1455,9 @@
         "Release and switch sides."
       ],
       "caution": "Keep the crossed ankle relaxed rather than pressing on the knee joint itself.",
-      "id": "d0a86d1b-6c0c-59c6-9793-7e9537723f71"
+      "id": "d0a86d1b-6c0c-59c6-9793-7e9537723f71",
+      "animationName": "right_seated_figure_four_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Left Supine Figure-4 Stretch",
@@ -1815,7 +1819,8 @@
         "Release and switch legs."
       ],
       "caution": "Hold something for balance and avoid pulling the foot toward the glute if it strains the knee.",
-      "id": "f3b83d61-64af-5c21-98f3-fdfcb15c01cb"
+      "id": "f3b83d61-64af-5c21-98f3-fdfcb15c01cb",
+      "animationName": "left_standing_quad_stretch.mp4"
     },
     {
       "name": "Right Standing Quad Stretch",
@@ -1835,7 +1840,8 @@
         "Release and switch legs."
       ],
       "caution": "Hold something for balance and avoid pulling the foot toward the glute if it strains the knee.",
-      "id": "b6a9a3a8-1ffc-5a80-af03-3b85fd0c8952"
+      "id": "b6a9a3a8-1ffc-5a80-af03-3b85fd0c8952",
+      "animationName": "right_standing_quad_stretch.mp4"
     },
     {
       "name": "Left Kneeling Quad Stretch",
@@ -1957,7 +1963,8 @@
         "Hold for 20-30 seconds.",
         "Sit back up and switch legs."
       ],
-      "id": "269e29c1-48f4-56b4-b4d8-32ebb79d89ff"
+      "id": "269e29c1-48f4-56b4-b4d8-32ebb79d89ff",
+      "animationName": "left_seated_hamstring_stretch.mp4"
     },
     {
       "name": "Right Seated Hamstring Stretch",
@@ -1977,7 +1984,8 @@
         "Hold for 20-30 seconds.",
         "Sit back up and switch legs."
       ],
-      "id": "86bcea08-cc86-5ab6-b76e-97db9b758083"
+      "id": "86bcea08-cc86-5ab6-b76e-97db9b758083",
+      "animationName": "right_seated_hamstring_stretch.mp4"
     },
     {
       "name": "Left Supine Hamstring Stretch with Towel",
@@ -1996,7 +2004,8 @@
         "Hold for 20-30 seconds, breathing steadily.",
         "Bend the knee to release and switch legs."
       ],
-      "id": "407138b9-2f06-5b80-9411-835374612ce5"
+      "id": "407138b9-2f06-5b80-9411-835374612ce5",
+      "animationName": "left_supine_hamstring_stretch_with_towel.mp4"
     },
     {
       "name": "Right Supine Hamstring Stretch with Towel",
@@ -2015,7 +2024,8 @@
         "Hold for 20-30 seconds, breathing steadily.",
         "Bend the knee to release and switch legs."
       ],
-      "id": "37cc4f76-32b0-53f4-b4b1-90697aef7c97"
+      "id": "37cc4f76-32b0-53f4-b4b1-90697aef7c97",
+      "animationName": "right_supine_hamstring_stretch_with_towel.mp4"
     },
     {
       "name": "Downward-Facing Dog",
