@@ -1084,6 +1084,67 @@ d=json.load(open('Breath - Relax & Stretch/Resources/SeedData.json'));
 print(sum(1 for e in d['exercises'] if e.get('animationName')))"`). 25 more
 to go to hit this batch's 30-exercise target.
 
+## Sixth batch (2026-08-20, same day): 6 more exercises, two new `_lib.py` capabilities
+
+Continued toward the 30-exercise target: `suboccipital_release_finger_press`
+(repeated small nod, reusing the chin-tuck/chin-to-chest axis but with an
+oscillating down-up-down keyframe pattern instead of a single hold),
+`prayer_stretch_palms_together_lower` (forearm flexion sweep with a
+Z-angle that SCALES with how extended the arm is, not a fixed offset — see
+below), `left/right_overhead_triceps_stretch` (first pose to combine a deep
+overhead upperarm flexion with a large separate forearm fold on top of it),
+`left/right_single_leg_supine_knee_to_chest` (first supine exercise where
+only one leg moves).
+
+**Two review-driven fixes, both worth generalizing:**
+
+1. **A fixed angular offset doesn't hold two hands together across a
+   changing reach length.** `prayer_stretch_palms_together_lower`'s first
+   render used the same forearm local-Z angle at both the folded-up (hands
+   near chest) and extended-down (hands near waist) keyframes. Hands met at
+   the chest but were visibly splayed apart at the waist — the same Z angle
+   closes a smaller linear gap on a short lever (folded elbow) than on a
+   long one (extended elbow). Fixed by scaling the Z angle up as the
+   forearm extends (9 -> 28 deg chest-to-waist) instead of holding it
+   constant. Generalizes to any future two-hands-together pose across a
+   changing reach.
+2. **Straight-line pose composition (Gotcha's "angles add" shortcut) gets
+   you the wrong endpoint when the goal is a specific hand position, not
+   just a direction.** `left/right_overhead_triceps_stretch`'s first attempt
+   (`upperarm -160, forearm -70`, reasoning purely from "both bones rotate
+   about the same fixed world-X axis so their angles add") pointed the
+   whole arm-plus-forearm line up-and-behind, with the hand reaching skyward
+   past the head instead of dropping behind it. The fix wasn't a different
+   axis or a smaller angle (the usual fixes elsewhere in this doc) — it was
+   recognizing that "hand behind the head" needs the FOREARM SEGMENT's own
+   direction (not the whole chain's net direction) to point back-and-down,
+   which requires a much bigger forearm fold (-150, not -70) than the
+   straight-line intuition suggested. Confirms the doc's standing lesson
+   (quadruped arm reach, "bounds-driven algebra is unreliable this far into
+   compound rotations") extends to composed-X-axis poses too, not just
+   poses with mixed Y/Z components.
+
+**Two `_lib.py` additions, both opt-in / backward compatible:**
+
+- `run_supine`'s `FORCE_TOPDOWN=True` cfg flag lets a ROLL_DEG=0 (flat)
+  supine exercise use the plain overhead camera instead of the family's
+  usual `camera_oblique_supine`. Needed for the single-leg knee-to-chest
+  pair: their working motion (a hip-flexion knee lift) foreshortens to
+  near-invisibility from the oblique camera (tuned for the windshield-
+  wiper exercises' side-to-side sweep) but reads clearly from directly
+  overhead. Every existing ROLL_DEG=0 caller leaves this unset, so their
+  behavior is unchanged.
+- The single-leg knee-to-chest pair also re-tested (rather than assumed)
+  whether the proven -75 hip-flexion ceiling (established for a SYMMETRIC
+  two-leg fold — see "Getting closer to a real 90-degree bent knee") holds
+  for an ASYMMETRIC single-leg fold: it does not need to stay that shallow.
+  -100 on the one working thigh (other leg untouched) rendered clean, no
+  hip-crease tear, under the same wider ROLL_DEG=0 blend. Worth re-checking
+  again (not assuming -100 either) if a future exercise needs an even
+  deeper single-leg fold — the ceiling was pushed once, not derived.
+
+51/217 exercises now have animations (was 45 before this batch).
+
 ## Related project context
 
 - Body Map architecture / SceneKit loading: `Breath - Relax &

@@ -1174,7 +1174,16 @@ def run_supine(cfg):
         # visually distinguished from standing by a side roll (chest opener,
         # sleeper stretch — ROLL_DEG != 0). Flat-on-the-back (ROLL_DEG == 0)
         # needs the oblique camera instead — see its docstring for why.
-        if cfg.get("ROLL_DEG", 0) == 0:
+        # FORCE_TOPDOWN opts a ROLL_DEG=0 exercise back into the plain
+        # top-down camera anyway — added 2026-08-20 for
+        # left/right_single_leg_supine_knee_to_chest, whose working motion
+        # (a hip-flexion knee lift) foreshortens to near-invisibility from
+        # the oblique camera's pulled-back, angled-down perspective, but
+        # reads clearly from directly overhead (the knee visibly travels
+        # toward the torso in the top-down footprint). Every existing
+        # ROLL_DEG=0 caller leaves this unset, so behavior there is
+        # unchanged.
+        if cfg.get("ROLL_DEG", 0) == 0 and not cfg.get("FORCE_TOPDOWN", False):
             cam = camera_oblique_supine(plo, phi)
         else:
             cam = camera_topdown(center, phi.z + 3.0, span, cfg.get("ORTHO_SCALE_MULT", 1.15))
