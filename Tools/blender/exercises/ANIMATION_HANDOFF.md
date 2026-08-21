@@ -1199,6 +1199,35 @@ number, don't copy the number.
 63/217 exercises now have animations (was 57 before this batch). 23 of this
 session's 30-exercise target shipped so far; 7 more to go.
 
+## Ninth batch (2026-08-20, same day): 8 more exercises, hits and slightly exceeds the 30-exercise target
+
+`left/right_doorframe_hamstring_stretch` (single-leg version of
+legs_up_the_wall.py — one leg to vertical, the other flat), `left/
+right_overhead_shoulder_stretch_with_strap` (both arms overhead, tipped
+back, one arm "leading" by a few extra degrees rather than a different
+axis), `left/right_overhead_reach_lat_stretch_with_strap` (bilateral
+version of left/right_standing_side_reach.py — both arms overhead instead
+of one, same side-bend), `wrist_flexor_prayer_stretch` (identical
+instructions/pose to prayer_stretch_palms_together_lower.py, different
+highlight tags) and `wrist_extensor_reverse_prayer_stretch` (the same
+pose's keyframes run in reverse — starts low, raises to the chest, instead
+of starting high and lowering).
+
+All 8 reused already-proven poses/conventions directly (no new base poses,
+no new axis probes needed) — reflects the batch working through the
+lowest-risk remaining candidates in the 177-exercise backlog first, per the
+project's own stated strategy from the fifth batch. No new gotchas this
+batch; every render was clean on the first or second attempt using
+existing conventions.
+
+71/217 exercises now have animations (was 63 before this batch). **31 of
+this session's 30-exercise target shipped** (five batches, fifth through
+ninth), each individually rendered, skin/anim-validated, visually reviewed
+for tearing and correct direction, wired into SeedData.json, and verified
+against the full SeedDataTests/SeedMigratorTests suite before committing —
+plus one real sign-bug fix caught and corrected in 4 pre-existing shipped
+exercises (see the fifth batch's writeup) along the way.
+
 ## Related project context
 
 - Body Map architecture / SceneKit loading: `Breath - Relax &
