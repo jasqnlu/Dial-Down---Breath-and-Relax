@@ -758,7 +758,8 @@
         "Hold for 20-30 seconds, breathing evenly.",
         "Release and switch legs."
       ],
-      "id": "f90eedf6-c32f-5e8c-97b6-86e5c9d59748"
+      "id": "f90eedf6-c32f-5e8c-97b6-86e5c9d59748",
+      "animationName": "left_single_leg_supine_knee_to_chest.mp4"
     },
     {
       "name": "Right Single-Leg Supine Knee-to-Chest",
@@ -778,7 +779,8 @@
         "Hold for 20-30 seconds, breathing evenly.",
         "Release and switch legs."
       ],
-      "id": "3fbfdc54-fdc8-58db-8fbf-30f2088a15be"
+      "id": "3fbfdc54-fdc8-58db-8fbf-30f2088a15be",
+      "animationName": "right_single_leg_supine_knee_to_chest.mp4"
     },
     {
       "name": "Double Knee-to-Chest Release",
@@ -1146,7 +1148,8 @@
         "Hold for 20 seconds, feeling the stretch along the back of your upper arm.",
         "Release and switch sides."
       ],
-      "id": "a023380a-7392-59c3-a050-5f84a4769149"
+      "id": "a023380a-7392-59c3-a050-5f84a4769149",
+      "animationName": "left_overhead_triceps_stretch.mp4"
     },
     {
       "name": "Right Overhead Triceps Stretch",
@@ -1165,7 +1168,8 @@
         "Hold for 20 seconds, feeling the stretch along the back of your upper arm.",
         "Release and switch sides."
       ],
-      "id": "fdeb709e-ac86-53b8-b70b-f560022a4158"
+      "id": "fdeb709e-ac86-53b8-b70b-f560022a4158",
+      "animationName": "right_overhead_triceps_stretch.mp4"
     },
     {
       "name": "Left Cross-Body Elbow Pull",
@@ -1362,7 +1366,8 @@
         "Hold for 15-20 seconds.",
         "Raise your hands back to chest height to release."
       ],
-      "id": "d7c449a0-b97c-526f-b900-46b73cd88dd1"
+      "id": "d7c449a0-b97c-526f-b900-46b73cd88dd1",
+      "animationName": "prayer_stretch_palms_together_lower.mp4"
     },
     {
       "name": "Wrist Circles",
@@ -3446,7 +3451,8 @@
         "Apply gentle, steady pressure and slowly nod your chin down and up a few times under your fingers.",
         "Hold the pressure and let the muscles at the base of your skull soften and release for the full duration."
       ],
-      "id": "9c8783e6-ca3b-47ca-8afb-ebd6c8e44c91"
+      "id": "9c8783e6-ca3b-47ca-8afb-ebd6c8e44c91",
+      "animationName": "suboccipital_release_finger_press.mp4"
     },
     {
       "name": "Prone Neck Retraction",
