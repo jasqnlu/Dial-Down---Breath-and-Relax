@@ -2445,7 +2445,8 @@
         "Hold for 15-20 seconds, then raise back overhead."
       ],
       "caution": "Widen your grip on the strap if your shoulders feel tight or pinch.",
-      "id": "ef81f46b-0d5d-5ad4-aa23-40290e8c0363"
+      "id": "ef81f46b-0d5d-5ad4-aa23-40290e8c0363",
+      "animationName": "left_overhead_shoulder_stretch_with_strap.mp4"
     },
     {
       "name": "Right Overhead Shoulder Stretch with Strap",
@@ -2464,7 +2465,8 @@
         "Hold for 15-20 seconds, then raise back overhead."
       ],
       "caution": "Widen your grip on the strap if your shoulders feel tight or pinch.",
-      "id": "52289fee-49a8-58ef-b3e6-50119759227e"
+      "id": "52289fee-49a8-58ef-b3e6-50119759227e",
+      "animationName": "right_overhead_shoulder_stretch_with_strap.mp4"
     },
     {
       "name": "Left Wall Corner Pec Stretch",
@@ -2611,7 +2613,8 @@
         "Feel the stretch travel down your left side and lat.",
         "Hold for 15-20 seconds, then return to center and switch sides."
       ],
-      "id": "99ceb9c2-8e02-5831-b40f-9f8ed0235388"
+      "id": "99ceb9c2-8e02-5831-b40f-9f8ed0235388",
+      "animationName": "left_overhead_reach_lat_stretch_with_strap.mp4"
     },
     {
       "name": "Right Overhead Reach Lat Stretch with Strap",
@@ -2630,7 +2633,8 @@
         "Feel the stretch travel down your right side and lat.",
         "Hold for 15-20 seconds, then return to center and switch sides."
       ],
-      "id": "05d2b699-bd18-526a-8fe7-f7fafb04d67c"
+      "id": "05d2b699-bd18-526a-8fe7-f7fafb04d67c",
+      "animationName": "right_overhead_reach_lat_stretch_with_strap.mp4"
     },
     {
       "name": "Left Extended-Fingers Bicep Stretch",
@@ -2906,7 +2910,8 @@
         "Hold for 20-30 seconds, breathing steadily.",
         "Slide away from the frame to release and switch sides."
       ],
-      "id": "cb41baa6-2e3a-54e7-b29d-67e5e83b61f4"
+      "id": "cb41baa6-2e3a-54e7-b29d-67e5e83b61f4",
+      "animationName": "left_doorframe_hamstring_stretch.mp4"
     },
     {
       "name": "Right Doorframe Hamstring Stretch",
@@ -2925,7 +2930,8 @@
         "Hold for 20-30 seconds, breathing steadily.",
         "Slide away from the frame to release and switch sides."
       ],
-      "id": "e74b058a-d3bf-53bb-a4f2-25012f534ea5"
+      "id": "e74b058a-d3bf-53bb-a4f2-25012f534ea5",
+      "animationName": "right_doorframe_hamstring_stretch.mp4"
     },
     {
       "name": "Runner's Calf Stretch (Staggered Stance)",
@@ -3310,7 +3316,8 @@
         "Stop once you feel a stretch along the inside of your forearms and wrists, keeping your elbows lifted and shoulders relaxed.",
         "Hold, breathing evenly, then release."
       ],
-      "id": "4ee1b851-84cd-4e92-b1b4-b2c182d00840"
+      "id": "4ee1b851-84cd-4e92-b1b4-b2c182d00840",
+      "animationName": "wrist_flexor_prayer_stretch.mp4"
     },
     {
       "name": "Wrist Extensor Reverse-Prayer Stretch",
@@ -3330,7 +3337,8 @@
         "Stop once you feel a stretch along the top of your forearms and wrists.",
         "Hold, breathing evenly, then release."
       ],
-      "id": "83583f01-6ec5-413b-a4c7-34e4f03b4e22"
+      "id": "83583f01-6ec5-413b-a4c7-34e4f03b4e22",
+      "animationName": "wrist_extensor_reverse_prayer_stretch.mp4"
     },
     {
       "name": "Left Plantar Fascia Stretch (Toe Raise)",
