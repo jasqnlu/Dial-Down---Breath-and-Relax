@@ -800,7 +800,8 @@
         "Rock gently side to side if it feels good, massaging the lower back.",
         "Hold for 20-30 seconds and breathe deeply."
       ],
-      "id": "a5df61e0-1cc8-547c-be7d-089f1937cf5c"
+      "id": "a5df61e0-1cc8-547c-be7d-089f1937cf5c",
+      "animationName": "double_knee_to_chest_release.mp4"
     },
     {
       "name": "Pelvic Tilt",
@@ -822,7 +823,8 @@
         "Release back to a neutral arch.",
         "Repeat 10-12 times, moving slowly with your breath."
       ],
-      "id": "c23cf278-0a5a-5ae9-b5ec-b0ea28132726"
+      "id": "c23cf278-0a5a-5ae9-b5ec-b0ea28132726",
+      "animationName": "pelvic_tilt.mp4"
     },
     {
       "name": "Seated Forward Fold",
@@ -844,7 +846,8 @@
         "Roll back up slowly to sitting."
       ],
       "caution": "Keep a slight bend in the knees if your hamstrings or lower back are tight.",
-      "id": "8587ef8f-e393-5b3b-863e-40f89d0c70da"
+      "id": "8587ef8f-e393-5b3b-863e-40f89d0c70da",
+      "animationName": "seated_forward_fold.mp4"
     },
     {
       "name": "Happy Baby Pose",
@@ -926,7 +929,8 @@
         "Hold for 15-20 seconds without collapsing forward.",
         "Return to standing and repeat on the other side."
       ],
-      "id": "3cb3752a-445d-580a-8c19-5939a5555546"
+      "id": "3cb3752a-445d-580a-8c19-5939a5555546",
+      "animationName": "left_standing_side_reach.mp4"
     },
     {
       "name": "Right Standing Side Reach",
@@ -946,7 +950,8 @@
         "Hold for 15-20 seconds without collapsing forward.",
         "Return to standing and repeat on the other side."
       ],
-      "id": "d9c7306b-f672-591b-93dc-98411cc9a1f8"
+      "id": "d9c7306b-f672-591b-93dc-98411cc9a1f8",
+      "animationName": "right_standing_side_reach.mp4"
     },
     {
       "name": "Left Standing Side Bend",
@@ -1908,7 +1913,8 @@
         "Slowly roll back up to standing, one vertebra at a time."
       ],
       "caution": "Roll up slowly to avoid dizziness, and keep a soft bend in the knees if your back is sensitive.",
-      "id": "637d7399-1aee-55a3-918b-42ec7367afa3"
+      "id": "637d7399-1aee-55a3-918b-42ec7367afa3",
+      "animationName": "standing_hamstring_stretch.mp4"
     },
     {
       "name": "Left Seated Hamstring Stretch",

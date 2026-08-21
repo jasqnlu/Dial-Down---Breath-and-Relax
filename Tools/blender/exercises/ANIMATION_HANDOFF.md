@@ -1145,6 +1145,28 @@ only one leg moves).
 
 51/217 exercises now have animations (was 45 before this batch).
 
+## Seventh batch (2026-08-20, same day): 6 more exercises, 17 of this session's 30-exercise target so far
+
+Continues this session's 30-exercise push (17 shipped across batches
+five-seven, all reviewed and committed individually — see the earlier
+batch sections for the first 11; 13 more to go). This batch: `double_knee_to_chest_release`
+(symmetric version of the single-leg pair — deliberately kept the peak hip
+fold at -85, not the single-leg script's -100, since the -100 ceiling was
+only proven for an ASYMMETRIC fold and this is the SYMMETRIC case the
+rotation audit already found tears at -90), `pelvic_tilt` (a genuinely
+subtle motion — animated via a small oscillating `spine` pitch instead of
+the `hips` root bone, since rotating the root would move the whole figure
+and read as a much bigger motion than a real pelvic tilt),
+`seated_forward_fold` (first `run_seated` exercise with STRAIGHT legs —
+`shin` held at 0 instead of the family's usual +90 fold),
+`standing_hamstring_stretch` (same shape as
+`standing_forward_fold_ragdoll.py`, shallower), `left/
+right_standing_side_reach` (side-bend axis from the standing-side-bend
+family + an overhead arm reach — the arm needs no adduction of its own
+since it inherits the chest's lateral bend as a child bone).
+
+57/217 exercises now have animations (was 51 before this batch).
+
 ## Related project context
 
 - Body Map architecture / SceneKit loading: `Breath - Relax &
