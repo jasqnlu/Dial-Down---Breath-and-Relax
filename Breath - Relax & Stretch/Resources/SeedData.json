@@ -3446,7 +3446,8 @@
         "Hold, feeling a long stretch down your left side from armpit to hip.",
         "Return to center slowly and repeat on the other side on another round."
       ],
-      "id": "9397f4c9-13ac-408a-bc19-6d4ef78018e8"
+      "id": "9397f4c9-13ac-408a-bc19-6d4ef78018e8",
+      "animationName": "left_standing_crescent_moon_side_stretch.mp4"
     },
     {
       "name": "Right Standing Crescent Moon Side Stretch",
@@ -3465,7 +3466,8 @@
         "Hold, feeling a long stretch down your right side from armpit to hip.",
         "Return to center slowly and repeat on the other side on another round."
       ],
-      "id": "889853fe-0107-4036-b706-bdb094f0e595"
+      "id": "889853fe-0107-4036-b706-bdb094f0e595",
+      "animationName": "right_standing_crescent_moon_side_stretch.mp4"
     },
     {
       "name": "Left Cow-Face Arm Stretch",
@@ -3544,7 +3546,8 @@
         "Hold the retracted position for a couple of seconds, feeling a gentle stretch, then release slightly.",
         "Repeat the glide-and-release rhythm slowly for the full duration."
       ],
-      "id": "c18e7619-bbe4-4a01-a718-7ca0a1bcd12a"
+      "id": "c18e7619-bbe4-4a01-a718-7ca0a1bcd12a",
+      "animationName": "prone_neck_retraction.mp4"
     },
     {
       "name": "Left Isometric Neck Side Press",
@@ -3564,7 +3567,9 @@
         "Repeat the press-and-release for the full duration, then switch sides on another round."
       ],
       "caution": "Use only mild, steady pressure \u2014 this is a gentle isometric hold, not a maximal push.",
-      "id": "b7721974-7206-4913-b9d2-8d4f41db1034"
+      "id": "b7721974-7206-4913-b9d2-8d4f41db1034",
+      "animationName": "left_isometric_neck_side_press.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Right Isometric Neck Side Press",
@@ -3584,7 +3589,9 @@
         "Repeat the press-and-release for the full duration, then switch sides on another round."
       ],
       "caution": "Use only mild, steady pressure \u2014 this is a gentle isometric hold, not a maximal push.",
-      "id": "4a1b7329-be46-4b36-a2b5-4d0f06c15b78"
+      "id": "4a1b7329-be46-4b36-a2b5-4d0f06c15b78",
+      "animationName": "right_isometric_neck_side_press.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Standing Chest Expansion Stretch",
@@ -3624,7 +3631,8 @@
         "Hold, breathing deeply into your ribcage, then press back up slowly."
       ],
       "caution": "Skip if you have knee or shoulder pain that kneeling or overhead reaching aggravates.",
-      "id": "be4ec598-b553-4d09-b4af-ff3721e3765a"
+      "id": "be4ec598-b553-4d09-b4af-ff3721e3765a",
+      "animationName": "kneeling_chest_stretch_on_chair.mp4"
     },
     {
       "name": "Doorway Overhead Chest Stretch",
@@ -3643,7 +3651,8 @@
         "Hold, then step back to release and reset your stance before repeating."
       ],
       "caution": "Stop if you feel pinching in the front of the shoulder rather than a stretch in the chest.",
-      "id": "c32f1227-61c8-4943-b021-9c6cfb607dae"
+      "id": "c32f1227-61c8-4943-b021-9c6cfb607dae",
+      "animationName": "doorway_overhead_chest_stretch.mp4"
     },
     {
       "name": "Seated Thoracic Extension Over Chair Back",
@@ -3663,7 +3672,8 @@
         "Hold for a few breaths, feeling the stretch across your chest and upper spine, then curl back up slowly."
       ],
       "caution": "Move into the extension gradually and stop if you feel any sharp pain in your lower back.",
-      "id": "0f135f8f-fcbc-4894-b8cf-a0fc94b2f9c4"
+      "id": "0f135f8f-fcbc-4894-b8cf-a0fc94b2f9c4",
+      "animationName": "seated_thoracic_extension_over_chair_back.mp4"
     },
     {
       "name": "Left Pigeon Pose Hip Stretch",
