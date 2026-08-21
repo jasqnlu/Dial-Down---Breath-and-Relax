@@ -305,7 +305,14 @@ def add_armature(obj, arm_obj):
     obj.matrix_parent_inverse = arm_obj.matrix_world.inverted()
 
 
-def build_figure(meshes, arm_obj, bone_segs, node_map, worked_keywords):
+def build_figure(meshes, arm_obj, bone_segs, node_map, worked_keywords,
+                  blend_top_k=BLEND_TOP_K, blend_power=BLEND_POWER):
+    """`blend_top_k`/`blend_power` override the module defaults for this
+    build only — added 2026-08-20 for `run_supine`'s ROLL_DEG=0 family,
+    whose extreme hip fold needs a wider, softer blend than every other
+    exercise's joints ever have (see `run_supine`'s docstring). Left at the
+    module defaults for every other caller, so this is a no-op everywhere
+    else."""
     mat_neutral = make_material("MuscleNeutral", COL_NEUTRAL)
     mat_highlight = make_material("MuscleWorked", COL_HIGHLIGHT)
     mat_skin = make_material("HeadSkin", COL_SKIN)
@@ -344,8 +351,8 @@ def build_figure(meshes, arm_obj, bone_segs, node_map, worked_keywords):
         for v in obj.data.vertices:
             p = v.co
             dl = sorted(((p - _closest_on_segment(p, h, t)).length, n) for n, h, t in segs)
-            chosen = dl[:BLEND_TOP_K]
-            ws = [(n, 1.0 / (d ** BLEND_POWER + 1e-9)) for d, n in chosen]
+            chosen = dl[:blend_top_k]
+            ws = [(n, 1.0 / (d ** blend_power + 1e-9)) for d, n in chosen]
             s = sum(w for _n, w in ws) or 1.0
             for n, w in ws:
                 vgs[n].add([v.index], w / s, 'REPLACE')
@@ -599,6 +606,80 @@ def camera_topdown(center, height_above, span, ortho_scale_mult=1.15):
     bpy.context.scene.camera = cam
     cam.location = Vector((center.x, center.y, height_above))
     cam.rotation_euler = Euler((0, 0, 0))
+    return cam
+
+
+def camera_oblique_supine(plo, phi, xfrac=0.0, yfrac=0.5, hfrac=1.05,
+                           dist_mult=1.3, shift_y=-0.10, lens=40):
+    """Camera for a FLAT (ROLL_DEG=0) supine figure: elevated and pulled back
+    beyond the feet, angled down at the body, instead of `camera_topdown`'s
+    pure top-down shot.
+
+    Added 2026-08-19 after `camera_topdown` shipped and was reported as
+    looking like a standing T-pose, not someone lying down — true bug, not a
+    misread: an orthographic camera looking straight down at a lying figure
+    is PIXEL-IDENTICAL in silhouette to a front view of a standing figure
+    (this is a real geometric fact, not something posing or lighting can
+    paper over), so nothing in the shot ever told the viewer "this is an
+    overhead view of someone horizontal." A perspective camera pulled back
+    and angled introduces real foreshortening (feet nearer/larger, head
+    further/smaller) that a purely top-down shot cannot.
+
+    Tuning notes (see ANIMATION_HANDOFF.md's "reads like standing" section
+    for the rejected alternatives — a still-life-flat colored floor plane
+    behind the figure was tried and rejected: with no perspective it's just
+    as ambiguous, reading as a colored backdrop, not a mat underfoot):
+    - `xfrac` (sideways pull, as a fraction of body length) DEFAULTS TO 0 —
+      centered directly behind the feet, no azimuth swing. First shipped at
+      0.2 (a wide 0.5 was tried and rejected first: it views the
+      windshield-wipers knee-swing nearly end-on, foreshortening the actual
+      exercise motion to near-invisibility) because it read as more
+      obviously 3D than dead-center — but 0.2 was then reported as looking
+      "diagonal," like the figure was propped up at an angle instead of
+      lying flat: true, an off-axis azimuth combined with the elevation tilt
+      rotates the body's projected long axis away from vertical in-frame.
+      0 keeps the head-to-feet axis vertical in the portrait frame (matching
+      every non-supine exercise's convention) while the elevation tilt alone
+      still supplies enough foreshortening to read as lying down, not
+      standing — and the knee-swing, though viewed more head-on than at 0.2,
+      is still visible (confirmed by diffing a rest/peak render pair, not
+      assumed). If a future exercise's own motion needs more perpendicular
+      visibility than 0 gives, a SMALL nonzero xfrac (well under 0.2) is the
+      knob to reach for, not a return to 0.2 — re-check the diagonal read
+      doesn't come back.
+    - `yfrac`/`hfrac` (pull-back beyond the feet, height above) set the
+      elevation angle; `dist_mult` (of body length) sets how far back,
+      i.e. how much of the frame the figure fills — tuned against actual
+      rendered pixel bounding boxes (not eyeballed) to stay unclipped at
+      512x640 with the figure filling most of the frame.
+    - `shift_y` (Blender's camera sensor shift, not a second pose/position
+      change) recenters the figure vertically: the natural look-at point
+      renders low in frame with `hfrac`>1, and shift is a free vertical nudge
+      that doesn't reintroduce the framing math above.
+    - Paired with a smaller arm angle in the exercise's own `_ARMS_T` (this
+      function does not touch pose) — the previous wide horizontal T is
+      itself a "standing reference pose" visual cue independent of camera
+      angle, and also was the dominant term forcing the camera back (widest
+      dimension of the whole figure), shrinking everything else in frame.
+    """
+    center = Vector(((plo.x + phi.x) / 2, (plo.y + phi.y) / 2, (plo.z + phi.z) / 2))
+    body_len = phi.y - plo.y
+    body_h = phi.z - plo.z
+    dir_vec = Vector((body_len * xfrac, -body_len * yfrac, body_h * hfrac))
+    dir_unit = dir_vec.normalized()
+    look_target = Vector((center.x, center.y, phi.z - body_h * 0.15))
+
+    cam_data = bpy.data.cameras.new("Cam")
+    cam_data.type = 'PERSP'
+    cam_data.lens = lens
+    cam_data.shift_y = shift_y
+    cam = bpy.data.objects.new("Cam", cam_data)
+    bpy.context.collection.objects.link(cam)
+    bpy.context.scene.camera = cam
+
+    cam.location = look_target + dir_unit * (body_len * dist_mult)
+    direction = look_target - cam.location
+    cam.rotation_euler = direction.to_track_quat('-Z', 'Y').to_euler()
     return cam
 
 
@@ -1034,8 +1115,22 @@ def run_supine(cfg):
         meshes = import_obj(cfg["APP_OBJ"])
         lo, hi = normalize_orientation(meshes)
         arm_obj, bone_segs = build_armature(lo, hi)
+        # ROLL_DEG=0 (flat on the back) folds the hip further than any other
+        # exercise's joints (thigh local-X composes on top of the -90 base
+        # pitch already on hips) — the default blend (BLEND_TOP_K=2,
+        # BLEND_POWER=4.0, tuned for ordinary single-joint folds) tears at
+        # the hip crease under that compound fold no matter the angle tried.
+        # A wider, softer blend (more candidate bones, gentler falloff)
+        # closes most of it — see ANIMATION_HANDOFF.md's "Getting closer to
+        # a real 90-degree bent knee" for the angle-vs-blend sweep this came
+        # from. Still not perfect at a literal -90, which is why the shipped
+        # fold is -75, not -90.
+        if cfg.get("ROLL_DEG", 0) == 0:
+            blend_kwargs = dict(blend_top_k=3, blend_power=1.5)
+        else:
+            blend_kwargs = {}
         skin, muscle_objs, mat_skin, counts = build_figure(
-            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"])
+            meshes, arm_obj, bone_segs, node_map, cfg["WORKED_KEYWORDS"], **blend_kwargs)
         log(f"muscles: {len(muscle_objs)}  (mapped={counts['mapped']} "
             f"fallback={counts['fallback']}  highlight={counts['highlight']} "
             f"neutral={counts['neutral']}  mitts={counts['mitts']})")
@@ -1075,7 +1170,14 @@ def run_supine(cfg):
         # its render-engine/resolution/shading side effects are needed.
         stray_cam, _cz = setup_render(lo, hi, cfg.get("ORTHO_SCALE_MULT", 1.15))
         bpy.data.objects.remove(stray_cam, do_unlink=True)
-        cam = camera_topdown(center, phi.z + 3.0, span, cfg.get("ORTHO_SCALE_MULT", 1.15))
+        # Pure top-down only reads correctly once the figure is already
+        # visually distinguished from standing by a side roll (chest opener,
+        # sleeper stretch — ROLL_DEG != 0). Flat-on-the-back (ROLL_DEG == 0)
+        # needs the oblique camera instead — see its docstring for why.
+        if cfg.get("ROLL_DEG", 0) == 0:
+            cam = camera_oblique_supine(plo, phi)
+        else:
+            cam = camera_topdown(center, phi.z + 3.0, span, cfg.get("ORTHO_SCALE_MULT", 1.15))
         render_all_supine(cam, out_dir, exercise, peak_frame)
         render_demo_video_supine(cam, out_dir, exercise, cfg["VIDEO_NAME"])
         glb_path, blend_path = export(out_dir, exercise)
