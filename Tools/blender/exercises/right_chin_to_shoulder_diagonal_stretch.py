@@ -7,8 +7,10 @@ demo mp4 (encode separately with Tools/blender/encode_mp4.swift).
 
 Fourth batch (Tier A of the rotation audit), exercise #4. Mirror of
 left_chin_to_shoulder_diagonal_stretch.py — see that script's docstring for
-the axis reasoning. Chin turns toward the LEFT armpit here (-Y) while nodding
-down (+X, unmirrored: pitch is in the sagittal plane and has no side).
+the axis reasoning. Chin turns toward the LEFT armpit here (+Y, corrected
+2026-08-20 — see the left script's docstring for the sign-correction
+derivation) while nodding down (+X, unmirrored: pitch is in the sagittal
+plane and has no side).
 
 Only the twist axis flips sign between the pair. Per the third batch's gotcha,
 confirm the two renders are genuinely mirrored rather than identical by
@@ -36,9 +38,9 @@ WORKED_KEYWORDS = ("back neck", "right trapezius")
 
 POSES = {
     0: {},
-    30: {"head": (r(15), r(-20), 0)},
-    60: {"head": (r(30), r(-40), 0)},
-    90: {"head": (r(30), r(-40), 0)},
+    30: {"head": (r(15), r(20), 0)},
+    60: {"head": (r(30), r(40), 0)},
+    90: {"head": (r(30), r(40), 0)},
     120: {},
 }
 

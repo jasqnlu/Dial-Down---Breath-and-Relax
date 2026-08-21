@@ -7,9 +7,9 @@ demo mp4 (encode separately with Tools/blender/encode_mp4.swift).
 
 Fourth batch (Tier A of the rotation audit), exercise #6. Mirror of
 left_scalene_neck_stretch.py — see that script's docstring for the full
-three-axis derivation. Head tilts LEFT (-Z) with the chin rotating slightly
-up (-X, unmirrored: pitch is sagittal and has no side) and toward the left
-(-Y).
+three-axis derivation and its 2026-08-20 sign correction. Head tilts LEFT
+(-Z) with the chin rotating slightly up (-X, unmirrored: pitch is sagittal
+and has no side) and toward the left (+Y).
 
 Note the asymmetry in which axes flip: Z and Y are lateral/rotational and
 mirror, X is sagittal and does NOT. Getting that wrong would leave the pair
@@ -36,9 +36,9 @@ WORKED_KEYWORDS = ("front neck", "right trapezius")
 
 POSES = {
     0: {},
-    30: {"head": (r(-4), r(-8), r(-14))},
-    60: {"head": (r(-8), r(-15), r(-30))},
-    90: {"head": (r(-8), r(-15), r(-30))},
+    30: {"head": (r(-4), r(8), r(-14))},
+    60: {"head": (r(-8), r(15), r(-30))},
+    90: {"head": (r(-8), r(15), r(-30))},
     120: {},
 }
 

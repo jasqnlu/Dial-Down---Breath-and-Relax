@@ -315,7 +315,8 @@
         "Release slowly and return to neutral."
       ],
       "caution": "Use only the light weight of your hand - never yank the head. Avoid with any neck injury.",
-      "id": "b1b2a7ee-8ef8-57cb-bb49-f919c19d5f1c"
+      "id": "b1b2a7ee-8ef8-57cb-bb49-f919c19d5f1c",
+      "animationName": "left_levator_scapulae_stretch.mp4"
     },
     {
       "name": "Right Levator Scapulae Stretch",
@@ -335,7 +336,8 @@
         "Release slowly and return to neutral."
       ],
       "caution": "Use only the light weight of your hand - never yank the head. Avoid with any neck injury.",
-      "id": "c883a986-76f7-51df-893d-958de71223df"
+      "id": "c883a986-76f7-51df-893d-958de71223df",
+      "animationName": "right_levator_scapulae_stretch.mp4"
     },
     {
       "name": "Left Upper Trapezius Stretch",
@@ -355,7 +357,8 @@
         "Release slowly and repeat on the other side another time."
       ],
       "caution": "Keep the pull light and slow. Skip if you have a neck injury, recent whiplash, or numbness in the arms.",
-      "id": "8700a0d3-c8b3-507b-897b-91c038606075"
+      "id": "8700a0d3-c8b3-507b-897b-91c038606075",
+      "animationName": "left_upper_trapezius_stretch.mp4"
     },
     {
       "name": "Right Upper Trapezius Stretch",
@@ -375,7 +378,8 @@
         "Release slowly and repeat on the other side another time."
       ],
       "caution": "Keep the pull light and slow. Skip if you have a neck injury, recent whiplash, or numbness in the arms.",
-      "id": "2ea3a37c-fc10-5c44-802b-8bbda678bd9a"
+      "id": "2ea3a37c-fc10-5c44-802b-8bbda678bd9a",
+      "animationName": "right_upper_trapezius_stretch.mp4"
     },
     {
       "name": "Shoulder Roll",
@@ -3518,7 +3522,8 @@
         "Roll your shoulders back and down while lifting your chest toward the ceiling.",
         "Hold, feeling the stretch open across your chest and shoulders, then release slowly."
       ],
-      "id": "6d280825-f268-470f-bc47-d703dc77c490"
+      "id": "6d280825-f268-470f-bc47-d703dc77c490",
+      "animationName": "standing_chest_expansion_stretch.mp4"
     },
     {
       "name": "Kneeling Chest Stretch on Chair",
