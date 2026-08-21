@@ -1802,7 +1802,8 @@
         "Walk your hands back and roll up slowly to stand."
       ],
       "caution": "Bend your knees slightly if you feel strain in your lower back or hamstrings.",
-      "id": "59fa58fe-0bf0-55af-83d4-6034062d4bce"
+      "id": "59fa58fe-0bf0-55af-83d4-6034062d4bce",
+      "animationName": "wide_legged_forward_fold.mp4"
     },
     {
       "name": "Left Standing Quad Stretch",
@@ -2053,7 +2054,9 @@
         "Hold for 20-30 seconds, then lower your knees to release."
       ],
       "caution": "Bend the knees generously if your hamstrings are tight - a flat back matters more than straight legs.",
-      "id": "ce42d033-68ee-5f06-b552-96235237c751"
+      "id": "ce42d033-68ee-5f06-b552-96235237c751",
+      "animationName": "downward_facing_dog.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Legs Up the Wall",
@@ -2093,7 +2096,8 @@
         "Lean toward the wall until you feel a stretch in the back of your right calf.",
         "Hold for 20-30 seconds, then switch legs."
       ],
-      "id": "4cfafc77-a187-565e-b72d-55345f56e691"
+      "id": "4cfafc77-a187-565e-b72d-55345f56e691",
+      "animationName": "calf_stretch_at_wall_straight_knee.mp4"
     },
     {
       "name": "Bent-Knee Wall Calf Stretch (Soleus)",
@@ -2112,7 +2116,8 @@
         "Lean gently into the wall, feeling the stretch lower in the calf near the Achilles.",
         "Hold for 20-30 seconds, then switch legs."
       ],
-      "id": "5e3c2914-5ab7-579a-aa6f-f89a0003608a"
+      "id": "5e3c2914-5ab7-579a-aa6f-f89a0003608a",
+      "animationName": "bent_knee_wall_calf_stretch_soleus.mp4"
     },
     {
       "name": "Left Seated Calf Stretch with Towel",
@@ -2997,7 +3002,8 @@
         "Hold for 20 seconds, then switch stance to stretch the left calf.",
         "Repeat 2 rounds per side."
       ],
-      "id": "18a22579-a7cf-57f9-8683-cd7624572be7"
+      "id": "18a22579-a7cf-57f9-8683-cd7624572be7",
+      "animationName": "runners_calf_stretch_staggered_stance.mp4"
     },
     {
       "name": "Left Toe Spread & Stretch",
@@ -3879,7 +3885,9 @@
         "Push your left hip out to the side as you lean, feeling the stretch along the outside of your left thigh.",
         "Hold, then return to center slowly and switch sides on another round."
       ],
-      "id": "a345946b-9db3-47f8-a748-0d3373745993"
+      "id": "a345946b-9db3-47f8-a748-0d3373745993",
+      "animationName": "standing_it_band_side_stretch_left.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Standing IT Band Side Stretch (Right)",
@@ -3898,7 +3906,9 @@
         "Push your right hip out to the side as you lean, feeling the stretch along the outside of your right thigh.",
         "Hold, then return to center slowly and switch sides on another round."
       ],
-      "id": "6f1b97a9-e7f2-418b-a622-0501e6c3cb13"
+      "id": "6f1b97a9-e7f2-418b-a622-0501e6c3cb13",
+      "animationName": "standing_it_band_side_stretch_right.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Dynamic Standing Leg Swings",
