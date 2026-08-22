@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 /// One stop on the coach-mark tour. `id` matches a `.tourAnchor(id:)` tag
 /// on the real view being called out (or is used purely as a lookup key
@@ -100,4 +101,90 @@ extension TourStep {
         TourStep(id: "profile.restartTour",
                  title: "Come Back Anytime", message: "Restart this tour whenever you like from here. That's the tour — enjoy!"),
     ]
+}
+
+/// Drives the coach-mark tour: which step is current, and how
+/// Back/Next/Skip/Restart move through the 19-step catalog. Pure state —
+/// `TourSpotlightOverlay` renders whatever `currentStep` says, and
+/// `HomeView`/`ProfileView` read it to drive their own tab state.
+final class TourCoordinator: ObservableObject {
+    @Published private(set) var isActive = false
+    @Published private(set) var currentStepIndex = 0
+
+    let steps: [TourStep]
+
+    init(steps: [TourStep] = TourStep.allSteps) {
+        self.steps = steps
+    }
+
+    var currentStep: TourStep? {
+        steps.indices.contains(currentStepIndex) ? steps[currentStepIndex] : nil
+    }
+
+    var stepNumber: Int { currentStepIndex + 1 }
+    var totalSteps: Int { steps.count }
+
+    /// True on the first step of the tour, or any step that switches tabs —
+    /// `back()` refuses to walk past this, so it never re-triggers a
+    /// backward tab switch.
+    var isFirstStepInSection: Bool {
+        guard currentStepIndex > 0 else { return true }
+        return steps[currentStepIndex].tabIndex != nil
+    }
+
+    func restart() {
+        currentStepIndex = 0
+        isActive = true
+    }
+
+    func advance() {
+        guard isActive else { return }
+        if currentStepIndex >= steps.count - 1 {
+            finish()
+        } else {
+            currentStepIndex += 1
+        }
+    }
+
+    func back() {
+        guard isActive, !isFirstStepInSection else { return }
+        currentStepIndex -= 1
+    }
+
+    /// Jumps to the next section's first step (the next step with a
+    /// non-nil tabIndex different from the current section's), or finishes
+    /// the tour if already in the last section.
+    func skipToNextSection() {
+        guard isActive else { return }
+        let currentTab = sectionTab(atOrBefore: currentStepIndex)
+        let remaining = steps[(currentStepIndex + 1)...]
+        if let nextIndex = remaining.firstIndex(where: { $0.tabIndex != nil && $0.tabIndex != currentTab }) {
+            currentStepIndex = nextIndex
+        } else {
+            finish()
+        }
+    }
+
+    func finish() {
+        isActive = false
+    }
+
+    /// Real views call this when the user performs the action an
+    /// interactive step is waiting for. No-op unless the current step is
+    /// interactive and its id matches — so a stray call from an unrelated
+    /// screen, or a call after the tour already moved on, does nothing.
+    func notifyInteraction(id: String) {
+        guard isActive, let step = currentStep, step.isInteractive, step.id == id else { return }
+        advance()
+    }
+
+    /// Walks backward from `index` to the most recent step that declared a
+    /// tabIndex — needed because most steps in a section (including both
+    /// interactive body-map steps) carry `tabIndex == nil`.
+    private func sectionTab(atOrBefore index: Int) -> Int? {
+        for i in stride(from: index, through: 0, by: -1) {
+            if let tab = steps[i].tabIndex { return tab }
+        }
+        return nil
+    }
 }
