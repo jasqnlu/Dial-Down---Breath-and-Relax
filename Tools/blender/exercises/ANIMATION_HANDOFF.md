@@ -1301,3 +1301,88 @@ exercises (see the fifth batch's writeup) along the way.
   in this app's mesh, which was verified against `skinmuscle_node_names.json`
   (269 nodes, layers = skin/muscle only). Broader video-sourcing analysis:
   `docs/superpowers/plans/2026-07-12-exercise-video-animation.md`.
+
+## Full animation-vs-instructions audit (2026-08-21): 2 real bugs found and fixed, most flags were mosaic misreads
+
+Asked to check all 131 shipped animations against their exercise's written
+instructions. Ran it as 6 parallel review agents (one per ~22-exercise
+slice), each given a low-res 5x4 frame-grid contact sheet per clip (ffmpeg
+`select`+`tile`, sampling the whole 4s loop into one image) plus the
+exercise's instructions, flagging anything that looked directionally or
+anatomically wrong. Got back ~20 flagged exercises, including an apparent
+family-wide "Right variant bends the same way as Left instead of
+mirroring" bug across the standing side-lean family.
+
+**Before touching any code, re-verified every flag against clean single
+full-resolution frames extracted directly from the shipped mp4** (not the
+mosaic) — and against the dedicated `_peak_front.png`/`_peak_demo.png`
+renders already sitting in `generated/exercises/` where available. This
+caught that **the mosaic's 200px-wide tiles are not reliable for left/right
+or direction judgments**: of ~20 flags, only 2 were real bugs. False
+positives included the "Right Standing Side Bend/Crescent Moon/Side Reach
+not mirrored" claim (checked with clean single-frame stills of both
+variants side by side — they ARE correctly mirrored, matching their pose
+scripts' documented opposite-sign math), "Left/Right Seated Spinal Twist
+twisting backward" (the code's signs match the twice-verified `-Y=right,
++Y=left` convention exactly; the visual read was confused by the pair
+using genuinely different camera azimuths, 315 vs 45), "Standing
+Crossed-Leg Fold shows no motion" (it does — a full forward hinge, just
+subtle-looking at mosaic thumbnail res since the legs stay together),
+"Left Plantar Fascia crosses the wrong leg" (correctly mirrored on
+inspection), and several "missing highlight" claims (Left/Right Upper
+Trapezius, Neck Flexion, Right Supine Figure-4) where the highlight is
+real but small/partially occluded from that camera angle, not absent.
+**Lesson: a low-res contact sheet is fine for triage but not a verdict —
+re-check any flagged left/right or highlight-visibility claim against a
+full-res single frame (or the dedicated peak renders) before writing a
+line of fix code.**
+
+**Bug 1 (confirmed, fixed): `FORCE_TOPDOWN` exercises inherited the exact
+"reads as standing, not lying down" defect that `camera_oblique_supine`
+was built to fix.** The 2026-08-19 fix (see above) replaced
+`camera_topdown` with `camera_oblique_supine` for the ROLL_DEG==0 family
+— but only for callers that leave `FORCE_TOPDOWN` unset.
+`double_knee_to_chest_release`, `happy_baby_pose`, and
+`left/right_single_leg_supine_knee_to_chest` explicitly opt back into
+`camera_topdown` (added 2026-08-20, before the "reads as standing" defect
+in that exact camera was diagnosed) to keep their hip-flexion knee-lift
+legible, since the oblique camera's docstring already warns it foreshortens
+that motion. Result: clean single-frame extracts of all 4 showed an
+apparently static, standing figure with hands at its sides — because
+`camera_topdown` is PURE ORTHOGRAPHIC straight down, which is
+pixel-identical in silhouette to a standing front view (the same real
+geometric fact documented in `camera_oblique_supine`'s own docstring).
+**Fix:** added a third branch in `run_supine` — `ROLL_DEG==0 and
+FORCE_TOPDOWN` now calls `camera_oblique_supine(plo, phi, xfrac=0.0,
+yfrac=0.15, hfrac=2.6, dist_mult=1.0)`, a steep-but-PERSPECTIVE camera
+(much higher/closer than the default oblique shot). Perspective
+foreshortening breaks the orthographic "identical to standing" degeneracy
+while staying close enough to top-down that the knee-to-chest travel is
+still clearly visible frame-to-frame. `camera_topdown` itself is
+untouched — still correct and unchanged for the ROLL_DEG!=0 (rolled,
+side-lying) family, where the roll already disambiguates lying from
+standing. Re-rendered and re-encoded all 4 clips; all now clearly read as
+an overhead view of a folded/lying figure, with visible knee travel
+between rest and peak. Full `SeedDataTests`/`SeedMigratorTests` suite still
+green (asset-only change, no SeedData schema touched).
+
+**Bug 2 (confirmed, fixed): `right_step_edge_calf_drop_stretch`'s highlight
+was real but invisible from its own camera.** This exercise's pose has no
+leg divergence at all (both legs stay in the same straight standing
+position — no independent ankle joint to animate the actual heel-drop, see
+the left script's docstring). Viewed in the shared `CAMERA_AZIMUTH = 90`
+side profile (copied verbatim from the left script), the two legs project
+almost exactly on top of each other, and whichever leg is nearer the camera
+fully occludes the far one. The left script happened to ship with its own
+target leg (Left Calves) as the near leg; the right script inherited the
+same azimuth unmirrored, so the Right Calves highlight — confirmed present
+in the render log (`highlight=6`) and visible in the default
+`peak_front.png` — ended up on the hidden far leg in the actual demo
+camera. Fixed by mirroring `CAMERA_AZIMUTH` to `-90`. Re-rendered,
+re-encoded, and re-verified: the right calf highlight is now clearly
+visible in the shipped clip. **Lesson for any future single-leg,
+same-static-pose exercise: a shared azimuth between L/R variants is only
+safe when the working leg is posed distinctly from the resting one (as in
+quad stretch, hamstring stretch, etc.); when both legs stay in an identical
+pose, the azimuth itself must be mirrored or the near leg will always hide
+whichever target happens to be on the far side.**

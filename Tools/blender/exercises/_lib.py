@@ -1183,8 +1183,28 @@ def run_supine(cfg):
         # toward the torso in the top-down footprint). Every existing
         # ROLL_DEG=0 caller leaves this unset, so behavior there is
         # unchanged.
+        #
+        # BUG FOUND 2026-08-21 (animation-vs-instructions audit): FORCE_TOPDOWN
+        # opted these exercises into `camera_topdown` itself, not just "a
+        # top-down angle" — and camera_topdown is PURE ORTHOGRAPHIC straight
+        # down, which camera_oblique_supine's own docstring already documents
+        # as "PIXEL-IDENTICAL in silhouette to a front view of a standing
+        # figure" (a real geometric fact, proven and fixed for the
+        # ROLL_DEG==0-without-FORCE_TOPDOWN family on 2026-08-19). Every
+        # FORCE_TOPDOWN clip inherited that exact "reads as standing, not
+        # lying down" defect the 2026-08-19 fix was supposed to eliminate
+        # project-wide. Fix: a steep-but-PERSPECTIVE camera (much higher and
+        # closer than the default oblique shot's dist_mult/yfrac, so the
+        # hip-flexion knee travel this branch exists for stays legible) —
+        # perspective foreshortening breaks the orthographic degeneracy
+        # without falling back to the ambiguous pure-vertical shot.
+        # camera_topdown itself is untouched (still correct for ROLL_DEG!=0
+        # side-lying exercises, where the roll already disambiguates lying
+        # from standing).
         if cfg.get("ROLL_DEG", 0) == 0 and not cfg.get("FORCE_TOPDOWN", False):
             cam = camera_oblique_supine(plo, phi)
+        elif cfg.get("ROLL_DEG", 0) == 0 and cfg.get("FORCE_TOPDOWN", False):
+            cam = camera_oblique_supine(plo, phi, xfrac=0.0, yfrac=0.15, hfrac=2.6, dist_mult=1.0)
         else:
             cam = camera_topdown(center, phi.z + 3.0, span, cfg.get("ORTHO_SCALE_MULT", 1.15))
         render_all_supine(cam, out_dir, exercise, peak_frame)
