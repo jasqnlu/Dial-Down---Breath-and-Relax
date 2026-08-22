@@ -71,7 +71,7 @@ struct TourCoordinatorTests {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16" -only-testing:BreathRelaxStretchTests/TourCoordinatorTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro" -only-testing:BreathRelaxStretchTests/TourCoordinatorTests`
 Expected: FAIL — `TourStep` does not exist yet (build error).
 
 - [ ] **Step 3: Write `TourStep` and the 19-step catalog**
@@ -184,7 +184,7 @@ extension TourStep {
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16" -only-testing:BreathRelaxStretchTests/TourCoordinatorTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro" -only-testing:BreathRelaxStretchTests/TourCoordinatorTests`
 Expected: PASS
 
 - [ ] **Step 5: Commit**
@@ -290,7 +290,7 @@ git commit -m "feat(onboarding): add TourStep model and 19-step tour catalog"
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16" -only-testing:BreathRelaxStretchTests/TourCoordinatorTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro" -only-testing:BreathRelaxStretchTests/TourCoordinatorTests`
 Expected: FAIL — `TourCoordinator` does not exist yet.
 
 - [ ] **Step 3: Write `TourCoordinator`**
@@ -387,7 +387,7 @@ final class TourCoordinator: ObservableObject {
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16" -only-testing:BreathRelaxStretchTests/TourCoordinatorTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro" -only-testing:BreathRelaxStretchTests/TourCoordinatorTests`
 Expected: PASS (11 tests)
 
 - [ ] **Step 5: Commit**
@@ -442,7 +442,7 @@ extension View {
 
 - [ ] **Step 2: Build to confirm it compiles**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16"`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro"`
 Expected: BUILD SUCCEEDED
 
 - [ ] **Step 3: Commit**
@@ -599,7 +599,7 @@ struct TourSpotlightOverlay: View {
 
 - [ ] **Step 2: Build to confirm it compiles**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16"`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro"`
 Expected: BUILD SUCCEEDED
 
 - [ ] **Step 3: Check the preview**
@@ -709,7 +709,7 @@ Add the overlay to the `ZStack` and the tab-driving `.onChange`, right after the
 
 - [ ] **Step 4: Build**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16"`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro"`
 Expected: BUILD SUCCEEDED
 
 - [ ] **Step 5: Manual verification via the `verify` skill**
@@ -767,7 +767,7 @@ In `tabButton(index:)`, add `.tourAnchor(tab.anchorID)` right before `.buttonSty
 
 - [ ] **Step 2: Build**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16"`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro"`
 Expected: BUILD SUCCEEDED
 
 - [ ] **Step 3: Manual verification**
@@ -814,7 +814,7 @@ The `heroCard` computed property ends with `.clipShape(RoundedRectangle(cornerRa
 
 - [ ] **Step 3: Build**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16"`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro"`
 Expected: BUILD SUCCEEDED
 
 - [ ] **Step 4: Manual verification**
@@ -910,7 +910,7 @@ In `BodyMapComponents.swift`, `BodyPartExercisesView`'s `ScrollView` (line 162-1
 
 - [ ] **Step 6: Build**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16"`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro"`
 Expected: BUILD SUCCEEDED
 
 - [ ] **Step 7: Manual verification**
@@ -973,7 +973,7 @@ git commit -m "feat(onboarding): tag body-map anchors and hook the two interacti
 
 - [ ] **Step 3: Build**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16"`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro"`
 Expected: BUILD SUCCEEDED
 
 - [ ] **Step 4: Manual verification**
@@ -1025,7 +1025,7 @@ git commit -m "feat(onboarding): tag exercises search bar and browse-by-area anc
 
 - [ ] **Step 2: Build**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16"`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro"`
 Expected: BUILD SUCCEEDED
 
 - [ ] **Step 3: Manual verification**
@@ -1066,7 +1066,7 @@ git commit -m "feat(onboarding): tag breathing pattern picker and preview circle
 
 - [ ] **Step 3: Build**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16"`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro"`
 Expected: BUILD SUCCEEDED
 
 - [ ] **Step 4: Manual verification**
@@ -1165,7 +1165,7 @@ struct ProfileSettingsTab: View {
 
 - [ ] **Step 4: Build**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16"`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro"`
 Expected: BUILD SUCCEEDED — this step should also surface any remaining reference to `AppGuideView`/`showingAppGuide` that needs cleanup before Task 13 removes those files.
 
 - [ ] **Step 5: Manual verification**
@@ -1203,12 +1203,12 @@ git rm "Breath - Relax & Stretch/Views/Onboarding/AppGuideView.swift" "Breath - 
 
 - [ ] **Step 3: Build**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16"`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro"`
 Expected: BUILD SUCCEEDED
 
 - [ ] **Step 4: Run the full test suite**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16"`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro"`
 Expected: PASS (aside from any pre-existing failures already documented as not-regressions — see `[[exercise_animation_app_integration]]` memory on `CuratedContentIntegrityTests`/UITest-runner if any of those show up)
 
 - [ ] **Step 5: Commit**
