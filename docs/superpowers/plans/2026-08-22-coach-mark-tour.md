@@ -71,7 +71,7 @@ struct TourCoordinatorTests {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro" -only-testing:BreathRelaxStretchTests/TourCoordinatorTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro" -only-testing:"Breath - Relax & StretchTests/TourCoordinatorTests"`
 Expected: FAIL — `TourStep` does not exist yet (build error).
 
 - [ ] **Step 3: Write `TourStep` and the 19-step catalog**
@@ -184,7 +184,7 @@ extension TourStep {
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro" -only-testing:BreathRelaxStretchTests/TourCoordinatorTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro" -only-testing:"Breath - Relax & StretchTests/TourCoordinatorTests"`
 Expected: PASS
 
 - [ ] **Step 5: Commit**
@@ -290,7 +290,7 @@ git commit -m "feat(onboarding): add TourStep model and 19-step tour catalog"
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro" -only-testing:BreathRelaxStretchTests/TourCoordinatorTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro" -only-testing:"Breath - Relax & StretchTests/TourCoordinatorTests"`
 Expected: FAIL — `TourCoordinator` does not exist yet.
 
 - [ ] **Step 3: Write `TourCoordinator`**
@@ -387,7 +387,7 @@ final class TourCoordinator: ObservableObject {
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro" -only-testing:BreathRelaxStretchTests/TourCoordinatorTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17 Pro" -only-testing:"Breath - Relax & StretchTests/TourCoordinatorTests"`
 Expected: PASS (11 tests)
 
 - [ ] **Step 5: Commit**
