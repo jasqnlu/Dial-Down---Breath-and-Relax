@@ -7,6 +7,7 @@ struct BreathRelaxStretchApp: App {
     @StateObject private var auth = AuthManager.shared
     @StateObject private var deepLinkRouter = DeepLinkRouter()
     @StateObject private var pickingSession = ExercisePickingSession()
+    @StateObject private var tourCoordinator = TourCoordinator()
 
     /// Set (once, before any UI appears) when `sharedModelContainer` had to
     /// fall back to an in-memory store below. Read from `body`'s `.onAppear`
@@ -87,6 +88,7 @@ struct BreathRelaxStretchApp: App {
                     .environmentObject(auth)
                     .environmentObject(deepLinkRouter)
                     .environmentObject(pickingSession)
+                    .environmentObject(tourCoordinator)
                     .onAppear {
                         let freshInstall = seedIfNeeded()
                         migrateSeedIfNeeded()
