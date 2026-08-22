@@ -5,6 +5,7 @@ struct HomeView: View {
     @EnvironmentObject private var auth: AuthManager
     @EnvironmentObject private var router: DeepLinkRouter
     @EnvironmentObject private var pickingSession: ExercisePickingSession
+    @EnvironmentObject private var tourCoordinator: TourCoordinator
     @Environment(\.scenePhase) private var scenePhase
     @Query private var exercises: [Exercise]
     @AppStorage("onboardingGoals") private var goalsStr = ""
@@ -44,6 +45,11 @@ struct HomeView: View {
 
             CustomTabBar(selectedTab: $selectedTab)
                 .padding(.bottom, 10)
+
+            TourSpotlightOverlay()
+        }
+        .onChange(of: tourCoordinator.currentStep?.tabIndex) { _, tab in
+            if let tab { selectedTab = tab }
         }
         .onChange(of: selectedTab) { _, tab in
             visitedTabs.insert(tab)
