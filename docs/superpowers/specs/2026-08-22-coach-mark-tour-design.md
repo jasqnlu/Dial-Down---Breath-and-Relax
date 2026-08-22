@@ -56,7 +56,8 @@ struct TourStep: Identifiable, Equatable {
     let tabIndex: Int?        // which HomeView tab to switch to; nil = stay
     let title: String
     let message: String
-    let isInteractive: Bool   // true only for the body-map tap step
+    let isInteractive: Bool   // true only for the two body-map steps
+    let fixedFrame: CGRect?   // screen-relative fallback for toolbar-hosted targets; nil = use anchor tracking
 }
 ```
 
@@ -128,37 +129,98 @@ Six sections, one per tab. "Skip" jumps to the next section's first step.
 | 2 | Today | `today.heroCard` | nil | no |
 | 3 | Today | `today.recommended` | nil | no |
 | 4 | Body | `tabbar.body` | 1 | no |
-| 5 | Body | `bodymap.tapRegion` | nil | **yes** |
-| 6 | Body | `bodymap.regionResults` | nil | no |
-| 7 | Exercises | `tabbar.exercises` | 2 | no |
-| 8 | Exercises | `exercises.search` | nil | no |
-| 9 | Exercises | `exercises.browseByArea` | nil | no |
-| 10 | Breathe | `tabbar.breathe` | 3 | no |
-| 11 | Breathe | `breathe.patternPicker` | nil | no |
-| 12 | Breathe | `breathe.previewCircle` | nil | no |
-| 13 | Routines | `tabbar.routines` | 4 | no |
-| 14 | Routines | `routines.sharedList` | nil | no |
-| 15 | Routines | `routines.createButton` | nil | no |
-| 16 | Profile | `tabbar.profile` | 5 | no |
-| 17 | Profile | `profile.stats` | nil | no |
-| 18 | Profile | `profile.restartTour` | nil | no → Done |
+| 5 | Body | `bodymap.tapMarkAndRegion` | nil | **yes** |
+| 6 | Body | `bodymap.confirmMark` | nil | **yes** |
+| 7 | Body | `bodymap.regionResults` | nil | no |
+| 8 | Exercises | `tabbar.exercises` | 2 | no |
+| 9 | Exercises | `exercises.search` | nil | no |
+| 10 | Exercises | `exercises.browseByArea` | nil | no |
+| 11 | Breathe | `tabbar.breathe` | 3 | no |
+| 12 | Breathe | `breathe.patternPicker` | nil | no |
+| 13 | Breathe | `breathe.previewCircle` | nil | no |
+| 14 | Routines | `tabbar.routines` | 4 | no |
+| 15 | Routines | `routines.sharedList` | nil | no |
+| 16 | Routines | `routines.createButton` | nil | no (fixed frame, see below) |
+| 17 | Profile | `tabbar.profile` | 5 | no |
+| 18 | Profile | `profile.stats` | nil | no |
+| 19 | Profile | `profile.restartTour` | nil | no → Done |
 
-Step 5 (interactive): tooltip reads "Tap a muscle area to see exercises for
-it" and points generally at the body silhouette (no per-region targeting).
-`BodyMapView.handleRegionTap` gains one line calling
-`tourCoordinator.notifyInteraction(id: "bodymap.tapRegion")` alongside its
-existing logic, guarded so it's a no-op when the tour isn't active on that
-step. Step 6 then highlights the resulting exercises-for-region view.
+The real `BodyMapView` flow is three taps, not one: tap **Mark** (top-right
+toolbar) → tap a region on the body (sets a pending dot) → tap **✓ Confirm**
+(top-right toolbar) → navigates to that region's exercises. Steps 5 and 6
+match this:
+
+- **Step 5** (interactive): "Tap Mark, then tap a spot on the body that
+  feels tense." Points generally at the body silhouette (no per-region
+  targeting — the model is freely rotatable, so there's no fixed screen
+  rect for an individual muscle). Unblocks when `pendingMark` becomes
+  non-nil. `BodyMapView.handleRegionTap` gains one line calling
+  `tourCoordinator.notifyInteraction(id: "bodymap.tapMarkAndRegion")`
+  alongside its existing logic, guarded so it's a no-op when the tour isn't
+  active on that step.
+- **Step 6** (interactive): "Tap the checkmark to confirm." Points at the
+  toolbar Confirm button (also a `ToolbarItem` — see the fixed-frame note
+  below). Unblocks when `confirmPendingMark()` runs.
+  `BodyMapView.confirmPendingMark` gains one line calling
+  `tourCoordinator.notifyInteraction(id: "bodymap.confirmMark")`.
+- **Step 7**: highlights the resulting exercises-for-region view
+  (`BodyPartExercisesView`).
+
+### Toolbar items: fixed-frame fallback instead of anchor tracking
+
+Two callouts target `ToolbarItem`s inside a `NavigationStack`
+(`routines.createButton` at step 16, and the Confirm button at step 6):
+`NavigationStack` bridges to `UINavigationController`, and this codebase has
+already hit the consequence once — `floatingTabBarClearance()`'s doc comment
+notes that a safe-area inset applied outside a `NavigationStack` is never
+forwarded to its content, because the bridge doesn't carry it through. The
+same boundary applies to preferences: a `.tourAnchor` reported from inside
+a `ToolbarItem`'s content is not reliably resolved against a named
+coordinate space declared outside that `NavigationStack` (i.e. up at
+`HomeView`, where `TourSpotlightOverlay` lives).
+
+Rather than fight that boundary, `TourStep` gets one more optional field:
+
+```swift
+let fixedFrame: CGRect?   // screen-relative fallback when .tourAnchor can't cross a NavigationStack/UIKit bridge
+```
+
+Toolbar-hosted callouts (`bodymap.confirmMark`, `routines.createButton`) set
+`fixedFrame` to a small rect anchored to the safe-area top-trailing corner
+(both buttons render in `.primaryAction` placement, which iOS always places
+top-trailing) instead of relying on `.tourAnchor`. `TourSpotlightOverlay`
+uses `fixedFrame` when the step provides one, and the anchor-preference
+dictionary otherwise. This is a pragmatic exception, not a reason to prefer
+fixed frames generally — every other step in this plan uses real anchor
+tracking.
+
+### Profile's inner tab
+
+`ProfileView` owns its own segmented state, `@State private var
+selectedTab: ProfileTab` (`.account` / `.settings`), independent of
+`HomeView`'s tab index — steps 18 and 19 need to switch that, not just get
+`HomeView` onto tab 5. `ProfileView` reads `tourCoordinator.currentStep?.id`
+directly (it's already inside the environment-object's scope once
+`HomeView` is) and sets `selectedTab = .settings` when the id is
+`profile.restartTour`, `.account` for `profile.stats`. This mirrors
+`HomeView`'s `tabIndex`-driven pattern but is local to `ProfileView` since
+no other screen has a second layer of tab state.
 
 ## Trigger & replay
 
-Unchanged entry points, new mechanism underneath:
+Unchanged entry points, new mechanism underneath. One structural change is
+required: `OnboardingGate` currently presents `AppGuideView` via `.sheet`,
+but a modal can't host a tour that switches the real tabs underneath it —
+the tour has to run in `HomeView`'s own `ZStack`, not a separate sheet.
 
-- `OnboardingGate` (in `OnboardingView.swift`) currently presents
-  `AppGuideView` once after onboarding completes. It now calls
-  `tourCoordinator.restart()` instead.
+- `OnboardingGate` drops its `.sheet(isPresented: showingAppGuide)` modifier
+  entirely. Instead, on first appearance of `content` (i.e. `RootView` /
+  `HomeView`), if `!hasSeenAppGuide` it calls `tourCoordinator.restart()`
+  and sets `hasSeenAppGuide = true`. `TourCoordinator.finish()` is what
+  actually ends the tour later — `hasSeenAppGuide` only gates whether it
+  *auto*-starts, same as today.
 - The "restart tutorial" row in `ProfileSettingsTab.swift` calls
-  `tourCoordinator.restart()` instead of presenting `AppGuideView`.
+  `tourCoordinator.restart()` directly (no sheet).
 
 No new persistence: the same flag that gates the current one-time auto-show
 keeps gating the new one.
@@ -184,15 +246,18 @@ keeps gating the new one.
 - `Views/Home/CustomTabBar.swift` — tag each of the 6 tab buttons
 - `Views/Home/TodayView.swift` — tag hero card + recommended carousel
 - `Views/BodyMap/BodyMapView.swift` — tag the body region; call
-  `notifyInteraction` from `handleRegionTap`
-- `Views/Exercises/ExerciseListView.swift` — tag search bar + browse-by-area
-  section
+  `notifyInteraction` from `handleRegionTap` and `confirmPendingMark`
+- `Views/Exercises/ExerciseListView.swift` — tag search bar + the
+  search-empty content area (`ExerciseGraphView`, the browse-by-area graph)
 - `Views/Breathing/BreathingView.swift` — tag pattern picker + preview
   circle
-- `Views/Routines/RoutineListView.swift` — tag shared-routines row +
-  create-routine button
-- `Views/Profile/ProfileView.swift` / `ProfileSettingsTab.swift` — tag
-  streaks/badges; point "restart tutorial" at `coordinator.restart()`
+- `Views/Routines/RoutineListView.swift` — tag shared-routines row; the
+  create-routine toolbar button uses `fixedFrame`, no tag needed
+- `Views/Profile/ProfileView.swift` — drive the inner `ProfileTab` from
+  `tourCoordinator.currentStep?.id`
+- `Views/Profile/ProfileAccountTab.swift` — tag the stats rows
+- `Views/Profile/ProfileSettingsTab.swift` — tag the restart-tutorial row;
+  point it at `coordinator.restart()`
 
 ## Testing
 
