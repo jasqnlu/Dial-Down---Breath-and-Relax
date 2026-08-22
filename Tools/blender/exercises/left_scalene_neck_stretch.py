@@ -37,6 +37,19 @@ no sided neck groups, so Left Trapezius supplies the side specificity.
 NOT seated — this exercise's own instructions say "Sit OR stand tall", so the
 rig's default standing rest stance is faithful and avoids the knee-crease
 geometry the seated pose introduces.
+
+**Arm-to-collarbone fix (2026-08-22, animation-vs-instructions audit):**
+"place your left hand flat just below your left collarbone" — a genuinely
+different reach target than the rest of this family (own-side arm to own
+chest, not the opposite arm to the top/side of the head), so it got its own
+`_arm_to_head_probe.py` sweep against a hand-picked point near the own-side
+collarbone (0.55x the shoulder's own X offset, 0.12 in front of the torso,
+0.10 below shoulder height). Landed within 0.059 world units at
+`upperarm.L=(0,0,-10)`, `forearm.L=(-150,0,-30)` — a near-vertical upper arm
+with a deep elbow fold, i.e. the forearm alone swinging up across the chest
+rather than the whole arm lifting, which reads naturally as "hand resting on
+own chest" without needing the large shoulder flexion the head-reaching
+poses use.
 """
 import sys
 import os
@@ -59,11 +72,16 @@ CAMERA_AZIMUTH = 25
 
 WORKED_KEYWORDS = ("front neck", "left trapezius")
 
+# Own-side arm (own hand anchors own collarbone) — see
+# _arm_to_head_probe.py's numeric fit in the docstring above.
+_ARM_UP = {"upperarm.L": (0, 0, r(-10)), "forearm.L": (r(-150), 0, r(-30))}
+_ARM_MID = {"upperarm.L": (0, 0, r(-6)), "forearm.L": (r(-90), 0, r(-18))}
+
 POSES = {
     0: {},
-    30: {"head": (r(-4), r(-8), r(14))},
-    60: {"head": (r(-8), r(-15), r(30))},
-    90: {"head": (r(-8), r(-15), r(30))},
+    30: {**_ARM_MID, "head": (r(-4), r(-8), r(14))},
+    60: {**_ARM_UP, "head": (r(-8), r(-15), r(30))},
+    90: {**_ARM_UP, "head": (r(-8), r(-15), r(30))},
     120: {},
 }
 

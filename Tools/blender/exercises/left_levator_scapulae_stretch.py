@@ -34,6 +34,15 @@ alongside this script (see ANIMATION_HANDOFF.md).
 Highlight: no "levator scapulae" group in the atlas — Back Neck (the nod/tuck
 component) + Left Trapezius (the side being stretched) is the same pairing
 left_chin_to_shoulder_diagonal_stretch uses for the same reason.
+
+**Arm-to-head fix (2026-08-22, animation-vs-instructions audit):** the
+instructions call for the OPPOSITE hand ("rest your right hand on top of
+your head") — arms previously stayed at rest. Fixed with the same numeric
+FK approach as left_isometric_neck_side_press.py's fix (see that script's
+docstring): `_arm_to_head_probe.py` swept `upperarm.R`/`forearm.R` against
+this script's own peak head pose and landed within 0.048 world units of
+the head-bone tail (the top-of-head target) at `upperarm.R=(-130,0,30)`,
+`forearm.R=(-100,0,-30)`.
 """
 import sys
 import os
@@ -56,11 +65,16 @@ CAMERA_AZIMUTH = 45
 
 WORKED_KEYWORDS = ("back neck", "left trapezius")
 
+# Opposite-side arm (right hand rests on top of the head) — see
+# _arm_to_head_probe.py's numeric fit in the docstring above.
+_ARM_UP = {"upperarm.R": (r(-130), 0, r(30)), "forearm.R": (r(-100), 0, r(-30))}
+_ARM_MID = {"upperarm.R": (r(-80), 0, r(18)), "forearm.R": (r(-60), 0, r(-18))}
+
 POSES = {
     0: {},
-    30: {"head": (r(8), r(-25), 0)},
-    60: {"head": (r(14), r(-45), 0)},
-    90: {"head": (r(14), r(-45), 0)},
+    30: {**_ARM_MID, "head": (r(8), r(-25), 0)},
+    60: {**_ARM_UP, "head": (r(14), r(-45), 0)},
+    90: {**_ARM_UP, "head": (r(14), r(-45), 0)},
     120: {},
 }
 

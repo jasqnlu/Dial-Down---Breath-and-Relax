@@ -1386,3 +1386,93 @@ safe when the working leg is posed distinctly from the resting one (as in
 quad stretch, hamstring stretch, etc.); when both legs stay in an identical
 pose, the azimuth itself must be mirrored or the near leg will always hide
 whichever target happens to be on the far side.**
+
+
+## Hand-assist neck family: arm-to-head FK fix (2026-08-22)
+
+Followed up on the "documented, deliberate limitation" note from the audit
+above: 8 exercises (`left/right_isometric_neck_side_press`, `left/
+right_levator_scapulae_stretch`, `left/right_chin_to_shoulder_diagonal_stretch`,
+`left/right_scalene_neck_stretch`) never moved the assist arm, per each
+script's own comment ("no hand-target IK"). Asked to actually solve it
+rather than leave it. The rig genuinely has no IK — no bone-target solver,
+no constraint stack — so the fix is **numeric forward-kinematics fitting**:
+sweep candidate `upperarm`/`forearm` local-X/Z pairs and keep whichever
+minimizes the forearm-tail (mitt) distance to a hand-picked target point,
+the same throwaway-probe pattern already used elsewhere in this doc (the
+quadruped floor reach, the twist-direction probes) — just automated as a
+grid search instead of a few manual tries, since a 4-angle search space is
+too big to hand-tune by eyeballing renders.
+
+**Tool:** `_arm_to_head_probe.py` (deleted after use, recreate from this
+note if needed) — builds ONLY the armature (skips muscle/skin, ~90ms) via
+`L.import_obj` + `L.normalize_orientation` + `L.build_armature`, poses the
+head exactly as the target exercise's peak frame does, then for a grid of
+`(upperarm_x, upperarm_z, forearm_x, forearm_z)` candidates sets the pose,
+calls `bpy.context.view_layer.update()`, and logs `forearm.<side>`'s world
+tail position vs. a target point. No rendering needed for the numeric
+search — only for the final visual confirmation once a close candidate is
+found.
+
+**Three genuinely different reach targets, not one shared pose:**
+
+1. **Own-side hand to own-side head, above the ear** (isometric neck side
+   press — "place your palm flat against the side of your head"). Target:
+   a point offset sideways (+0.11, own-side direction) from a point 55%
+   up the posed head bone. Best fit: `upperarm=(-115,0,10)`,
+   `forearm=(-150,0,-30)`, dist 0.035.
+2. **Opposite-side hand to top of head** (levator scapulae + chin-to-
+   shoulder-diagonal — "rest your [other] hand on top of your head").
+   Target: the head bone's own tail (already tilted/twisted by that
+   exercise's own head pose). Levator: `upperarm=(-130,0,30)`,
+   `forearm=(-100,0,-30)`, dist 0.048. Chin-to-shoulder (backed off
+   slightly from an initial 0.026-dist fit that visually clipped into the
+   hair, see below): `upperarm=(-100,0,25)`, `forearm=(-95,0,-25)`.
+3. **Own-side hand to own-side collarbone** (scalene — "place your hand
+   flat just below your collarbone"). A much closer, lower target (0.55x
+   the shoulder's own X offset, 0.12 in front of the torso, 0.10 below
+   shoulder height) — this one doesn't reach the head at all. Best fit:
+   `upperarm=(0,0,-10)`, `forearm=(-150,0,-30)`, dist 0.059 — a
+   near-vertical upper arm with a deep elbow fold, the forearm alone
+   swinging up across the chest.
+
+Each category needed its own grid — early narrow sweeps kept landing at
+the search range's own edge (the true optimum outside the tried range),
+so every category went through 2-3 widen-and-resweep passes before the
+distance dropped under ~0.06 (the head cap / mitt are roughly 0.1-0.15
+across, so anything under that reads as contact, not floating).
+
+**Mirroring:** verified numerically, not assumed — probed the opposite
+side/head-pose combination directly and confirmed the same distance
+(0.048 both ways for the levator case) rather than just flipping the sign
+and trusting it, per this doc's own standing "mirrored is not correct,
+verify the absolute direction" lesson (this time applied to a reach
+target, not a rotation direction). Convention: swap bone side, negate
+local-Z, keep local-X unchanged.
+
+**Bug found while fixing (unrelated to the arm reach):
+`right_levator_scapulae_stretch.py`'s own docstring said the head turn
+should be `+Y` (turn left), but its `POSES` dict shipped with the SAME
+`-Y` values as the left script — a copy-paste-and-never-updated bug, not a
+wrong sign belief. Caught by literally diffing the two scripts' `POSES`
+while adding the arm fix. Fixed alongside the arm reach.**
+
+**Camera bug surfaced by the arm reach, not caused by it:**
+`right_chin_to_shoulder_diagonal_stretch.py` shared `CAMERA_AZIMUTH = 45`
+with the left script (unmirrored — never revisited, unlike
+`left_seated_spinal_twist`'s camera, which WAS mirrored to 315 when its
+own rotation bug was fixed). With no arm animated this didn't matter much;
+once the hand rose near the head, the unmirrored angle looked straight
+into a tangle of hair strands and fingers (confirmed by comparing against
+the same exercise's clean `rest_demo.png`, where the hair renders normally
+with no arm nearby — ruling out a hair-modeling defect). Fixed by mirroring
+the azimuth to -45, same fix class as the seated-spinal-twist precedent:
+**a camera angle proven for one variant is only proven for that variant's
+own geometry — when new geometry (an animated arm) enters the shot, an
+unmirrored "shared" camera angle is worth re-checking, not assumed safe
+just because it rendered fine before.**
+
+All 8 re-rendered, re-encoded, and visually confirmed (no tearing, hand
+reads as contacting its target, correct L/R mirroring). Full
+`SeedDataTests`/`SeedMigratorTests` suite green throughout (asset + pose
+data only, no schema changes).
