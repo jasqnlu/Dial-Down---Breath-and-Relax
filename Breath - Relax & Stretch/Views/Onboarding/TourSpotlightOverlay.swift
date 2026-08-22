@@ -15,9 +15,7 @@ struct TourSpotlightOverlay: View {
                         let targetRect = resolvedRect(for: step, anchors: anchors, proxy: proxy)
                         ZStack {
                             dimLayer(cutout: targetRect, size: proxy.size)
-                            if let targetRect {
-                                tooltipCard(step: step, targetRect: targetRect, screenSize: proxy.size)
-                            }
+                            tooltipCard(step: step, targetRect: targetRect, screenSize: proxy.size)
                         }
                     }
             }
@@ -52,8 +50,10 @@ struct TourSpotlightOverlay: View {
         .fill(Color.black.opacity(0.55), style: FillStyle(eoFill: true))
     }
 
-    private func tooltipCard(step: TourStep, targetRect: CGRect, screenSize: CGSize) -> some View {
-        let placeBelow = targetRect.midY < screenSize.height * 0.55
+    private func tooltipCard(step: TourStep, targetRect: CGRect?, screenSize: CGSize) -> some View {
+        // No target rect yet (no anchor tagged, no fixedFrame) — center the
+        // card on screen rather than anchoring it to nothing.
+        let placeBelow = targetRect.map { $0.midY < screenSize.height * 0.55 } ?? true
         let cardWidth = min(screenSize.width - 48, 340)
 
         return VStack(alignment: .leading, spacing: 14) {
@@ -109,9 +109,12 @@ struct TourSpotlightOverlay: View {
         .shadow(color: .black.opacity(0.18), radius: 20, y: 8)
         .position(
             x: screenSize.width / 2,
-            y: placeBelow
-                ? min(targetRect.maxY + 110, screenSize.height - 140)
-                : max(targetRect.minY - 110, 140)
+            y: {
+                guard let targetRect else { return screenSize.height / 2 }
+                return placeBelow
+                    ? min(targetRect.maxY + 110, screenSize.height - 140)
+                    : max(targetRect.minY - 110, 140)
+            }()
         )
     }
 }
