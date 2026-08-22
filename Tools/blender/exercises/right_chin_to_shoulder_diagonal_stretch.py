@@ -16,6 +16,11 @@ Only the twist axis flips sign between the pair. Per the third batch's gotcha,
 confirm the two renders are genuinely mirrored rather than identical by
 eyeballing the PNGs — a twist barely moves the bone tail, so the sanity log
 cannot tell them apart.
+
+**Arm-to-head fix (2026-08-22, animation-vs-instructions audit):** mirror
+of left_chin_to_shoulder_diagonal_stretch.py's fix — "rest your left hand
+on top of your head" — `upperarm.L=(-110,0,-30)`, `forearm.L=(-110,0,30)`
+(flipped local-Z from the left script's `upperarm.R`/`forearm.R`).
 """
 import sys
 import os
@@ -32,15 +37,18 @@ OUT_DIR = os.path.join(REPO, "Tools/blender/generated/exercises")
 EXERCISE = "right_chin_to_shoulder_diagonal_stretch"
 VIDEO_NAME = "right_chin_to_shoulder_diagonal_stretch.mp4"
 
-CAMERA_AZIMUTH = 45
+CAMERA_AZIMUTH = -45
 
 WORKED_KEYWORDS = ("back neck", "right trapezius")
 
+_ARM_UP = {"upperarm.L": (r(-100), 0, r(-25)), "forearm.L": (r(-95), 0, r(25))}
+_ARM_MID = {"upperarm.L": (r(-60), 0, r(-15)), "forearm.L": (r(-58), 0, r(15))}
+
 POSES = {
     0: {},
-    30: {"head": (r(15), r(20), 0)},
-    60: {"head": (r(30), r(40), 0)},
-    90: {"head": (r(30), r(40), 0)},
+    30: {**_ARM_MID, "head": (r(15), r(20), 0)},
+    60: {**_ARM_UP, "head": (r(30), r(40), 0)},
+    90: {**_ARM_UP, "head": (r(30), r(40), 0)},
     120: {},
 }
 

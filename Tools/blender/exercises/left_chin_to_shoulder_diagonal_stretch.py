@@ -30,6 +30,15 @@ Highlight: the atlas has no sided neck groups (only Back Neck / Front Neck),
 so the side-specific part of the highlight comes from Left Trapezius, which
 pairs with "the back-left of your neck" in the exercise's own instructions.
 
+**Arm-to-head fix (2026-08-22, animation-vs-instructions audit):** "Rest
+your right hand gently on top of your head" — arms previously stayed at
+rest. Same numeric FK fix as left_isometric_neck_side_press.py /
+left_levator_scapulae_stretch.py (see the isometric script's docstring for
+the method): `_arm_to_head_probe.py` swept `upperarm.R`/`forearm.R`
+against this script's own peak head pose and landed within 0.026 world
+units of the head-bone tail at `upperarm.R=(-110,0,30)`,
+`forearm.R=(-110,0,-30)`.
+
 NOT rendered seated, despite the name. The static seated leg pose (thigh -90 /
 shin +90) is proven and was applied here first, but it only reads correctly
 from azimuth 45+: the thigh points along world -Y, so a near-front camera
@@ -61,11 +70,14 @@ CAMERA_AZIMUTH = 45
 
 WORKED_KEYWORDS = ("back neck", "left trapezius")
 
+_ARM_UP = {"upperarm.R": (r(-100), 0, r(25)), "forearm.R": (r(-95), 0, r(-25))}
+_ARM_MID = {"upperarm.R": (r(-60), 0, r(15)), "forearm.R": (r(-58), 0, r(-15))}
+
 POSES = {
     0: {},
-    30: {"head": (r(15), r(-20), 0)},
-    60: {"head": (r(30), r(-40), 0)},
-    90: {"head": (r(30), r(-40), 0)},
+    30: {**_ARM_MID, "head": (r(15), r(-20), 0)},
+    60: {**_ARM_UP, "head": (r(30), r(-40), 0)},
+    90: {**_ARM_UP, "head": (r(30), r(-40), 0)},
     120: {},
 }
 
