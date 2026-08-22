@@ -158,10 +158,15 @@ match this:
   `tourCoordinator.notifyInteraction(id: "bodymap.tapMarkAndRegion")`
   alongside its existing logic, guarded so it's a no-op when the tour isn't
   active on that step.
-- **Step 6** (interactive): "Tap the checkmark to confirm." Points at the
+- **Step 6** (interactive): "Tap the checkmark to confirm — if it asks you
+  to pick between a couple of spots, tap the one you meant." Points at the
   toolbar Confirm button (also a `ToolbarItem` — see the fixed-frame note
-  below). Unblocks when `confirmPendingMark()` runs.
-  `BodyMapView.confirmPendingMark` gains one line calling
+  below). `confirmPendingMark()` isn't the right hook: when the tap is near
+  more than one muscle, it detours into a disambiguation pick
+  (`handleCandidateSelected`) before ever navigating. `commitAndNavigate`
+  is the single choke point both paths funnel through — it's what actually
+  sets `exercisesRoute`, so that's where the unblock belongs.
+  `BodyMapView.commitAndNavigate` gains one line calling
   `tourCoordinator.notifyInteraction(id: "bodymap.confirmMark")`.
 - **Step 7**: highlights the resulting exercises-for-region view
   (`BodyPartExercisesView`).
