@@ -121,6 +121,7 @@ struct ExerciseListView: View {
                 }
             }
         }
+        .tourAnchor("exercises.browseByArea")
     }
 
     private func resetSearchPage() {
@@ -130,6 +131,7 @@ struct ExerciseListView: View {
     private var header: some View {
         HStack(spacing: 10) {
             searchBar
+                .tourAnchor("exercises.search")
 
             Menu {
                 Button("All Types") { selectedType = nil }
