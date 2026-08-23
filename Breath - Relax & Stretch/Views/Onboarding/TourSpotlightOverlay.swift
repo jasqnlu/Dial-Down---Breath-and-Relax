@@ -20,6 +20,7 @@ struct TourSpotlightOverlay: View {
             let targetRect = resolvedRect(for: step, anchors: anchors, proxy: proxy)
             ZStack {
                 dimLayer(cutout: targetRect, size: proxy.size)
+                    .allowsHitTesting(step.blocksBackgroundTaps)
                 tooltipCard(step: step, targetRect: targetRect, screenSize: proxy.size)
             }
             .transition(.opacity)
@@ -56,6 +57,17 @@ struct TourSpotlightOverlay: View {
         // card on screen rather than anchoring it to nothing.
         let placeBelow = targetRect.map { $0.midY < screenSize.height * 0.55 } ?? true
         let cardWidth = min(screenSize.width - 48, 340)
+        // `fixedFrame` targets are small toolbar buttons docked at a screen
+        // edge (top-trailing), unlike anchor-based targets which are large
+        // content areas with real room around them. The default 110pt
+        // clearance is sized for those larger anchors; for a small target
+        // this close to the top edge it isn't enough — the card's own
+        // (opaque, hit-testing) body ends up overlapping the target rect,
+        // swallowing taps meant for the real button underneath. Widen the
+        // clearance for this case only; anchor-based steps keep the
+        // original 110pt gap untouched.
+        let isFixedFrameTarget = step.fixedFrame != nil
+        let verticalClearance: CGFloat = isFixedFrameTarget ? 190 : 110
 
         return VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top) {
@@ -113,8 +125,8 @@ struct TourSpotlightOverlay: View {
             y: {
                 guard let targetRect else { return screenSize.height / 2 }
                 return placeBelow
-                    ? min(targetRect.maxY + 110, screenSize.height - 140)
-                    : max(targetRect.minY - 110, 140)
+                    ? min(targetRect.maxY + verticalClearance, screenSize.height - 140)
+                    : max(targetRect.minY - verticalClearance, 140)
             }()
         )
     }
