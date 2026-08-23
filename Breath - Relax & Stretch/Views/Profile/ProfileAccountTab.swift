@@ -39,6 +39,7 @@ struct ProfileAccountTab: View {
                     statsRow(icon: "medal.fill",  color: .purple,
                              label: "Badges Earned", value: "\(profile.badges.count)")
                 }
+                .tourAnchor("profile.stats")
 
                 Section {
                     NavigationLink(destination: BadgesView(earnedBadges: profile.badges)) {

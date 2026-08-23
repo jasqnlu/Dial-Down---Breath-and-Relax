@@ -24,15 +24,16 @@ struct CustomTabBar: View {
         let icon: String
         let activeIcon: String
         let label: String
+        let anchorID: String
     }
 
     private let tabs: [TabItem] = [
-        TabItem(icon: "sun.max",                activeIcon: "sun.max.fill",            label: "Today"),
-        TabItem(icon: "figure.stand",          activeIcon: "figure.stand",           label: "Body"),
-        TabItem(icon: "list.bullet",            activeIcon: "list.bullet",             label: "Exercises"),
-        TabItem(icon: "wind",                   activeIcon: "wind",                    label: "Breathe"),
-        TabItem(icon: "rectangle.stack",        activeIcon: "rectangle.stack.fill",    label: "Routines"),
-        TabItem(icon: "person.circle",          activeIcon: "person.circle.fill",      label: "Profile"),
+        TabItem(icon: "sun.max",                activeIcon: "sun.max.fill",            label: "Today",     anchorID: "tabbar.today"),
+        TabItem(icon: "figure.stand",          activeIcon: "figure.stand",           label: "Body",       anchorID: "tabbar.body"),
+        TabItem(icon: "list.bullet",            activeIcon: "list.bullet",             label: "Exercises",  anchorID: "tabbar.exercises"),
+        TabItem(icon: "wind",                   activeIcon: "wind",                    label: "Breathe",    anchorID: "tabbar.breathe"),
+        TabItem(icon: "rectangle.stack",        activeIcon: "rectangle.stack.fill",    label: "Routines",   anchorID: "tabbar.routines"),
+        TabItem(icon: "person.circle",          activeIcon: "person.circle.fill",      label: "Profile",    anchorID: "tabbar.profile"),
     ]
 
     var body: some View {
@@ -98,6 +99,7 @@ struct CustomTabBar: View {
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
         }
+        .tourAnchor(tab.anchorID)
         .buttonStyle(.plain)
         .animation(.spring(response: 0.32, dampingFraction: 0.74), value: selectedTab)
         .accessibilityLabel(tab.label)

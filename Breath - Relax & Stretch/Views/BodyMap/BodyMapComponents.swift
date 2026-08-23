@@ -175,6 +175,7 @@ struct BodyPartExercisesView: View {
                     }
                     .padding()
                 }
+                .tourAnchor("bodymap.regionResults")
             }
         }
         .navigationTitle(navTitle)

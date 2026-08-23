@@ -414,6 +414,7 @@ struct TodayView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
+        .tourAnchor("today.heroCard")
     }
 
     // MARK: - Recommended (rotating carousel)
@@ -427,6 +428,7 @@ struct TodayView: View {
                     .font(.luminaTitle)
                 RecommendedCarousel(items: items)
             }
+            .tourAnchor("today.recommended")
         }
     }
 
