@@ -4,23 +4,24 @@ import SwiftUI
 /// and shows a Lumina-styled tooltip beside it. Mounted once, inside
 /// `HomeView`'s ZStack, above `CustomTabBar` — renders nothing when the
 /// tour isn't active.
+///
+/// `anchors`/`proxy` are supplied by the caller (`HomeView`) via
+/// `.overlayPreferenceValue` attached to its OUTER ZStack, since
+/// `.overlayPreferenceValue`/`.onPreferenceChange` can only observe
+/// preference values bubbling up from a view's own subtree — this view
+/// itself has no subtree of `.tourAnchor`-tagged content to observe.
 struct TourSpotlightOverlay: View {
     @EnvironmentObject private var coordinator: TourCoordinator
+    let anchors: [String: Anchor<CGRect>]
+    let proxy: GeometryProxy
 
     var body: some View {
         if coordinator.isActive, let step = coordinator.currentStep {
-            GeometryReader { proxy in
-                Color.clear
-                    .overlayPreferenceValue(TourAnchorPreferenceKey.self) { anchors in
-                        let targetRect = resolvedRect(for: step, anchors: anchors, proxy: proxy)
-                        ZStack {
-                            dimLayer(cutout: targetRect, size: proxy.size)
-                            tooltipCard(step: step, targetRect: targetRect, screenSize: proxy.size)
-                        }
-                    }
+            let targetRect = resolvedRect(for: step, anchors: anchors, proxy: proxy)
+            ZStack {
+                dimLayer(cutout: targetRect, size: proxy.size)
+                tooltipCard(step: step, targetRect: targetRect, screenSize: proxy.size)
             }
-            .ignoresSafeArea()
-            .coordinateSpace(name: tourCoordinateSpace)
             .transition(.opacity)
             .animation(.easeInOut(duration: 0.25), value: step.id)
         }
@@ -124,9 +125,11 @@ struct TourSpotlightOverlay: View {
 #Preview {
     let coordinator = TourCoordinator()
     coordinator.restart()
-    return ZStack {
-        Color.luminaSurface.ignoresSafeArea()
-        TourSpotlightOverlay()
+    return GeometryReader { proxy in
+        ZStack {
+            Color.luminaSurface.ignoresSafeArea()
+            TourSpotlightOverlay(anchors: [:], proxy: proxy)
+        }
     }
     .environmentObject(coordinator)
 }

@@ -45,8 +45,13 @@ struct HomeView: View {
 
             CustomTabBar(selectedTab: $selectedTab)
                 .padding(.bottom, 10)
-
-            TourSpotlightOverlay()
+        }
+        .overlayPreferenceValue(TourAnchorPreferenceKey.self) { anchors in
+            GeometryReader { proxy in
+                TourSpotlightOverlay(anchors: anchors, proxy: proxy)
+            }
+            .ignoresSafeArea()
+            .coordinateSpace(name: tourCoordinateSpace)
         }
         .onChange(of: tourCoordinator.currentStep?.tabIndex) { _, tab in
             if let tab { selectedTab = tab }
