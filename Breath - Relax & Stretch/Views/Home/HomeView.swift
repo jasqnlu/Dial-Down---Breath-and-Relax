@@ -5,6 +5,7 @@ struct HomeView: View {
     @EnvironmentObject private var auth: AuthManager
     @EnvironmentObject private var router: DeepLinkRouter
     @EnvironmentObject private var pickingSession: ExercisePickingSession
+    @EnvironmentObject private var tourCoordinator: TourCoordinator
     @Environment(\.scenePhase) private var scenePhase
     @Query private var exercises: [Exercise]
     @AppStorage("onboardingGoals") private var goalsStr = ""
@@ -44,6 +45,28 @@ struct HomeView: View {
 
             CustomTabBar(selectedTab: $selectedTab)
                 .padding(.bottom, 10)
+        }
+        .overlayPreferenceValue(TourAnchorPreferenceKey.self) { anchors in
+            GeometryReader { proxy in
+                TourSpotlightOverlay(anchors: anchors, proxy: proxy)
+            }
+            .ignoresSafeArea()
+        }
+        .onChange(of: tourCoordinator.isActive) { _, active in
+            // Covers restart() from an already-index-0 coordinator (every
+            // fresh app launch, and — critically — the ONLY entry point a
+            // returning user has: Profile > Settings > Help > Restart App
+            // Tutorial). currentStep?.tabIndex alone wouldn't change value
+            // in that case, so this fires on activation itself instead.
+            guard active, let tab = tourCoordinator.currentStep?.tabIndex else { return }
+            selectedTab = tab
+        }
+        .onChange(of: tourCoordinator.currentStep?.tabIndex) { _, tab in
+            // Drives every subsequent tab switch as the tour advances
+            // through sections (step 4 -> Body, step 8 -> Exercises, etc.).
+            // Without this, only the very first tab switch (handled above)
+            // ever happens and the tour appears frozen from section 2 on.
+            if let tab { selectedTab = tab }
         }
         .onChange(of: selectedTab) { _, tab in
             visitedTabs.insert(tab)

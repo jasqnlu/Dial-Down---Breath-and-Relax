@@ -3,6 +3,7 @@ import SwiftUI
 // MARK: - Settings Tab
 
 struct ProfileSettingsTab: View {
+    @EnvironmentObject private var tourCoordinator: TourCoordinator
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
     @AppStorage("reminderHour")         private var reminderHour = 8
     @AppStorage("reminderWeekdays")     private var weekdaysStr = "2,3,4,5,6" // Mon–Fri default
@@ -11,7 +12,6 @@ struct ProfileSettingsTab: View {
     @AppStorage("voiceCuesEnabled")     private var voiceCuesEnabled = false
     @AppStorage("autoSkipGetReadyCountdown") private var autoSkipGetReadyCountdown = false
     @AppStorage("calendarSyncEnabled")  private var calendarSyncEnabled = false
-    @State private var showingAppGuide = false
 
     private let allGoals: [(id: String, label: String, icon: String)] = [
         ("flexibility",      "Flexibility",       "figure.flexibility"),
@@ -272,11 +272,12 @@ struct ProfileSettingsTab: View {
             // Help
             Section("Help") {
                 Button {
-                    showingAppGuide = true
+                    tourCoordinator.restart()
                 } label: {
                     Label("Restart App Tutorial", systemImage: "questionmark.circle")
                 }
             }
+            .tourAnchor("profile.restartTour")
 
             // About
             Section("About") {
@@ -290,9 +291,6 @@ struct ProfileSettingsTab: View {
             }
         }
         .listRowBackground(Color.luminaCardFill)
-        .sheet(isPresented: $showingAppGuide) {
-            AppGuideView()
-        }
         .task {
             // Reconcile against the real OS permission — e.g. if the user
             // revoked notification access from iOS Settings directly, the

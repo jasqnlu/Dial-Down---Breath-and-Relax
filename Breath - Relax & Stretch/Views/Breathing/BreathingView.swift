@@ -123,6 +123,7 @@ struct BreathingView: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 4)
         }
+        .tourAnchor("breathe.patternPicker")
     }
 
     @ViewBuilder
@@ -275,6 +276,7 @@ struct BreathingView: View {
             }
         }
         .padding(.horizontal, 20)
+        .tourAnchor("breathe.previewCircle")
     }
 
     /// The animation duration mirrors the phase duration so the circle reaches full scale at the end of inhale / fully contracts at end of exhale.
