@@ -53,8 +53,20 @@ struct HomeView: View {
             .ignoresSafeArea()
         }
         .onChange(of: tourCoordinator.isActive) { _, active in
+            // Covers restart() from an already-index-0 coordinator (every
+            // fresh app launch, and — critically — the ONLY entry point a
+            // returning user has: Profile > Settings > Help > Restart App
+            // Tutorial). currentStep?.tabIndex alone wouldn't change value
+            // in that case, so this fires on activation itself instead.
             guard active, let tab = tourCoordinator.currentStep?.tabIndex else { return }
             selectedTab = tab
+        }
+        .onChange(of: tourCoordinator.currentStep?.tabIndex) { _, tab in
+            // Drives every subsequent tab switch as the tour advances
+            // through sections (step 4 -> Body, step 8 -> Exercises, etc.).
+            // Without this, only the very first tab switch (handled above)
+            // ever happens and the tour appears frozen from section 2 on.
+            if let tab { selectedTab = tab }
         }
         .onChange(of: selectedTab) { _, tab in
             visitedTabs.insert(tab)
