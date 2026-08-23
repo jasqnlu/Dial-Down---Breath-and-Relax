@@ -18,8 +18,17 @@ struct TourSpotlightOverlay: View {
         if coordinator.isActive, let step = coordinator.currentStep {
             let targetRect = resolvedRect(for: step, anchors: anchors, proxy: proxy)
             ZStack {
-                dimLayer(cutout: targetRect, size: proxy.size)
-                    .allowsHitTesting(step.blocksBackgroundTaps)
+                if step.blocksBackgroundTaps {
+                    dimLayer(cutout: targetRect, size: proxy.size)
+                } else {
+                    // The two body-map steps need real taps to land anywhere
+                    // on the body/toolbar, not just inside one cutout — so
+                    // instead of dimming the whole screen and disabling its
+                    // hit-testing, leave the screen fully lit and tappable,
+                    // and only block the one thing that would derail the
+                    // flow: switching tabs mid-step.
+                    tabBarBlocker(anchors: anchors, proxy: proxy)
+                }
                 tooltipCard(step: step, targetRect: targetRect, screenSize: proxy.size)
             }
             .transition(.opacity)
@@ -49,6 +58,24 @@ struct TourSpotlightOverlay: View {
             }
         }
         .fill(Color.black.opacity(0.55), style: FillStyle(eoFill: true))
+    }
+
+    /// A small opaque scrim sized to the real tab bar's own frame — the one
+    /// thing kept off-limits when the rest of the screen is left fully lit
+    /// and tappable (see `body`). Positioned from `"chrome.tabBar"`, tagged
+    /// on the `CustomTabBar` call site in `HomeView`. If that anchor hasn't
+    /// resolved yet, renders nothing rather than guessing at a screen-edge
+    /// rect — better to briefly allow a tab tap than to block the wrong
+    /// area of the screen.
+    @ViewBuilder
+    private func tabBarBlocker(anchors: [String: Anchor<CGRect>], proxy: GeometryProxy) -> some View {
+        if let tabBarAnchor = anchors["chrome.tabBar"] {
+            let tabBarRect = proxy[tabBarAnchor]
+            Color.black.opacity(0.35)
+                .frame(width: tabBarRect.width, height: tabBarRect.height)
+                .position(x: tabBarRect.midX, y: tabBarRect.midY)
+                .allowsHitTesting(true)
+        }
     }
 
     private func tooltipCard(step: TourStep, targetRect: CGRect?, screenSize: CGSize) -> some View {

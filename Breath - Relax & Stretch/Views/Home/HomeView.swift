@@ -45,6 +45,7 @@ struct HomeView: View {
 
             CustomTabBar(selectedTab: $selectedTab)
                 .padding(.bottom, 10)
+                .tourAnchor("chrome.tabBar")
         }
         .overlayPreferenceValue(TourAnchorPreferenceKey.self) { anchors in
             GeometryReader { proxy in
