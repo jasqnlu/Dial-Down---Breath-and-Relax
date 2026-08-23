@@ -21,15 +21,34 @@ struct TourStep: Identifiable {
     /// boundary reliably. `nil` for every other step, which uses real anchor
     /// tracking instead.
     let fixedFrame: ((GeometryProxy) -> CGRect)?
+    /// Whether the dim layer's Path should hit-test at all for this step.
+    /// `true` (the default) for every ordinary step — the dim layer blocks
+    /// taps outside its cutout, same as before. `false` is an escape hatch
+    /// for a step whose interaction can land on more than one real target,
+    /// which the current one-rect-per-step design can't represent as a
+    /// single cutout:
+    /// - `bodymap.tapMarkAndRegion` needs the toolbar Mark button tapped
+    ///   first, then the body.
+    /// - `bodymap.confirmMark` needs the toolbar checkmark tapped, but a
+    ///   tap that's ambiguous between a couple of marked regions opens a
+    ///   disambiguation candidate list that can render anywhere on screen
+    ///   (wherever the user tapped the body earlier) — nowhere near the
+    ///   checkmark's small `fixedFrame` cutout.
+    /// When `false`, the dim layer stops intercepting taps everywhere on
+    /// screen, letting all of them pass through to the real app underneath;
+    /// the tooltip card itself is unaffected and keeps its own hit-testing.
+    let blocksBackgroundTaps: Bool
 
     init(id: String, tabIndex: Int? = nil, title: String, message: String,
-         isInteractive: Bool = false, fixedFrame: ((GeometryProxy) -> CGRect)? = nil) {
+         isInteractive: Bool = false, fixedFrame: ((GeometryProxy) -> CGRect)? = nil,
+         blocksBackgroundTaps: Bool = true) {
         self.id = id
         self.tabIndex = tabIndex
         self.title = title
         self.message = message
         self.isInteractive = isInteractive
         self.fixedFrame = fixedFrame
+        self.blocksBackgroundTaps = blocksBackgroundTaps
     }
 }
 
@@ -43,8 +62,29 @@ extension TourStep {
     /// Both toolbar-hosted callouts (the body-map Confirm button and the
     /// Routines "+" button) render in `.primaryAction` placement, which iOS
     /// always docks top-trailing — so one shared fallback rect covers both.
+    ///
+    /// Deliberately does NOT use `proxy.safeAreaInsets.top`: the
+    /// `GeometryProxy` this closure receives comes from a `GeometryReader`
+    /// that sits under `.ignoresSafeArea()` in `HomeView` (so the dim
+    /// overlay itself can paint edge-to-edge). That makes the reader report
+    /// its OWN safe-area insets as zero, not the device's real value —
+    /// confirmed by direct instrumentation: `proxy.safeAreaInsets.top`
+    /// measured 0 on a device whose real top inset is ~59pt, so the old
+    /// `y: proxy.safeAreaInsets.top + 4` placed this rect (and therefore the
+    /// dim layer's cutout) roughly 60pt too high — nowhere near the real
+    /// toolbar button, which is why it was never actually tappable through
+    /// the overlay despite `fixedFrame` "looking" correct on paper. Reading
+    /// the key window's safe area directly via UIKit sidesteps that.
+    private static var deviceSafeAreaTop: CGFloat {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .first(where: \.isKeyWindow)?
+            .safeAreaInsets.top ?? 59
+    }
+
     private static let toolbarPrimaryActionFrame: (GeometryProxy) -> CGRect = { proxy in
-        CGRect(x: proxy.size.width - 60, y: proxy.safeAreaInsets.top + 4, width: 44, height: 40)
+        CGRect(x: proxy.size.width - 60, y: deviceSafeAreaTop + 4, width: 44, height: 40)
     }
 
     static let allSteps: [TourStep] = [
@@ -61,10 +101,10 @@ extension TourStep {
                  title: "Body", message: "Rotate the body and tap an area that's bothering you."),
         TourStep(id: "bodymap.tapMarkAndRegion",
                  title: "Mark a Spot", message: "Tap Mark up top, then tap a spot on the body that feels tense or sore.",
-                 isInteractive: true),
+                 isInteractive: true, blocksBackgroundTaps: false),
         TourStep(id: "bodymap.confirmMark",
                  title: "Confirm It", message: "Tap the checkmark to confirm — if it asks you to pick between a couple of spots, tap the one you meant.",
-                 isInteractive: true, fixedFrame: toolbarPrimaryActionFrame),
+                 isInteractive: true, fixedFrame: toolbarPrimaryActionFrame, blocksBackgroundTaps: false),
         TourStep(id: "bodymap.regionResults",
                  title: "Exercises for This Spot", message: "Here's everything that targets the area you picked."),
 
