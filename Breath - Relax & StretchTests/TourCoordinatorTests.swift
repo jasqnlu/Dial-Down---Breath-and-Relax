@@ -91,4 +91,29 @@ struct TourCoordinatorTests {
         coordinator.notifyInteraction(id: "tabbar.today")
         #expect(coordinator.isActive == false)
     }
+
+    @Test func restartFromAlreadyIndexZeroStillActivates() {
+        let coordinator = TourCoordinator()
+        #expect(coordinator.isActive == false)
+        #expect(coordinator.currentStepIndex == 0)
+        coordinator.restart()
+        #expect(coordinator.isActive == true)
+        #expect(coordinator.currentStepIndex == 0)
+        #expect(coordinator.currentStep?.id == "tabbar.today")
+    }
+
+    @Test func onlyTheTwoBodyMapStepsAreInteractive() {
+        let interactiveIDs = Set(TourStep.allSteps.filter(\.isInteractive).map(\.id))
+        #expect(interactiveIDs == ["bodymap.tapMarkAndRegion", "bodymap.confirmMark"])
+    }
+
+    @Test func onlyTheTwoBodyMapStepsDisableBackgroundTapBlocking() {
+        let nonBlockingIDs = Set(TourStep.allSteps.filter { !$0.blocksBackgroundTaps }.map(\.id))
+        #expect(nonBlockingIDs == ["bodymap.tapMarkAndRegion", "bodymap.confirmMark"])
+    }
+
+    @Test func onlyTheTwoToolbarStepsHaveFixedFrame() {
+        let fixedFrameIDs = Set(TourStep.allSteps.filter { $0.fixedFrame != nil }.map(\.id))
+        #expect(fixedFrameIDs == ["bodymap.confirmMark", "routines.createButton"])
+    }
 }
