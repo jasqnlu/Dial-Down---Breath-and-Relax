@@ -1,11 +1,5 @@
 import SwiftUI
 
-/// The coordinate space every `.tourAnchor` frame and `TourSpotlightOverlay`
-/// agree on. `TourSpotlightOverlay` declares it (in `HomeView`'s ZStack);
-/// every `.tourAnchor` below that point in the tree resolves against it
-/// regardless of nesting depth.
-let tourCoordinateSpace = "tourSpace"
-
 struct TourAnchorPreferenceKey: PreferenceKey {
     static var defaultValue: [String: Anchor<CGRect>] = [:]
 
