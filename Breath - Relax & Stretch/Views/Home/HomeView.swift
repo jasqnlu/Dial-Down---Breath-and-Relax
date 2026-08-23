@@ -51,10 +51,10 @@ struct HomeView: View {
                 TourSpotlightOverlay(anchors: anchors, proxy: proxy)
             }
             .ignoresSafeArea()
-            .coordinateSpace(name: tourCoordinateSpace)
         }
-        .onChange(of: tourCoordinator.currentStep?.tabIndex) { _, tab in
-            if let tab { selectedTab = tab }
+        .onChange(of: tourCoordinator.isActive) { _, active in
+            guard active, let tab = tourCoordinator.currentStep?.tabIndex else { return }
+            selectedTab = tab
         }
         .onChange(of: selectedTab) { _, tab in
             visitedTabs.insert(tab)
