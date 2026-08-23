@@ -1,8 +1,7 @@
 import SwiftUI
 
 /// Dims the screen, cuts a spotlight around the current tour step's target,
-/// and shows a Lumina-styled tooltip beside it. Mounted once, inside
-/// `HomeView`'s ZStack, above `CustomTabBar` — renders nothing when the
+/// and shows a Lumina-styled tooltip beside it. Renders nothing when the
 /// tour isn't active.
 ///
 /// `anchors`/`proxy` are supplied by the caller (`HomeView`) via
