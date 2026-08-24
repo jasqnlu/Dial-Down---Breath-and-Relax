@@ -338,11 +338,17 @@ enum SeedMigrator {
 
     /// v11 — backfills `Exercise.breathPattern` onto already-seeded rows,
     /// matched by `seedID`. New installs already read `breathPattern` off the
-    /// bundle at seed-insert time; this only matters for users seeded before
-    /// the field existed. Unlike `migrateV7`/`migrateV9`/`migrateV10`, this IS
-    /// gated behind a one-time `seedDataVersion` bump (see the app's migration
-    /// ladder) — patterns are authored once per exercise, not an ever-growing
-    /// set added on every release, so there's no need to re-scan every launch.
+    /// bundle at seed-insert time; this matters for (a) users seeded before
+    /// the field existed, and (b) a newer exercise inserted later by
+    /// `migrateV9`'s own insert path, which predates `breathPattern` and
+    /// never sets it. Like `migrateV7`/`migrateV9`/`migrateV10`, this is NOT
+    /// gated behind a one-time `seedDataVersion` bump — patterns keep getting
+    /// authored for new exercises across releases, the same way `migrateV9`
+    /// itself keeps inserting new exercises; a one-time gate here would mean
+    /// any pattern-bearing exercise added after a device passed this version
+    /// never gets backfilled. Naturally idempotent (only fills when the
+    /// bundle's pattern actually differs from what's stored), so it's cheap
+    /// and safe to run on every launch.
     @discardableResult
     static func migrateV11(context: ModelContext, rawExercises: [[String: Any]]) -> Bool {
         var patternBySeedID: [String: [BreathPhaseStep]] = [:]
