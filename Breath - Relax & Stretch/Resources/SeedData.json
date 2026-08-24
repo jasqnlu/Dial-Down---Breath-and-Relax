@@ -16,9 +16,18 @@
         "Repeat for the full duration."
       ],
       "breathPattern": [
-        {"label": "Inhale", "seconds": 4},
-        {"label": "Hold", "seconds": 2},
-        {"label": "Exhale", "seconds": 6}
+        {
+          "label": "Inhale",
+          "seconds": 4
+        },
+        {
+          "label": "Hold",
+          "seconds": 2
+        },
+        {
+          "label": "Exhale",
+          "seconds": 6
+        }
       ],
       "id": "2528b87c-95b0-5143-8c46-3b8320565370"
     },
@@ -39,10 +48,22 @@
         "Repeat the cycle for the full duration."
       ],
       "breathPattern": [
-        {"label": "Inhale", "seconds": 4},
-        {"label": "Hold", "seconds": 4},
-        {"label": "Exhale", "seconds": 4},
-        {"label": "Hold", "seconds": 4}
+        {
+          "label": "Inhale",
+          "seconds": 4
+        },
+        {
+          "label": "Hold",
+          "seconds": 4
+        },
+        {
+          "label": "Exhale",
+          "seconds": 4
+        },
+        {
+          "label": "Hold",
+          "seconds": 4
+        }
       ],
       "id": "96903a29-2150-5848-a5cb-422770cd4600"
     },
@@ -62,9 +83,18 @@
         "This completes one cycle. Repeat 3-4 times."
       ],
       "breathPattern": [
-        {"label": "Inhale", "seconds": 4},
-        {"label": "Hold", "seconds": 7},
-        {"label": "Exhale", "seconds": 8}
+        {
+          "label": "Inhale",
+          "seconds": 4
+        },
+        {
+          "label": "Hold",
+          "seconds": 7
+        },
+        {
+          "label": "Exhale",
+          "seconds": 8
+        }
       ],
       "id": "a262ed03-3f8e-5f38-bfc3-d5b560833c73"
     },
@@ -101,8 +131,14 @@
         "Repeat for the full duration."
       ],
       "breathPattern": [
-        {"label": "Inhale", "seconds": 2},
-        {"label": "Exhale", "seconds": 4}
+        {
+          "label": "Inhale",
+          "seconds": 2
+        },
+        {
+          "label": "Exhale",
+          "seconds": 4
+        }
       ],
       "id": "f1661f4f-3967-5b83-a894-d36a42185c80"
     },
@@ -121,8 +157,14 @@
         "Repeat, gradually lengthening the count as it feels comfortable."
       ],
       "breathPattern": [
-        {"label": "Inhale", "seconds": 4},
-        {"label": "Exhale", "seconds": 6}
+        {
+          "label": "Inhale",
+          "seconds": 4
+        },
+        {
+          "label": "Exhale",
+          "seconds": 6
+        }
       ],
       "id": "3466f1c9-40ec-5b71-96c1-92323f236b55"
     },
@@ -4991,9 +5033,18 @@
         "Repeat the three-count cycle for the full duration."
       ],
       "breathPattern": [
-        {"label": "Inhale", "seconds": 3},
-        {"label": "Hold", "seconds": 3},
-        {"label": "Exhale", "seconds": 3}
+        {
+          "label": "Inhale",
+          "seconds": 3
+        },
+        {
+          "label": "Hold",
+          "seconds": 3
+        },
+        {
+          "label": "Exhale",
+          "seconds": 3
+        }
       ],
       "id": "75dee65d-9191-46eb-98bb-4d1a55e1a1ce"
     },
@@ -5041,11 +5092,26 @@
         "Repeat the segmented inhale for the full duration."
       ],
       "breathPattern": [
-        {"label": "Inhale", "seconds": 2},
-        {"label": "Hold", "seconds": 2},
-        {"label": "Inhale", "seconds": 2},
-        {"label": "Hold", "seconds": 2},
-        {"label": "Exhale", "seconds": 6}
+        {
+          "label": "Inhale",
+          "seconds": 2
+        },
+        {
+          "label": "Hold",
+          "seconds": 2
+        },
+        {
+          "label": "Inhale",
+          "seconds": 2
+        },
+        {
+          "label": "Hold",
+          "seconds": 2
+        },
+        {
+          "label": "Exhale",
+          "seconds": 6
+        }
       ],
       "id": "f38e9e2e-5e1e-46ac-a01a-aced859a407e"
     },
@@ -5064,6 +5130,1122 @@
       ],
       "caution": "This is a grounding technique for calm attention, not a treatment for anxiety or panic disorders \u2014 seek professional support if you need it.",
       "id": "3b3a8a55-7278-4f4a-8840-263fcf551d91"
+    },
+    {
+      "name": "Standing Doorway Bicep Stretch (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Biceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand in an open doorway and place your left palm flat against the door frame, arm straight, thumb pointing up.",
+        "Slowly rotate your body away from the doorway until you feel a stretch along the front of your left upper arm.",
+        "Keep your left elbow straight and your shoulder relaxed away from your ear.",
+        "Hold for 20-30 seconds, then release slowly."
+      ],
+      "id": "d7a4676a-30f5-4020-9438-ffcee3f7dd56"
+    },
+    {
+      "name": "Standing Doorway Bicep Stretch (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Biceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand in an open doorway and place your right palm flat against the door frame, arm straight, thumb pointing up.",
+        "Slowly rotate your body away from the doorway until you feel a stretch along the front of your right upper arm.",
+        "Keep your right elbow straight and your shoulder relaxed away from your ear.",
+        "Hold for 20-30 seconds, then release slowly."
+      ],
+      "id": "b2e00e57-fab0-4228-b07a-540bc6d375a5"
+    },
+    {
+      "name": "Behind-Back Prayer Bicep Stretch",
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Biceps",
+        "Right Biceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand tall and bring both arms behind your back, elbows straight.",
+        "Press your palms together behind your back in a reverse prayer position, fingers pointing up.",
+        "Gently lift your hands away from your lower back until you feel a stretch through both biceps and forearms.",
+        "Hold for 20-30 seconds, breathing steadily."
+      ],
+      "id": "793170e1-f0df-4ecb-ab62-21ee804068c8"
+    },
+    {
+      "name": "Wall-Assisted Bicep Stretch (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Biceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand with your left side to a wall, arm's length away.",
+        "Place your left palm flat on the wall behind you at shoulder height, fingers pointing backward.",
+        "Slowly turn your torso away from the wall until you feel the stretch along your left bicep.",
+        "Hold for 20-30 seconds, then switch sides another time if desired."
+      ],
+      "id": "590eae43-4373-4a21-855d-f3435a177c2c"
+    },
+    {
+      "name": "Wall-Assisted Bicep Stretch (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Biceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand with your right side to a wall, arm's length away.",
+        "Place your right palm flat on the wall behind you at shoulder height, fingers pointing backward.",
+        "Slowly turn your torso away from the wall until you feel the stretch along your right bicep.",
+        "Hold for 20-30 seconds, then switch sides another time if desired."
+      ],
+      "id": "ebd18bd6-bf76-4fb9-984b-47004ecb5b78"
+    },
+    {
+      "name": "Overhead Bicep Reach with Strap (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Biceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Hold a towel or strap in your left hand and raise your left arm overhead.",
+        "Bend your left elbow and let the strap drape down your back, keeping a gentle grip.",
+        "Straighten your left elbow as far as comfortable, feeling the stretch through the front of your upper arm.",
+        "Hold for 20-30 seconds, keeping your shoulder relaxed."
+      ],
+      "id": "fc6515d6-dac1-459b-bd9e-1e9daa4bab6e"
+    },
+    {
+      "name": "Overhead Bicep Reach with Strap (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Biceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Hold a towel or strap in your right hand and raise your right arm overhead.",
+        "Bend your right elbow and let the strap drape down your back, keeping a gentle grip.",
+        "Straighten your right elbow as far as comfortable, feeling the stretch through the front of your upper arm.",
+        "Hold for 20-30 seconds, keeping your shoulder relaxed."
+      ],
+      "id": "f0a60ab3-b5cc-4d36-8118-39881ad65ee3"
+    },
+    {
+      "name": "Seated Bicep Stretch on Chair Edge",
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Biceps",
+        "Right Biceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit near the front edge of a sturdy chair and place both palms on the seat behind your hips, fingers pointing forward.",
+        "Keeping your elbows straight, slowly slide your hips slightly forward until you feel a stretch through both biceps.",
+        "Lift your chest and keep your shoulders down and back.",
+        "Hold for 20-30 seconds, breathing evenly."
+      ],
+      "id": "8013458b-3611-4726-82e2-565af1edbaa6"
+    },
+    {
+      "name": "Overhead Triceps Stretch with Strap (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Triceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Raise your left arm overhead and bend the elbow so your left hand drops behind your neck.",
+        "Reach your right hand up your back and grasp a towel or strap held by your left hand for extra reach.",
+        "Gently pull down on the strap until you feel a stretch along the back of your left upper arm.",
+        "Hold for 20-30 seconds, keeping your neck relaxed."
+      ],
+      "id": "a934f5b3-ea38-4450-9c5c-08c3ad52a65b"
+    },
+    {
+      "name": "Overhead Triceps Stretch with Strap (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Triceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Raise your right arm overhead and bend the elbow so your right hand drops behind your neck.",
+        "Reach your left hand up your back and grasp a towel or strap held by your right hand for extra reach.",
+        "Gently pull down on the strap until you feel a stretch along the back of your right upper arm.",
+        "Hold for 20-30 seconds, keeping your neck relaxed."
+      ],
+      "id": "5b6c538e-9993-4497-a10a-838de15b9a57"
+    },
+    {
+      "name": "Cross-Body Triceps Pull at Wall (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Triceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand facing a wall and raise your left arm across your chest at shoulder height, elbow bent.",
+        "Place your left forearm against the wall for light resistance.",
+        "Use your right hand to gently press your left elbow further across your body.",
+        "Hold for 20-30 seconds, feeling the stretch through the back of your left arm and shoulder."
+      ],
+      "id": "becaf945-c962-48cf-908f-dedcf84502af"
+    },
+    {
+      "name": "Cross-Body Triceps Pull at Wall (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Triceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand facing a wall and raise your right arm across your chest at shoulder height, elbow bent.",
+        "Place your right forearm against the wall for light resistance.",
+        "Use your left hand to gently press your right elbow further across your body.",
+        "Hold for 20-30 seconds, feeling the stretch through the back of your right arm and shoulder."
+      ],
+      "id": "41c819bb-5e45-4853-a882-e55b3aa6e17d"
+    },
+    {
+      "name": "Behind-Head Bilateral Triceps Stretch",
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Triceps",
+        "Right Triceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or stand tall and raise both arms overhead.",
+        "Bend both elbows so your hands drop behind your head, fingers interlaced if comfortable.",
+        "Gently press your elbows back and slightly together, feeling both triceps lengthen.",
+        "Hold for 20-30 seconds, keeping your ribs down and core gently engaged."
+      ],
+      "id": "75a49884-80b8-44c6-800b-a151caf26a19"
+    },
+    {
+      "name": "Seated Triceps Stretch with Towel (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Triceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit tall and hold one end of a towel in your left hand, raising that arm overhead and bending the elbow.",
+        "Reach your right hand behind your lower back and take hold of the towel's other end.",
+        "Gently walk your right hand up the towel to deepen the stretch through your left triceps.",
+        "Hold for 20-30 seconds, then relax."
+      ],
+      "id": "409479aa-a29b-452d-9e18-4be6d46b3a09"
+    },
+    {
+      "name": "Seated Triceps Stretch with Towel (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Triceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit tall and hold one end of a towel in your right hand, raising that arm overhead and bending the elbow.",
+        "Reach your left hand behind your lower back and take hold of the towel's other end.",
+        "Gently walk your left hand up the towel to deepen the stretch through your right triceps.",
+        "Hold for 20-30 seconds, then relax."
+      ],
+      "id": "6a5b90f0-0b9e-422b-96d0-f572dfc224da"
+    },
+    {
+      "name": "Kneeling Triceps Stretch on Chair",
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Triceps",
+        "Right Triceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Kneel in front of a chair or low bench and place both forearms on the seat, elbows bent.",
+        "Sit your hips back toward your heels while keeping your forearms in place.",
+        "Let your chest sink toward the floor, feeling a stretch through both triceps and shoulders.",
+        "Hold for 20-30 seconds, breathing deeply."
+      ],
+      "id": "3917da93-0e2e-4549-b842-99d2e8e87e51"
+    },
+    {
+      "name": "Standing Calf Stretch on Stair Edge (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Calves"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand on a stair or sturdy step with the ball of your left foot on the edge, heel hanging off.",
+        "Hold a railing for balance and slowly lower your left heel below the level of the step.",
+        "Keep your left knee straight to target the calf, and stop before any pain in the Achilles.",
+        "Hold for 20-30 seconds, then rise back to neutral."
+      ],
+      "caution": "Hold a stable railing throughout - do not attempt without support.",
+      "id": "5136a327-e3d0-494e-8fc4-ddef8c44cb03"
+    },
+    {
+      "name": "Standing Calf Stretch on Stair Edge (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Calves"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand on a stair or sturdy step with the ball of your right foot on the edge, heel hanging off.",
+        "Hold a railing for balance and slowly lower your right heel below the level of the step.",
+        "Keep your right knee straight to target the calf, and stop before any pain in the Achilles.",
+        "Hold for 20-30 seconds, then rise back to neutral."
+      ],
+      "caution": "Hold a stable railing throughout - do not attempt without support.",
+      "id": "77789fbf-a5c7-4901-ba63-1347806f8540"
+    },
+    {
+      "name": "Downward-Facing Dog Calf Pump",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Calves",
+        "Right Calves"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "From hands and knees, tuck your toes and lift your hips up and back into an inverted V shape.",
+        "Bend one knee at a time, pressing the opposite heel gently toward the floor.",
+        "Alternate pedaling your feet, pressing each heel down for a couple of seconds at a time.",
+        "Continue the gentle pedaling motion for the full duration."
+      ],
+      "id": "88e274ef-bf80-4e67-8675-3de9d5d9676a"
+    },
+    {
+      "name": "Seated Calf Stretch with Towel (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Calves"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit on the floor with your left leg extended straight in front of you.",
+        "Loop a towel or strap around the ball of your left foot, holding one end in each hand.",
+        "Keeping your knee straight, gently pull the towel to draw your toes back toward your shin.",
+        "Hold for 20-30 seconds, feeling the stretch through your calf."
+      ],
+      "id": "39644b34-0bfd-4fc6-9bc0-e54091075316"
+    },
+    {
+      "name": "Seated Calf Stretch with Towel (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Calves"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit on the floor with your right leg extended straight in front of you.",
+        "Loop a towel or strap around the ball of your right foot, holding one end in each hand.",
+        "Keeping your knee straight, gently pull the towel to draw your toes back toward your shin.",
+        "Hold for 20-30 seconds, feeling the stretch through your calf."
+      ],
+      "id": "6dd12771-6ca7-45ee-9666-8fe17a542b1d"
+    },
+    {
+      "name": "Wall Calf Stretch, Bent-Knee Soleus Focus (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Calves"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand facing a wall with your left foot a step behind your right.",
+        "Bend both knees slightly, keeping your left heel pressed into the floor.",
+        "Lean your hips toward the wall until you feel a stretch lower in your left calf, near the Achilles.",
+        "Hold for 20-30 seconds, then release."
+      ],
+      "id": "2f258e9f-8138-44f1-9339-a9e1072dfcf7"
+    },
+    {
+      "name": "Wall Calf Stretch, Bent-Knee Soleus Focus (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Calves"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand facing a wall with your right foot a step behind your left.",
+        "Bend both knees slightly, keeping your right heel pressed into the floor.",
+        "Lean your hips toward the wall until you feel a stretch lower in your right calf, near the Achilles.",
+        "Hold for 20-30 seconds, then release."
+      ],
+      "id": "ec2311f5-59e2-4e7c-867d-ff652ef4f52c"
+    },
+    {
+      "name": "Kneeling Calf Stretch on Cushion (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Calves"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Kneel on a cushion with your left foot forward, knee bent at about 90 degrees, right knee resting on the cushion behind you.",
+        "Keeping your left heel flat on the floor, gently shift your weight forward over your left knee.",
+        "Hold when you feel a stretch through the back of your left lower leg.",
+        "Hold for 20-30 seconds, then return to center."
+      ],
+      "id": "10cd81ee-af76-49a5-b7a4-0185ce4c5860"
+    },
+    {
+      "name": "Kneeling Calf Stretch on Cushion (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Calves"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Kneel on a cushion with your right foot forward, knee bent at about 90 degrees, left knee resting on the cushion behind you.",
+        "Keeping your right heel flat on the floor, gently shift your weight forward over your right knee.",
+        "Hold when you feel a stretch through the back of your right lower leg.",
+        "Hold for 20-30 seconds, then return to center."
+      ],
+      "id": "cdedd0f2-2d9e-44d9-a471-28190934c717"
+    },
+    {
+      "name": "Standing Bilateral Calf Stretch on Incline Board",
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Calves",
+        "Right Calves"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand with both feet on an incline board or a thick book, toes pointing up the slope, heels on the floor.",
+        "Keep both knees straight and your posture tall.",
+        "Lean your body slightly forward from the ankles until you feel both calves stretch evenly.",
+        "Hold for 20-30 seconds, breathing steadily."
+      ],
+      "id": "135be4d4-96cd-4443-be45-0a8fb2fc3e2c"
+    },
+    {
+      "name": "Kneeling Tibialis Stretch, Toes Tucked (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Tibialis"
+      ],
+      "durationSeconds": 20,
+      "difficulty": 1,
+      "instructions": [
+        "Kneel on a cushioned surface with your left toes tucked under, top of the foot facing the floor.",
+        "Keep your right knee forward for balance and slowly sit your hips back toward your left heel.",
+        "Stop when you feel a stretch along the front of your left shin.",
+        "Hold for 15-20 seconds, then release."
+      ],
+      "caution": "Move slowly and stop immediately if you feel any sharp pain in the ankle or shin.",
+      "id": "243ae5ab-c094-4294-afe6-8c71d54c55cc"
+    },
+    {
+      "name": "Kneeling Tibialis Stretch, Toes Tucked (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Tibialis"
+      ],
+      "durationSeconds": 20,
+      "difficulty": 1,
+      "instructions": [
+        "Kneel on a cushioned surface with your right toes tucked under, top of the foot facing the floor.",
+        "Keep your left knee forward for balance and slowly sit your hips back toward your right heel.",
+        "Stop when you feel a stretch along the front of your right shin.",
+        "Hold for 15-20 seconds, then release."
+      ],
+      "caution": "Move slowly and stop immediately if you feel any sharp pain in the ankle or shin.",
+      "id": "31c325e6-024e-4c7b-8a79-17e534bb0e18"
+    },
+    {
+      "name": "Seated Shin Stretch with Strap (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Tibialis"
+      ],
+      "durationSeconds": 20,
+      "difficulty": 1,
+      "instructions": [
+        "Sit with your left leg extended and loop a strap around the top of your left foot.",
+        "Gently pull the strap to point your left toes away from you, deepening the ankle flex.",
+        "Feel the stretch along the front of your left shin, keeping the motion gentle.",
+        "Hold for 15-20 seconds, then release slowly."
+      ],
+      "id": "a2f75877-873a-49a6-90e0-20367b208b02"
+    },
+    {
+      "name": "Seated Shin Stretch with Strap (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Tibialis"
+      ],
+      "durationSeconds": 20,
+      "difficulty": 1,
+      "instructions": [
+        "Sit with your right leg extended and loop a strap around the top of your right foot.",
+        "Gently pull the strap to point your right toes away from you, deepening the ankle flex.",
+        "Feel the stretch along the front of your right shin, keeping the motion gentle.",
+        "Hold for 15-20 seconds, then release slowly."
+      ],
+      "id": "7c09f0cd-c973-42ce-840b-c522529c3c36"
+    },
+    {
+      "name": "Standing Tibialis Stretch Against Wall",
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Tibialis",
+        "Right Tibialis"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand an arm's length from a wall, resting your hands on it for balance.",
+        "Point both sets of toes and press the tops of your feet gently into the floor behind you, one at a time if needed for balance.",
+        "Feel a stretch along the front of your shins as your ankles point away from you.",
+        "Hold for 15-20 seconds per side, alternating through the full duration."
+      ],
+      "id": "da16f218-5ba7-4755-94fb-3e0d22f1f36c"
+    },
+    {
+      "name": "Ankle Circles for Tibialis Release (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Tibialis"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit with your left leg extended and lifted slightly off the floor.",
+        "Slowly circle your left ankle clockwise ten times, then counterclockwise ten times.",
+        "Keep the motion slow and controlled, moving through the full available range.",
+        "Continue the circles for the full duration to release tension along the shin."
+      ],
+      "id": "f1764e04-7d0c-4a45-a1f3-7d8aac82c6e8"
+    },
+    {
+      "name": "Ankle Circles for Tibialis Release (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Right Tibialis"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit with your right leg extended and lifted slightly off the floor.",
+        "Slowly circle your right ankle clockwise ten times, then counterclockwise ten times.",
+        "Keep the motion slow and controlled, moving through the full available range.",
+        "Continue the circles for the full duration to release tension along the shin."
+      ],
+      "id": "fa2a73fa-772d-4af3-b5c6-0b7fd2767a4b"
+    },
+    {
+      "name": "Cross-Legged Shin Pull (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Tibialis"
+      ],
+      "durationSeconds": 20,
+      "difficulty": 1,
+      "instructions": [
+        "Sit cross-legged with your left ankle resting on your right knee.",
+        "Use your left hand to gently pull the top of your left foot toward your shin.",
+        "Feel a mild stretch along the front of your left lower leg.",
+        "Hold for 15-20 seconds, then switch the leg position."
+      ],
+      "id": "b5956057-9f8d-4ef4-8df0-7defebfe920f"
+    },
+    {
+      "name": "Cross-Legged Shin Pull (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Tibialis"
+      ],
+      "durationSeconds": 20,
+      "difficulty": 1,
+      "instructions": [
+        "Sit cross-legged with your right ankle resting on your left knee.",
+        "Use your right hand to gently pull the top of your right foot toward your shin.",
+        "Feel a mild stretch along the front of your right lower leg.",
+        "Hold for 15-20 seconds, then switch the leg position."
+      ],
+      "id": "838d0e43-8479-4b0f-b21d-ab6da41ad164"
+    },
+    {
+      "name": "Standing Quad Stretch Against Wall (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Quadriceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand facing away from a wall, one hand resting on it for balance.",
+        "Bend your left knee and grasp your left ankle behind you, drawing the heel toward your glutes.",
+        "Keep your knees close together and your hips level, without arching your lower back.",
+        "Hold for 20-30 seconds, then lower your foot with control."
+      ],
+      "id": "32dc469c-d7b8-4ace-b375-ca87a0c7e3ef"
+    },
+    {
+      "name": "Standing Quad Stretch Against Wall (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Quadriceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand facing away from a wall, one hand resting on it for balance.",
+        "Bend your right knee and grasp your right ankle behind you, drawing the heel toward your glutes.",
+        "Keep your knees close together and your hips level, without arching your lower back.",
+        "Hold for 20-30 seconds, then lower your foot with control."
+      ],
+      "id": "0e7ff381-4edc-4647-983c-f3115add0450"
+    },
+    {
+      "name": "Side-Lying Quad Stretch with Strap (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Quadriceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Lie on your right side with your legs stacked.",
+        "Loop a strap around your left ankle and bend the knee, gently drawing the heel toward your glutes with the strap.",
+        "Keep your hips stacked and avoid arching your lower back.",
+        "Hold for 20-30 seconds, then release slowly."
+      ],
+      "id": "5f2b3cd1-2c5d-4911-b861-b9effbd64b23"
+    },
+    {
+      "name": "Side-Lying Quad Stretch with Strap (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Quadriceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Lie on your left side with your legs stacked.",
+        "Loop a strap around your right ankle and bend the knee, gently drawing the heel toward your glutes with the strap.",
+        "Keep your hips stacked and avoid arching your lower back.",
+        "Hold for 20-30 seconds, then release slowly."
+      ],
+      "id": "1d9dd146-f7c1-4236-a4cd-b68a721fd703"
+    },
+    {
+      "name": "Kneeling Couch Stretch, Rear Foot Elevated (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Quadriceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Kneel in front of a couch or low chair, resting the top of your left foot on the seat behind you.",
+        "Bring your right foot forward into a lunge position, keeping your torso upright.",
+        "Gently press your hips forward until you feel a deep stretch through the front of your left thigh.",
+        "Hold for 20-30 seconds, easing off if you feel any knee discomfort."
+      ],
+      "caution": "Skip this stretch if you have knee pain - it places more load on the knee than a standing quad stretch.",
+      "id": "7cdbb136-483b-472e-bed0-3662ddf337a0"
+    },
+    {
+      "name": "Kneeling Couch Stretch, Rear Foot Elevated (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Quadriceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Kneel in front of a couch or low chair, resting the top of your right foot on the seat behind you.",
+        "Bring your left foot forward into a lunge position, keeping your torso upright.",
+        "Gently press your hips forward until you feel a deep stretch through the front of your right thigh.",
+        "Hold for 20-30 seconds, easing off if you feel any knee discomfort."
+      ],
+      "caution": "Skip this stretch if you have knee pain - it places more load on the knee than a standing quad stretch.",
+      "id": "9576eb4b-863f-41ce-b30f-ac2f2992890b"
+    },
+    {
+      "name": "Prone Quad Stretch on Mat",
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Quadriceps",
+        "Right Quadriceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Lie face down on a mat with your legs extended.",
+        "Bend both knees and reach back to hold both ankles, or use straps if you can't reach.",
+        "Gently draw both heels toward your glutes, keeping your hips pressed into the mat.",
+        "Hold for 20-30 seconds, breathing steadily."
+      ],
+      "id": "d7103063-9060-4ae7-924a-c2b6b8655166"
+    },
+    {
+      "name": "Standing Quad Stretch with Chair Support (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Quadriceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand beside a chair, resting your right hand on the backrest for balance.",
+        "Bend your left knee, bringing your heel up behind you, and catch your ankle with your left hand.",
+        "Keep your standing leg soft and your torso tall, drawing the heel gently toward your glutes.",
+        "Hold for 20-30 seconds, then lower with control."
+      ],
+      "id": "d1d4e5d6-da62-497e-8636-f9ded29b00e0"
+    },
+    {
+      "name": "Standing Quad Stretch with Chair Support (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Quadriceps"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand beside a chair, resting your left hand on the backrest for balance.",
+        "Bend your right knee, bringing your heel up behind you, and catch your ankle with your right hand.",
+        "Keep your standing leg soft and your torso tall, drawing the heel gently toward your glutes.",
+        "Hold for 20-30 seconds, then lower with control."
+      ],
+      "id": "b0e4ad2d-0690-40ac-a50a-4b988191666b"
+    },
+    {
+      "name": "Overhead Lat Stretch at Doorframe (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Lats"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand beside a doorframe and reach your left arm up to hold the top of the frame.",
+        "Keeping your arm straight, lean your hips away from the doorframe to the right.",
+        "Feel the stretch travel down the side of your torso through your left lat.",
+        "Hold for 20-30 seconds, then switch sides another time if desired."
+      ],
+      "id": "eace139c-e899-41f7-ac4d-4b41756c1ccb"
+    },
+    {
+      "name": "Overhead Lat Stretch at Doorframe (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Lats"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Stand beside a doorframe and reach your right arm up to hold the top of the frame.",
+        "Keeping your arm straight, lean your hips away from the doorframe to the left.",
+        "Feel the stretch travel down the side of your torso through your right lat.",
+        "Hold for 20-30 seconds, then switch sides another time if desired."
+      ],
+      "id": "84ec6ea7-f98f-4b1c-ac02-4fa3cfdbfb25"
+    },
+    {
+      "name": "Side-Bend Lat Stretch with Chair (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Lats"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit sideways on a chair with your left hip closest to the backrest.",
+        "Raise your left arm overhead and reach it across to the right, letting your torso side-bend.",
+        "Hold onto the chair seat with your right hand for stability.",
+        "Hold for 20-30 seconds, feeling the stretch along your left side body."
+      ],
+      "id": "6fa457fe-9e77-41a1-bce8-79d72c613f25"
+    },
+    {
+      "name": "Side-Bend Lat Stretch with Chair (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Lats"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit sideways on a chair with your right hip closest to the backrest.",
+        "Raise your right arm overhead and reach it across to the left, letting your torso side-bend.",
+        "Hold onto the chair seat with your left hand for stability.",
+        "Hold for 20-30 seconds, feeling the stretch along your right side body."
+      ],
+      "id": "4b4ebe08-df84-47b0-8031-a9c89412fdc4"
+    },
+    {
+      "name": "Kneeling Lat Stretch, Arms Extended",
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Lats",
+        "Right Lats"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Kneel in front of a low table or bench and place both hands on it, arms extended.",
+        "Sit your hips back toward your heels while keeping your arms straight and reaching forward.",
+        "Let your chest melt toward the floor, feeling a stretch along both sides of your back.",
+        "Hold for 20-30 seconds, breathing deeply into your ribcage."
+      ],
+      "id": "dd9e668a-583f-4309-9228-7f8f2de0d37f"
+    },
+    {
+      "name": "Seated Cross-Body Lat Reach (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Lats"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit tall on the floor or a chair and raise your left arm overhead.",
+        "Reach your left arm across and slightly down toward your right knee, side-bending your torso.",
+        "Keep your hips grounded and reach through your fingertips.",
+        "Hold for 20-30 seconds, feeling the stretch along your left lat and side body."
+      ],
+      "id": "99e1771b-08bb-48b0-9872-3cbd01020e01"
+    },
+    {
+      "name": "Seated Cross-Body Lat Reach (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Lats"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit tall on the floor or a chair and raise your right arm overhead.",
+        "Reach your right arm across and slightly down toward your left knee, side-bending your torso.",
+        "Keep your hips grounded and reach through your fingertips.",
+        "Hold for 20-30 seconds, feeling the stretch along your right lat and side body."
+      ],
+      "id": "060b272b-ce07-4b70-b1e4-aa15cbb292f2"
+    },
+    {
+      "name": "Hanging Lat Stretch on Bar or Ledge",
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Lats",
+        "Right Lats"
+      ],
+      "durationSeconds": 20,
+      "difficulty": 2,
+      "instructions": [
+        "Find a sturdy bar, ledge, or door top you can safely hang from with both hands.",
+        "Let your body hang with straight arms, relaxing your shoulders down away from your ears.",
+        "Allow your body weight to gently lengthen both lats and your upper back.",
+        "Hold for 15-20 seconds, keeping your grip secure throughout."
+      ],
+      "caution": "Only attempt this if you can hang safely and comfortably support your body weight - step down immediately if you feel any shoulder strain.",
+      "id": "e73905ea-0e9c-46e0-97f8-c1368efb6ef1"
+    },
+    {
+      "name": "Bhastrika (Bellows Breath)",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 90,
+      "difficulty": 2,
+      "instructions": [
+        "Sit tall with a straight spine and relax your shoulders.",
+        "Take a few normal breaths to settle, then begin forceful, equal inhales and exhales through the nose, about one per second.",
+        "Keep the motion coming from your diaphragm, like a bellows pumping air in and out.",
+        "Do 10-15 rapid breaths, then return to slow, normal breathing and notice the effects.",
+        "Repeat the cycle 2-3 times over the full duration, resting between rounds."
+      ],
+      "caution": "Skip if pregnant or if you have high blood pressure, heart conditions, or feel dizzy - stop immediately if lightheaded.",
+      "id": "84ff8161-f13e-473f-bc3c-06031a816119"
+    },
+    {
+      "name": "Sitkari Breath (Hissing Cooling Breath)",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 90,
+      "difficulty": 1,
+      "instructions": [
+        "Sit comfortably and gently clench your teeth together with lips slightly parted.",
+        "Inhale slowly through the gaps in your teeth, making a soft hissing sound.",
+        "Close your mouth and exhale slowly and completely through your nose.",
+        "Repeat this inhale-through-teeth, exhale-through-nose cycle for the full duration, noticing a cooling sensation."
+      ],
+      "id": "b93f14fb-0c9d-4967-9041-989d54b50e8c"
+    },
+    {
+      "name": "Buteyko Control Pause Breathing",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 180,
+      "difficulty": 2,
+      "instructions": [
+        "Sit tall and breathe normally for a minute to settle.",
+        "After a normal, relaxed exhale, gently pinch your nose and pause your breath.",
+        "Hold only until you feel the first definite urge to breathe - do not strain or push past comfort.",
+        "Release your nose and resume calm, quiet breathing through the nose, breathing slightly less than usual.",
+        "Rest for a minute, then repeat the pause 2-3 more times over the full duration."
+      ],
+      "caution": "This practice is about a gentle first urge to breathe, not a maximal breath-hold - never force or strain, and stop if you feel unwell.",
+      "id": "b398be96-0560-44a0-96fc-2a408a8619a7"
+    },
+    {
+      "name": "Cyclic Sighing (Multi-Cycle Protocol)",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 180,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or lie down comfortably.",
+        "Inhale through your nose, then take a second, shorter sharp inhale on top of it to fully fill your lungs.",
+        "Exhale slowly and completely through your mouth, letting the exhale last twice as long as the inhale.",
+        "Repeat this double-inhale, long-exhale cycle continuously and evenly for the full duration."
+      ],
+      "id": "3c9da3f5-c2b1-436a-bb2c-c6de68687380"
+    },
+    {
+      "name": "Extended Kumbhaka Breath Retention",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 150,
+      "difficulty": 2,
+      "instructions": [
+        "Sit tall with a relaxed, straight spine.",
+        "Inhale slowly and fully through your nose over 4 counts.",
+        "Gently hold the breath in for 8 counts, keeping your chest and throat soft, not clenched.",
+        "Exhale slowly and completely through your nose over 6 counts, then pause briefly before the next inhale.",
+        "Continue this inhale-hold-exhale rhythm for the full duration."
+      ],
+      "breathPattern": [
+        {
+          "label": "Inhale",
+          "seconds": 4
+        },
+        {
+          "label": "Hold",
+          "seconds": 8
+        },
+        {
+          "label": "Exhale",
+          "seconds": 6
+        }
+      ],
+      "caution": "Skip breath retention if pregnant or if you have high blood pressure, heart conditions, or a history of fainting.",
+      "id": "2ca8746a-3183-4b30-89bc-d7ef88378f77"
+    },
+    {
+      "name": "Rectangle Breathing (4-2-6-2)",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 150,
+      "difficulty": 1,
+      "instructions": [
+        "Sit comfortably with a tall, relaxed spine.",
+        "Inhale slowly through your nose for 4 counts.",
+        "Hold gently for 2 counts, then exhale slowly through your mouth for 6 counts.",
+        "Hold gently again for 2 counts before your next inhale.",
+        "Repeat this uneven rectangular rhythm for the full duration."
+      ],
+      "breathPattern": [
+        {
+          "label": "Inhale",
+          "seconds": 4
+        },
+        {
+          "label": "Hold",
+          "seconds": 2
+        },
+        {
+          "label": "Exhale",
+          "seconds": 6
+        },
+        {
+          "label": "Hold",
+          "seconds": 2
+        }
+      ],
+      "id": "3fa2512e-83cf-4942-a788-741de1a6ce3e"
+    },
+    {
+      "name": "Whispered \"Ha\" Release Breath",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 90,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or stand comfortably and take a slow breath in through your nose.",
+        "As you exhale, softly whisper a long, breathy \"haaaa\" sound, letting your jaw and shoulders relax.",
+        "Let each exhale feel like a release of tension, without forcing the sound.",
+        "Continue the slow inhale and whispered-exhale cycle for the full duration."
+      ],
+      "id": "80ea5499-96b8-42ee-9bc0-23389fa7264f"
+    },
+    {
+      "name": "4-4-8 Extended Exhale Countdown Breath",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 150,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or lie down in a comfortable position.",
+        "Inhale through your nose for 4 counts, then gently hold for 4 counts.",
+        "Exhale slowly and completely through your mouth for 8 counts, letting your body settle.",
+        "Continue this pattern steadily for the full duration, keeping the exhale twice as long as the inhale."
+      ],
+      "breathPattern": [
+        {
+          "label": "Inhale",
+          "seconds": 4
+        },
+        {
+          "label": "Hold",
+          "seconds": 4
+        },
+        {
+          "label": "Exhale",
+          "seconds": 8
+        }
+      ],
+      "id": "2beb03be-8dc2-428e-aea2-6a922f8f5ba9"
     }
   ]
 }
