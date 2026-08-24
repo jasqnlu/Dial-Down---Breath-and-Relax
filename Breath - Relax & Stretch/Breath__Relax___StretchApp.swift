@@ -356,15 +356,26 @@ struct BreathRelaxStretchApp: App {
         seedDataVersion = max(seedDataVersion, 10)
     }
 
+    /// Like `migrateSeedToV9IfNeeded`, NOT gated behind a one-time version
+    /// bump (this was the original design, and it was wrong): breath
+    /// patterns are not a fixed, one-time set — new pattern-bearing
+    /// exercises keep getting added to `SeedData.json` in later content
+    /// batches, each needing its `breathPattern` backfilled the same way a
+    /// brand-new exercise needs inserting by `migrateV9`. A row `migrateV9`
+    /// inserts on a later launch never gets `breathPatternData` (that insert
+    /// path predates the field), so gating this behind `seedDataVersion < 11`
+    /// meant any such row's pattern would never backfill once the device had
+    /// already passed v11. `SeedMigrator.migrateV11` is idempotent (matches
+    /// by seedID, only fills when the bundle's pattern actually differs), so
+    /// it's cheap and safe to run on every launch instead.
     private func migrateSeedToV11IfNeeded() {
-        guard seedDataVersion < 11 else { return }
         if let rawExercises = loadSeedExercises() {
             let context = sharedModelContainer.mainContext
             if SeedMigrator.migrateV11(context: context, rawExercises: rawExercises) {
                 try? context.save()
             }
         }
-        seedDataVersion = 11
+        seedDataVersion = max(seedDataVersion, 11)
     }
 
     // MARK: - Remote catalog sync (best-effort, offline-first)
