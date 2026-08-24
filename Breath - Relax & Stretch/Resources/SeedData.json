@@ -4404,6 +4404,666 @@
         "Repeat the lift-and-lower rhythm for the full duration."
       ],
       "id": "37492316-8e25-4f91-a06a-de0b59895bf9"
+    },
+    {
+      "name": "Thumb Extension Stretch (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Hand"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Hold your left hand up with fingers relaxed.",
+        "Use your right hand to gently bend your left thumb back and down, away from your palm.",
+        "Hold for 15-20 seconds, feeling the stretch along the base of the thumb.",
+        "Release and repeat 2-3 times."
+      ],
+      "id": "64941e54-41c1-43a9-9653-810487052788"
+    },
+    {
+      "name": "Thumb Extension Stretch (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Hand"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Hold your right hand up with fingers relaxed.",
+        "Use your left hand to gently bend your right thumb back and down, away from your palm.",
+        "Hold for 15-20 seconds, feeling the stretch along the base of the thumb.",
+        "Release and repeat 2-3 times."
+      ],
+      "id": "97a8371e-87ca-4634-b1d2-26ecfe061fee"
+    },
+    {
+      "name": "Hook Fist Tendon Glide",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Hand",
+        "Right Hand"
+      ],
+      "durationSeconds": 40,
+      "difficulty": 1,
+      "instructions": [
+        "Hold both hands up in front of you with fingers straight.",
+        "Bend only your first and second knuckles to form a hook shape, keeping your knuckles at the base of the fingers straight.",
+        "Hold for 3-5 seconds, then straighten your fingers fully.",
+        "Repeat the hook-and-straighten motion for the full duration to glide the finger tendons."
+      ],
+      "id": "04f2b6d3-2066-4c07-bc0f-e9f5afa6ac2d"
+    },
+    {
+      "name": "Fist-to-Fan Tendon Gliding Flow",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Hand",
+        "Right Hand"
+      ],
+      "durationSeconds": 40,
+      "difficulty": 1,
+      "instructions": [
+        "Start with both hands in loose, relaxed fists.",
+        "Slowly open your fingers and spread them as wide as you can, like a fan.",
+        "Hold the spread for 2-3 seconds, then curl back into a fist.",
+        "Repeat the fist-to-fan sequence slowly for the full duration."
+      ],
+      "id": "168c6d5a-9dd7-422f-9fe7-bcd2a73068da"
+    },
+    {
+      "name": "Towel Scrunch (Toe Flexor Stretch)",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Foot",
+        "Right Foot"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Sit in a chair with a small towel laid flat on the floor under your feet.",
+        "Using only your toes, scrunch the towel toward you, gripping and pulling it inward.",
+        "Release and reset the towel flat, then repeat.",
+        "Continue scrunching for the full duration to work the small muscles under your feet."
+      ],
+      "id": "5c343cb3-10dc-489f-bc94-d22db7a17016"
+    },
+    {
+      "name": "Big Toe Extension Stretch (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Foot"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit and cross your left ankle over your right knee.",
+        "Use your hand to gently pull your left big toe upward and back toward your shin.",
+        "Hold for 15-20 seconds, feeling the stretch along the sole and big toe.",
+        "Release and repeat 2-3 times."
+      ],
+      "id": "51a6b355-8262-4d33-b825-04e6ae6739aa"
+    },
+    {
+      "name": "Big Toe Extension Stretch (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Foot"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit and cross your right ankle over your left knee.",
+        "Use your hand to gently pull your right big toe upward and back toward your shin.",
+        "Hold for 15-20 seconds, feeling the stretch along the sole and big toe.",
+        "Release and repeat 2-3 times."
+      ],
+      "id": "3b1a68c7-5bd4-4b2f-b141-4d0f58285fb6"
+    },
+    {
+      "name": "Seated Toe-to-Shin Stretch (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Foot"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit toward the edge of a chair and extend your left leg with your heel on the floor.",
+        "Reach down and gently pull the ball of your left foot and toes back toward your shin.",
+        "Hold for 15-20 seconds, feeling the stretch through the bottom of the foot and calf.",
+        "Release and repeat 2-3 times."
+      ],
+      "id": "b0fad07e-df19-42e4-83db-a9995fd00628"
+    },
+    {
+      "name": "Seated Toe-to-Shin Stretch (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Foot"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit toward the edge of a chair and extend your right leg with your heel on the floor.",
+        "Reach down and gently pull the ball of your right foot and toes back toward your shin.",
+        "Hold for 15-20 seconds, feeling the stretch through the bottom of the foot and calf.",
+        "Release and repeat 2-3 times."
+      ],
+      "id": "f11229f1-5862-4760-89c6-3ea24b9a39dc"
+    },
+    {
+      "name": "Jaw Relaxation Drop",
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Jaw",
+        "Right Jaw"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or stand comfortably and let your shoulders relax.",
+        "Rest your tongue lightly on the roof of your mouth just behind your front teeth.",
+        "Let your lips stay gently closed while allowing your back teeth to come apart, letting your jaw hang loose.",
+        "Breathe slowly and hold this passive, relaxed position for the full duration."
+      ],
+      "caution": "Move gently within a comfortable, pain-free range. Stop if your jaw clicks, locks, or hurts, and see a dentist for diagnosed TMJ problems.",
+      "id": "9d3d7b83-22f5-4392-9f15-fc32fae05bb1"
+    },
+    {
+      "name": "Circular Temple Self-Massage",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Temple",
+        "Right Temple"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Place your fingertips lightly on your temples, just beside your eyebrows.",
+        "Make small, slow circular motions with light pressure.",
+        "Circle in one direction for half the time, then reverse direction.",
+        "Breathe slowly throughout to help release tension."
+      ],
+      "caution": "Use gentle pressure only. Skip if you have a headache disorder that worsens with touch or any scalp or skin condition.",
+      "id": "3c39622e-34d2-4f29-b9f0-7bff63b3fc83"
+    },
+    {
+      "name": "Figure-8 Eye Tracking",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Eye",
+        "Right Eye"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Sit comfortably and hold your head still, facing forward.",
+        "Without moving your head, trace a slow, wide figure-8 shape in the air with your eyes.",
+        "Complete a few slow figure-8s in one direction, then reverse.",
+        "Keep the motion smooth and unhurried for the full duration."
+      ],
+      "caution": "Stop if you feel dizzy or any eye strain. Skip if you have a recent eye injury or eye condition.",
+      "id": "c9e8fecb-8c36-4ae4-b516-9f84bdb3a887"
+    },
+    {
+      "name": "Full Scalp Massage (Tension Release)",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Head"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Place your fingertips on your scalp, spread wide like a claw.",
+        "Press lightly and move your scalp in small circles over the skull, not just sliding over the hair.",
+        "Work slowly from your hairline back toward the crown and down toward the base of your skull.",
+        "Breathe slowly and keep the pressure light and comfortable throughout."
+      ],
+      "caution": "Use gentle pressure only. Skip if you have a headache disorder that worsens with touch or any scalp or skin condition.",
+      "id": "18d4481a-41bf-4d9e-a20b-e752a534946d"
+    },
+    {
+      "name": "90/90 Hip Switch (Rotation Flow)",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Glutes",
+        "Right Glutes",
+        "Left Hip Flexors",
+        "Right Hip Flexors",
+        "Left Hip",
+        "Right Hip"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 2,
+      "instructions": [
+        "Sit on the floor with both knees bent, one leg in front of you and one out to the side, each at roughly 90 degrees.",
+        "Keeping your chest tall, lift both knees slightly and rotate them to switch sides, so the front leg becomes the side leg and vice versa.",
+        "Lower down into the new position with control.",
+        "Continue switching sides smoothly for the full duration."
+      ],
+      "caution": "Move with control rather than momentum, and keep the motion pain-free through the hips and knees.",
+      "id": "a4a9e072-65c3-4dbd-ac3a-ebf405068ea0"
+    },
+    {
+      "name": "Shoulder Pendulum Swing (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Shoulder Joint",
+        "Left Shoulder"
+      ],
+      "durationSeconds": 40,
+      "difficulty": 1,
+      "instructions": [
+        "Lean forward slightly and support yourself with your right hand on a chair or table.",
+        "Let your left arm hang loose and relaxed toward the floor.",
+        "Gently swing the arm in small circles, letting gravity do the work rather than using muscle effort.",
+        "Continue the slow, passive swinging for the full duration, then switch sides on another round."
+      ],
+      "id": "690a7968-ce26-4eda-a09e-b9719a88c178"
+    },
+    {
+      "name": "Shoulder Pendulum Swing (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Right Shoulder Joint",
+        "Right Shoulder"
+      ],
+      "durationSeconds": 40,
+      "difficulty": 1,
+      "instructions": [
+        "Lean forward slightly and support yourself with your left hand on a chair or table.",
+        "Let your right arm hang loose and relaxed toward the floor.",
+        "Gently swing the arm in small circles, letting gravity do the work rather than using muscle effort.",
+        "Continue the slow, passive swinging for the full duration, then switch sides on another round."
+      ],
+      "id": "1e71e0b5-ec20-468e-9f18-775749bf1264"
+    },
+    {
+      "name": "Standing Lumbar Side Glide (Lateral Shift)",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Spinal Erectors",
+        "Lower Back",
+        "Lower Spine"
+      ],
+      "durationSeconds": 40,
+      "difficulty": 2,
+      "instructions": [
+        "Stand with your feet hip-width apart and arms relaxed at your sides.",
+        "Keeping your shoulders level and facing forward, shift your hips directly to one side without bending or twisting.",
+        "Hold briefly, feeling the stretch along one side of your lower back, then glide back to center.",
+        "Repeat, shifting to the other side, alternating for the full duration."
+      ],
+      "caution": "Move within a comfortable range and stop if you feel sharp or radiating pain.",
+      "id": "ca5ed248-9564-4d37-9936-03a2ca08cc8d"
+    },
+    {
+      "name": "Neck Isometric Front-and-Back Press",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Front Neck",
+        "Back Neck",
+        "Neck"
+      ],
+      "durationSeconds": 40,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or stand tall and place one palm flat against your forehead.",
+        "Gently press your head forward into your hand without letting your head actually move, holding for 5 seconds.",
+        "Release, then place a hand behind your head and gently press backward into it without moving your head, holding for 5 seconds.",
+        "Alternate front and back presses for the full duration, keeping the effort light."
+      ],
+      "caution": "Use only gentle, pain-free pressure and stop if you feel dizziness or sharp pain.",
+      "id": "d59f9d3a-58cb-4d05-9494-8c0bbde3eb70"
+    },
+    {
+      "name": "Seated Neck Half-Circles (Ear-to-Shoulder Arc)",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Neck",
+        "Front Neck",
+        "Back Neck"
+      ],
+      "durationSeconds": 40,
+      "difficulty": 1,
+      "instructions": [
+        "Sit tall with your shoulders relaxed.",
+        "Slowly drop your chin toward your chest, then arc your head so your right ear moves toward your right shoulder.",
+        "Continue the slow arc back through center to bring your left ear toward your left shoulder.",
+        "Keep the motion in the front half only \u2014 avoid tilting your head backward \u2014 and repeat slowly for the full duration."
+      ],
+      "caution": "Move gently and stop if you feel dizziness or sharp pain. Keep the arc in front, not tilting backward.",
+      "id": "f7779fcd-13da-42a2-b826-3bb531cc158a"
+    },
+    {
+      "name": "Table-Edge Bicep Stretch (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Biceps",
+        "Left Forearm"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Stand beside a sturdy table with your left arm straight and your palm flat on the table edge behind you, fingers pointing backward.",
+        "Keeping your arm straight, slowly turn your body away from the table.",
+        "Hold for 15-20 seconds, feeling the stretch along the front of your upper arm.",
+        "Release and repeat 2-3 times, then switch sides on another round."
+      ],
+      "id": "617d6199-9b3e-4c4c-819d-59099a84d44e"
+    },
+    {
+      "name": "Table-Edge Bicep Stretch (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Biceps",
+        "Right Forearm"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 2,
+      "instructions": [
+        "Stand beside a sturdy table with your right arm straight and your palm flat on the table edge behind you, fingers pointing backward.",
+        "Keeping your arm straight, slowly turn your body away from the table.",
+        "Hold for 15-20 seconds, feeling the stretch along the front of your upper arm.",
+        "Release and repeat 2-3 times, then switch sides on another round."
+      ],
+      "id": "b1f32f99-10ff-491b-afa0-1f7c91874cd7"
+    },
+    {
+      "name": "Standing Cross-Body Triceps Press (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Triceps",
+        "Left Shoulder"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Reach your left arm across your chest, keeping it straight and at shoulder height.",
+        "Use your right forearm to press your left arm closer to your chest.",
+        "Hold for 15-20 seconds, feeling the stretch through the back of the left upper arm and shoulder.",
+        "Release and repeat 2-3 times, then switch sides on another round."
+      ],
+      "id": "91d8e536-3aba-4bca-a6fc-ba2f61d440af"
+    },
+    {
+      "name": "Standing Cross-Body Triceps Press (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Triceps",
+        "Right Shoulder"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Reach your right arm across your chest, keeping it straight and at shoulder height.",
+        "Use your left forearm to press your right arm closer to your chest.",
+        "Hold for 15-20 seconds, feeling the stretch through the back of the right upper arm and shoulder.",
+        "Release and repeat 2-3 times, then switch sides on another round."
+      ],
+      "id": "7968c4f8-2abd-44de-8495-f88e7141f933"
+    },
+    {
+      "name": "Seated Assisted Tibialis Stretch (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Left Tibialis",
+        "Left Foot"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit with your left ankle crossed over your right knee.",
+        "Use your hand to gently point your left foot and toes downward and away from your shin.",
+        "Hold for 15-20 seconds, feeling the stretch along the front of the shin.",
+        "Release and repeat 2-3 times, then switch sides on another round."
+      ],
+      "id": "9862ec55-41c7-44f8-ae44-7b89d3c93431"
+    },
+    {
+      "name": "Seated Assisted Tibialis Stretch (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "hold",
+      "targetBodyParts": [
+        "Right Tibialis",
+        "Right Foot"
+      ],
+      "durationSeconds": 30,
+      "difficulty": 1,
+      "instructions": [
+        "Sit with your right ankle crossed over your left knee.",
+        "Use your hand to gently point your right foot and toes downward and away from your shin.",
+        "Hold for 15-20 seconds, feeling the stretch along the front of the shin.",
+        "Release and repeat 2-3 times, then switch sides on another round."
+      ],
+      "id": "f36fa60d-4df8-4421-96b8-75dced467874"
+    },
+    {
+      "name": "Active Shoulder Shrug & Release (Left)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Trapezius",
+        "Left Shoulder"
+      ],
+      "durationSeconds": 35,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or stand tall with your arms relaxed at your sides.",
+        "Slowly raise your left shoulder up toward your left ear as far as comfortable.",
+        "Hold for 3-5 seconds, feeling the contraction, then let it drop and fully relax down.",
+        "Repeat the shrug-and-release for the full duration, then switch sides on another round."
+      ],
+      "id": "d1066b96-2f91-4d22-bac0-59f026949ffc"
+    },
+    {
+      "name": "Active Shoulder Shrug & Release (Right)",
+      "isBilateral": false,
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Right Trapezius",
+        "Right Shoulder"
+      ],
+      "durationSeconds": 35,
+      "difficulty": 1,
+      "instructions": [
+        "Sit or stand tall with your arms relaxed at your sides.",
+        "Slowly raise your right shoulder up toward your right ear as far as comfortable.",
+        "Hold for 3-5 seconds, feeling the contraction, then let it drop and fully relax down.",
+        "Repeat the shrug-and-release for the full duration, then switch sides on another round."
+      ],
+      "id": "e8ef61aa-56ff-42b1-b86b-57933e6dd6f0"
+    },
+    {
+      "name": "Grip and Release (Hand Squeeze Stretch)",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Hand",
+        "Right Hand",
+        "Left Forearm",
+        "Right Forearm"
+      ],
+      "durationSeconds": 40,
+      "difficulty": 1,
+      "instructions": [
+        "Hold both hands out in front of you, relaxed.",
+        "Squeeze both hands into firm fists and hold for 3-5 seconds.",
+        "Release and spread your fingers wide open, holding for 3-5 seconds.",
+        "Repeat the squeeze-and-release cycle for the full duration."
+      ],
+      "id": "bc475a9e-cab7-423c-95fc-6908d42b2557"
+    },
+    {
+      "name": "Standing Waist Twist (Dynamic Rotation Flow)",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Obliques",
+        "Right Obliques",
+        "Lower Spine"
+      ],
+      "durationSeconds": 45,
+      "difficulty": 1,
+      "instructions": [
+        "Stand with your feet hip-width apart and knees soft, arms relaxed and swinging loosely.",
+        "Gently rotate your torso to one side, letting your arms swing naturally with the motion.",
+        "Rotate back through center and continue to the other side.",
+        "Keep the motion light and controlled, alternating sides for the full duration."
+      ],
+      "caution": "Keep the twist gentle and controlled \u2014 this is a mobility warm-up, not a forceful stretch.",
+      "id": "0ec82765-27e2-4991-98ba-226b5ae40aa9"
+    },
+    {
+      "name": "Wall Slide (Shoulder Blade Mobility)",
+      "type": "stretch",
+      "cueStyle": "repeat",
+      "targetBodyParts": [
+        "Left Shoulder Joint",
+        "Right Shoulder Joint",
+        "Left Trapezius",
+        "Right Trapezius"
+      ],
+      "durationSeconds": 40,
+      "difficulty": 2,
+      "instructions": [
+        "Stand with your back flat against a wall and your arms raised to form a 'W' shape, elbows and wrists touching the wall.",
+        "Slowly slide your arms up the wall into a 'Y' shape, keeping your elbows and wrists in contact with the wall as long as possible.",
+        "Slide back down to the starting 'W' position with control.",
+        "Repeat the slide up and down slowly for the full duration."
+      ],
+      "caution": "Keep the motion pain-free and only slide as high as you can while keeping your arms touching the wall.",
+      "id": "b41f1658-60af-40c5-9404-d0c639fe2cd4"
+    },
+    {
+      "name": "Triangle Breathing (3-3-3)",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 120,
+      "difficulty": 1,
+      "instructions": [
+        "Sit comfortably with your back straight.",
+        "Inhale slowly through your nose for 3 counts.",
+        "Hold gently for 3 counts.",
+        "Exhale slowly through your nose or mouth for 3 counts.",
+        "Repeat the three-count cycle for the full duration."
+      ],
+      "breathPattern": [
+        {"label": "Inhale", "seconds": 3},
+        {"label": "Hold", "seconds": 3},
+        {"label": "Exhale", "seconds": 3}
+      ],
+      "id": "75dee65d-9191-46eb-98bb-4d1a55e1a1ce"
+    },
+    {
+      "name": "So-Hum Mantra Breath",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 180,
+      "difficulty": 1,
+      "instructions": [
+        "Sit comfortably with your eyes closed and your spine tall.",
+        "As you inhale slowly through your nose, silently say 'So' to yourself.",
+        "As you exhale slowly, silently say 'Hum' to yourself.",
+        "Let your breath set the pace rather than forcing it, continuing the silent 'So-Hum' for the full duration."
+      ],
+      "id": "1a4db798-b65e-4fda-b269-bbce38aa5019"
+    },
+    {
+      "name": "Breath Counting Meditation",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 180,
+      "difficulty": 1,
+      "instructions": [
+        "Sit comfortably with your eyes closed or softly focused downward.",
+        "Breathe naturally, and silently count '1' at the end of your first exhale.",
+        "Continue counting up by one at the end of each exhale, up to 10.",
+        "When you reach 10, or if you lose track, simply start again at 1."
+      ],
+      "id": "30c1236f-e646-4423-81c8-33bd1813d269"
+    },
+    {
+      "name": "Segmented Inhale Breathing (Viloma 2)",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 150,
+      "difficulty": 2,
+      "instructions": [
+        "Sit or lie down comfortably and exhale fully to start.",
+        "Inhale slowly, but pause briefly two or three times partway through the inhale instead of breathing in all at once.",
+        "Once your lungs feel full, exhale slowly and smoothly in one continuous breath.",
+        "Repeat the segmented inhale for the full duration."
+      ],
+      "breathPattern": [
+        {"label": "Inhale", "seconds": 2},
+        {"label": "Hold", "seconds": 2},
+        {"label": "Inhale", "seconds": 2},
+        {"label": "Hold", "seconds": 2},
+        {"label": "Exhale", "seconds": 6}
+      ],
+      "id": "f38e9e2e-5e1e-46ac-a01a-aced859a407e"
+    },
+    {
+      "name": "5-4-3-2-1 Grounding Breath",
+      "type": "breath",
+      "cueStyle": "repeat",
+      "targetBodyParts": [],
+      "durationSeconds": 180,
+      "difficulty": 1,
+      "instructions": [
+        "Sit comfortably and take one slow breath in and out to settle.",
+        "Breathing slowly, silently notice 5 things you can see around you.",
+        "Continue breathing slowly as you notice 4 things you can hear, then 3 things you can feel touching your body.",
+        "Finish by noticing 2 things you can smell and 1 thing you can taste, keeping your breath slow and even throughout."
+      ],
+      "caution": "This is a grounding technique for calm attention, not a treatment for anxiety or panic disorders \u2014 seek professional support if you need it.",
+      "id": "3b3a8a55-7278-4f4a-8840-263fcf551d91"
     }
   ]
 }
