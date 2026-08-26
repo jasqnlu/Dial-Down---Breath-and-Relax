@@ -1523,3 +1523,61 @@ screen shows the approximate-animation disclaimer — proof
 `animationName` is set in SeedData.json). Full `xcodebuild` unit suite
 (412 tests) green; SeedData.json patched surgically (regex-insert after
 each `"id"` line, not a full re-dump) to keep the diff to the 8 new fields.
+
+## 20-exercise thin-coverage batch (2026-08-26)
+
+Animated 20 more of the still-unanimated 172 (biceps/forearm, lats, hand,
+foot, calves, neck, temple/head families), continuing the lowest-risk-first
+strategy: every pose is a direct or lightly-adapted reuse of an already-proven
+convention, no new base poses or axis probes needed. Shipped: `table_edge_
+bicep_stretch_left/right` (direct reuse of `left/right_wall_bicep_stretch`'s
+straight-arm-back + torso-twist shape, different prop name only),
+`left/right_kneeling_lat_stretch_hands_on_chair` (`kneeling_chest_stretch_
+on_chair`'s kneeling base + a torso side-bend layered on top, using `left/
+right_overhead_reach_lat_stretch_with_strap`'s proven "+Z bends toward the
+subject's own right, stretches the LEFT lat" sign), `thumb_extension_
+stretch_left/right` + `fist_to_fan_tendon_gliding_flow` (hand family, same
+honest "no finger geometry" approximation as `hook_fist_tendon_glide`),
+`left/right_toe_spread_stretch` + `towel_scrunch_toe_flexor_stretch` +
+`big_toe_extension_stretch_left/right` + `seated_toe_to_shin_stretch_left/
+right` (foot family, same crossed-ankle or seated-chair approximation as
+`left_plantar_fascia_stretch_toe_raise`), `left/right_seated_calf_stretch_
+with_towel` (floor-sitting straight-leg base from `seated_forward_fold`),
+`neck_isometric_front_and_back_press` (alternating forward/backward head
+pitch, same isometric-oscillation precedent as `left_isometric_neck_side_
+press`), `seated_neck_half_circles_ear_to_shoulder_arc` (near-identical
+reuse of `seated_neck_rolls`' front-hemisphere arc), and `circular_temple_
+self_massage` + `full_scalp_massage_tension_release` (both arms reaching to
+the head at once, mirroring `left_isometric_neck_side_press`'s solved
+arm-to-head FK target onto both sides simultaneously — new territory in that
+no prior exercise animated BOTH assist arms at once, but the underlying
+per-arm target was already solved, so no new probe was needed).
+
+All 20 rendered clean on the first attempt (skins:1/anims:1, 0 fallback
+muscles each, verified via `muscles: ... fallback=0` in each `_log.txt`) —
+expected, given every pose reused an already-derived convention rather than
+attempting new mechanics. Visually reviewed via `ffmpeg` 5×2 contact-sheet
+grids (12-frame stride across the 120-frame loop) for tearing and correct
+L/R mirroring before wiring into SeedData.json; none found.
+
+**Flagging:** `animationIsApproximate: true` on the 15 exercises where the
+rig genuinely can't show the real mechanism (no finger/toe/ankle geometry,
+or an isometric press with no true hand-target IK) — same test the hand/
+wrist batch's own "sort candidates by this test" note recommends. Left
+unflagged: the 2 bicep-stretch, 2 kneeling-lat, and 1 neck-half-circle
+exercises, whose animated motion (torso twist, side-bend, head arc) is the
+actual real mechanism, matching their reused source scripts' own flags.
+
+`Left/Right Temple` and `Forehead`/`Head` confirm the muscle-group table's
+existing note: only `Head` (not Temple/Jaw/Eye/Forehead) is a mappable atlas
+group, so `circular_temple_self_massage` ships with 0 highlighted muscles by
+design (arm-to-head reach only) while `full_scalp_massage_tension_release`
+gets a real Head highlight.
+
+Live-verified via a new `ThinCoverageAnimationBatchUITests` (parallel to
+`HandWristAnimationVerificationUITests`) — all 20 exercises' detail screens
+open via search, and the 15 approximate ones show the disclaimer note,
+proving `exercise.demoVideoURL` resolved a real bundled mp4 for every one of
+them. Full `xcodebuild` unit suite (412 tests) green throughout. SeedData.json
+patched surgically (regex-insert after each `"id"` line) to keep the diff to
+the 20 new fields. 174/372 exercises now have animations (was 154).
