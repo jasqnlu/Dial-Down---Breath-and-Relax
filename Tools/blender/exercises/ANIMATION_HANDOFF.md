@@ -1476,3 +1476,50 @@ All 8 re-rendered, re-encoded, and visually confirmed (no tearing, hand
 reads as contacting its target, correct L/R mirroring). Full
 `SeedDataTests`/`SeedMigratorTests` suite green throughout (asset + pose
 data only, no schema changes).
+
+## Hand/wrist batch, 8 exercises (2026-08-25)
+
+Animated the 8 exercises from the "deepen hands/feet/core/glutes" content
+batch that a real forearm-level motion can honestly represent: Assisted
+Wrist Flexion/Extension Stretch (L/R) — direct reuse of the already-shipped
+`left/right_wrist_flexor_stretch.py`/`_extensor_stretch.py` pattern (forward
+arm extension + forearm local-Y twist, no hand-target IK) since they're the
+same exercise concept under a different name; Wrist & Forearm Release —
+a single representative arm cycling through both twist directions in one
+loop, since the exercise's own `isBilateral: false` already implies a
+"switch sides" cue and trying to show two arms x two directions at once
+would be unreadable; Overhead Finger Interlace Stretch — both arms to the
+overhead ceiling (`upperarm` local-X toward -155, the proven range) with
+`forearm` local-Z scaled up to bring the mitts together at the top, the
+same "close the gap as the reach deepens" technique
+`prayer_stretch_palms_together_lower.py` uses low, applied overhead instead
+(first pass under-rotated — mitts read as still shoulder-width apart at
+frame 60; doubled the local-Z magnitudes on both `upperarm` and `forearm`
+and re-rendered before shipping); Table-Supported Wrist Extensor Stretch —
+seated base + backward spine lean (same axis
+`seated_thoracic_extension_over_chair_back.py` uses) with both arms forward
+and forearms pronated; Hook Fist Tendon Glide — the honest limit of this
+whole approximation strategy: the rig cannot show ANY finger motion at all
+(no finger bones), so this one only shows the arm position the exercise's
+setup describes (hands up in front, elbows bent) with a small oscillating
+forearm twist so the loop reads as active rather than frozen, not a
+literal demonstration of the hook motion.
+
+**Explicit rig-limitation finding, worth restating for future hand/finger
+content:** every hand is a rigid convex-hulled "mitt" 100% weighted to its
+forearm bone (`rigid_weight`, see the mitt-building note above) — there is
+no wrist bone and no finger geometry to move independently, ever, on this
+rig. Any exercise whose entire visible motion is finger articulation
+(spreading, curling, individual finger pulls) has NOTHING to animate
+honestly; the flexor/extensor family works only because the exercise's own
+setup includes a real arm/forearm position to show. Content review for a
+future hand-focused batch should sort candidates by this test before
+scripting starts, not after.
+
+All 8 flagged `animationIsApproximate`. Live-verified via
+`HandWristAnimationVerificationUITests` (all 8 searchable, each detail
+screen shows the approximate-animation disclaimer — proof
+`exercise.demoVideoURL` actually resolved the bundled mp4, not just that
+`animationName` is set in SeedData.json). Full `xcodebuild` unit suite
+(412 tests) green; SeedData.json patched surgically (regex-insert after
+each `"id"` line, not a full re-dump) to keep the diff to the 8 new fields.
