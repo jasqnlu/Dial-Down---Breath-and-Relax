@@ -5151,7 +5151,8 @@
         "Keep your left elbow straight and your shoulder relaxed away from your ear.",
         "Hold for 20-30 seconds, then release slowly."
       ],
-      "id": "d7a4676a-30f5-4020-9438-ffcee3f7dd56"
+      "id": "d7a4676a-30f5-4020-9438-ffcee3f7dd56",
+      "animationName": "standing_doorway_bicep_stretch_left.mp4"
     },
     {
       "name": "Standing Doorway Bicep Stretch (Right)",
@@ -5169,7 +5170,8 @@
         "Keep your right elbow straight and your shoulder relaxed away from your ear.",
         "Hold for 20-30 seconds, then release slowly."
       ],
-      "id": "b2e00e57-fab0-4228-b07a-540bc6d375a5"
+      "id": "b2e00e57-fab0-4228-b07a-540bc6d375a5",
+      "animationName": "standing_doorway_bicep_stretch_right.mp4"
     },
     {
       "name": "Behind-Back Prayer Bicep Stretch",
@@ -5187,7 +5189,8 @@
         "Gently lift your hands away from your lower back until you feel a stretch through both biceps and forearms.",
         "Hold for 20-30 seconds, breathing steadily."
       ],
-      "id": "793170e1-f0df-4ecb-ab62-21ee804068c8"
+      "id": "793170e1-f0df-4ecb-ab62-21ee804068c8",
+      "animationName": "behind_back_prayer_bicep_stretch.mp4"
     },
     {
       "name": "Wall-Assisted Bicep Stretch (Left)",
@@ -5205,7 +5208,8 @@
         "Slowly turn your torso away from the wall until you feel the stretch along your left bicep.",
         "Hold for 20-30 seconds, then switch sides another time if desired."
       ],
-      "id": "590eae43-4373-4a21-855d-f3435a177c2c"
+      "id": "590eae43-4373-4a21-855d-f3435a177c2c",
+      "animationName": "wall_assisted_bicep_stretch_left.mp4"
     },
     {
       "name": "Wall-Assisted Bicep Stretch (Right)",
@@ -5223,7 +5227,8 @@
         "Slowly turn your torso away from the wall until you feel the stretch along your right bicep.",
         "Hold for 20-30 seconds, then switch sides another time if desired."
       ],
-      "id": "ebd18bd6-bf76-4fb9-984b-47004ecb5b78"
+      "id": "ebd18bd6-bf76-4fb9-984b-47004ecb5b78",
+      "animationName": "wall_assisted_bicep_stretch_right.mp4"
     },
     {
       "name": "Overhead Bicep Reach with Strap (Left)",
@@ -5241,7 +5246,8 @@
         "Straighten your left elbow as far as comfortable, feeling the stretch through the front of your upper arm.",
         "Hold for 20-30 seconds, keeping your shoulder relaxed."
       ],
-      "id": "fc6515d6-dac1-459b-bd9e-1e9daa4bab6e"
+      "id": "fc6515d6-dac1-459b-bd9e-1e9daa4bab6e",
+      "animationName": "overhead_bicep_reach_with_strap_left.mp4"
     },
     {
       "name": "Overhead Bicep Reach with Strap (Right)",
@@ -5259,7 +5265,8 @@
         "Straighten your right elbow as far as comfortable, feeling the stretch through the front of your upper arm.",
         "Hold for 20-30 seconds, keeping your shoulder relaxed."
       ],
-      "id": "f0a60ab3-b5cc-4d36-8118-39881ad65ee3"
+      "id": "f0a60ab3-b5cc-4d36-8118-39881ad65ee3",
+      "animationName": "overhead_bicep_reach_with_strap_right.mp4"
     },
     {
       "name": "Seated Bicep Stretch on Chair Edge",
@@ -5277,7 +5284,8 @@
         "Lift your chest and keep your shoulders down and back.",
         "Hold for 20-30 seconds, breathing evenly."
       ],
-      "id": "8013458b-3611-4726-82e2-565af1edbaa6"
+      "id": "8013458b-3611-4726-82e2-565af1edbaa6",
+      "animationName": "seated_bicep_stretch_on_chair_edge.mp4"
     },
     {
       "name": "Overhead Triceps Stretch with Strap (Left)",
@@ -5295,7 +5303,8 @@
         "Gently pull down on the strap until you feel a stretch along the back of your left upper arm.",
         "Hold for 20-30 seconds, keeping your neck relaxed."
       ],
-      "id": "a934f5b3-ea38-4450-9c5c-08c3ad52a65b"
+      "id": "a934f5b3-ea38-4450-9c5c-08c3ad52a65b",
+      "animationName": "overhead_triceps_stretch_with_strap_left.mp4"
     },
     {
       "name": "Overhead Triceps Stretch with Strap (Right)",
@@ -5313,7 +5322,8 @@
         "Gently pull down on the strap until you feel a stretch along the back of your right upper arm.",
         "Hold for 20-30 seconds, keeping your neck relaxed."
       ],
-      "id": "5b6c538e-9993-4497-a10a-838de15b9a57"
+      "id": "5b6c538e-9993-4497-a10a-838de15b9a57",
+      "animationName": "overhead_triceps_stretch_with_strap_right.mp4"
     },
     {
       "name": "Cross-Body Triceps Pull at Wall (Left)",
@@ -5331,7 +5341,8 @@
         "Use your right hand to gently press your left elbow further across your body.",
         "Hold for 20-30 seconds, feeling the stretch through the back of your left arm and shoulder."
       ],
-      "id": "becaf945-c962-48cf-908f-dedcf84502af"
+      "id": "becaf945-c962-48cf-908f-dedcf84502af",
+      "animationName": "cross_body_triceps_pull_at_wall_left.mp4"
     },
     {
       "name": "Cross-Body Triceps Pull at Wall (Right)",
@@ -5349,7 +5360,8 @@
         "Use your left hand to gently press your right elbow further across your body.",
         "Hold for 20-30 seconds, feeling the stretch through the back of your right arm and shoulder."
       ],
-      "id": "41c819bb-5e45-4853-a882-e55b3aa6e17d"
+      "id": "41c819bb-5e45-4853-a882-e55b3aa6e17d",
+      "animationName": "cross_body_triceps_pull_at_wall_right.mp4"
     },
     {
       "name": "Behind-Head Bilateral Triceps Stretch",
@@ -5367,7 +5379,8 @@
         "Gently press your elbows back and slightly together, feeling both triceps lengthen.",
         "Hold for 20-30 seconds, keeping your ribs down and core gently engaged."
       ],
-      "id": "75a49884-80b8-44c6-800b-a151caf26a19"
+      "id": "75a49884-80b8-44c6-800b-a151caf26a19",
+      "animationName": "behind_head_bilateral_triceps_stretch.mp4"
     },
     {
       "name": "Seated Triceps Stretch with Towel (Left)",
@@ -5385,7 +5398,8 @@
         "Gently walk your right hand up the towel to deepen the stretch through your left triceps.",
         "Hold for 20-30 seconds, then relax."
       ],
-      "id": "409479aa-a29b-452d-9e18-4be6d46b3a09"
+      "id": "409479aa-a29b-452d-9e18-4be6d46b3a09",
+      "animationName": "seated_triceps_stretch_with_towel_left.mp4"
     },
     {
       "name": "Seated Triceps Stretch with Towel (Right)",
@@ -5403,7 +5417,8 @@
         "Gently walk your left hand up the towel to deepen the stretch through your right triceps.",
         "Hold for 20-30 seconds, then relax."
       ],
-      "id": "6a5b90f0-0b9e-422b-96d0-f572dfc224da"
+      "id": "6a5b90f0-0b9e-422b-96d0-f572dfc224da",
+      "animationName": "seated_triceps_stretch_with_towel_right.mp4"
     },
     {
       "name": "Kneeling Triceps Stretch on Chair",
