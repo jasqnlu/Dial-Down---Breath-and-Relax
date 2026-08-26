@@ -1062,7 +1062,8 @@
         "Hold for 20 seconds, breathing steadily.",
         "Walk your hands back to center and switch sides."
       ],
-      "id": "36dd7999-75c9-5c38-afb9-d4aad2a2423b"
+      "id": "36dd7999-75c9-5c38-afb9-d4aad2a2423b",
+      "animationName": "left_kneeling_lat_stretch_hands_on_chair.mp4"
     },
     {
       "name": "Right Kneeling Lat Stretch (Hands on Chair)",
@@ -1081,7 +1082,8 @@
         "Hold for 20 seconds, breathing steadily.",
         "Walk your hands back to center and switch sides."
       ],
-      "id": "9df6b7a1-f3cc-583a-86c3-e95af2ebaf2b"
+      "id": "9df6b7a1-f3cc-583a-86c3-e95af2ebaf2b",
+      "animationName": "right_kneeling_lat_stretch_hands_on_chair.mp4"
     },
     {
       "name": "Left Wall Bicep Stretch",
@@ -2178,7 +2180,9 @@
         "Hold for 20 seconds, feeling the stretch in your calf.",
         "Release and switch legs."
       ],
-      "id": "448bf1d9-1284-5c54-b151-6f75290d4df1"
+      "id": "448bf1d9-1284-5c54-b151-6f75290d4df1",
+      "animationName": "left_seated_calf_stretch_with_towel.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Right Seated Calf Stretch with Towel",
@@ -2197,7 +2201,9 @@
         "Hold for 20 seconds, feeling the stretch in your calf.",
         "Release and switch legs."
       ],
-      "id": "7b5db71f-b938-5df5-b8b3-b6877b7f7e2d"
+      "id": "7b5db71f-b938-5df5-b8b3-b6877b7f7e2d",
+      "animationName": "right_seated_calf_stretch_with_towel.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Kneeling Tibialis Stretch",
@@ -3069,7 +3075,9 @@
         "Hold each toe for a couple of seconds, then gently flex and extend all toes together.",
         "Switch feet and repeat."
       ],
-      "id": "891263c8-0017-5c26-a760-61393090b126"
+      "id": "891263c8-0017-5c26-a760-61393090b126",
+      "animationName": "left_toe_spread_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Right Toe Spread & Stretch",
@@ -3087,7 +3095,9 @@
         "Hold each toe for a couple of seconds, then gently flex and extend all toes together.",
         "Switch feet and repeat."
       ],
-      "id": "a0bd2dc1-a47f-5dd0-9ce0-e9b11c4ca920"
+      "id": "a0bd2dc1-a47f-5dd0-9ce0-e9b11c4ca920",
+      "animationName": "right_toe_spread_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Left Finger Extension Stretch",
@@ -4465,7 +4475,9 @@
         "Hold for 15-20 seconds, feeling the stretch along the base of the thumb.",
         "Release and repeat 2-3 times."
       ],
-      "id": "64941e54-41c1-43a9-9653-810487052788"
+      "id": "64941e54-41c1-43a9-9653-810487052788",
+      "animationName": "thumb_extension_stretch_left.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Thumb Extension Stretch (Right)",
@@ -4483,7 +4495,9 @@
         "Hold for 15-20 seconds, feeling the stretch along the base of the thumb.",
         "Release and repeat 2-3 times."
       ],
-      "id": "97a8371e-87ca-4634-b1d2-26ecfe061fee"
+      "id": "97a8371e-87ca-4634-b1d2-26ecfe061fee",
+      "animationName": "thumb_extension_stretch_right.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Hook Fist Tendon Glide",
@@ -4521,7 +4535,9 @@
         "Hold the spread for 2-3 seconds, then curl back into a fist.",
         "Repeat the fist-to-fan sequence slowly for the full duration."
       ],
-      "id": "168c6d5a-9dd7-422f-9fe7-bcd2a73068da"
+      "id": "168c6d5a-9dd7-422f-9fe7-bcd2a73068da",
+      "animationName": "fist_to_fan_tendon_gliding_flow.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Towel Scrunch (Toe Flexor Stretch)",
@@ -4539,7 +4555,9 @@
         "Release and reset the towel flat, then repeat.",
         "Continue scrunching for the full duration to work the small muscles under your feet."
       ],
-      "id": "5c343cb3-10dc-489f-bc94-d22db7a17016"
+      "id": "5c343cb3-10dc-489f-bc94-d22db7a17016",
+      "animationName": "towel_scrunch_toe_flexor_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Big Toe Extension Stretch (Left)",
@@ -4557,7 +4575,9 @@
         "Hold for 15-20 seconds, feeling the stretch along the sole and big toe.",
         "Release and repeat 2-3 times."
       ],
-      "id": "51a6b355-8262-4d33-b825-04e6ae6739aa"
+      "id": "51a6b355-8262-4d33-b825-04e6ae6739aa",
+      "animationName": "big_toe_extension_stretch_left.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Big Toe Extension Stretch (Right)",
@@ -4575,7 +4595,9 @@
         "Hold for 15-20 seconds, feeling the stretch along the sole and big toe.",
         "Release and repeat 2-3 times."
       ],
-      "id": "3b1a68c7-5bd4-4b2f-b141-4d0f58285fb6"
+      "id": "3b1a68c7-5bd4-4b2f-b141-4d0f58285fb6",
+      "animationName": "big_toe_extension_stretch_right.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Seated Toe-to-Shin Stretch (Left)",
@@ -4593,7 +4615,9 @@
         "Hold for 15-20 seconds, feeling the stretch through the bottom of the foot and calf.",
         "Release and repeat 2-3 times."
       ],
-      "id": "b0fad07e-df19-42e4-83db-a9995fd00628"
+      "id": "b0fad07e-df19-42e4-83db-a9995fd00628",
+      "animationName": "seated_toe_to_shin_stretch_left.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Seated Toe-to-Shin Stretch (Right)",
@@ -4611,7 +4635,9 @@
         "Hold for 15-20 seconds, feeling the stretch through the bottom of the foot and calf.",
         "Release and repeat 2-3 times."
       ],
-      "id": "f11229f1-5862-4760-89c6-3ea24b9a39dc"
+      "id": "f11229f1-5862-4760-89c6-3ea24b9a39dc",
+      "animationName": "seated_toe_to_shin_stretch_right.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Jaw Relaxation Drop",
@@ -4649,7 +4675,9 @@
         "Breathe slowly throughout to help release tension."
       ],
       "caution": "Use gentle pressure only. Skip if you have a headache disorder that worsens with touch or any scalp or skin condition.",
-      "id": "3c39622e-34d2-4f29-b9f0-7bff63b3fc83"
+      "id": "3c39622e-34d2-4f29-b9f0-7bff63b3fc83",
+      "animationName": "circular_temple_self_massage.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Figure-8 Eye Tracking",
@@ -4686,7 +4714,9 @@
         "Breathe slowly and keep the pressure light and comfortable throughout."
       ],
       "caution": "Use gentle pressure only. Skip if you have a headache disorder that worsens with touch or any scalp or skin condition.",
-      "id": "18d4481a-41bf-4d9e-a20b-e752a534946d"
+      "id": "18d4481a-41bf-4d9e-a20b-e752a534946d",
+      "animationName": "full_scalp_massage_tension_release.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "90/90 Hip Switch (Rotation Flow)",
@@ -4787,7 +4817,9 @@
         "Alternate front and back presses for the full duration, keeping the effort light."
       ],
       "caution": "Use only gentle, pain-free pressure and stop if you feel dizziness or sharp pain.",
-      "id": "d59f9d3a-58cb-4d05-9494-8c0bbde3eb70"
+      "id": "d59f9d3a-58cb-4d05-9494-8c0bbde3eb70",
+      "animationName": "neck_isometric_front_and_back_press.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Seated Neck Half-Circles (Ear-to-Shoulder Arc)",
@@ -4807,7 +4839,8 @@
         "Keep the motion in the front half only — avoid tilting your head backward — and repeat slowly for the full duration."
       ],
       "caution": "Move gently and stop if you feel dizziness or sharp pain. Keep the arc in front, not tilting backward.",
-      "id": "f7779fcd-13da-42a2-b826-3bb531cc158a"
+      "id": "f7779fcd-13da-42a2-b826-3bb531cc158a",
+      "animationName": "seated_neck_half_circles_ear_to_shoulder_arc.mp4"
     },
     {
       "name": "Table-Edge Bicep Stretch (Left)",
@@ -4826,7 +4859,8 @@
         "Hold for 15-20 seconds, feeling the stretch along the front of your upper arm.",
         "Release and repeat 2-3 times, then switch sides on another round."
       ],
-      "id": "617d6199-9b3e-4c4c-819d-59099a84d44e"
+      "id": "617d6199-9b3e-4c4c-819d-59099a84d44e",
+      "animationName": "table_edge_bicep_stretch_left.mp4"
     },
     {
       "name": "Table-Edge Bicep Stretch (Right)",
@@ -4845,7 +4879,8 @@
         "Hold for 15-20 seconds, feeling the stretch along the front of your upper arm.",
         "Release and repeat 2-3 times, then switch sides on another round."
       ],
-      "id": "b1f32f99-10ff-491b-afa0-1f7c91874cd7"
+      "id": "b1f32f99-10ff-491b-afa0-1f7c91874cd7",
+      "animationName": "table_edge_bicep_stretch_right.mp4"
     },
     {
       "name": "Standing Cross-Body Triceps Press (Left)",
