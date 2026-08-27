@@ -1,6 +1,35 @@
 # Exercise Animation — Handoff for a New Session
 
-**Last updated:** 2026-07-28
+**Last updated:** 2026-08-26 (even-split 40-exercise batch)
+
+## Even-split 40-exercise batch (2026-08-26)
+
+Animated 40 more exercises, an even split (5 each) across 8 thin-coverage
+families: quadriceps, calves/tibialis, neck/trapezius, lats, obliques,
+abs/backbend, glutes/hip, and adductors. Every pose is a direct clone or a
+straightforward composition of an already-proven pose from an earlier batch
+(no new bone axes attempted) — see each script's own docstring for exactly
+which prior script it derives from. Two new base compositions worth noting
+for future sessions:
+
+- **`run_quadruped` + thigh local-Z abduction** (`frog_stretch_kneeling_
+  groin_stretch.py`) — first use of the hip-abduction axis (proven seated/
+  supine) on the quadruped hands-and-knees base. Worked cleanly.
+- **Standing thigh local-Z abduction** (`standing_adductor_rock_side_to_
+  side.py`) — first use of that axis while standing (previously only seated/
+  supine); kept to a conservative 15deg since it's genuinely new territory
+  for a weight-bearing standing leg.
+
+Generator script + full exercise list lived at
+`/private/tmp/.../scratchpad/gen_exercises.py` and
+`/private/tmp/.../scratchpad/patch_seed_data.py` for this session — not
+checked into the repo, just documenting how the 40 scripts were produced in
+bulk (adapt the pattern for a future large batch rather than writing each
+script by hand).
+
+---
+
+**Previous update:** 2026-07-28
 **Goal:** Give the 152 seed exercises 3D-animated demonstrations, authored in
 Blender and exported for the app. Started with **"Clasped Hands Behind Back."**
 Longer-term vision: an **anatomy figure that performs the stretch while the
