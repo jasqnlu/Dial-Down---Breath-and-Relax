@@ -701,7 +701,8 @@
         "Return to upright kneeling slowly."
       ],
       "caution": "Avoid if you have knee pain when kneeling, or lower-back or neck issues; keep the arch shallow.",
-      "id": "6dd9be80-2036-5e0a-958e-8c76b626187f"
+      "id": "6dd9be80-2036-5e0a-958e-8c76b626187f",
+      "animationName": "kneeling_abdominal_stretch_camel_lite.mp4"
     },
     {
       "name": "Cat-Cow Flow",
@@ -1604,7 +1605,8 @@
         "Push back to hands and knees slowly to release."
       ],
       "caution": "Go only as deep as your knees comfortably allow; avoid if you have knee pain or hip impingement.",
-      "id": "2ab5e9b4-3fb9-59b8-aeed-7c65e8fa0774"
+      "id": "2ab5e9b4-3fb9-59b8-aeed-7c65e8fa0774",
+      "animationName": "pigeon_pose_right_leg_forward.mp4"
     },
     {
       "name": "Pigeon Pose (Left Leg Forward)",
@@ -1624,7 +1626,8 @@
         "Push back to hands and knees slowly to release."
       ],
       "caution": "Go only as deep as your knees comfortably allow; avoid if you have knee pain or hip impingement.",
-      "id": "b791042d-af1e-5ef9-afc0-28d365df7ecf"
+      "id": "b791042d-af1e-5ef9-afc0-28d365df7ecf",
+      "animationName": "pigeon_pose_left_leg_forward.mp4"
     },
     {
       "name": "Left Kneeling Hip-Flexor Lunge",
@@ -1644,7 +1647,8 @@
         "Hold for 30 seconds, then switch sides."
       ],
       "caution": "Place padding under the kneeling knee if the floor is hard.",
-      "id": "f4ad5ef0-72b1-5fff-8a1e-c3c6770127c3"
+      "id": "f4ad5ef0-72b1-5fff-8a1e-c3c6770127c3",
+      "animationName": "left_kneeling_hip_flexor_lunge.mp4"
     },
     {
       "name": "Right Kneeling Hip-Flexor Lunge",
@@ -1664,7 +1668,8 @@
         "Hold for 30 seconds, then switch sides."
       ],
       "caution": "Place padding under the kneeling knee if the floor is hard.",
-      "id": "a47a726e-c29c-5060-b017-9f9c3dc0ec7d"
+      "id": "a47a726e-c29c-5060-b017-9f9c3dc0ec7d",
+      "animationName": "right_kneeling_hip_flexor_lunge.mp4"
     },
     {
       "name": "Left Low Lunge (Anjaneyasana)",
@@ -1685,7 +1690,8 @@
         "Hold for 20-30 seconds, feeling the stretch down the front of your left hip and thigh.",
         "Step back to release and switch sides."
       ],
-      "id": "5cece5c9-b9a3-5109-b0f4-cf923f900076"
+      "id": "5cece5c9-b9a3-5109-b0f4-cf923f900076",
+      "animationName": "left_low_lunge_anjaneyasana.mp4"
     },
     {
       "name": "Right Low Lunge (Anjaneyasana)",
@@ -1706,7 +1712,8 @@
         "Hold for 20-30 seconds, feeling the stretch down the front of your right hip and thigh.",
         "Step back to release and switch sides."
       ],
-      "id": "db8847d5-d349-5ae7-9f65-793db3aec912"
+      "id": "db8847d5-d349-5ae7-9f65-793db3aec912",
+      "animationName": "right_low_lunge_anjaneyasana.mp4"
     },
     {
       "name": "Left Standing Hip-Flexor Stretch (Foot Elevated)",
@@ -1726,7 +1733,8 @@
         "Step down and switch sides."
       ],
       "caution": "Hold onto a wall for balance and keep the surface low and stable.",
-      "id": "4c752212-8a55-50cf-8709-09c6d54782f5"
+      "id": "4c752212-8a55-50cf-8709-09c6d54782f5",
+      "animationName": "left_standing_hip_flexor_stretch_foot_elevated.mp4"
     },
     {
       "name": "Right Standing Hip-Flexor Stretch (Foot Elevated)",
@@ -1746,7 +1754,8 @@
         "Step down and switch sides."
       ],
       "caution": "Hold onto a wall for balance and keep the surface low and stable.",
-      "id": "ed5a7051-4cd5-507a-9ece-a54c2404c487"
+      "id": "ed5a7051-4cd5-507a-9ece-a54c2404c487",
+      "animationName": "right_standing_hip_flexor_stretch_foot_elevated.mp4"
     },
     {
       "name": "Seated Butterfly Stretch",
@@ -1786,7 +1795,8 @@
         "Hold for 20-30 seconds, feeling the stretch along your left inner thigh.",
         "Push back to center and switch sides."
       ],
-      "id": "ef6331f8-da51-526e-9e79-727d4fe15223"
+      "id": "ef6331f8-da51-526e-9e79-727d4fe15223",
+      "animationName": "left_side_lunge_groin_stretch.mp4"
     },
     {
       "name": "Right Side Lunge (Groin Stretch)",
@@ -1805,7 +1815,8 @@
         "Hold for 20-30 seconds, feeling the stretch along your right inner thigh.",
         "Push back to center and switch sides."
       ],
-      "id": "05c33162-a51e-569e-842b-cd955266f72c"
+      "id": "05c33162-a51e-569e-842b-cd955266f72c",
+      "animationName": "right_side_lunge_groin_stretch.mp4"
     },
     {
       "name": "Frog Stretch (Kneeling Groin Stretch)",
@@ -1912,7 +1923,8 @@
         "Release and switch sides."
       ],
       "caution": "Place padding under the kneeling knee and avoid forcing the heel down if your knee is sensitive.",
-      "id": "fdceaa89-1c23-5726-b7cf-331dae1fddb1"
+      "id": "fdceaa89-1c23-5726-b7cf-331dae1fddb1",
+      "animationName": "left_kneeling_quad_stretch.mp4"
     },
     {
       "name": "Right Kneeling Quad Stretch",
@@ -1933,7 +1945,8 @@
         "Release and switch sides."
       ],
       "caution": "Place padding under the kneeling knee and avoid forcing the heel down if your knee is sensitive.",
-      "id": "95c6b2b3-2ecc-5869-8221-2f95a98058f2"
+      "id": "95c6b2b3-2ecc-5869-8221-2f95a98058f2",
+      "animationName": "right_kneeling_quad_stretch.mp4"
     },
     {
       "name": "Left Side-Lying Quad Stretch",
@@ -1952,7 +1965,8 @@
         "Hold for 20-30 seconds.",
         "Release and roll over to switch sides."
       ],
-      "id": "858cebdf-991d-5c25-920b-75f476a5ad5c"
+      "id": "858cebdf-991d-5c25-920b-75f476a5ad5c",
+      "animationName": "left_side_lying_quad_stretch.mp4"
     },
     {
       "name": "Right Side-Lying Quad Stretch",
@@ -1971,7 +1985,8 @@
         "Hold for 20-30 seconds.",
         "Release and roll over to switch sides."
       ],
-      "id": "64ae1405-ebb5-57c6-84ca-e7520675fb72"
+      "id": "64ae1405-ebb5-57c6-84ca-e7520675fb72",
+      "animationName": "right_side_lying_quad_stretch.mp4"
     },
     {
       "name": "Standing Hamstring Stretch",
@@ -2287,7 +2302,9 @@
         "Complete a few letters, then switch feet.",
         "This mobilises the ankle and gently stretches the muscles along the shin."
       ],
-      "id": "3d2d6f07-2542-5d17-ab93-cb3691c274bf"
+      "id": "3d2d6f07-2542-5d17-ab93-cb3691c274bf",
+      "animationName": "shin_and_ankle_mobiliser.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Ankle Alphabet",
@@ -2306,7 +2323,9 @@
         "Move only at the ankle, keeping the motion slow and controlled.",
         "Switch feet and repeat."
       ],
-      "id": "fe4dea3b-f897-5d26-bd98-456d2a9f96ca"
+      "id": "fe4dea3b-f897-5d26-bd98-456d2a9f96ca",
+      "animationName": "ankle_alphabet.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Wrist & Forearm Release",
@@ -2896,7 +2915,8 @@
         "Come out slowly and switch sides."
       ],
       "caution": "This is an advanced, deep stretch - build up gradually and avoid if you have knee pain.",
-      "id": "eedb7704-036e-5f83-a538-0bec495c690d"
+      "id": "eedb7704-036e-5f83-a538-0bec495c690d",
+      "animationName": "left_couch_stretch.mp4"
     },
     {
       "name": "Right Couch Stretch",
@@ -2917,7 +2937,8 @@
         "Come out slowly and switch sides."
       ],
       "caution": "This is an advanced, deep stretch - build up gradually and avoid if you have knee pain.",
-      "id": "82f30448-391b-5e4c-b80e-807c0430f17d"
+      "id": "82f30448-391b-5e4c-b80e-807c0430f17d",
+      "animationName": "right_couch_stretch.mp4"
     },
     {
       "name": "Left Cossack Squat Stretch",
@@ -3765,7 +3786,8 @@
         "Hold, breathing into the stretch through your left glute and the front of your right hip, then rise slowly and switch sides on another round."
       ],
       "caution": "Skip or use a cushion under the front hip if you have knee pain — this is a deep hip-opener, not a beginner stretch.",
-      "id": "75c79a3b-c5d0-42b1-9c20-83f6efee0783"
+      "id": "75c79a3b-c5d0-42b1-9c20-83f6efee0783",
+      "animationName": "left_pigeon_pose_hip_stretch.mp4"
     },
     {
       "name": "Right Pigeon Pose Hip Stretch",
@@ -3785,7 +3807,8 @@
         "Hold, breathing into the stretch through your right glute and the front of your left hip, then rise slowly and switch sides on another round."
       ],
       "caution": "Skip or use a cushion under the front hip if you have knee pain — this is a deep hip-opener, not a beginner stretch.",
-      "id": "42440164-bfff-4ca0-a0f6-f481181865d5"
+      "id": "42440164-bfff-4ca0-a0f6-f481181865d5",
+      "animationName": "right_pigeon_pose_hip_stretch.mp4"
     },
     {
       "name": "Bridge Pose",
@@ -4902,7 +4925,8 @@
         "Hold for 15-20 seconds, feeling the stretch through the back of the left upper arm and shoulder.",
         "Release and repeat 2-3 times, then switch sides on another round."
       ],
-      "id": "91d8e536-3aba-4bca-a6fc-ba2f61d440af"
+      "id": "91d8e536-3aba-4bca-a6fc-ba2f61d440af",
+      "animationName": "standing_cross_body_triceps_press_left.mp4"
     },
     {
       "name": "Standing Cross-Body Triceps Press (Right)",
@@ -4921,7 +4945,8 @@
         "Hold for 15-20 seconds, feeling the stretch through the back of the right upper arm and shoulder.",
         "Release and repeat 2-3 times, then switch sides on another round."
       ],
-      "id": "7968c4f8-2abd-44de-8495-f88e7141f933"
+      "id": "7968c4f8-2abd-44de-8495-f88e7141f933",
+      "animationName": "standing_cross_body_triceps_press_right.mp4"
     },
     {
       "name": "Seated Assisted Tibialis Stretch (Left)",
@@ -4940,7 +4965,9 @@
         "Hold for 15-20 seconds, feeling the stretch along the front of the shin.",
         "Release and repeat 2-3 times, then switch sides on another round."
       ],
-      "id": "9862ec55-41c7-44f8-ae44-7b89d3c93431"
+      "id": "9862ec55-41c7-44f8-ae44-7b89d3c93431",
+      "animationName": "seated_assisted_tibialis_stretch_left.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Seated Assisted Tibialis Stretch (Right)",
@@ -4959,7 +4986,9 @@
         "Hold for 15-20 seconds, feeling the stretch along the front of the shin.",
         "Release and repeat 2-3 times, then switch sides on another round."
       ],
-      "id": "f36fa60d-4df8-4421-96b8-75dced467874"
+      "id": "f36fa60d-4df8-4421-96b8-75dced467874",
+      "animationName": "seated_assisted_tibialis_stretch_right.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Active Shoulder Shrug & Release (Left)",
@@ -4978,7 +5007,9 @@
         "Hold for 3-5 seconds, feeling the contraction, then let it drop and fully relax down.",
         "Repeat the shrug-and-release for the full duration, then switch sides on another round."
       ],
-      "id": "d1066b96-2f91-4d22-bac0-59f026949ffc"
+      "id": "d1066b96-2f91-4d22-bac0-59f026949ffc",
+      "animationName": "active_shoulder_shrug_and_release_left.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Active Shoulder Shrug & Release (Right)",
@@ -4997,7 +5028,9 @@
         "Hold for 3-5 seconds, feeling the contraction, then let it drop and fully relax down.",
         "Repeat the shrug-and-release for the full duration, then switch sides on another round."
       ],
-      "id": "e8ef61aa-56ff-42b1-b86b-57933e6dd6f0"
+      "id": "e8ef61aa-56ff-42b1-b86b-57933e6dd6f0",
+      "animationName": "active_shoulder_shrug_and_release_right.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Grip and Release (Hand Squeeze Stretch)",
@@ -5058,7 +5091,8 @@
         "Repeat the slide up and down slowly for the full duration."
       ],
       "caution": "Keep the motion pain-free and only slide as high as you can while keeping your arms touching the wall.",
-      "id": "b41f1658-60af-40c5-9404-d0c639fe2cd4"
+      "id": "b41f1658-60af-40c5-9404-d0c639fe2cd4",
+      "animationName": "wall_slide_shoulder_blade_mobility.mp4"
     },
     {
       "name": "Triangle Breathing (3-3-3)",
@@ -5474,7 +5508,8 @@
         "Let your chest sink toward the floor, feeling a stretch through both triceps and shoulders.",
         "Hold for 20-30 seconds, breathing deeply."
       ],
-      "id": "3917da93-0e2e-4549-b842-99d2e8e87e51"
+      "id": "3917da93-0e2e-4549-b842-99d2e8e87e51",
+      "animationName": "kneeling_triceps_stretch_on_chair.mp4"
     },
     {
       "name": "Standing Calf Stretch on Stair Edge (Left)",
@@ -5718,7 +5753,9 @@
         "Feel the stretch along the front of your left shin, keeping the motion gentle.",
         "Hold for 15-20 seconds, then release slowly."
       ],
-      "id": "a2f75877-873a-49a6-90e0-20367b208b02"
+      "id": "a2f75877-873a-49a6-90e0-20367b208b02",
+      "animationName": "seated_shin_stretch_with_strap_left.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Seated Shin Stretch with Strap (Right)",
@@ -5736,7 +5773,9 @@
         "Feel the stretch along the front of your right shin, keeping the motion gentle.",
         "Hold for 15-20 seconds, then release slowly."
       ],
-      "id": "7c09f0cd-c973-42ce-840b-c522529c3c36"
+      "id": "7c09f0cd-c973-42ce-840b-c522529c3c36",
+      "animationName": "seated_shin_stretch_with_strap_right.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Standing Tibialis Stretch Against Wall",
@@ -5773,7 +5812,9 @@
         "Keep the motion slow and controlled, moving through the full available range.",
         "Continue the circles for the full duration to release tension along the shin."
       ],
-      "id": "f1764e04-7d0c-4a45-a1f3-7d8aac82c6e8"
+      "id": "f1764e04-7d0c-4a45-a1f3-7d8aac82c6e8",
+      "animationName": "ankle_circles_for_tibialis_release_left.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Ankle Circles for Tibialis Release (Right)",
@@ -5791,7 +5832,9 @@
         "Keep the motion slow and controlled, moving through the full available range.",
         "Continue the circles for the full duration to release tension along the shin."
       ],
-      "id": "fa2a73fa-772d-4af3-b5c6-0b7fd2767a4b"
+      "id": "fa2a73fa-772d-4af3-b5c6-0b7fd2767a4b",
+      "animationName": "ankle_circles_for_tibialis_release_right.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Cross-Legged Shin Pull (Left)",
@@ -5809,7 +5852,9 @@
         "Feel a mild stretch along the front of your left lower leg.",
         "Hold for 15-20 seconds, then switch the leg position."
       ],
-      "id": "b5956057-9f8d-4ef4-8df0-7defebfe920f"
+      "id": "b5956057-9f8d-4ef4-8df0-7defebfe920f",
+      "animationName": "cross_legged_shin_pull_left.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Cross-Legged Shin Pull (Right)",
@@ -5827,7 +5872,9 @@
         "Feel a mild stretch along the front of your right lower leg.",
         "Hold for 15-20 seconds, then switch the leg position."
       ],
-      "id": "838d0e43-8479-4b0f-b21d-ab6da41ad164"
+      "id": "838d0e43-8479-4b0f-b21d-ab6da41ad164",
+      "animationName": "cross_legged_shin_pull_right.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Standing Quad Stretch Against Wall (Left)",
@@ -5922,7 +5969,8 @@
         "Hold for 20-30 seconds, easing off if you feel any knee discomfort."
       ],
       "caution": "Skip this stretch if you have knee pain - it places more load on the knee than a standing quad stretch.",
-      "id": "7cdbb136-483b-472e-bed0-3662ddf337a0"
+      "id": "7cdbb136-483b-472e-bed0-3662ddf337a0",
+      "animationName": "kneeling_couch_stretch_rear_foot_elevated_left.mp4"
     },
     {
       "name": "Kneeling Couch Stretch, Rear Foot Elevated (Right)",
@@ -5941,7 +5989,8 @@
         "Hold for 20-30 seconds, easing off if you feel any knee discomfort."
       ],
       "caution": "Skip this stretch if you have knee pain - it places more load on the knee than a standing quad stretch.",
-      "id": "9576eb4b-863f-41ce-b30f-ac2f2992890b"
+      "id": "9576eb4b-863f-41ce-b30f-ac2f2992890b",
+      "animationName": "kneeling_couch_stretch_rear_foot_elevated_right.mp4"
     },
     {
       "name": "Prone Quad Stretch on Mat",
@@ -5959,7 +6008,8 @@
         "Gently draw both heels toward your glutes, keeping your hips pressed into the mat.",
         "Hold for 20-30 seconds, breathing steadily."
       ],
-      "id": "d7103063-9060-4ae7-924a-c2b6b8655166"
+      "id": "d7103063-9060-4ae7-924a-c2b6b8655166",
+      "animationName": "prone_quad_stretch_on_mat.mp4"
     },
     {
       "name": "Standing Quad Stretch with Chair Support (Left)",
@@ -5996,7 +6046,8 @@
         "Keep your standing leg soft and your torso tall, drawing the heel gently toward your glutes.",
         "Hold for 20-30 seconds, then lower with control."
       ],
-      "id": "b0e4ad2d-0690-40ac-a50a-4b988191666b"
+      "id": "b0e4ad2d-0690-40ac-a50a-4b988191666b",
+      "animationName": "standing_quad_stretch_with_chair_support_right.mp4"
     },
     {
       "name": "Overhead Lat Stretch at Doorframe (Left)",
@@ -6109,7 +6160,8 @@
         "Keep your hips grounded and reach through your fingertips.",
         "Hold for 20-30 seconds, feeling the stretch along your left lat and side body."
       ],
-      "id": "99e1771b-08bb-48b0-9872-3cbd01020e01"
+      "id": "99e1771b-08bb-48b0-9872-3cbd01020e01",
+      "animationName": "seated_cross_body_lat_reach_left.mp4"
     },
     {
       "name": "Seated Cross-Body Lat Reach (Right)",
@@ -6127,7 +6179,8 @@
         "Keep your hips grounded and reach through your fingertips.",
         "Hold for 20-30 seconds, feeling the stretch along your right lat and side body."
       ],
-      "id": "060b272b-ce07-4b70-b1e4-aa15cbb292f2"
+      "id": "060b272b-ce07-4b70-b1e4-aa15cbb292f2",
+      "animationName": "seated_cross_body_lat_reach_right.mp4"
     },
     {
       "name": "Hanging Lat Stretch on Bar or Ledge",
@@ -6146,7 +6199,8 @@
         "Hold for 15-20 seconds, keeping your grip secure throughout."
       ],
       "caution": "Only attempt this if you can hang safely and comfortably support your body weight - step down immediately if you feel any shoulder strain.",
-      "id": "e73905ea-0e9c-46e0-97f8-c1368efb6ef1"
+      "id": "e73905ea-0e9c-46e0-97f8-c1368efb6ef1",
+      "animationName": "hanging_lat_stretch_on_bar_or_ledge.mp4"
     },
     {
       "name": "Bhastrika (Bellows Breath)",
@@ -6475,7 +6529,9 @@
         "Point both feet, reaching your toes away from you.",
         "Continue alternating flex and point slowly for the full duration."
       ],
-      "id": "37ffc022-5591-4aab-a374-4cba77a70c1b"
+      "id": "37ffc022-5591-4aab-a374-4cba77a70c1b",
+      "animationName": "seated_foot_flex_and_point_flow.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Standing Toe Curl Towel Grip (Both Feet)",
@@ -6493,7 +6549,9 @@
         "Repeat the scrunch-and-release with each foot for the full duration.",
         "Keep your weight balanced and movements slow and controlled."
       ],
-      "id": "533ebef1-f9dc-48a8-a5d4-49fca1e7596a"
+      "id": "533ebef1-f9dc-48a8-a5d4-49fca1e7596a",
+      "animationName": "standing_toe_curl_towel_grip_both_feet.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Cross-Legged Foot Massage & Arch Stretch",
@@ -6511,7 +6569,9 @@
         "Gently pull the toes back with your hand to add a light arch stretch.",
         "Switch feet halfway through and repeat for the full duration."
       ],
-      "id": "1661f631-41d7-4b34-8717-3037b7e7b062"
+      "id": "1661f631-41d7-4b34-8717-3037b7e7b062",
+      "animationName": "cross_legged_foot_massage_and_arch_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Wall-Assisted Toe Extension Stretch (Left)",
@@ -6529,7 +6589,9 @@
         "Hold for 20-30 seconds, then switch sides."
       ],
       "isBilateral": false,
-      "id": "dd883650-6972-4a6d-8a61-209f70944f5a"
+      "id": "dd883650-6972-4a6d-8a61-209f70944f5a",
+      "animationName": "wall_assisted_toe_extension_stretch_left.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Wall-Assisted Toe Extension Stretch (Right)",
@@ -6547,7 +6609,9 @@
         "Hold for 20-30 seconds, then switch sides."
       ],
       "isBilateral": false,
-      "id": "8b2274a2-ba96-4ab2-8048-4aac782bedce"
+      "id": "8b2274a2-ba96-4ab2-8048-4aac782bedce",
+      "animationName": "wall_assisted_toe_extension_stretch_right.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Kneeling Arch Stretch, Toes Curled Under (Left)",
@@ -6566,7 +6630,9 @@
       ],
       "caution": "Ease off immediately if you feel sharp pain in the toes or arch.",
       "isBilateral": false,
-      "id": "93b8faf7-cfbb-4c5d-a662-703a8bc6b86c"
+      "id": "93b8faf7-cfbb-4c5d-a662-703a8bc6b86c",
+      "animationName": "kneeling_arch_stretch_toes_curled_under_left.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Kneeling Arch Stretch, Toes Curled Under (Right)",
@@ -6585,7 +6651,9 @@
       ],
       "caution": "Ease off immediately if you feel sharp pain in the toes or arch.",
       "isBilateral": false,
-      "id": "532b7274-1d5e-408d-9398-8d38c30cd15b"
+      "id": "532b7274-1d5e-408d-9398-8d38c30cd15b",
+      "animationName": "kneeling_arch_stretch_toes_curled_under_right.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Doorway Side Stretch with Overhead Reach (Left)",
@@ -6698,7 +6766,8 @@
         "Bring your knees back to center, then lower them to the left.",
         "Continue alternating side to side gently for the full duration."
       ],
-      "id": "f68bebca-e7b3-4025-bf3e-a06e5002c6bd"
+      "id": "f68bebca-e7b3-4025-bf3e-a06e5002c6bd",
+      "animationName": "supine_side_to_side_knee_drop_dynamic_oblique_flow.mp4"
     },
     {
       "name": "Standing Broom-Stick Rotation (Torso Twist with Prop)",
@@ -6716,7 +6785,8 @@
         "Return to center, then rotate to the left.",
         "Continue alternating slowly and with control for the full duration."
       ],
-      "id": "d4f1d198-a03b-494b-af64-f64ca01f5a70"
+      "id": "d4f1d198-a03b-494b-af64-f64ca01f5a70",
+      "animationName": "standing_broom_stick_rotation_torso_twist_with_prop.mp4"
     },
     {
       "name": "Kneeling Cat-Cow Side Bend (Lateral Flow)",
@@ -6734,7 +6804,8 @@
         "Return to center, then shift to the left, looking back toward your left hip.",
         "Continue alternating sides slowly for the full duration."
       ],
-      "id": "d7d69d40-d56d-405a-97b2-af8f31a40e16"
+      "id": "d7d69d40-d56d-405a-97b2-af8f31a40e16",
+      "animationName": "kneeling_cat_cow_side_bend_lateral_flow.mp4"
     },
     {
       "name": "Reclined Figure-Four Stretch with Strap (Left)",
@@ -6791,7 +6862,8 @@
       ],
       "caution": "Skip this if you have trouble balancing on one leg; try a seated variation instead.",
       "isBilateral": false,
-      "id": "cce6610b-6b21-4497-8d12-c3c57cb5a3d6"
+      "id": "cce6610b-6b21-4497-8d12-c3c57cb5a3d6",
+      "animationName": "standing_glute_stretch_against_wall_left.mp4"
     },
     {
       "name": "Standing Glute Stretch Against Wall (Right)",
@@ -6810,7 +6882,8 @@
       ],
       "caution": "Skip this if you have trouble balancing on one leg; try a seated variation instead.",
       "isBilateral": false,
-      "id": "4342d71a-c677-49c4-9bad-1dcd2cd9d569"
+      "id": "4342d71a-c677-49c4-9bad-1dcd2cd9d569",
+      "animationName": "standing_glute_stretch_against_wall_right.mp4"
     },
     {
       "name": "Seated Cross-Ankle Glute Stretch (Left)",
@@ -6923,7 +6996,8 @@
         "Hold for 20-30 seconds, then switch sides."
       ],
       "isBilateral": false,
-      "id": "75c0deb2-0b94-4d93-872c-c6a1847c5556"
+      "id": "75c0deb2-0b94-4d93-872c-c6a1847c5556",
+      "animationName": "kneeling_side_lunge_adductor_stretch_on_cushion_left.mp4"
     },
     {
       "name": "Kneeling Side Lunge Adductor Stretch on Cushion (Right)",
@@ -6941,7 +7015,8 @@
         "Hold for 20-30 seconds, then switch sides."
       ],
       "isBilateral": false,
-      "id": "bcfada95-131c-4260-82af-e2318ad3286f"
+      "id": "bcfada95-131c-4260-82af-e2318ad3286f",
+      "animationName": "kneeling_side_lunge_adductor_stretch_on_cushion_right.mp4"
     },
     {
       "name": "Standing Adductor Stretch with Chair Support (Left)",
@@ -6960,7 +7035,8 @@
       ],
       "caution": "Use a sturdy, stable chair and hold onto something nearby for balance if needed.",
       "isBilateral": false,
-      "id": "bbbe80c4-5e16-404f-b3df-bdefcdf5615d"
+      "id": "bbbe80c4-5e16-404f-b3df-bdefcdf5615d",
+      "animationName": "standing_adductor_stretch_with_chair_support_left.mp4"
     },
     {
       "name": "Standing Adductor Stretch with Chair Support (Right)",
@@ -6979,7 +7055,8 @@
       ],
       "caution": "Use a sturdy, stable chair and hold onto something nearby for balance if needed.",
       "isBilateral": false,
-      "id": "8585bfdf-0e18-4879-8ee1-307e2c50e225"
+      "id": "8585bfdf-0e18-4879-8ee1-307e2c50e225",
+      "animationName": "standing_adductor_stretch_with_chair_support_right.mp4"
     },
     {
       "name": "Seated Wide-Leg Forward Reach (Straddle Stretch)",
@@ -7129,7 +7206,9 @@
         "Release and let your shoulders relax fully.",
         "Repeat the squeeze-and-release for the full duration."
       ],
-      "id": "53280dcd-00e0-41f5-81e8-0afdbb83a59b"
+      "id": "53280dcd-00e0-41f5-81e8-0afdbb83a59b",
+      "animationName": "standing_shoulder_blade_squeeze_scapular_retraction_flow.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Prone Y-T-W Raise (Upper Back Activation Flow)",
@@ -7147,7 +7226,9 @@
         "Move your arms out to a T shape and repeat the lift, then bend elbows into a W shape and repeat.",
         "Cycle slowly through Y, T, and W positions for the full duration."
       ],
-      "id": "08c70d7c-b656-49a6-8113-74f9af4be374"
+      "id": "08c70d7c-b656-49a6-8113-74f9af4be374",
+      "animationName": "prone_y_t_w_raise_upper_back_activation_flow.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Seated Chair Neck Traction Stretch (Both Sides)",
@@ -7165,7 +7246,8 @@
         "Keep your shoulders anchored down as your head moves.",
         "Continue alternating sides slowly for the full duration."
       ],
-      "id": "8c239910-a5d1-49ce-8630-faa3659cf70b"
+      "id": "8c239910-a5d1-49ce-8630-faa3659cf70b",
+      "animationName": "seated_chair_neck_traction_stretch_both_sides.mp4"
     },
     {
       "name": "Standing Wall Angels (Trapezius Mobility Flow)",
@@ -7263,7 +7345,8 @@
         "Continue the gentle reach-and-return motion slowly for the full duration.",
         "Keep your breathing steady throughout."
       ],
-      "id": "bf9e646a-2a78-4221-b38b-ed8f754108fd"
+      "id": "bf9e646a-2a78-4221-b38b-ed8f754108fd",
+      "animationName": "standing_side_to_side_reach_extension_flow.mp4"
     },
     {
       "name": "Kneeling Camel Prep (Supported Backbend)",
