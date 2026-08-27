@@ -1,6 +1,102 @@
 # Exercise Animation — Handoff for a New Session
 
-**Last updated:** 2026-08-26 (even-split 40-exercise batch)
+**Last updated:** 2026-08-26 (62-exercise batch, this session's continuation)
+
+## 62-exercise batch (2026-08-26, continued past the even-split 40)
+
+Animated 62 more of the remaining 158 unanimated exercises (214 -> 276 of
+372). Every pose was checked against its own exercise's written
+instructions before scripting (not just the name), per this session's ask
+to double-check exercises actually perform what they're meant to do.
+
+**New base composition, probed before use (high-leverage — feeds 12
+exercises): half-kneeling lunge.** Front leg planted (`thigh`=-90/`shin`=+90,
+the proven seated-chair fold), rear knee down (`thigh`=+15/`shin`=+100, the
+proven quadruped-rest fold), via `run_seated(globals())` with
+`SEATED_DROP=0.50`. The drop value was solved numerically with a throwaway
+probe (`_lunge_probe*.py`, scratchpad, deleted after use) sweeping
+0.40-0.55: no single drop makes BOTH the front foot AND the rear knee touch
+the floor exactly (they're driven by different bone chains), so 0.50 was
+picked as the value that leaves the smallest visible gap on each (front
+foot ~0.04 below floor, rear knee ~0.05 above) rather than a large gap on
+either one. Rendered clean (no tearing) across every exercise built on it:
+`left/right_kneeling_hip_flexor_lunge`, `left/right_couch_stretch`,
+`left/right_kneeling_quad_stretch`, `kneeling_couch_stretch_rear_foot_
+elevated_left/right` (same pose as the couch stretch, reused for a third
+differently-named entry point), `left/right_low_lunge_anjaneyasana` (same
+base + overhead arms + a shallow backbend), and a front-thigh-abduction
+variant for `pigeon_pose_left/right_leg_forward` + `left/right_pigeon_pose_
+hip_stretch`.
+
+**Content bug found (not fixed — flagged, since it's a SeedData tagging
+issue, not an animation one): `Left/Right Pigeon Pose Hip Stretch`'s own
+`targetBodyParts` contradicts its own instructions.** Left Pigeon Pose Hip
+Stretch is tagged `['Left Glutes', 'Left Hip Flexors']`, but its own
+instructions say the stretch is felt "through your left glute and the
+front of your RIGHT hip" (the extended-back leg) — anatomically the
+tag should read `Right Hip Flexors`, matching `pigeon_pose_left_leg_
+forward`'s tag for the identical pose. Looks like a copy/paste bug, the
+same class already caught once in `right_levator_scapulae_stretch.py`
+(2026-08-22). The animation highlights the anatomically-correct muscle per
+the written instructions, not the (likely wrong) tag; the SeedData tag
+itself was left alone since fixing it is a content change outside this
+batch's scope.
+
+**Two camera/pose-axis mismatches caught in review, both the same gotcha
+recurring:** `kneeling_side_lunge_adductor_stretch_on_cushion_left/right`
+and `standing_adductor_stretch_with_chair_support_left/right` both first
+rendered with a side-on camera (azimuth ~100 / ~90) copied from a
+neighboring family without re-deriving it, for a `thigh` local-Z ABDUCTION
+motion — the exact "camera azimuth and pose are coupled" mistake the
+fourth-batch section of this doc already documents (a side camera views
+the sagittal plane; abduction happens in the coronal plane, so it
+foreshortens away). Caught by reviewing the rendered contact sheet (the leg
+visibly didn't move frame to frame) rather than trusting the log. Fixed to
+a front camera (azimuth 0, matching `standing_adductor_rock_side_to_
+side.py`'s already-proven convention for this exact axis) for the standing
+exercise, and a 3/4-oblique 35 deg for the kneeling one (needs to keep some
+lunge depth visible too). Re-rendered, re-encoded, re-verified before
+shipping.
+
+**Rig-limitation approximations (21 of the 62, flagged
+`animationIsApproximate`):** the no-scapula/clavicle limitation already
+implicit in the rig extends to shoulder-blade motions (`Active Shoulder
+Shrug & Release`, `Standing Shoulder Blade Squeeze`, `Prone Y-T-W Raise`) —
+approximated via small proxy motions on `chest`/`upperarm` rather than
+animating a scapula that doesn't exist. The no-independent-ankle/toe-joint
+limitation (documented in the tenth batch and the hand/wrist batch)
+accounts for the other 18: the whole foot/ankle/shin-mobility family
+(`Shin & Ankle Mobiliser`, `Ankle Alphabet`, both `Ankle Circles for
+Tibialis Release`, both `Cross-Legged Shin Pull`, both `Seated Assisted
+Tibialis Stretch`, both `Seated Shin Stretch with Strap`, `Seated
+Foot Flex-and-Point Flow`, `Standing Toe Curl Towel Grip`, `Cross-Legged
+Foot Massage & Arch Stretch`, both `Wall-Assisted Toe Extension Stretch`,
+both `Kneeling Arch Stretch, Toes Curled Under`) can only show the leg
+silhouette + correct highlight, never the actual ankle/toe articulation.
+Several of these also came back with `highlight=0` in their render log —
+not a bug: "Foot" (like "Temple"/"Jaw"/"Eye"/"Forehead" before it) isn't a
+mappable atlas muscle group, matching the tenth batch's Plantar Fascia
+finding.
+
+**Verification for this batch:** all 62 rendered with `skins:1`/`anims:1`
+and 0 fallback muscles (checked programmatically, not just spot-read).
+Visually reviewed via `ffmpeg` 5x2 contact-sheet grids (12-frame stride)
+for every new base composition and every bilateral-abduction exercise
+before shipping; the two camera bugs above were caught this way. Wired via
+the same surgical `"id"`-line regex insert as every prior batch. New
+`SixtyExerciseBatchUITests` (parallel to `EvenSplitAnimationBatch40UITests`)
+verifies all 62 open via search and the 21 approximate ones show the
+disclaimer. Full `xcodebuild` unit suite (413 tests) green throughout.
+276/372 exercises now have animations (was 214). 96 remain — mostly
+breathing techniques and jaw/eye/forehead micro-exercises (no rig
+precedent for either), plus a handful of genuinely dynamic/new-base-pose
+exercises deliberately deferred this batch: `Bridge Pose`, `Standing Split
+Prep Stretch`, `Dynamic Standing Leg Swings`, `Standing Hip Circles`,
+`Runner's Lunge with Rotation` (L/R), `World's Greatest Stretch` (L/R),
+`90/90 Hip Switch`, `Deep Squat Hold`, `Standing Sumo Squat Hold`,
+`Cossack Squat Stretch` (L/R), `Frog Rock` — each needs its own base-pose
+or dynamic-motion probe (deep squat, hip circle, lunge-with-rotation) not
+yet attempted on this rig.
 
 ## Even-split 40-exercise batch (2026-08-26)
 
