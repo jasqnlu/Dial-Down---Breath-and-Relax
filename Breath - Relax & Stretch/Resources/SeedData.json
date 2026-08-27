@@ -1565,7 +1565,9 @@
         "Lower your foot and switch sides."
       ],
       "caution": "Hold onto a wall or chair for balance to avoid falling.",
-      "id": "ff6ca2a1-778f-5c6a-b6bb-90f0c0750f42"
+      "id": "ff6ca2a1-778f-5c6a-b6bb-90f0c0750f42",
+      "animationName": "left_standing_figure_4_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Right Standing Figure-4 Stretch",
@@ -1585,7 +1587,9 @@
         "Lower your foot and switch sides."
       ],
       "caution": "Hold onto a wall or chair for balance to avoid falling.",
-      "id": "c7f6c0e7-2b40-54c1-afd3-c2ce51578d79"
+      "id": "c7f6c0e7-2b40-54c1-afd3-c2ce51578d79",
+      "animationName": "right_standing_figure_4_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Pigeon Pose (Right Leg Forward)",
@@ -2396,7 +2400,8 @@
         "Flow slowly between the two positions, following your breath.",
         "Repeat 8-10 times."
       ],
-      "id": "6426b9e2-2a5d-5d6e-b12c-bad771bf1ecd"
+      "id": "6426b9e2-2a5d-5d6e-b12c-bad771bf1ecd",
+      "animationName": "upper_back_cat_cow_seated.mp4"
     },
     {
       "name": "Reverse Prayer Shoulder Mobiliser",
@@ -3138,7 +3143,9 @@
         "Hold each finger for 3-5 seconds.",
         "Shake out your hand and switch sides."
       ],
-      "id": "aec08e3f-882e-5265-8cf9-fe10dcd6a338"
+      "id": "aec08e3f-882e-5265-8cf9-fe10dcd6a338",
+      "animationName": "left_finger_extension_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Right Finger Extension Stretch",
@@ -3156,7 +3163,9 @@
         "Hold each finger for 3-5 seconds.",
         "Shake out your hand and switch sides."
       ],
-      "id": "d685fa43-7816-5d33-8e90-6559bcb7ba9e"
+      "id": "d685fa43-7816-5d33-8e90-6559bcb7ba9e",
+      "animationName": "right_finger_extension_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Equal Breathing (Sama Vritti)",
@@ -3222,7 +3231,9 @@
         "Hold, feeling the stretch travel up the front of your back shin, then rise and switch legs on another round."
       ],
       "caution": "Use a folded towel under the back knee if the floor is hard, and ease off if you feel pinching at the front of the ankle rather than a stretch.",
-      "id": "cc6dcec1-c54f-48c3-b8c6-a64741a29faf"
+      "id": "cc6dcec1-c54f-48c3-b8c6-a64741a29faf",
+      "animationName": "left_half_kneeling_rear_foot_instep_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Right Half-Kneeling Rear-Foot Instep Stretch",
@@ -3241,7 +3252,9 @@
         "Hold, feeling the stretch travel up the front of your back shin, then rise and switch legs on another round."
       ],
       "caution": "Use a folded towel under the back knee if the floor is hard, and ease off if you feel pinching at the front of the ankle rather than a stretch.",
-      "id": "6bd1e797-c0f0-4d8b-9024-7b40bacaea85"
+      "id": "6bd1e797-c0f0-4d8b-9024-7b40bacaea85",
+      "animationName": "right_half_kneeling_rear_foot_instep_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Left Seated Behind-Hip Bicep Stretch",
@@ -3850,7 +3863,9 @@
         "Hold, feeling the stretch through the standing leg's hamstring, then lower slowly and switch sides on another round."
       ],
       "caution": "Only lift as high as you can while keeping the standing leg straight and controlled — use a wall for balance.",
-      "id": "1bed1844-6818-410c-a8b3-e1079f857bbd"
+      "id": "1bed1844-6818-410c-a8b3-e1079f857bbd",
+      "animationName": "standing_split_prep_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Extended Exhale Breathing",
@@ -4036,7 +4051,8 @@
         "After the set time, turn around and repeat with the other leg."
       ],
       "caution": "Keep the motion controlled, not kicking — this is a warm-up mobilizer, not a max-range stretch.",
-      "id": "e80fc7d8-0c6f-433f-9335-c2f26d5477b5"
+      "id": "e80fc7d8-0c6f-433f-9335-c2f26d5477b5",
+      "animationName": "dynamic_standing_leg_swings.mp4"
     },
     {
       "name": "Standing Hip Circles",
@@ -4058,7 +4074,9 @@
         "Keep your upper body relatively still and let the movement come from your hips.",
         "Reverse direction and circle counter-clockwise for the remaining time."
       ],
-      "id": "0510c366-18e8-4ff1-a341-6a19976e50a4"
+      "id": "0510c366-18e8-4ff1-a341-6a19976e50a4",
+      "animationName": "standing_hip_circles.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Runner's Lunge with Rotation (Left)",
@@ -4079,7 +4097,8 @@
         "Reach your left arm up toward the ceiling, rotating your chest open to the left.",
         "Hold, feeling the stretch through your right hip flexor and your rotated torso, then release and switch sides on another round."
       ],
-      "id": "38c62e1d-7a1c-4d54-b016-620468832857"
+      "id": "38c62e1d-7a1c-4d54-b016-620468832857",
+      "animationName": "runners_lunge_with_rotation_left.mp4"
     },
     {
       "name": "Runner's Lunge with Rotation (Right)",
@@ -4100,7 +4119,8 @@
         "Reach your right arm up toward the ceiling, rotating your chest open to the right.",
         "Hold, feeling the stretch through your left hip flexor and your rotated torso, then release and switch sides on another round."
       ],
-      "id": "bb664111-a1ba-4c92-bd9a-b44ee97d3e2a"
+      "id": "bb664111-a1ba-4c92-bd9a-b44ee97d3e2a",
+      "animationName": "runners_lunge_with_rotation_right.mp4"
     },
     {
       "name": "Standing Ankle Dorsiflexion Stretch (Left)",
@@ -4119,7 +4139,9 @@
         "Ease your knee forward until you feel a stretch through the front of your ankle and up your shin.",
         "Hold, then release and switch sides on another round."
       ],
-      "id": "bab80254-c9e0-472a-9dfd-f369a0b4232e"
+      "id": "bab80254-c9e0-472a-9dfd-f369a0b4232e",
+      "animationName": "standing_ankle_dorsiflexion_stretch_left.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Standing Ankle Dorsiflexion Stretch (Right)",
@@ -4138,7 +4160,9 @@
         "Ease your knee forward until you feel a stretch through the front of your ankle and up your shin.",
         "Hold, then release and switch sides on another round."
       ],
-      "id": "ab2582db-e52c-4820-baed-89ef91592ede"
+      "id": "ab2582db-e52c-4820-baed-89ef91592ede",
+      "animationName": "standing_ankle_dorsiflexion_stretch_right.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "20-20-20 Focus Shift",
@@ -4372,7 +4396,8 @@
       ],
       "caution": "Move within a pain-free range and skip the torso rotation if you feel any low-back strain.",
       "isBilateral": false,
-      "id": "1c423cd9-d3b5-478b-9d2b-6cfaca359c46"
+      "id": "1c423cd9-d3b5-478b-9d2b-6cfaca359c46",
+      "animationName": "worlds_greatest_stretch_left_lead_leg.mp4"
     },
     {
       "name": "World's Greatest Stretch (Right Lead Leg)",
@@ -4396,7 +4421,8 @@
       ],
       "caution": "Move within a pain-free range and skip the torso rotation if you feel any low-back strain.",
       "isBilateral": false,
-      "id": "99ca6a60-4888-4177-96cd-40206064baa4"
+      "id": "99ca6a60-4888-4177-96cd-40206064baa4",
+      "animationName": "worlds_greatest_stretch_right_lead_leg.mp4"
     },
     {
       "name": "Seated Spinal Rotation with Overhead Reach (Left)",
@@ -4483,7 +4509,9 @@
         "Lower your toes back down with control.",
         "Repeat the lift-and-lower rhythm for the full duration."
       ],
-      "id": "37492316-8e25-4f91-a06a-de0b59895bf9"
+      "id": "37492316-8e25-4f91-a06a-de0b59895bf9",
+      "animationName": "standing_tibialis_raise_toe_lifts.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Thumb Extension Stretch (Left)",
@@ -4784,7 +4812,9 @@
         "Gently swing the arm in small circles, letting gravity do the work rather than using muscle effort.",
         "Continue the slow, passive swinging for the full duration, then switch sides on another round."
       ],
-      "id": "690a7968-ce26-4eda-a09e-b9719a88c178"
+      "id": "690a7968-ce26-4eda-a09e-b9719a88c178",
+      "animationName": "shoulder_pendulum_swing_left.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Shoulder Pendulum Swing (Right)",
@@ -4803,7 +4833,9 @@
         "Gently swing the arm in small circles, letting gravity do the work rather than using muscle effort.",
         "Continue the slow, passive swinging for the full duration, then switch sides on another round."
       ],
-      "id": "1e71e0b5-ec20-468e-9f18-775749bf1264"
+      "id": "1e71e0b5-ec20-468e-9f18-775749bf1264",
+      "animationName": "shoulder_pendulum_swing_right.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Standing Lumbar Side Glide (Lateral Shift)",
@@ -4823,7 +4855,9 @@
         "Repeat, shifting to the other side, alternating for the full duration."
       ],
       "caution": "Move within a comfortable range and stop if you feel sharp or radiating pain.",
-      "id": "ca5ed248-9564-4d37-9936-03a2ca08cc8d"
+      "id": "ca5ed248-9564-4d37-9936-03a2ca08cc8d",
+      "animationName": "standing_lumbar_side_glide_lateral_shift.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Neck Isometric Front-and-Back Press",
@@ -5050,7 +5084,9 @@
         "Release and spread your fingers wide open, holding for 3-5 seconds.",
         "Repeat the squeeze-and-release cycle for the full duration."
       ],
-      "id": "bc475a9e-cab7-423c-95fc-6908d42b2557"
+      "id": "bc475a9e-cab7-423c-95fc-6908d42b2557",
+      "animationName": "grip_and_release_hand_squeeze_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Standing Waist Twist (Dynamic Rotation Flow)",
@@ -5070,7 +5106,8 @@
         "Keep the motion light and controlled, alternating sides for the full duration."
       ],
       "caution": "Keep the twist gentle and controlled — this is a mobility warm-up, not a forceful stretch.",
-      "id": "0ec82765-27e2-4991-98ba-226b5ae40aa9"
+      "id": "0ec82765-27e2-4991-98ba-226b5ae40aa9",
+      "animationName": "standing_waist_twist_dynamic_rotation_flow.mp4"
     },
     {
       "name": "Wall Slide (Shoulder Blade Mobility)",
@@ -5569,7 +5606,9 @@
         "Alternate pedaling your feet, pressing each heel down for a couple of seconds at a time.",
         "Continue the gentle pedaling motion for the full duration."
       ],
-      "id": "88e274ef-bf80-4e67-8675-3de9d5d9676a"
+      "id": "88e274ef-bf80-4e67-8675-3de9d5d9676a",
+      "animationName": "downward_facing_dog_calf_pump.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Seated Calf Stretch with Towel (Left)",
@@ -5587,7 +5626,8 @@
         "Keeping your knee straight, gently pull the towel to draw your toes back toward your shin.",
         "Hold for 20-30 seconds, feeling the stretch through your calf."
       ],
-      "id": "39644b34-0bfd-4fc6-9bc0-e54091075316"
+      "id": "39644b34-0bfd-4fc6-9bc0-e54091075316",
+      "animationName": "left_seated_calf_stretch_with_towel.mp4"
     },
     {
       "name": "Seated Calf Stretch with Towel (Right)",
@@ -5605,7 +5645,8 @@
         "Keeping your knee straight, gently pull the towel to draw your toes back toward your shin.",
         "Hold for 20-30 seconds, feeling the stretch through your calf."
       ],
-      "id": "6dd12771-6ca7-45ee-9666-8fe17a542b1d"
+      "id": "6dd12771-6ca7-45ee-9666-8fe17a542b1d",
+      "animationName": "right_seated_calf_stretch_with_towel.mp4"
     },
     {
       "name": "Wall Calf Stretch, Bent-Knee Soleus Focus (Left)",
@@ -5623,7 +5664,8 @@
         "Lean your hips toward the wall until you feel a stretch lower in your left calf, near the Achilles.",
         "Hold for 20-30 seconds, then release."
       ],
-      "id": "2f258e9f-8138-44f1-9339-a9e1072dfcf7"
+      "id": "2f258e9f-8138-44f1-9339-a9e1072dfcf7",
+      "animationName": "wall_calf_stretch_bent_knee_soleus_focus_left.mp4"
     },
     {
       "name": "Wall Calf Stretch, Bent-Knee Soleus Focus (Right)",
@@ -5641,7 +5683,8 @@
         "Lean your hips toward the wall until you feel a stretch lower in your right calf, near the Achilles.",
         "Hold for 20-30 seconds, then release."
       ],
-      "id": "ec2311f5-59e2-4e7c-867d-ff652ef4f52c"
+      "id": "ec2311f5-59e2-4e7c-867d-ff652ef4f52c",
+      "animationName": "wall_calf_stretch_bent_knee_soleus_focus_right.mp4"
     },
     {
       "name": "Kneeling Calf Stretch on Cushion (Left)",
@@ -5659,7 +5702,8 @@
         "Hold when you feel a stretch through the back of your left lower leg.",
         "Hold for 20-30 seconds, then return to center."
       ],
-      "id": "10cd81ee-af76-49a5-b7a4-0185ce4c5860"
+      "id": "10cd81ee-af76-49a5-b7a4-0185ce4c5860",
+      "animationName": "kneeling_calf_stretch_on_cushion_left.mp4"
     },
     {
       "name": "Kneeling Calf Stretch on Cushion (Right)",
@@ -5677,7 +5721,8 @@
         "Hold when you feel a stretch through the back of your right lower leg.",
         "Hold for 20-30 seconds, then return to center."
       ],
-      "id": "cdedd0f2-2d9e-44d9-a471-28190934c717"
+      "id": "cdedd0f2-2d9e-44d9-a471-28190934c717",
+      "animationName": "kneeling_calf_stretch_on_cushion_right.mp4"
     },
     {
       "name": "Standing Bilateral Calf Stretch on Incline Board",
@@ -5695,7 +5740,9 @@
         "Lean your body slightly forward from the ankles until you feel both calves stretch evenly.",
         "Hold for 20-30 seconds, breathing steadily."
       ],
-      "id": "135be4d4-96cd-4443-be45-0a8fb2fc3e2c"
+      "id": "135be4d4-96cd-4443-be45-0a8fb2fc3e2c",
+      "animationName": "standing_bilateral_calf_stretch_on_incline_board.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Kneeling Tibialis Stretch, Toes Tucked (Left)",
@@ -6431,7 +6478,9 @@
         "Repeat the spread-and-release motion for both hands for the full duration.",
         "Keep the movement slow and controlled rather than forcing the spread."
       ],
-      "id": "80ef5cdf-2024-40e3-9a10-c5afa7b6c12f"
+      "id": "80ef5cdf-2024-40e3-9a10-c5afa7b6c12f",
+      "animationName": "rubber_band_finger_abduction_stretch.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Assisted Wrist Flexion Stretch (Left)",
