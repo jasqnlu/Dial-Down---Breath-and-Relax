@@ -1,6 +1,106 @@
 # Exercise Animation — Handoff for a New Session
 
-**Last updated:** 2026-08-26 (62-exercise batch, this session's continuation)
+**Last updated:** 2026-08-27 (31-exercise batch, clearing almost the entire
+remaining body-pose backlog)
+
+## 31-exercise batch (2026-08-27)
+
+Attempted all 39 of the 96 remaining exercises whose `targetBodyParts` isn't
+empty/micro (i.e. everything left except breathing techniques and jaw/eye/
+forehead exercises, which stay deferred — no rig precedent for either, same
+as every prior batch). Shipped 31; dropped 2 after failing visual QA;
+deferred 6 that need a genuinely new base pose this rig doesn't support well.
+
+**Dropped after rendering (visual QA, not just the `fallback=0`/log check):**
+`bridge_pose` (torn/spiky foot geometry + a dark gap at the crotch when
+`hips` stays fixed-flat while `spine` arches backward — the supine base
+doesn't hold up under that combination) and `frog_rock_kneeling_glute_
+mobility_flow` (peak-frame camera framing was badly wrong — the figure was
+cropped to an unrecognizable diagonal sliver). Both had clean render logs
+(0 fallback muscles) — a reminder that the log alone doesn't prove a render
+is usable; every new composition in this batch got its rest/peak PNGs
+actually opened and looked at before shipping, which is what caught both of
+these plus the two bugs below.
+
+**Deferred (need a new base/dynamic pose, consistent with every prior
+batch's policy):** `Left/Right Cossack Squat Stretch`, `Deep Squat Hold`,
+`Standing Sumo Squat Hold` (a symmetric deep-knee-bend base would look
+visually identical to the ordinary seated-chair pose already used
+everywhere else on this rig — no way to distinguish "squatting on your own
+feet" from "sitting" without a foot-ground contact concept this rig doesn't
+have), `90/90 Hip Switch` (bent-leg internal/external rotation switch risks
+the same mitt-webbing failure documented below for large twists on an
+already-bent joint), `Sun Salutation Warm-Up` (genuinely a multi-pose flow,
+not a single held/oscillating shape).
+
+**Two real bugs caught in review, not just camera/pose mismatches this
+time — a Python bug:** the mirrored-side (`_right`) variants of
+`runners_lunge_with_rotation`, `shoulder_pendulum_swing`, and
+`worlds_greatest_stretch` were generated with `lambda d: r(-d)(N)` inside a
+tuple literal, intending "call this negating-then-radians helper with N".
+Python parses that as a lambda whose *body* is `r(-d)(N)` — the whole
+expression after the colon, including the `(N)` call — not a lambda
+immediately invoked with N. So the tuple ended up holding a function object
+instead of a number, and Blender's `Euler()` failed with `sequence index 2
+expected a number, found 'function' type`. Fixed by regex-substituting
+every `lambda d: r(-d)(N)` back to the literal `r(-N)` per-script (the
+mirrored angles were static values anyway, so no lambda was actually
+needed). Lesson for any future generator script: never build a per-call
+lambda through string templating — compute the literal value in Python and
+interpolate the number, not the callable.
+
+**One more camera/pose-axis mismatch, the same recurring gotcha:**
+`shoulder_pendulum_swing_{left,right}` first rendered with
+`CAMERA_AZIMUTH = 0` (front view) for a forward-lean + sagittal-plane arm
+swing — both motions live in the plane a front camera views edge-on, i.e.
+completely foreshortened away (the render looked like a static, fully
+upright figure with arms merely resting out to the sides). Fixed to
+`CAMERA_AZIMUTH = 90` (side view), re-rendered, confirmed the lean and
+swing are now visible. Same class of bug as the fourth-batch and
+62-exercise-batch notes below — worth internalizing as a checklist item
+("does this pose's dominant motion happen in the plane this camera views
+edge-on?") rather than re-discovering it per batch.
+
+**New reused compositions, no new base needed:** the half-kneeling lunge
+base (from the 62-exercise batch) fed 5 more exercises directly —
+`left/right_half_kneeling_rear_foot_instep_stretch`, `kneeling_calf_
+stretch_on_cushion_left/right`, and (combined with the seated-spinal-
+rotation twist axis + an overhead reach) `runners_lunge_with_rotation_
+left/right` and `worlds_greatest_stretch_left/right_lead_leg` — the latter
+two instructions describe the same underlying lunge-with-rotation shape
+under different names, so both reuse one composition rather than inventing
+two. `standing_hip_circles` and `shoulder_pendulum_swing` both reused the
+lazy 4-keyframe "combine two axes across the loop" trick already proven for
+`wrist_circles.py`, applied to the hip and shoulder respectively, kept to
+conservative angles since a weight-bearing standing leg (hip circles) and a
+scapula-less shoulder (pendulum, no real support prop) are both somewhat
+new territory.
+
+**Two exercises wired to an already-rendered asset instead of a new
+render:** `Seated Calf Stretch with Towel (Left/Right)` are duplicate-
+content entries under a slightly different name from the already-shipped
+`Left/Right Seated Calf Stretch with Towel` — same instructions, same
+pose — so they point at the existing `left/right_seated_calf_stretch_
+with_towel.mp4` rather than re-rendering an identical clip. Flagged NOT
+approximate, matching the original entries.
+
+**Verification for this batch:** all 29 newly-rendered exercises checked
+programmatically for `skins:1`/`anims:1`/0 fallback muscles, AND had their
+rest/peak PNGs actually opened and visually reviewed (not just the log) —
+this is what caught the two drops and two fixes above, none of which the
+log alone would have surfaced. Full `xcodebuild` unit suite (412 tests)
+green throughout. New `ThirtyOneExerciseBatchUITests` (parallel to
+`SixtyExerciseBatchUITests`) verifies a 20-exercise sample spanning every
+base composition opens live in the app and shows the approximate-animation
+disclaimer where expected.
+
+307/372 exercises now animated (was 276). The 65 remaining are
+breathing techniques (~44) and jaw/eye/forehead/temple micro-exercises
+(~11), both still with no rig precedent, plus the 6 deferred squat/dynamic-
+flow exercises named above and `Sun Salutation Warm-Up`. That's very
+nearly the entire feasible backlog on this rig.
+
+## 62-exercise batch (2026-08-26, continued past the even-split 40)
 
 ## 62-exercise batch (2026-08-26, continued past the even-split 40)
 
