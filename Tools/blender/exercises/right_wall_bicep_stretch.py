@@ -10,6 +10,16 @@ arm bones instead of L (no Z-axis mirroring needed — Gotcha #6's "+X = swing
 back" sign applies identically to both sides; only the adduction Z axis,
 unused here, would need flipping). Camera is on the opposite side (270 deg)
 so the working arm faces the lens.
+
+Rotation-audit fix: same missing-torso-twist bug as left_wall_bicep_stretch.py
+(pre-fix) — added chest/spine local-Y twist, mirrored (negative Y = twist
+left, matching right_seated_spinal_twist.py's sign) since rotating away from
+a wall behind the RIGHT arm means twisting left.
+
+Twist-direction correction (2026-08-08): mirror of the sign fix applied to its
+L/R partner — see that script's docstring and ANIMATION_HANDOFF.md's "Twist
+direction" section. +Y local-Y rotates toward the subject's own LEFT, not
+right as the handoff doc previously claimed.
 """
 import sys
 import os
@@ -32,14 +42,21 @@ WORKED_KEYWORDS = ("right bicep",)
 
 POSES = {
     0: {},
-    30: {"upperarm.R": (r(20), 0, 0)},
+    30: {
+        "upperarm.R": (r(20), 0, 0),
+        "chest": (0, r(8), 0),
+    },
     60: {
         "upperarm.R": (r(45), 0, 0),
         "forearm.R": (r(-5), 0, 0),
+        "chest": (0, r(15), 0),
+        "spine": (0, r(8), 0),
     },
     90: {
         "upperarm.R": (r(45), 0, 0),
         "forearm.R": (r(-5), 0, 0),
+        "chest": (0, r(15), 0),
+        "spine": (0, r(8), 0),
     },
     120: {},
 }

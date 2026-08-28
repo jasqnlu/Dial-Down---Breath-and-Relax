@@ -1,14 +1,14 @@
-imported 269 objects
-model bounds: (-0.374, -0.163, 0.0) .. (0.374, 0.163, 1.916)  height=1.916
 muscles: 250  (mapped=246 fallback=0  highlight=27 neutral=223  mitts=4)
-neck detected at z=1.657 (width=0.101); frac=0.864
 skin clip: 6562 -> 3218 verts kept (head cap)
-joined muscles -> 'Muscles' (78036 verts, 2 mat slots, 12 vgroups)
-peak spine tail world = (0.000, 0.000, 1.303)
-peak chest tail world = (0.000, 0.000, 1.533)
+peak thigh.L tail world = (0.105, -0.422, 0.498)
+peak thigh.R tail world = (-0.105, -0.422, 0.498)
+peak shin.L tail world = (0.105, -0.422, -0.000)
+peak shin.R tail world = (-0.105, -0.422, -0.000)
+peak spine tail world = (0.000, 0.000, 0.843)
+peak chest tail world = (0.000, 0.000, 1.073)
+posed bounds: (-0.24, -0.579, -0.03) .. (0.307, 0.241, 1.456)
 render: rest_demo -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/right_seated_spinal_twist_rest_demo.png
 render: peak_demo -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/right_seated_spinal_twist_peak_demo.png
-render: peak_front -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/right_seated_spinal_twist_peak_front.png
 demo frames -> /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/_demo_frames_right_seated_spinal_twist (encode to right_seated_spinal_twist.mp4 next)
 [right_seated_spinal_twist] built + exported.
 animated model : /Users/jasonlu/Desktop/X-Code Projects/Breath - Relax & Stretch/Tools/blender/generated/exercises/right_seated_spinal_twist.glb

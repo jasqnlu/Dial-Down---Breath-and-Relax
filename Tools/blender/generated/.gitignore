@@ -1,0 +1,24 @@
+# Blender pipeline intermediates — regenerable, and large.
+#
+# Everything here is produced deterministically by the scripts in
+# Tools/blender/exercises/ (see ANIMATION_HANDOFF.md). Only two outputs are
+# actually needed downstream, and neither lives here:
+#   * the .mp4 loops, which ship in Resources/Animations/
+#   * the .py scripts that produce them, which are the real source of truth
+#
+# Regenerate any of this with:
+#   /Applications/Blender.app/Contents/MacOS/Blender -b \
+#       --python "Tools/blender/exercises/<name>.py"
+#
+# One batch of 14 exercises produced ~529 MB of these files, so they are not
+# committed. Files tracked before this rule was added stay tracked; run
+# `git rm --cached` on them if you want to stop carrying them too.
+
+_demo_frames*/
+*.blend
+*.blend1
+*.glb
+*_log.txt
+*_peak_demo.png
+*_peak_front.png
+*_rest_demo.png

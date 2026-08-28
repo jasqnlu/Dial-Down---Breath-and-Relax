@@ -44,6 +44,31 @@ struct CautionCard: View {
     }
 }
 
+// MARK: - Animation accuracy note (per-exercise)
+
+/// Small disclaimer for exercises whose generated 3D animation is a known
+/// approximation — e.g. the rig has no bone for the joint that actually
+/// does the moving (no wrist/hand/ankle/foot bone). Deliberately as light
+/// as `MedicalDisclaimerNote`, not a full `CautionCard` — this isn't a
+/// safety warning, just an accuracy caveat.
+struct AnimationAccuracyNote: View {
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+            Text("This animation may not be 100% accurate to the exercise.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Note: this animation may not be 100% accurate to the exercise.")
+    }
+}
+
 // MARK: - Global medical disclaimer note
 
 struct MedicalDisclaimerNote: View {

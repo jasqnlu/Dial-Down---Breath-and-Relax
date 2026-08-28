@@ -20,7 +20,7 @@ final class GoogleAuthService: NSObject {
     private override init() {}
 
     // Replace with your iOS OAuth Client ID from Google Cloud Console.
-    private let clientID = "YOUR_CLIENT_ID.apps.googleusercontent.com"
+    private let clientID = "100179065649-o6avkunmdq6sf6gvd3huimp1lkcbft2p.apps.googleusercontent.com"
 
     static var isConfigured: Bool {
         !shared.clientID.contains("YOUR_CLIENT_ID")

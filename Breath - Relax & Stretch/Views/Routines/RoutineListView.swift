@@ -5,30 +5,29 @@ struct RoutineListView: View {
     @Query private var routines: [Routine]
     @Query private var exercises: [Exercise]
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var pickingSession: ExercisePickingSession
 
     @State private var showingBuilder  = false
-    @State private var showingBrowser  = false
     @State private var routineToPlay: Routine?
     @State private var routineToEdit: Routine?
     @State private var routinePendingDelete: Routine?
+    /// Snapshot to restore into RoutineBuilderView after a cross-tab
+    /// "Add Exercise" round trip — set by the `.exercisePickingFinished`
+    /// handler below, consumed by the `showingBuilderAfterPick` sheet.
+    @State private var builderRestoredState: (routineToEdit: Routine?, name: String, exerciseIDs: [UUID], durationOverrides: [UUID: Int])?
+    @State private var showingBuilderAfterPick = false
 
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                    NavigationLink(destination: GuidedProgramsView()) {
-                        entryRow(title: "Guided Programs", systemImage: "calendar.badge.clock")
+                    NavigationLink(destination: PremadeRoutinesView()) {
+                        entryRow(title: "Premade Routines", systemImage: "sparkles")
                     }
                     .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
-
-                    NavigationLink(destination: ContentPacksView()) {
-                        entryRow(title: "Content Packs", systemImage: "shippingbox.fill")
-                    }
-                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
+                    .tourAnchor("routines.sharedList")
                 }
 
                 ForEach(routines) { routine in
@@ -74,15 +73,6 @@ struct RoutineListView: View {
                         Image(systemName: "plus")
                     }
                 }
-                // Community browsing needs the backend; hide the entry point
-                // rather than showing a screen that can't load.
-                if SupabaseService.isConfigured {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button { showingBrowser = true } label: {
-                            Label("Browse", systemImage: "globe")
-                        }
-                    }
-                }
             }
             .overlay {
                 if routines.isEmpty {
@@ -98,9 +88,7 @@ struct RoutineListView: View {
                                 .foregroundStyle(Color.luminaOnSurface)
                         }
                     } description: {
-                        Text(SupabaseService.isConfigured
-                            ? "Create your own or borrow one from the library."
-                            : "Create your own routine from your favorite exercises.")
+                        Text("Create your own routine from your favorite exercises.")
                             .font(.luminaBody)
                             .foregroundStyle(Color.luminaOnSurfaceVariant)
                     }
@@ -108,15 +96,37 @@ struct RoutineListView: View {
             }
             .sheet(isPresented: $showingBuilder) {
                 RoutineBuilderView()
-                    .environmentObject(AuthManager.shared)
             }
             .sheet(item: $routineToEdit) { routine in
                 RoutineBuilderView(routineToEdit: routine)
-                    .environmentObject(AuthManager.shared)
             }
-            .sheet(isPresented: $showingBrowser) {
-                BorrowRoutineView()
-                    .environmentObject(AuthManager.shared)
+            .onReceive(NotificationCenter.default.publisher(for: .exercisePickingFinished)) { _ in
+                // Peek first and check originTab before consuming — Customize (Home,
+                // tab 0) can also finish a pick, and this same notification fires at
+                // every mounted listener. See TodayView.swift's identical handler for
+                // the full rationale.
+                guard let result = pickingSession.lastFinished, result.context.originTab == 4 else { return }
+                _ = pickingSession.consumeFinished()
+                let editingRoutine = result.context.editingRoutineID.flatMap { id in
+                    routines.first(where: { $0.uuid == id })
+                }
+                builderRestoredState = (
+                    routineToEdit: editingRoutine,
+                    name: result.context.title,
+                    exerciseIDs: result.merged.map(\.uuid),
+                    durationOverrides: result.context.durationOverrides
+                )
+                showingBuilderAfterPick = true
+            }
+            .sheet(isPresented: $showingBuilderAfterPick, onDismiss: {
+                builderRestoredState = nil
+            }) {
+                RoutineBuilderView(
+                    routineToEdit: builderRestoredState?.routineToEdit,
+                    restoredState: builderRestoredState.map {
+                        (name: $0.name, exerciseIDs: $0.exerciseIDs, durationOverrides: $0.durationOverrides)
+                    }
+                )
             }
             .confirmationDialog(
                 "Delete this routine?",
@@ -146,7 +156,8 @@ struct RoutineListView: View {
                     SessionPlayerView(
                         exercises: resolved,
                         routineID: routine.uuid,
-                        isBorrowedRoutine: routine.borrowedFromID != nil
+                        isBorrowedRoutine: routine.borrowedFromID != nil,
+                        durationOverrides: routine.exerciseDurationOverrides
                     )
                 }
             }
@@ -209,14 +220,6 @@ struct RoutineRow: View {
                 HStack(spacing: 12) {
                     Label("\(resolvedCount) exercise\(resolvedCount == 1 ? "" : "s")",
                           systemImage: "list.number")
-                    if routine.isPublic {
-                        Label("Public", systemImage: "globe")
-                            .foregroundStyle(.blue)
-                    }
-                    if routine.borrowCount > 0 {
-                        Label("\(routine.borrowCount)", systemImage: "arrow.triangle.branch")
-                            .foregroundStyle(.secondary)
-                    }
                 }
                 .font(.luminaCaption)
                 .foregroundStyle(.secondary)

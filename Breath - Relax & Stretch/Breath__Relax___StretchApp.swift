@@ -6,6 +6,8 @@ import os
 struct BreathRelaxStretchApp: App {
     @StateObject private var auth = AuthManager.shared
     @StateObject private var deepLinkRouter = DeepLinkRouter()
+    @StateObject private var pickingSession = ExercisePickingSession()
+    @StateObject private var tourCoordinator = TourCoordinator()
 
     /// Set (once, before any UI appears) when `sharedModelContainer` had to
     /// fall back to an in-memory store below. Read from `body`'s `.onAppear`
@@ -85,6 +87,8 @@ struct BreathRelaxStretchApp: App {
                     .preferredColorScheme(resolvedColorScheme)
                     .environmentObject(auth)
                     .environmentObject(deepLinkRouter)
+                    .environmentObject(pickingSession)
+                    .environmentObject(tourCoordinator)
                     .onAppear {
                         let freshInstall = seedIfNeeded()
                         migrateSeedIfNeeded()
@@ -200,9 +204,14 @@ struct BreathRelaxStretchApp: App {
             )
             exercise.seedID = raw["id"] as? String
             exercise.localVideoName = raw["localVideoName"] as? String
+            exercise.animationIsApproximate = raw["animationIsApproximate"] as? Bool ?? false
             if let posesRaw = raw["poses"],
                let posesData = try? JSONSerialization.data(withJSONObject: posesRaw) {
                 exercise.posesData = posesData
+            }
+            if let breathPatternRaw = raw["breathPattern"],
+               let breathPatternData = try? JSONSerialization.data(withJSONObject: breathPatternRaw) {
+                exercise.breathPatternData = breathPatternData
             }
             context.insert(exercise)
         }
@@ -227,6 +236,9 @@ struct BreathRelaxStretchApp: App {
         migrateSeedToV6IfNeeded()
         migrateSeedToV7IfNeeded()
         migrateSeedToV8IfNeeded()
+        migrateSeedToV9IfNeeded()
+        migrateSeedToV10IfNeeded()
+        migrateSeedToV11IfNeeded()
     }
 
     /// Loads the bundled seed JSON's exercise array, or nil if unavailable.
@@ -313,6 +325,57 @@ struct BreathRelaxStretchApp: App {
             }
         }
         seedDataVersion = 8
+    }
+
+    /// Like `migrateSeedToV7IfNeeded`, NOT gated behind a one-time version
+    /// bump: new exercises get added to `SeedData.json` on an ongoing basis,
+    /// and each one needs inserting into every already-seeded install.
+    /// `SeedMigrator.migrateV9` is idempotent (matches by seedID, only
+    /// inserts rows that aren't already present), so it's cheap and safe to
+    /// run on every launch.
+    private func migrateSeedToV9IfNeeded() {
+        if let rawExercises = loadSeedExercises() {
+            let context = sharedModelContainer.mainContext
+            if SeedMigrator.migrateV9(context: context, rawExercises: rawExercises) {
+                try? context.save()
+            }
+        }
+        seedDataVersion = max(seedDataVersion, 9)
+    }
+
+    /// Like `migrateSeedToV9IfNeeded`, NOT gated behind a one-time version
+    /// bump: which exercises get flagged `animationIsApproximate` can grow
+    /// as more rig limitations/animation bugs are found after this ships.
+    private func migrateSeedToV10IfNeeded() {
+        if let rawExercises = loadSeedExercises() {
+            let context = sharedModelContainer.mainContext
+            if SeedMigrator.migrateV10(context: context, rawExercises: rawExercises) {
+                try? context.save()
+            }
+        }
+        seedDataVersion = max(seedDataVersion, 10)
+    }
+
+    /// Like `migrateSeedToV9IfNeeded`, NOT gated behind a one-time version
+    /// bump (this was the original design, and it was wrong): breath
+    /// patterns are not a fixed, one-time set — new pattern-bearing
+    /// exercises keep getting added to `SeedData.json` in later content
+    /// batches, each needing its `breathPattern` backfilled the same way a
+    /// brand-new exercise needs inserting by `migrateV9`. A row `migrateV9`
+    /// inserts on a later launch never gets `breathPatternData` (that insert
+    /// path predates the field), so gating this behind `seedDataVersion < 11`
+    /// meant any such row's pattern would never backfill once the device had
+    /// already passed v11. `SeedMigrator.migrateV11` is idempotent (matches
+    /// by seedID, only fills when the bundle's pattern actually differs), so
+    /// it's cheap and safe to run on every launch instead.
+    private func migrateSeedToV11IfNeeded() {
+        if let rawExercises = loadSeedExercises() {
+            let context = sharedModelContainer.mainContext
+            if SeedMigrator.migrateV11(context: context, rawExercises: rawExercises) {
+                try? context.save()
+            }
+        }
+        seedDataVersion = max(seedDataVersion, 11)
     }
 
     // MARK: - Remote catalog sync (best-effort, offline-first)

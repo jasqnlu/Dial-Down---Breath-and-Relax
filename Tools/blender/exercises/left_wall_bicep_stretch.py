@@ -11,6 +11,19 @@ extension) but only on ONE side, with the elbow kept nearly straight (a small
 -5 deg forearm angle, not the deep -28 deg fold used for the clasp) — the wall
 stretch extends the whole arm back and pins the hand on a wall behind, rather
 than folding the forearm to clasp the other hand.
+
+Rotation-audit fix: the shipped v1 of this script never rotated the torso,
+even though the exercise's own instructions are "slowly rotate your torso
+away from the wall." Added a chest/spine local-Y twist, shallower than a
+dedicated twist exercise (15/8 deg vs. the seated twist's 35/10) since this
+is a secondary component of a bicep stretch.
+
+Sign correction (2026-08-08): the first pass at this fix used POSITIVE local-Y
+on the belief — inherited from ANIMATION_HANDOFF.md — that +Y twists toward the
+subject's own right. A numeric probe (`_twist_probe.py`, see the handoff doc's
+"Twist direction" section) proved the opposite: +Y twists toward the subject's
+own LEFT. The wall is behind the LEFT arm here, so "rotate away from the wall"
+means rotating RIGHT, which is NEGATIVE local-Y. Signs flipped accordingly.
 """
 import sys
 import os
@@ -34,14 +47,21 @@ WORKED_KEYWORDS = ("left bicep",)
 
 POSES = {
     0: {},
-    30: {"upperarm.L": (r(20), 0, 0)},
+    30: {
+        "upperarm.L": (r(20), 0, 0),
+        "chest": (0, r(-8), 0),
+    },
     60: {
         "upperarm.L": (r(45), 0, 0),
         "forearm.L": (r(-5), 0, 0),
+        "chest": (0, r(-15), 0),
+        "spine": (0, r(-8), 0),
     },
     90: {
         "upperarm.L": (r(45), 0, 0),
         "forearm.L": (r(-5), 0, 0),
+        "chest": (0, r(-15), 0),
+        "spine": (0, r(-8), 0),
     },
     120: {},
 }

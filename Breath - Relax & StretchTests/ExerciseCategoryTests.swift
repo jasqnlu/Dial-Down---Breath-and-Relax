@@ -27,4 +27,14 @@ struct ExerciseCategoryTests {
     @Test func allCategoriesHaveEightCases() {
         #expect(ExerciseCategory.allCases.count == 8)
     }
+
+    @Test func primaryPicksFirstCategoryInDeclarationOrder() {
+        // categories(for:) returns {.chest, .shoulders}; shoulders is declared
+        // before chest in ExerciseCategory, so it wins deterministically.
+        #expect(ExerciseCategory.primary(for: ["Left Chest", "Left Shoulder"]) == .shoulders)
+    }
+
+    @Test func primaryFallsBackToCoreWhenNoPartsMatch() {
+        #expect(ExerciseCategory.primary(for: ["Not A Real Part"]) == .core)
+    }
 }

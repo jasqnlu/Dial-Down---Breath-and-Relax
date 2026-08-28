@@ -88,7 +88,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         attach(app, "session-player-dark")
     }
 
-    func testPaywallDark() throws {
+    func testTipJarDark() throws {
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
                                 "-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES"]
@@ -98,17 +98,17 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         XCTAssertTrue(profileTab.waitForExistence(timeout: 15))
         profileTab.tap()
 
-        let upgrade = app.buttons["Upgrade to Breath Pro"].firstMatch
-        XCTAssertTrue(upgrade.waitForExistence(timeout: 5))
-        upgrade.tap()
+        let support = app.buttons["Support Development"].firstMatch
+        XCTAssertTrue(support.waitForExistence(timeout: 5))
+        support.tap()
 
-        let notNow = app.buttons["Not Now"]
-        if !notNow.waitForExistence(timeout: 5) {
-            upgrade.tap() // one retry — first tap occasionally lands during tab transition
-            XCTAssertTrue(notNow.waitForExistence(timeout: 5))
+        let close = app.buttons["Close"]
+        if !close.waitForExistence(timeout: 5) {
+            support.tap() // one retry — first tap occasionally lands during tab transition
+            XCTAssertTrue(close.waitForExistence(timeout: 5))
         }
         sleep(1)
-        attach(app, "paywall-dark")
+        attach(app, "tipjar-dark")
     }
 
     // Investigation (task D): focus the Chest category, tap the General Chest
