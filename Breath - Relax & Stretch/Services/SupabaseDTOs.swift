@@ -25,27 +25,6 @@ struct RemoteExercise: Codable, Sendable {
     }
 }
 
-struct RemoteRoutine: Codable, Sendable {
-    let id: String
-    let name: String
-    let exerciseIDs: [String]
-    let authorID: String?
-    let authorName: String?      // display name at publish time; nil on legacy records
-    let borrowedFromID: String?
-    let isPublic: Bool
-    let borrowCount: Int?        // nil on legacy records — treat as 0
-
-    enum CodingKeys: String, CodingKey {
-        case id, name
-        case exerciseIDs    = "exercise_ids"
-        case authorID       = "author_id"
-        case authorName     = "author_name"
-        case borrowedFromID = "borrowed_from_id"
-        case isPublic       = "is_public"
-        case borrowCount    = "borrow_count"
-    }
-}
-
 struct RemoteProfile: Codable, Sendable, Identifiable {
     let id: String              // stable identifier — the user's auth email
     let displayName: String

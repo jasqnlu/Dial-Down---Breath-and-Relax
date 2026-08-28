@@ -65,6 +65,24 @@ final class Exercise {
         set { posesData = (try? JSONEncoder().encode(newValue)) ?? Data() }
     }
 
+    /// Raw JSON-encoded storage for `breathPattern` — a primitive `Data`
+    /// property, not `[BreathPhaseStep]` directly, for the same reason `posesData`
+    /// and `cueStyleRaw` are: SwiftData's lightweight migration cannot safely
+    /// decode a newly-added non-primitive property on pre-existing on-disk
+    /// rows. Empty `Data()` (the default) means "no pattern authored" — the
+    /// session player falls back to the existing flat instruction-cycling.
+    var breathPatternData: Data = Data()
+
+    /// An authored inhale/hold/exhale sequence for Breath-type exercises,
+    /// e.g. Box Breathing's [Inhale 4, Hold 4, Exhale 4, Hold 4]. Empty for
+    /// every exercise until authored (see SeedData.json's "breathPattern" key)
+    /// and for any exercise this doesn't apply to. Falls back to `[]` for any
+    /// unparseable raw storage, same defensive treatment `poses`/`cueStyle` get.
+    var breathPattern: [BreathPhaseStep] {
+        get { (try? JSONDecoder().decode([BreathPhaseStep].self, from: breathPatternData)) ?? [] }
+        set { breathPatternData = (try? JSONEncoder().encode(newValue)) ?? Data() }
+    }
+
     /// Bundle-relative file name of Jason's self-filmed demo clip.
     var localVideoName: String? = nil
 

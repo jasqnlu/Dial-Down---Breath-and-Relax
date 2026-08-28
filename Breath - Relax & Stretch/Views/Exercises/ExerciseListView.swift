@@ -8,6 +8,7 @@ struct ExerciseListView: View {
     @State private var selectedExercise: Exercise?
     @State private var visibleSearchCount = ExerciseSearchResults.pageSize
     @FocusState private var isSearchFocused: Bool
+    @EnvironmentObject private var pickingSession: ExercisePickingSession
 
     private var normalizedSearchText: String {
         searchText.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -35,6 +36,18 @@ struct ExerciseListView: View {
             .background(Color.luminaSurface)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
+            // `.safeAreaInset` stacks bottom-up in application order: the LAST
+            // one applied claims the outermost slot, right at the screen edge —
+            // exactly the 80pt zone the real floating `CustomTabBar` overlay
+            // occupies. `pickingBar` must be applied BEFORE
+            // `.floatingTabBarClearance()` so it lands just above that reserved
+            // zone instead of underneath the tab bar (where its taps would be
+            // swallowed by the tab bar sitting on top of it).
+            .safeAreaInset(edge: .bottom) {
+                if pickingSession.isActive {
+                    PickingBar()
+                }
+            }
             .floatingTabBarClearance()
             .onChange(of: normalizedSearchText) { _, _ in
                 resetSearchPage()
@@ -68,19 +81,25 @@ struct ExerciseListView: View {
                 }
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 12) {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                         ForEach(searchResults.visible, id: \.uuid) { exercise in
-                            NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
-                                ExerciseRow(exercise: exercise)
+                            ExerciseGridTile(
+                                exercise: exercise,
+                                badge: pickingSession.isActive ? .add(isSelected: pickingSession.isPicked(exercise)) : .none
+                            ) {
+                                if pickingSession.isActive {
+                                    pickingSession.toggle(exercise)
+                                } else {
+                                    selectedExercise = exercise
+                                }
+                            } onBadgeTap: {
+                                if pickingSession.isActive { pickingSession.toggle(exercise) }
                             }
-                            .buttonStyle(.plain)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .luminaCard()
-                            .padding(.horizontal)
                         }
 
                         if searchResults.canLoadMore {
                             ProgressView()
+                                .gridCellColumns(2)
                                 .padding(.vertical, 12)
                                 .frame(maxWidth: .infinity)
                                 .onAppear {
@@ -88,6 +107,7 @@ struct ExerciseListView: View {
                                 }
                         }
                     }
+                    .padding(.horizontal)
                     .padding(.top, 8)
                 }
                 .overlay {
@@ -101,6 +121,7 @@ struct ExerciseListView: View {
                 }
             }
         }
+        .tourAnchor("exercises.browseByArea")
     }
 
     private func resetSearchPage() {
@@ -110,6 +131,7 @@ struct ExerciseListView: View {
     private var header: some View {
         HStack(spacing: 10) {
             searchBar
+                .tourAnchor("exercises.search")
 
             Menu {
                 Button("All Types") { selectedType = nil }
@@ -125,6 +147,26 @@ struct ExerciseListView: View {
                     .font(.title3)
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
+
+            // Standalone entry into picking mode — no Customize context, so
+            // `PickingBar`'s action button reads "Continue" and opens
+            // `MiniRoutineReviewView` instead of merging into a routine.
+            // Toggling while already active cancels the picks, mirroring
+            // how tapping "Select" again is expected to back out.
+            Button {
+                if pickingSession.isActive {
+                    pickingSession.cancel()
+                } else {
+                    pickingSession.begin()
+                }
+            } label: {
+                Label(pickingSession.isActive ? "Cancel" : "Select",
+                      systemImage: pickingSession.isActive ? "xmark.circle" : "checkmark.circle")
+                    .labelStyle(.iconOnly)
+                    .font(.title3)
+                    .foregroundStyle(pickingSession.isActive ? Color.luminaPrimary : Color.luminaOnSurfaceVariant)
+            }
+            .accessibilityIdentifier("exerciseSelectToggle")
         }
         .padding(.horizontal)
         .padding(.top, 8)
@@ -176,6 +218,68 @@ struct ExerciseListView: View {
         .shadow(color: Color.cyan.opacity(0.18), radius: 7, x: 0, y: 0)
         .shadow(color: Color.mint.opacity(0.10), radius: 11, x: 0, y: 0)
         .accessibilityElement(children: .contain)
+    }
+}
+
+/// The count/time/Done bar shown while an `ExercisePickingSession` is active.
+///
+/// Extracted into its own view because it has to be attached on BOTH the
+/// Exercises tab root (`ExerciseListView`, which owns the search-results grid)
+/// and on `ExerciseGroupCorpusSheet` — the pushed tile grid that is the primary
+/// picking surface. A `.safeAreaInset` applied to a NavigationStack's root
+/// never reaches its pushed destinations (the UINavigationController bridge
+/// owns those insets; see `HomeView.swift`'s `.floatingTabBarClearance()`
+/// note), so the bar genuinely has to be applied in both places.
+///
+/// Deliberately NOT wrapped in `.accessibilityElement(children: .combine)`:
+/// matching `BodyMapComponents.swift`'s `miniRoutineBar`, the counts and the
+/// action button stay separate elements so "Done" remains individually
+/// focusable and actionable for VoiceOver.
+struct PickingBar: View {
+    @EnvironmentObject private var pickingSession: ExercisePickingSession
+    @State private var showingReview = false
+
+    private var pickedMinutes: Int {
+        pickingSession.picked.isEmpty ? 0 : max(1, Int((Double(pickingSession.pickedTotalSeconds) / 60).rounded()))
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(pickingSession.picked.count) exercise\(pickingSession.picked.count == 1 ? "" : "s")")
+                    .font(.luminaCardTitle)
+                    .accessibilityIdentifier("pickingBarCount")
+                Text("\(pickedMinutes) min")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    .accessibilityIdentifier("pickingBarMinutes")
+            }
+            Spacer(minLength: 8)
+            Button {
+                if pickingSession.hasContext {
+                    // Customize's "Add Exercises" flow — unchanged: merge
+                    // straight back into the routine being built there.
+                    pickingSession.finish()
+                    NotificationCenter.default.post(name: .exercisePickingFinished, object: nil)
+                } else {
+                    // Standalone picking, started from this tab's own
+                    // "Select" button — review before committing to one of
+                    // the three destinations.
+                    showingReview = true
+                }
+            } label: {
+                Text(pickingSession.hasContext ? "Done" : "Continue")
+            }
+            .buttonStyle(LuminaPillButtonStyle(kind: .prominent, compact: true))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.regularMaterial)
+        .sheet(isPresented: $showingReview) {
+            MiniRoutineReviewView(pickedExercises: pickingSession.picked) {
+                pickingSession.cancel()
+            }
+        }
     }
 }
 

@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clean premium, refined</title>
+  <style>
+    :root {
+      --bg: #f7f3ee;
+      --surface: #ffffff;
+      --text: #24211d;
+      --muted: #6f675f;
+      --line: #e6ddd2;
+      --accent: #ce7a25;
+      --old-ink: #ce7a25;
+      --new-ink: #2b2118;
+      --disc-a: #f8e4c4;
+      --disc-b: #eecfa0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, #ffffff 0, transparent 28%),
+        linear-gradient(180deg, #fbf8f3 0%, var(--bg) 100%);
+      color: var(--text);
+      font: 15px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      padding: 32px 20px 64px;
+    }
+    main { width: min(1140px, 100%); margin: 0 auto; }
+    h1 { margin: 0; font-size: clamp(28px, 4vw, 42px); letter-spacing: -0.04em; }
+    h2 { margin: 0; font-size: 18px; letter-spacing: -0.02em; }
+    h3 { margin: 0; font-size: 14px; letter-spacing: -0.01em; }
+    p { margin: 0; color: var(--muted); }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .intro { display: grid; gap: 14px; max-width: 780px; margin-bottom: 30px; }
+    .intro .changes {
+      display: grid;
+      gap: 8px;
+      margin-top: 4px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.7);
+      border: 1px solid rgba(0,0,0,.06);
+      font-size: 13px;
+    }
+    .intro .changes li { color: var(--text); }
+    .intro .changes li b { color: var(--accent); }
+
+    section { margin-bottom: 34px; }
+    .section-head { display: grid; gap: 6px; margin-bottom: 16px; max-width: 720px; }
+
+    /* --- Size ladder: the actual argument --- */
+    .ladder-wrap {
+      border-radius: 28px;
+      border: 1px solid rgba(34, 27, 18, .08);
+      background: var(--surface);
+      box-shadow: 0 18px 40px rgba(60, 42, 20, .08);
+      padding: 22px;
+    }
+    .ladder-row {
+      display: grid;
+      grid-template-columns: 96px repeat(4, 1fr);
+      align-items: center;
+      gap: 14px;
+      padding: 14px 4px;
+    }
+    .ladder-row + .ladder-row { border-top: 1px solid var(--line); }
+    .ladder-row .row-label { font-size: 12px; font-weight: 800; color: var(--muted); letter-spacing: .04em; }
+    .ladder-head {
+      display: grid;
+      grid-template-columns: 96px repeat(4, 1fr);
+      gap: 14px;
+      padding: 0 4px 10px;
+      border-bottom: 2px solid var(--text);
+      margin-bottom: 4px;
+    }
+    .ladder-head span { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); text-align: center; }
+    .ladder-head span:first-child { text-align: left; }
+    .size-cell { display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .size-cell .px-tag { font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .size-cell svg { display: block; flex: none; }
+    .ring-64 { width: 64px; height: 64px; }
+    .ring-40 { width: 40px; height: 40px; }
+    .ring-28 { width: 28px; height: 28px; }
+    .ring-20 { width: 20px; height: 20px; }
+
+    .figure-old { fill: none; stroke: var(--old-ink); stroke-linecap: round; stroke-linejoin: round; stroke-width: 4.2; }
+    .figure-new { fill: none; stroke: var(--new-ink); stroke-linecap: round; stroke-linejoin: round; stroke-width: 8.4; }
+    .joint-old { fill: var(--old-ink); }
+    .joint-new { fill: var(--new-ink); }
+    .head-old { fill: var(--old-ink); }
+    .head-new { fill: var(--new-ink); }
+    .disc { fill: url(#discGrad); }
+    .ring { fill: none; stroke: rgba(255,255,255,.7); stroke-width: 3; }
+    .accent-dot { fill: #fff; stroke: var(--accent); stroke-width: 2.2; }
+
+    /* --- Icon grid --- */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .icon-card {
+      border-radius: 24px;
+      border: 1px solid rgba(34, 27, 18, .08);
+      background: var(--surface);
+      box-shadow: 0 14px 32px rgba(60, 42, 20, .07);
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+    }
+    .icon-card .art {
+      border-radius: 18px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      min-height: 200px;
+      background:
+        radial-gradient(circle at 72% 18%, rgba(255,255,255,.5), transparent 26%),
+        linear-gradient(180deg, #f8e6c9 0%, #eed3ad 100%);
+    }
+    .icon-card svg { width: 72%; height: 72%; }
+    .icon-card .label { display: grid; gap: 2px; }
+    .icon-card .label h3 { color: var(--text); }
+    .icon-card .label p { font-size: 12.5px; }
+
+    .caption {
+      margin-top: 6px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.7);
+      border: 1px solid rgba(0,0,0,.06);
+      color: var(--muted);
+    }
+    .caption b { color: var(--text); }
+
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+      .ladder-row, .ladder-head { grid-template-columns: 70px repeat(4, 1fr); }
+    }
+    @media (max-width: 560px) {
+      .grid { grid-template-columns: 1fr; }
+      .ladder-row, .ladder-head { grid-template-columns: 1fr; gap: 6px; }
+      .ladder-head span:not(:first-child), .ladder-row .row-label + * { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <svg width="0" height="0" style="position:absolute">
+      <defs>
+        <radialGradient id="discGrad" cx="35%" cy="30%" r="75%">
+          <stop offset="0%" stop-color="var(--disc-a)"/>
+          <stop offset="100%" stop-color="var(--disc-b)"/>
+        </radialGradient>
+      </defs>
+    </svg>
+
+    <div class="intro">
+      <p class="eyebrow">Exercise PFP · Iteration on &ldquo;Clean premium&rdquo;</p>
+      <h1>Clean premium, refined for real avatar sizes</h1>
+      <p>
+        Clean premium was the right base: quiet, no name-tag to lean on, reads as an
+        icon rather than a poster. But its line weight was tuned for the 200&ndash;360px
+        preview, not for the 20&ndash;40px sizes exercise avatars actually render at
+        &mdash; a list row thumbnail, a tab glyph, a session-player chip. This iteration
+        keeps clean premium's restraint and adds the two things it was missing.
+      </p>
+      <ul class="changes">
+        <li><b>Heavier, consistent stroke.</b> 4.2px &rarr; 8.4px on the figure, joint dots scaled up to match &mdash; borrowed from what actually made &ldquo;bold&rdquo; hold up small, without the poster framing.</li>
+        <li><b>Figure ink off the accent hue.</b> Silhouette moved from orange-on-cream to a deep umber-charcoal on cream, so the pose doesn't have to compete with the premium accent dot for contrast.</li>
+        <li><b>No text anywhere in the mark.</b> The name-tag is gone entirely &mdash; if a pose can't read from silhouette alone, the fix is a clearer silhouette, not a label glued to the icon.</li>
+      </ul>
+    </div>
+
+    <section>
+      <div class="section-head">
+        <h2>Does it actually hold up at avatar size?</h2>
+        <p>Same standing quad stretch, old clean premium vs. refined, rendered at the sizes it will really ship at.</p>
+      </div>
+      <div class="ladder-wrap">
+        <div class="ladder-head">
+          <span></span>
+          <span>64px</span>
+          <span>40px</span>
+          <span>28px &mdash; tab glyph</span>
+          <span>20px &mdash; list row</span>
+        </div>
+
+        <div class="ladder-row">
+          <div class="row-label">Original</div>
+          <div class="size-cell"><svg class="ring-64" viewBox="0 0 100 100">%%QUAD_OLD%%</svg></div>
+          <div class="size-cell"><svg class="ring-40" viewBox="0 0 100 100">%%QUAD_OLD%%</svg></div>
+          <div class="size-cell"><svg class="ring-28" viewBox="0 0 100 100">%%QUAD_OLD%%</svg></div>
+          <div class="size-cell"><svg class="ring-20" viewBox="0 0 100 100">%%QUAD_OLD%%</svg></div>
+        </div>
+        <div class="ladder-row">
+          <div class="row-label">Refined</div>
+          <div class="size-cell"><svg class="ring-64" viewBox="0 0 100 100">%%QUAD_NEW%%</svg></div>
+          <div class="size-cell"><svg class="ring-40" viewBox="0 0 100 100">%%QUAD_NEW%%</svg></div>
+          <div class="size-cell"><svg class="ring-28" viewBox="0 0 100 100">%%QUAD_NEW%%</svg></div>
+          <div class="size-cell"><svg class="ring-20" viewBox="0 0 100 100">%%QUAD_NEW%%</svg></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>Refined system across poses</h2>
+        <p>One accent dot, one ink color, one stroke weight &mdash; the pose silhouette is the only thing that changes per exercise.</p>
+      </div>
+      <div class="grid">
+
+        <article class="icon-card">
+          <div class="art"><svg viewBox="0 0 100 100" aria-label="Standing quad stretch">%%QUAD_CARD%%</svg></div>
+          <div class="label"><h3>Standing Quad Stretch</h3><p>Lifted heel and reaching hand read as one clean hook shape.</p></div>
+        </article>
+
+        <article class="icon-card">
+          <div class="art"><svg viewBox="0 0 100 100" aria-label="Seated forward fold">%%FOLD_CARD%%</svg></div>
+          <div class="label"><h3>Seated Forward Fold</h3><p>The long fold line survives even at the smallest sizes.</p></div>
+        </article>
+
+        <article class="icon-card">
+          <div class="art"><svg viewBox="0 0 100 100" aria-label="Overhead triceps stretch">%%TRICEP_CARD%%</svg></div>
+          <div class="label"><h3>Overhead Triceps Stretch</h3><p>Elbow-up silhouette stays distinct from the twist below.</p></div>
+        </article>
+
+        <article class="icon-card">
+          <div class="art"><svg viewBox="0 0 100 100" aria-label="Reach-through twist">%%TWIST_CARD%%</svg></div>
+          <div class="label"><h3>Reach-Through Twist</h3><p>Rotated shoulders give it a different silhouette than the fold.</p></div>
+        </article>
+
+        <article class="icon-card">
+          <div class="art"><svg viewBox="0 0 100 100" aria-label="Child's pose">%%CHILD_CARD%%</svg></div>
+          <div class="label"><h3>Child&rsquo;s Pose</h3><p>Low, compact triangle immediately reads as floor-based rest.</p></div>
+        </article>
+
+        <article class="icon-card">
+          <div class="art"><svg viewBox="0 0 100 100" aria-label="Cat-cow tilt">%%CATCOW_CARD%%</svg></div>
+          <div class="label"><h3>Cat&ndash;Cow Tilt</h3><p>Arched spine line is the one detail that has to survive shrinking &mdash; it does.</p></div>
+        </article>
+
+      </div>
+    </section>
+
+    <div class="caption">
+      <b>Where this leaves things:</b> refined clean premium keeps the icon feeling calm
+      in a list full of other icons, but it no longer quietly loses at 20&ndash;28px the
+      way the original did. The accent dot is the one piece of &ldquo;premium&rdquo; branding
+      left, and it survives shrinking because it's a filled shape, not a line. Bold's
+      poster framing and name-tag are worth keeping in reserve for a detail page or
+      share card, where legibility isn't the constraint &mdash; just not for the avatar itself.
+    </div>
+  </main>
+
+  <script>
+    // Shared pose paths, kept in one place so the ladder and the grid never drift apart.
+    // Skeleton scale is consistent across poses: torso ~26, thigh ~20, shin ~18,
+    // upper arm ~12, forearm ~12, head r 7.5 — roughly a 6-head-tall figure, not a
+    // bobblehead. Floor line marks true ground contact for every pose.
+    const poses = {
+      // Standing on the right leg, left leg bent behind and pulled up by the hand.
+      // Hip and shoulder are split into two close-but-separate points instead of one
+      // shared vertex, so three thick strokes don't stack into a single blob.
+      quad: {
+        body: [
+          "M50 25 L50 50",
+          "M48 51 L45 73 L43 92",
+          "M52 51 L59 69 L54 58",
+          "M54 27 L46 39 L54 58",
+          "M46 27 L37 23 L29 19"
+        ],
+        joints: [[50,25],[48,51],[52,51],[45,73],[43,92],[59,69],[54,58],[46,39],[37,23],[29,19]],
+        head: [50,16],
+        headR: 7.5,
+        floor: [28, 92, 72, 92]
+      },
+      // Seated in profile: legs flat along the floor, torso folded forward over them.
+      fold: {
+        body: [
+          "M74 76 L50 82 L26 82",
+          "M74 76 L54 72",
+          "M54 72 L30 79"
+        ],
+        joints: [[74,76],[50,82],[26,82],[54,72],[30,79]],
+        head: [32,68],
+        headR: 7.5,
+        floor: [18, 84, 82, 84]
+      },
+      // Standing, one arm bent overhead with hand behind the head, other hand bracing the elbow.
+      tricep: {
+        body: [
+          "M50 25 L50 50",
+          "M48 51 L44 74 L42 92",
+          "M52 51 L56 74 L58 92",
+          "M53 27 L42 19 L49 13",
+          "M47 27 L38 21"
+        ],
+        joints: [[50,25],[48,51],[52,51],[44,74],[42,92],[56,74],[58,92],[42,19],[49,13],[38,21]],
+        head: [50,15],
+        headR: 7.5,
+        floor: [28, 92, 72, 92]
+      },
+      // Standing, torso twisted: one arm reaches across and down, the other counter-rotates back.
+      twist: {
+        body: [
+          "M50 26 L50 50",
+          "M48 51 L45 74 L43 92",
+          "M52 51 L56 74 L58 92",
+          "M50 27 L38 33 L29 46",
+          "M50 27 L64 21 L76 15"
+        ],
+        joints: [[50,26],[48,51],[52,51],[45,74],[43,92],[56,74],[58,92],[38,33],[29,46],[64,21],[76,15]],
+        head: [50,17],
+        headR: 7.5,
+        floor: [28, 92, 72, 92]
+      },
+      // Kneeling on the floor, sitting back on the heels, torso folded down, arms
+      // stretched forward along the ground, forehead low and close to the floor.
+      child: {
+        body: [
+          "M71 57 L58 84",
+          "M73 59 L82 84",
+          "M72 58 L48 68 L30 78",
+          "M48 68 L18 84"
+        ],
+        joints: [[71,57],[58,84],[73,59],[82,84],[48,68],[30,78],[18,84]],
+        head: [24,80],
+        headR: 6.5,
+        floor: [12, 86, 88, 86]
+      },
+      // On all fours (tabletop): hands and knees on the floor, spine arching gently
+      // between them — a light tilt, not a deep bow.
+      catcow: {
+        body: [
+          "M25 58 L20 86",
+          "M79 57 L86 86",
+          "M27 60 Q52 53 79 57",
+          "M26 58 L16 55"
+        ],
+        joints: [[25,58],[20,86],[79,57],[86,86],[16,55]],
+        head: [12,53],
+        headR: 6.5,
+        floor: [10, 88, 90, 88]
+      }
+    };
+
+    function figureSVG(pose, { ink, headFill, jointFill, strokeWidth, jointR, disc, ring, accent, showFloor } = {}) {
+      const p = poses[pose];
+      let out = "";
+      if (disc) out += `<circle cx="50" cy="50" r="34" class="disc"/>`;
+      if (ring) out += `<circle cx="50" cy="50" r="41" class="ring"/>`;
+      if (showFloor && p.floor) {
+        const [x1, y1, x2, y2] = p.floor;
+        out += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${ink}" stroke-width="2" stroke-linecap="round" opacity=".28"/>`;
+      }
+      out += `<g stroke="${ink}" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="${strokeWidth}">`;
+      out += p.body.map(d => `<path d="${d}"/>`).join("");
+      out += `</g>`;
+      out += `<circle cx="${p.head[0]}" cy="${p.head[1]}" r="${p.headR}" fill="${headFill}"/>`;
+      out += p.joints.map(([x,y]) => `<circle cx="${x}" cy="${y}" r="${jointR}" fill="${jointFill}"/>`).join("");
+      if (accent) out += `<circle cx="77" cy="23" r="5" class="accent-dot"/>`;
+      return out;
+    }
+
+    const old = pose => figureSVG(pose, { ink: "var(--old-ink)", headFill: "var(--old-ink)", jointFill: "var(--old-ink)", strokeWidth: 4.2, jointR: 3.4, disc: true, ring: true, accent: true, showFloor: true });
+    const refined = pose => figureSVG(pose, { ink: "var(--new-ink)", headFill: "var(--new-ink)", jointFill: "var(--new-ink)", strokeWidth: 7.4, jointR: 3.4, disc: true, ring: true, accent: true, showFloor: true });
+    const card = pose => figureSVG(pose, { ink: "var(--new-ink)", headFill: "var(--new-ink)", jointFill: "var(--new-ink)", strokeWidth: 7.4, jointR: 3.4, disc: false, ring: false, accent: true, showFloor: true });
+
+    const replacements = {
+      "%%QUAD_OLD%%": old("quad"),
+      "%%QUAD_NEW%%": refined("quad"),
+      "%%QUAD_CARD%%": card("quad"),
+      "%%FOLD_CARD%%": card("fold"),
+      "%%TRICEP_CARD%%": card("tricep"),
+      "%%TWIST_CARD%%": card("twist"),
+      "%%CHILD_CARD%%": card("child"),
+      "%%CATCOW_CARD%%": card("catcow"),
+    };
+
+    document.querySelectorAll("svg").forEach(svg => {
+      for (const [key, html] of Object.entries(replacements)) {
+        if (svg.innerHTML.includes(key)) {
+          svg.innerHTML = svg.innerHTML.replace(key, html);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

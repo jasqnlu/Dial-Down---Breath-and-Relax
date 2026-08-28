@@ -27,6 +27,50 @@ struct ForYouCard: View {
         .frame(width: 128)
         .padding(8)
         .luminaCard(padding: 0)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabel(for: exercise))
+    }
+
+    private func accessibilityLabel(for exercise: Exercise) -> String {
+        let motion = MotionAccent.resolve(for: exercise) == .circular ? ", circular motion" : ""
+        return "\(exercise.name), \(exercise.durationFormatted), \(exercise.type.rawValue)\(motion)"
+    }
+}
+
+// MARK: - Premade routine card
+
+struct PremadeRoutineCard: View {
+    let routine: PremadeRoutine
+    let meta: (count: Int, minutes: Int)?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Image(systemName: routine.icon)
+                .font(.system(size: 17, weight: .medium))
+                .foregroundStyle(Color.luminaPrimary)
+                .frame(width: 40, height: 40)
+                .background(Color.luminaMintTint, in: Circle())
+
+            Text(routine.title)
+                .font(.luminaCardTitle)
+                .foregroundStyle(Color.luminaOnSurface)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if let meta {
+                Text("\(meta.count) exercise\(meta.count == 1 ? "" : "s") · \(meta.minutes) min")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            } else {
+                Text("Unavailable")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
+        }
+        .padding(12)
+        .frame(width: 132, alignment: .leading)
+        .luminaCard(padding: 0)
     }
 }
 
@@ -118,7 +162,12 @@ private struct RecommendedCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .luminaCard(padding: 14)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(item.category.rawValue): \(item.exercise.name), \(item.exercise.durationFormatted)")
+        .accessibilityLabel(accessibilityLabel)
+    }
+
+    private var accessibilityLabel: String {
+        let motion = MotionAccent.resolve(for: item.exercise) == .circular ? ", circular motion" : ""
+        return "\(item.category.rawValue): \(item.exercise.name), \(item.exercise.durationFormatted), \(item.exercise.type.rawValue)\(motion)"
     }
 }
 

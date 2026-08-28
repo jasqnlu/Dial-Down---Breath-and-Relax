@@ -18,6 +18,7 @@ private struct PendingMark: Equatable {
 }
 
 struct BodyMapView: View {
+    @EnvironmentObject private var tourCoordinator: TourCoordinator
     @State private var facing: BodyFacing = .front
     @State private var isMarking = UserDefaults.standard.bool(forKey: "debugMarkMode")
     @StateObject private var markStore = BodyMarkStore()
@@ -108,6 +109,7 @@ struct BodyMapView: View {
                               onCandidateSelected: handleCandidateSelected,
                               refocusToken: refocusToken)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .tourAnchor("bodymap.tapMarkAndRegion")
 
                 // ── Bottom bar ───────────────────────────────────────────────
                 if isMarking && !isDisambiguating {
@@ -211,6 +213,7 @@ struct BodyMapView: View {
             pendingMark = PendingMark(region: region, point: point)
         }
         impact.impactOccurred()
+        tourCoordinator.notifyInteraction(id: "bodymap.tapMarkAndRegion")
     }
 
     /// Single-focus: while placing a dot, show ONLY the new pending dot — not
@@ -291,6 +294,7 @@ struct BodyMapView: View {
         pendingMark = nil              // persisted mark now carries the dot
         isMarking = false
         exercisesRoute = .confirmed(region)
+        tourCoordinator.notifyInteraction(id: "bodymap.confirmMark")
     }
 
     private func cancelDisambiguation() {
