@@ -335,4 +335,44 @@ enum SeedMigrator {
         }
         return changed
     }
+
+    /// v11 — backfills `Exercise.breathPattern` onto already-seeded rows,
+    /// matched by `seedID`. New installs already read `breathPattern` off the
+    /// bundle at seed-insert time; this matters for (a) users seeded before
+    /// the field existed, and (b) a newer exercise inserted later by
+    /// `migrateV9`'s own insert path, which predates `breathPattern` and
+    /// never sets it. Like `migrateV7`/`migrateV9`/`migrateV10`, this is NOT
+    /// gated behind a one-time `seedDataVersion` bump — patterns keep getting
+    /// authored for new exercises across releases, the same way `migrateV9`
+    /// itself keeps inserting new exercises; a one-time gate here would mean
+    /// any pattern-bearing exercise added after a device passed this version
+    /// never gets backfilled. Naturally idempotent (only fills when the
+    /// bundle's pattern actually differs from what's stored), so it's cheap
+    /// and safe to run on every launch.
+    @discardableResult
+    static func migrateV11(context: ModelContext, rawExercises: [[String: Any]]) -> Bool {
+        var patternBySeedID: [String: [BreathPhaseStep]] = [:]
+        for raw in rawExercises {
+            guard let id = raw["id"] as? String,
+                  let rawPattern = raw["breathPattern"] as? [[String: Any]], !rawPattern.isEmpty
+            else { continue }
+            let phases = rawPattern.compactMap { entry -> BreathPhaseStep? in
+                guard let label = entry["label"] as? String, let seconds = entry["seconds"] as? Int else { return nil }
+                return BreathPhaseStep(label: label, seconds: seconds)
+            }
+            guard !phases.isEmpty else { continue }
+            patternBySeedID[id] = phases
+        }
+
+        let existing = (try? context.fetch(FetchDescriptor<Exercise>())) ?? []
+        var changed = false
+        for exercise in existing {
+            guard let seedID = exercise.seedID,
+                  let pattern = patternBySeedID[seedID],
+                  exercise.breathPattern != pattern else { continue }
+            exercise.breathPattern = pattern
+            changed = true
+        }
+        return changed
+    }
 }

@@ -35,20 +35,20 @@ ROLL_DEG = 0  # flat on the back, no side roll
 WORKED_KEYWORDS = ("spinal erector", "lower back", "left obliques")
 
 _ARMS_T = {
-    "upperarm.L": (0, 0, r(-45)),
-    "upperarm.R": (0, 0, r(45)),
+    "upperarm.L": (0, 0, r(-25)),
+    "upperarm.R": (0, 0, r(25)),
 }
 
 POSES = {
-    0:   {"hips": (r(-90), 0, 0), "thigh.L": (r(-90), 0, 0), "thigh.R": (r(-90), 0, 0),
+    0:   {"hips": (r(-90), 0, 0), "thigh.L": (r(-75), 0, 0), "thigh.R": (r(-75), 0, 0),
           "shin.L": (r(90), 0, 0), "shin.R": (r(90), 0, 0), "head": (0, 0, 0), **_ARMS_T},
-    30:  {"hips": (r(-90), 0, 0), "thigh.L": (r(-90), 0, r(12)), "thigh.R": (r(-90), 0, r(12)),
+    30:  {"hips": (r(-90), 0, 0), "thigh.L": (r(-75), 0, r(6)), "thigh.R": (r(-75), 0, r(6)),
           "shin.L": (r(90), 0, 0), "shin.R": (r(90), 0, 0), "head": (0, r(18), 0), **_ARMS_T},
-    60:  {"hips": (r(-90), 0, 0), "thigh.L": (r(-90), 0, r(20)), "thigh.R": (r(-90), 0, r(20)),
+    60:  {"hips": (r(-90), 0, 0), "thigh.L": (r(-75), 0, r(10)), "thigh.R": (r(-75), 0, r(10)),
           "shin.L": (r(90), 0, 0), "shin.R": (r(90), 0, 0), "head": (0, r(35), 0), **_ARMS_T},
-    90:  {"hips": (r(-90), 0, 0), "thigh.L": (r(-90), 0, r(12)), "thigh.R": (r(-90), 0, r(12)),
+    90:  {"hips": (r(-90), 0, 0), "thigh.L": (r(-75), 0, r(6)), "thigh.R": (r(-75), 0, r(6)),
           "shin.L": (r(90), 0, 0), "shin.R": (r(90), 0, 0), "head": (0, r(18), 0), **_ARMS_T},
-    120: {"hips": (r(-90), 0, 0), "thigh.L": (r(-90), 0, 0), "thigh.R": (r(-90), 0, 0),
+    120: {"hips": (r(-90), 0, 0), "thigh.L": (r(-75), 0, 0), "thigh.R": (r(-75), 0, 0),
           "shin.L": (r(90), 0, 0), "shin.R": (r(90), 0, 0), "head": (0, 0, 0), **_ARMS_T},
 }
 

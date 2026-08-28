@@ -9,6 +9,11 @@ struct SessionPlayerView: View {
     var routineID: UUID = UUID()
     var isBorrowedRoutine: Bool = false   // true when playing a forked public routine
     var onComplete: ((Int) -> Void)? = nil
+    /// Per-exercise duration overrides from the Routine being played, keyed
+    /// by exercise UUID — absent key means "use the exercise's own
+    /// durationSeconds." Empty by default for sessions not started from a
+    /// saved routine (quick sessions, mini-routines, premade previews).
+    var durationOverrides: [UUID: Int] = [:]
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -71,15 +76,25 @@ struct SessionPlayerView: View {
     @State private var cueBadgePulsing = false
     @State private var instructionCueIndex = 0
     @State private var instructionCueTask: Task<Void, Never>? = nil
+    @State private var currentBreathPhaseStepIndex = 0
+    @State private var breathPhaseSecondsRemaining = 0
 
     var currentExercise: Exercise? {
         guard currentIndex < exercises.count else { return nil }
         return exercises[currentIndex]
     }
 
+    /// Non-nil only for a Breath exercise with an authored pattern — everything
+    /// else (Stretch exercises, Breath exercises with no pattern yet) falls
+    /// back to the existing flat instructionCueTask cycling untouched.
+    private var activeBreathPattern: [BreathPhaseStep]? {
+        guard let pattern = currentExercise?.breathPattern, !pattern.isEmpty else { return nil }
+        return pattern
+    }
+
     private var totalSessionSeconds: Int {
         exercises.reduce(0) { total, exercise in
-            total + Self.scaledDuration(base: exercise.durationSeconds, multiplier: durationMultiplier)
+            total + Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
         }
     }
 
@@ -87,9 +102,9 @@ struct SessionPlayerView: View {
         guard currentIndex < exercises.count else { return totalSessionSeconds }
 
         let completed = exercises.prefix(currentIndex).reduce(0) { total, exercise in
-            total + Self.scaledDuration(base: exercise.durationSeconds, multiplier: durationMultiplier)
+            total + Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
         }
-        let currentDuration = Self.scaledDuration(base: exercises[currentIndex].durationSeconds, multiplier: durationMultiplier)
+        let currentDuration = Self.scaledDuration(base: effectiveDuration(for: exercises[currentIndex]), multiplier: durationMultiplier)
         let currentElapsed = max(0, min(currentDuration, currentDuration - secondsRemaining))
         return completed + currentElapsed
     }
@@ -158,8 +173,13 @@ struct SessionPlayerView: View {
                 if remaining > 0 {
                     secondsRemaining = remaining
                     checkSideSwitch()
+                    updateBreathPhaseStepIfNeeded()
                     breathTick += 1
-                    if breathTick % 4 == 0 { AudioServicesPlaySystemSound(soundTick) }
+                    // Legacy fixed-4s metronome; superseded by the authored
+                    // phase-transition beeps for pattern exercises, whose
+                    // phase boundaries don't align with a 4s grid (e.g.
+                    // 4-7-8 Breathing's 19s cycle) — suppress it there.
+                    if breathTick % 4 == 0, activeBreathPattern == nil { AudioServicesPlaySystemSound(soundTick) }
                 } else {
                     AudioServicesPlaySystemSound(soundCueBeep)
                     advanceToNext(completion: 1.0)
@@ -254,7 +274,11 @@ struct SessionPlayerView: View {
                     .padding()
             }
 
-            instructionCue(for: exercise)
+            if let pattern = activeBreathPattern {
+                breathPhaseCue(pattern: pattern)
+            } else {
+                instructionCue(for: exercise)
+            }
 
             Text(timeString(secondsRemaining))
                 .font(.system(size: exerciseTimerSize, weight: .thin, design: .rounded))
@@ -345,6 +369,38 @@ struct SessionPlayerView: View {
     }
 
     @ViewBuilder
+    private func breathPhaseCue(pattern: [BreathPhaseStep]) -> some View {
+        let index = min(currentBreathPhaseStepIndex, pattern.count - 1)
+        let phase = pattern[index]
+
+        VStack(spacing: 8) {
+            Text("\(phase.label) · \(breathPhaseSecondsRemaining)")
+                .id(index)
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurface)
+                .monospacedDigit()
+                .transition(.asymmetric(
+                    insertion: .move(edge: .leading).combined(with: .opacity)
+                        .animation(.easeOut(duration: 0.35)),
+                    removal: .opacity
+                        .animation(.easeIn(duration: 0.25))
+                ))
+
+            HStack(spacing: 6) {
+                ForEach(Array(pattern.enumerated()), id: \.offset) { dotIndex, _ in
+                    Circle()
+                        .fill(dotIndex == index ? Color.luminaPrimary : Color.luminaOutline)
+                        .frame(width: 6, height: 6)
+                }
+            }
+        }
+        .padding(.horizontal, 32)
+        .padding(.top, 8)
+        .accessibilityLabel("Breath phase")
+        .accessibilityValue("\(phase.label), \(breathPhaseSecondsRemaining) seconds remaining, phase \(index + 1) of \(pattern.count)")
+    }
+
+    @ViewBuilder
     private func getReadyView(name: String) -> some View {
         VStack(spacing: 24) {
             Spacer()
@@ -369,6 +425,16 @@ struct SessionPlayerView: View {
                 CautionCard(text: caution)
                     .padding(.horizontal)
             }
+            if let exercise = currentExercise, !exercise.breathPattern.isEmpty, !exercise.instructions.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(exercise.instructions, id: \.self) { line in
+                        Text(line)
+                            .font(.luminaCaption)
+                            .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    }
+                }
+                .padding(.horizontal)
+            }
             Spacer()
             Button("Skip") { skipGetReady() }
                 .buttonStyle(LuminaPillButtonStyle(kind: .ghost, compact: true))
@@ -387,8 +453,20 @@ struct SessionPlayerView: View {
         max(1, Int(Double(base) * multiplier))
     }
 
+    /// The exercise's duration after applying this session's routine-level
+    /// override, if any — the single point every duration read in this view
+    /// goes through, so `durationOverrides` and the speed multiplier compose
+    /// correctly no matter which call site reads it.
+    private func effectiveDuration(for exercise: Exercise) -> Int {
+        durationOverrides[exercise.uuid] ?? exercise.durationSeconds
+    }
+
+    private func effectiveDuration(for exercise: Exercise?) -> Int? {
+        exercise.map { effectiveDuration(for: $0) }
+    }
+
     private func breathingCycleDuration(for exercise: Exercise) -> Double {
-        let scaled = Self.scaledDuration(base: exercise.durationSeconds, multiplier: durationMultiplier)
+        let scaled = Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
         // Breath exercises in the stretch player do not carry a phase model,
         // so tie the visual cadence to the exercise length instead of a fixed
         // 4s pulse. Longer holds breathe more slowly; short drills stay lively.
@@ -444,12 +522,12 @@ struct SessionPlayerView: View {
     }
 
     private func skipCompletion() -> Double {
-        guard let duration = currentExercise?.durationSeconds else { return 0.5 }
+        guard let duration = effectiveDuration(for: currentExercise) else { return 0.5 }
         return GamificationService.skipCompletion(elapsedSeconds: duration - secondsRemaining, durationSeconds: duration)
     }
 
     private func startExercise() {
-        let baseDuration = currentExercise?.durationSeconds ?? 60
+        let baseDuration = effectiveDuration(for: currentExercise) ?? 60
         let duration = Self.scaledDuration(base: baseDuration, multiplier: durationMultiplier)
         secondsRemaining = duration
         phaseEndDate = Date().addingTimeInterval(TimeInterval(duration))
@@ -464,13 +542,26 @@ struct SessionPlayerView: View {
             sideSwitchPending = false
             sideSwitchLeadFromEnd = 0
         }
-        if let exercise = currentExercise {
+        if let exercise = currentExercise, activeBreathPattern == nil {
+            // Pattern exercises skip this announcement: VoiceCueService.speak
+            // interrupts (not queues) in-progress speech, so the phase-0
+            // announcement below would immediately cut off the exercise name
+            // before it finished. The exercise name is still shown as
+            // on-screen text; the phase label is the more actionable cue.
             VoiceCueService.shared.speak(exercise.name)
         }
         AudioServicesPlaySystemSound(soundCueBeep)
         instructionCueTask?.cancel()
         instructionCueIndex = 0
-        if let count = currentExercise?.instructions.count, count > 1 {
+        if let pattern = activeBreathPattern {
+            // Breath-pattern exercises are driven by the main 1Hz tick's
+            // BreathPhaseCycle computation (see the .task loop below), not
+            // a sleep-based task — reset to phase 0 and announce it here so
+            // the first phase is correct immediately, before the first tick.
+            currentBreathPhaseStepIndex = 0
+            breathPhaseSecondsRemaining = pattern[0].seconds
+            VoiceCueService.shared.speak(pattern[0].label)
+        } else if let count = currentExercise?.instructions.count, count > 1 {
             instructionCueTask = Task { @MainActor in
                 while !Task.isCancelled {
                     try? await Task.sleep(for: .seconds(3.5))
@@ -500,6 +591,25 @@ struct SessionPlayerView: View {
         impactMedium.impactOccurred()
         VoiceCueService.shared.speak("Switch sides")
         AudioServicesPlaySystemSound(soundCueBeep)
+    }
+
+    /// Called every 1Hz tick when a breath pattern is active. Derives the
+    /// current phase from elapsed time (not accumulated sleep), so it's
+    /// automatically correct after pause/resume or backgrounding — no
+    /// special-case handling needed, unlike instructionCueTask's cycling.
+    private func updateBreathPhaseStepIfNeeded() {
+        guard let pattern = activeBreathPattern, let exercise = currentExercise else { return }
+        let totalDuration = Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
+        let elapsed = max(0, totalDuration - secondsRemaining)
+        guard let resolved = BreathPhaseCycle.resolve(pattern: pattern, elapsedSeconds: elapsed) else { return }
+
+        breathPhaseSecondsRemaining = resolved.secondsRemainingInPhase
+        guard resolved.phaseIndex != currentBreathPhaseStepIndex else { return }
+        withAnimation(.easeOut(duration: 0.35)) {
+            currentBreathPhaseStepIndex = resolved.phaseIndex
+        }
+        AudioServicesPlaySystemSound(soundCueBeep)
+        VoiceCueService.shared.speak(pattern[resolved.phaseIndex].label)
     }
 
     /// Called when the app returns to the foreground. `Timer.publish` doesn't

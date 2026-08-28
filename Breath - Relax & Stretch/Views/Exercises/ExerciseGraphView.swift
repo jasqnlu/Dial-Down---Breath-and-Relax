@@ -88,21 +88,18 @@ struct ExerciseGraphView: View {
                 zoomControls
             }
         }
-        .sheet(item: $selectedGroup) { selected in
-            ExerciseGroupCorpusSheet(
-                selected: selected,
-                onSelect: { exercise in
-                    selectedGroup = nil
-                    onSelect(exercise)
-                }
-            )
+        .navigationDestination(item: $selectedGroup) { selected in
+            ExerciseGroupCorpusSheet(selected: selected) { exercise in
+                selectedGroup = nil
+                onSelect(exercise)
+            }
         }
         // Category/satellite node labels are sized in fixed points to fit
         // inside circles whose diameters come from GraphLayout's normalised
         // canvas math, not from the type system. Letting Dynamic Type grow
         // this text would overflow those circles well before it became more
         // legible, so the diagram itself is pinned to the standard size;
-        // the sheet it presents (a plain list) scales normally.
+        // the pushed screen it presents (a grid) scales normally.
         .dynamicTypeSize(.large)
     }
 
@@ -138,6 +135,7 @@ struct ExerciseGraphView: View {
             // focused group like "General Chest" opened nothing.
             CategoryNode(category: category, count: categoryExercises.count, isFocused: isFocused)
                 .contentShape(Circle())
+                .accessibilityIdentifier("exerciseCategoryNode")
                 .onTapGesture { focus(on: category, index: index, categories: categories, center: center, scale: scale) }
                 .position(x: center.x + normalized.x * scale * categoryRadius,
                           y: center.y + normalized.y * scale * categoryRadius)
@@ -161,6 +159,7 @@ struct ExerciseGraphView: View {
                 }
                 .buttonStyle(.plain)
                 .contentShape(Circle())
+                .accessibilityIdentifier("exerciseGroupNode")
                 // `.disabled(!isFocused)` rather than `.allowsHitTesting`: the
                 // latter, applied before `.position` inside the scaled/offset
                 // canvas, left the button's hit region misaligned from where it
@@ -328,11 +327,19 @@ struct ExerciseGraphView: View {
     }
 }
 
-private struct SelectedExerciseGraphGroup: Identifiable {
+private struct SelectedExerciseGraphGroup: Identifiable, Hashable {
     let category: ExerciseCategory
     let group: ExerciseGraphGroup
 
     var id: String { "\(category.id)-\(group.id)" }
+
+    static func == (lhs: SelectedExerciseGraphGroup, rhs: SelectedExerciseGraphGroup) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
 // MARK: - Category node
@@ -354,6 +361,7 @@ private struct CategoryNode: View {
                 .overlay(Circle().strokeBorder(.white.opacity(0.50), lineWidth: 1.5))
                 .shadow(color: category.accentColor.opacity(isFocused ? 0.28 : 0.14), radius: isFocused ? 14 : 8)
             VStack(spacing: 3) {
+                CategoryTouchGlyph(category: category, size: diameter * 0.5)
                 Text(category.rawValue)
                     .font(.luminaLabel)
                     .foregroundStyle(Color.luminaOnSurface)
@@ -382,52 +390,59 @@ private struct CategoryNode: View {
 private struct ExerciseGroupCorpusSheet: View {
     let selected: SelectedExerciseGraphGroup
     let onSelect: (Exercise) -> Void
-    @Environment(\.dismiss) private var dismiss
+
+    @EnvironmentObject private var pickingSession: ExercisePickingSession
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 10) {
-                    ForEach(selected.group.exercises, id: \.uuid) { exercise in
-                        Button {
-                            dismiss()
+        ScrollView {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                ForEach(selected.group.exercises, id: \.uuid) { exercise in
+                    ExerciseGridTile(
+                        exercise: exercise,
+                        badge: pickingSession.isActive ? .add(isSelected: pickingSession.isPicked(exercise)) : .none
+                    ) {
+                        if pickingSession.isActive {
+                            pickingSession.toggle(exercise)
+                        } else {
                             onSelect(exercise)
-                        } label: {
-                            ExerciseRow(exercise: exercise)
                         }
-                        .buttonStyle(.plain)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .luminaCard()
+                    } onBadgeTap: {
+                        if pickingSession.isActive { pickingSession.toggle(exercise) }
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
             }
-            .background(Color.luminaSurface)
-            .navigationTitle(selected.group.title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
-                }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+        }
+        .background(Color.luminaSurface)
+        .navigationTitle(selected.group.title)
+        .navigationBarTitleDisplayMode(.inline)
+        .safeAreaInset(edge: .top) {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(selected.category.accentColor.opacity(0.66))
+                    .frame(width: 10, height: 10)
+                Text("\(selected.group.exercises.count) exercise\(selected.group.exercises.count == 1 ? "" : "s")")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+                Spacer()
             }
-            .safeAreaInset(edge: .top) {
-                HStack(spacing: 8) {
-                    Circle()
-                        .fill(selected.category.accentColor.opacity(0.66))
-                        .frame(width: 10, height: 10)
-                    Text("\(selected.group.exercises.count) exercise\(selected.group.exercises.count == 1 ? "" : "s")")
-                        .font(.luminaCaption)
-                        .foregroundStyle(Color.luminaOnSurfaceVariant)
-                    Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-                .background(.regularMaterial)
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .background(.regularMaterial)
+        }
+        // This sheet is a PUSHED destination, so the picking bar
+        // `ExerciseListView` attaches to the NavigationStack root never
+        // reaches it — the bar has to be applied here too (see `PickingBar`).
+        // `.safeAreaInset` stacks bottom-up in application order, so the bar
+        // must come BEFORE `.floatingTabBarClearance()` to land just above the
+        // floating tab bar's reserved zone rather than underneath it.
+        .safeAreaInset(edge: .bottom) {
+            if pickingSession.isActive {
+                PickingBar()
             }
         }
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.visible)
+        .floatingTabBarClearance()
     }
 }
 

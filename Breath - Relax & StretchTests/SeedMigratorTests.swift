@@ -461,4 +461,94 @@ struct SeedMigratorTests {
         let all = try context.fetch(FetchDescriptor<Exercise>())
         #expect(!all[0].animationIsApproximate)
     }
+
+    // MARK: - v11: breathPattern backfill
+
+    @Test func v11BackfillsBreathPatternBySeedID() throws {
+        let context = makeContext()
+        let exercise = Exercise(
+            name: "Box Breathing", type: .breath,
+            targetBodyParts: [], durationSeconds: 180,
+            difficulty: 1, instructions: ["a", "b", "c"]
+        )
+        exercise.seedID = "box-breathing-id"
+        #expect(exercise.breathPattern.isEmpty)
+        context.insert(exercise)
+        try context.save()
+
+        var raw = rawExercise(id: "box-breathing-id", name: "Box Breathing")
+        raw["breathPattern"] = [
+            ["label": "Inhale", "seconds": 4],
+            ["label": "Hold", "seconds": 4],
+            ["label": "Exhale", "seconds": 4],
+            ["label": "Hold", "seconds": 4],
+        ]
+        let changed = SeedMigrator.migrateV11(context: context, rawExercises: [raw])
+        #expect(changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all[0].breathPattern == [
+            BreathPhaseStep(label: "Inhale", seconds: 4),
+            BreathPhaseStep(label: "Hold", seconds: 4),
+            BreathPhaseStep(label: "Exhale", seconds: 4),
+            BreathPhaseStep(label: "Hold", seconds: 4),
+        ])
+    }
+
+    @Test func v11IsNoOpWhenBundleHasNoPattern() throws {
+        let context = makeContext()
+        let exercise = Exercise(
+            name: "Alternate Nostril Breathing", type: .breath,
+            targetBodyParts: [], durationSeconds: 180,
+            difficulty: 1, instructions: ["a", "b", "c"]
+        )
+        exercise.seedID = "alt-nostril-id"
+        context.insert(exercise)
+        try context.save()
+
+        let raw = rawExercise(id: "alt-nostril-id", name: "Alternate Nostril Breathing")
+        // No "breathPattern" key — this exercise hasn't been authored yet.
+        let changed = SeedMigrator.migrateV11(context: context, rawExercises: [raw])
+        #expect(!changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all[0].breathPattern.isEmpty)
+    }
+
+    @Test func v11IsNoOpWhenBundlePatternMatchesAlready() throws {
+        let context = makeContext()
+        let exercise = Exercise(
+            name: "Box Breathing", type: .breath,
+            targetBodyParts: [], durationSeconds: 180,
+            difficulty: 1, instructions: ["a", "b", "c"]
+        )
+        exercise.seedID = "box-breathing-id"
+        exercise.breathPattern = [BreathPhaseStep(label: "Inhale", seconds: 4)]
+        context.insert(exercise)
+        try context.save()
+
+        var raw = rawExercise(id: "box-breathing-id", name: "Box Breathing")
+        raw["breathPattern"] = [["label": "Inhale", "seconds": 4]]
+        let changed = SeedMigrator.migrateV11(context: context, rawExercises: [raw])
+        #expect(!changed)
+    }
+
+    @Test func v11NeverTouchesUserCreatedExercises() throws {
+        let context = makeContext()
+        let custom = Exercise(
+            name: "My Custom Breath", type: .breath,
+            targetBodyParts: [], durationSeconds: 60,
+            difficulty: 1, instructions: ["x", "y", "z"]
+        )
+        context.insert(custom)   // no seedID
+        try context.save()
+
+        var raw = rawExercise(id: "seed-1", name: "Some Seed")
+        raw["breathPattern"] = [["label": "Inhale", "seconds": 4]]
+        let changed = SeedMigrator.migrateV11(context: context, rawExercises: [raw])
+        #expect(!changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all[0].breathPattern.isEmpty)
+    }
 }

@@ -23,6 +23,7 @@ private enum ProfileTab: String, CaseIterable {
 struct ProfileView: View {
     @Query private var profiles: [UserProfile]
     @EnvironmentObject private var auth: AuthManager
+    @EnvironmentObject private var tourCoordinator: TourCoordinator
 
     @State private var selectedTab: ProfileTab = .account
     @State private var showSignOutConfirm = false
@@ -89,6 +90,13 @@ struct ProfileView: View {
             .navigationBarTitleDisplayMode(.inline)
             .floatingTabBarClearance()
             .onAppear { profileImage = loadProfilePhoto() }
+            .onChange(of: tourCoordinator.currentStep?.id) { _, stepID in
+                switch stepID {
+                case "profile.stats":       selectedTab = .account
+                case "profile.restartTour": selectedTab = .settings
+                default: break
+                }
+            }
             .onChange(of: photoPickerItem) { _, item in
                 Task {
                     guard let item else { return }

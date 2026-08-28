@@ -12,14 +12,32 @@ twists). Each axis is individually validated; combining them is new, so the
 render is eyeballed rather than trusted from the tail-position log.
 
 Instruction: "turn your chin diagonally down toward your RIGHT armpit" — so a
-LEFT-named stretch turns the head to the subject's own right (+Y) while
-nodding down (+X). That matches the app's bilateral naming convention, where
+LEFT-named stretch turns the head to the subject's own right while nodding
+down (+X). That matches the app's bilateral naming convention, where
 "Left <stretch>" means the LEFT side is the side being stretched, not the
 direction of travel (same as Left Standing Side Bend, which bends right).
+
+**Sign correction (2026-08-20):** originally shipped with +Y for "turn
+right," on the belief the head bone's twist sign was independent of the
+chest/spine convention. A numeric probe
+(left_levator_scapulae_stretch.py's `_head_twist_probe.py`) proved the head
+bone follows the SAME "+Y = subject's own left" convention already
+documented for chest/spine (ANIMATION_HANDOFF.md's "Twist direction"
+section) — it was never actually an exception, it just never got re-checked
+after that fix landed. Turning right is -Y, not +Y; corrected here.
 
 Highlight: the atlas has no sided neck groups (only Back Neck / Front Neck),
 so the side-specific part of the highlight comes from Left Trapezius, which
 pairs with "the back-left of your neck" in the exercise's own instructions.
+
+**Arm-to-head fix (2026-08-22, animation-vs-instructions audit):** "Rest
+your right hand gently on top of your head" — arms previously stayed at
+rest. Same numeric FK fix as left_isometric_neck_side_press.py /
+left_levator_scapulae_stretch.py (see the isometric script's docstring for
+the method): `_arm_to_head_probe.py` swept `upperarm.R`/`forearm.R`
+against this script's own peak head pose and landed within 0.026 world
+units of the head-bone tail at `upperarm.R=(-110,0,30)`,
+`forearm.R=(-110,0,-30)`.
 
 NOT rendered seated, despite the name. The static seated leg pose (thigh -90 /
 shin +90) is proven and was applied here first, but it only reads correctly
@@ -52,11 +70,14 @@ CAMERA_AZIMUTH = 45
 
 WORKED_KEYWORDS = ("back neck", "left trapezius")
 
+_ARM_UP = {"upperarm.R": (r(-100), 0, r(25)), "forearm.R": (r(-95), 0, r(-25))}
+_ARM_MID = {"upperarm.R": (r(-60), 0, r(15)), "forearm.R": (r(-58), 0, r(-15))}
+
 POSES = {
     0: {},
-    30: {"head": (r(15), r(20), 0)},
-    60: {"head": (r(30), r(40), 0)},
-    90: {"head": (r(30), r(40), 0)},
+    30: {**_ARM_MID, "head": (r(15), r(-20), 0)},
+    60: {**_ARM_UP, "head": (r(30), r(-40), 0)},
+    90: {**_ARM_UP, "head": (r(30), r(-40), 0)},
     120: {},
 }
 

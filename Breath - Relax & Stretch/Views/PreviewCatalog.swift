@@ -24,7 +24,7 @@ private func sampleExercise() -> Exercise {
 }
 
 private func sampleRoutine() -> Routine {
-    Routine(name: "Morning Wake-Up", exerciseIDs: [], isPublic: false)
+    Routine(name: "Morning Wake-Up", exerciseIDs: [])
 }
 
 // MARK: - Auth screens
@@ -74,11 +74,13 @@ private func sampleRoutine() -> Routine {
 #Preview("Routine List") {
     RoutineListView()
         .modelContainer(makeContainer())
+        .environmentObject(ExercisePickingSession())
 }
 
 #Preview("Routine Builder") {
     RoutineBuilderView()
         .modelContainer(makeContainer())
+        .environmentObject(ExercisePickingSession())
 }
 
 // MARK: - Session

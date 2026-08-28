@@ -2,11 +2,9 @@ import Testing
 import Foundation
 @testable import BreathRelaxStretch
 
-// ContentPack and GoalMeta (which GuidedProgram.fullReset/starterProgram
-// are both derived from) reference exercises by display-name string matched
-// against SeedData.json at render time, not by a compiler-checked reference.
-// TODO.md notes this was "manually verified once" — this test keeps it true
-// automatically instead of relying on that staying accurate.
+// GoalMeta references exercises by display-name string matched against
+// SeedData.json at render time, not by a compiler-checked reference. This
+// test keeps that mapping honest rather than relying on manual review.
 struct CuratedContentIntegrityTests {
 
     private func seedExerciseNames() throws -> Set<String> {
@@ -19,15 +17,6 @@ struct CuratedContentIntegrityTests {
         return Set(exercises.compactMap { $0["name"] as? String })
     }
 
-    @Test func everyContentPackExerciseNameExistsInSeedCatalog() throws {
-        let seedNames = try seedExerciseNames()
-        for pack in ContentPack.all {
-            for name in pack.exerciseNames {
-                #expect(seedNames.contains(name), "\"\(name)\" in \(pack.title) doesn't match any seed exercise")
-            }
-        }
-    }
-
     @Test func everyGoalMetaExerciseNameExistsInSeedCatalog() throws {
         let seedNames = try seedExerciseNames()
         for goal in GoalMeta.all {
@@ -37,21 +26,13 @@ struct CuratedContentIntegrityTests {
         }
     }
 
-    @Test func fullResetOnlyReferencesRealExerciseNames() throws {
+    @Test func everyPremadeRoutineExerciseNameExistsInSeedCatalog() throws {
         let seedNames = try seedExerciseNames()
-        for day in GuidedProgram.fullReset.days {
-            for name in day.exerciseNames {
-                #expect(seedNames.contains(name), "\"\(name)\" in fullReset day \(day.dayNumber) doesn't match any seed exercise")
-            }
-        }
-    }
-
-    @Test func starterProgramOnlyReferencesRealExerciseNames() throws {
-        let seedNames = try seedExerciseNames()
-        let allGoalIDs = Set(GoalMeta.all.map(\.id))
-        for day in GuidedProgram.starterProgram(goalIDs: allGoalIDs).days {
-            for name in day.exerciseNames {
-                #expect(seedNames.contains(name), "\"\(name)\" in starterProgram day \(day.dayNumber) doesn't match any seed exercise")
+        #expect(PremadeRoutine.all.count == 5)
+        for routine in PremadeRoutine.all {
+            #expect(!routine.exerciseNames.isEmpty, "\(routine.title) has no exercise names")
+            for name in routine.exerciseNames {
+                #expect(seedNames.contains(name), "\"\(name)\" in \(routine.title) doesn't match any seed exercise")
             }
         }
     }

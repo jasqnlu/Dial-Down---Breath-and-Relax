@@ -5,20 +5,66 @@ import os
 struct RoutineBuilderView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var auth: AuthManager
+    @EnvironmentObject private var pickingSession: ExercisePickingSession
 
     @Query private var exercises: [Exercise]
-    @Query private var allRoutines: [Routine]
 
     var routineToEdit: Routine? = nil
+    /// Exercise IDs to fold in on appear — e.g. a set just picked in the
+    /// Exercises tab's standalone picking mode (see
+    /// `MiniRoutineReviewView`). Appended after `routineToEdit`'s existing
+    /// exercises (or seeded fresh when creating), de-duped via
+    /// `RoutineIDMerge` so a pick that's already in the routine isn't
+    /// doubled.
+    var initialExerciseIDs: [UUID] = []
+    /// Suggested name to pre-fill when creating a brand-new routine from a
+    /// template (e.g. a tapped PremadeRoutine card) — nil for the normal
+    /// create/edit flows, which leave the name field blank or pull it from
+    /// `routineToEdit`. Never applied when `routineToEdit` is set — editing
+    /// an existing routine always keeps its own name.
+    var initialName: String? = nil
+    /// Which HomeView tab index to return to after a cross-tab "Add
+    /// Exercise" round trip — must match wherever THIS view was actually
+    /// presented from. Defaults to 4 (Routines), the common case
+    /// (RoutineListView, PremadeRoutinesView); callers presenting this view
+    /// from a different tab (e.g. TodayView's premade-routine sheet, tab 0)
+    /// must override it, or the user gets returned to the wrong tab.
+    var pickingOriginTab: Int = 4
+    /// Whether "Add Exercise" should be offered at all. False for
+    /// call sites where the cross-tab picking flow would conflict with an
+    /// already-in-progress `ExercisePickingSession` this view is nested
+    /// inside (MiniRoutineReviewView's two RoutineBuilderView sheets) —
+    /// starting a second cross-tab session there would silently discard
+    /// the outer review flow's own picks and leave two sheets fighting
+    /// over one dismiss path.
+    var allowsCrossTabAddExercise: Bool = true
+    /// Called right after a successful save (create or update), before
+    /// `dismiss()`. Distinct from dismissal itself so a caller driving this
+    /// view from a review flow (`MiniRoutineReviewView`) can tell "saved"
+    /// apart from "cancelled" — the sheet's own `onDismiss` fires either way
+    /// and can't make that distinction.
+    var onSaved: (() -> Void)? = nil
+    /// Exact form state to restore after a cross-tab "Add Exercise" round
+    /// trip — a hard replace, not a merge. Set only by RoutineListView's
+    /// re-presentation after `.exercisePickingFinished`; nil for every
+    /// other entry into this view. When set, takes priority over
+    /// `routineToEdit`/`initialExerciseIDs`/`initialName` entirely — see
+    /// this task's design note for why a merge here would be wrong.
+    var restoredState: (name: String, exerciseIDs: [UUID], durationOverrides: [UUID: Int])? = nil
 
     @State private var routineName = ""
     @State private var selectedIDs: [UUID] = []
-    @State private var isPublic = false
-    @State private var showingExercisePicker = false
     @State private var indexPendingRemoval: Int?
-
-    private let maxPublicRoutines = 3
+    /// Per-exercise duration overrides, keyed by exercise UUID — seconds.
+    /// Absent key means "use the exercise's own durationSeconds." Persisted
+    /// onto `Routine.exerciseDurationOverrides` on save.
+    @State private var durationOverrides: [UUID: Int] = [:]
+    /// Guards the "creating new" onAppear branch so initialExerciseIDs/
+    /// initialName are only seeded once, even if onAppear re-fires for
+    /// this same sheet instance. (A cross-tab exercise pick re-presents via
+    /// the restoredState branch instead, which short-circuits before this
+    /// branch runs — restoredState is checked first in onAppear.)
+    @State private var didApplySeed = false
 
     private var isEditing: Bool { routineToEdit != nil }
 
@@ -27,15 +73,24 @@ struct RoutineBuilderView: View {
     }
 
     private var totalDuration: Int {
-        selectedExercises.reduce(0) { $0 + $1.durationSeconds }
+        selectedExercises.reduce(0) { $0 + duration(for: $1) }
     }
 
-    private var myPublicCount: Int {
-        allRoutines.filter { $0.isPublic && $0.authorID == auth.backendID && $0.uuid != routineToEdit?.uuid }.count
+    /// The exercise's duration after applying this form's own override, if
+    /// any — the single point every duration read in this view goes
+    /// through, mirroring SessionPlayerView's `effectiveDuration(for:)`.
+    private func duration(for exercise: Exercise) -> Int {
+        durationOverrides[exercise.uuid] ?? exercise.durationSeconds
     }
 
-    private var publishLimitReached: Bool {
-        myPublicCount >= maxPublicRoutines
+    private func adjustDuration(for exercise: Exercise, by delta: Int) {
+        let next = max(5, duration(for: exercise) + delta)
+        durationOverrides[exercise.uuid] = next
+    }
+
+    private func formattedDuration(_ seconds: Int) -> String {
+        let m = seconds / 60, s = seconds % 60
+        return s == 0 ? "\(m):00" : "\(m):\(String(format: "%02d", s))"
     }
 
     var body: some View {
@@ -53,34 +108,35 @@ struct RoutineBuilderView: View {
                 Section {
                     ForEach(selectedIDs.indices, id: \.self) { index in
                         if let exercise = exercises.first(where: { $0.uuid == selectedIDs[index] }) {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(exercise.name)
-                                        .font(.luminaCardTitle)
-                                        .foregroundStyle(Color.luminaOnSurface)
-                                    Text("\(exercise.durationFormatted) · \(exercise.type.rawValue)")
-                                        .font(.luminaCaption)
-                                        .foregroundStyle(Color.luminaOnSurfaceVariant)
-                                }
-                                Spacer()
-                                Button(role: .destructive) {
-                                    indexPendingRemoval = index
-                                } label: {
-                                    Image(systemName: "minus.circle.fill")
-                                }
-                                .buttonStyle(.plain)
-                                .foregroundStyle(.red)
-                            }
+                            exerciseRow(index: index, exercise: exercise)
+                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
                         }
                     }
                     .onMove { selectedIDs.move(fromOffsets: $0, toOffset: $1) }
 
-                    Button {
-                        showingExercisePicker = true
-                    } label: {
-                        Label("Add Exercise", systemImage: "plus.circle")
-                            .font(.luminaBody)
-                            .foregroundStyle(Color.luminaPrimary)
+                    if allowsCrossTabAddExercise {
+                        Button {
+                            pickingSession.begin(context: .init(
+                                title: routineName,
+                                isPinned: false,
+                                baseExercises: selectedExercises,
+                                originTab: pickingOriginTab,
+                                editingRoutineID: routineToEdit?.uuid,
+                                durationOverrides: durationOverrides
+                            ))
+                            dismiss()
+                            // Same "dismiss + switch to Exercises tab" need
+                            // CustomizeRoutineView's own Add Exercises button
+                            // has — reusing the existing notification rather
+                            // than adding a second one.
+                            NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
+                        } label: {
+                            Label("Add Exercise", systemImage: "plus.circle")
+                                .font(.luminaBody)
+                                .foregroundStyle(Color.luminaPrimary)
+                        }
                     }
                 } header: {
                     HStack {
@@ -93,28 +149,6 @@ struct RoutineBuilderView: View {
                                 .font(.luminaCaption)
                                 .foregroundStyle(Color.luminaOnSurfaceVariant)
                         }
-                    }
-                }
-
-                Section {
-                    Toggle("Publish to Community", isOn: $isPublic)
-                        .font(.luminaBody)
-                        .tint(Color.luminaPrimary)
-                        .disabled(!isPublic && publishLimitReached)
-                } footer: {
-                    if isPublic {
-                        Text("Your routine will appear in the community library. You've used \(myPublicCount) of \(maxPublicRoutines) publish slots.")
-                            .font(.luminaCaption)
-                            .foregroundStyle(Color.luminaOnSurfaceVariant)
-                    } else if publishLimitReached {
-                        Text("You've reached the \(maxPublicRoutines)-routine publish limit. Un-publish an existing routine to free a slot.")
-                            .font(.luminaCaption)
-                            .foregroundStyle(.red)
-                    } else {
-                        let remaining = maxPublicRoutines - myPublicCount
-                        Text("Share this routine with the community (\(remaining) publish slot\(remaining == 1 ? "" : "s") remaining).")
-                            .font(.luminaCaption)
-                            .foregroundStyle(Color.luminaOnSurfaceVariant)
                     }
                 }
             }
@@ -132,11 +166,6 @@ struct RoutineBuilderView: View {
                         .disabled(routineName.isEmpty || selectedIDs.isEmpty)
                 }
             }
-            .sheet(isPresented: $showingExercisePicker) {
-                ExercisePickerView(allExercises: Array(exercises), selectedIDs: selectedIDs) { id in
-                    if !selectedIDs.contains(id) { selectedIDs.append(id) }
-                }
-            }
             .confirmationDialog(
                 "Remove this exercise?",
                 isPresented: Binding(
@@ -146,7 +175,9 @@ struct RoutineBuilderView: View {
                 presenting: indexPendingRemoval
             ) { index in
                 Button("Remove", role: .destructive) {
+                    let removedID = selectedIDs[index]
                     selectedIDs.remove(at: index)
+                    durationOverrides.removeValue(forKey: removedID)
                     indexPendingRemoval = nil
                 }
                 Button("Cancel", role: .cancel) {}
@@ -158,10 +189,20 @@ struct RoutineBuilderView: View {
                 }
             }
             .onAppear {
-                if let r = routineToEdit {
+                if let restoredState {
+                    routineName       = restoredState.name
+                    selectedIDs       = restoredState.exerciseIDs
+                    durationOverrides = restoredState.durationOverrides
+                } else if let r = routineToEdit {
                     routineName  = r.name
-                    selectedIDs  = r.exerciseIDs
-                    isPublic     = r.isPublic
+                    selectedIDs  = RoutineIDMerge.appending(initialExerciseIDs, to: r.exerciseIDs)
+                    durationOverrides = r.exerciseDurationOverrides
+                } else if !didApplySeed && (!initialExerciseIDs.isEmpty || initialName != nil) {
+                    didApplySeed = true
+                    selectedIDs = RoutineIDMerge.appending(initialExerciseIDs, to: selectedIDs)
+                    if let initialName {
+                        routineName = initialName
+                    }
                 }
             }
         }
@@ -171,15 +212,12 @@ struct RoutineBuilderView: View {
         if let r = routineToEdit {
             r.name        = routineName
             r.exerciseIDs = selectedIDs
-            r.isPublic    = isPublic
-            r.authorName  = isPublic ? auth.displayName : nil
+            r.exerciseDurationOverrides = durationOverrides
         } else {
             let routine = Routine(
                 name: routineName,
                 exerciseIDs: selectedIDs,
-                authorID: auth.backendID,
-                authorName: isPublic ? auth.displayName : nil,
-                isPublic: isPublic
+                exerciseDurationOverrides: durationOverrides
             )
             modelContext.insert(routine)
 
@@ -190,73 +228,84 @@ struct RoutineBuilderView: View {
 
         do {
             try modelContext.save()
+            onSaved?()
         } catch {
             Logger(subsystem: "com.jasonlu.breath", category: "routineBuilder").warning("Save failed: \(error)")
         }
 
         dismiss()
     }
-}
 
-// MARK: - Exercise picker sheet
+    /// Same row look as CustomizeRoutineView's exerciseRow (numbered badge +
+    /// PoseGlyphIcon + card) so the two "edit a routine's exercises" screens
+    /// read as one design, not two — plus the stepper and remove button
+    /// this screen already had.
+    private func exerciseRow(index: Int, exercise: Exercise) -> some View {
+        HStack(spacing: 12) {
+            Text("\(index + 1)")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                .frame(width: 22, height: 22)
+                .background(Color.luminaContainer, in: Circle())
 
-struct ExercisePickerView: View {
-    @Environment(\.dismiss) private var dismiss
-    let allExercises: [Exercise]
-    let selectedIDs: [UUID]
-    let onSelect: (UUID) -> Void
-    @State private var searchText = ""
+            let category = ExerciseCategory.primary(for: exercise.targetBodyParts)
+            PoseGlyphIcon(exercise: exercise, category: category, size: 46)
 
-    private var filtered: [Exercise] {
-        allExercises.filter { searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText) }
-    }
+            Text(exercise.name)
+                .font(.luminaCardTitle)
+                .foregroundStyle(Color.luminaOnSurface)
+                .lineLimit(1)
 
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 0) {
-                    exerciseRows(filtered)
-                }
-            }
-            .background(Color.luminaSurface.ignoresSafeArea())
-            .searchable(text: $searchText)
-            .navigationTitle("Add Exercise")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
-        }
-    }
+            Spacer(minLength: 8)
 
-    @ViewBuilder
-    private func exerciseRows(_ items: [Exercise]) -> some View {
-        ForEach(items, id: \.uuid) { ex in
-            Button {
-                onSelect(ex.uuid)
-                dismiss()
+            durationStepper(for: exercise)
+
+            Button(role: .destructive) {
+                indexPendingRemoval = index
             } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(ex.name)
-                            .font(.luminaCardTitle)
-                            .foregroundStyle(Color.luminaOnSurface)
-                        Text("\(ex.durationFormatted) · \(ex.type.rawValue)")
-                            .font(.luminaCaption)
-                            .foregroundStyle(Color.luminaOnSurfaceVariant)
-                    }
-                    Spacer()
-                    if selectedIDs.contains(ex.uuid) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(Color.luminaPrimary)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
+                Image(systemName: "minus.circle.fill")
             }
             .buttonStyle(.plain)
-            Divider().padding(.leading)
+            .foregroundStyle(.red)
+        }
+        .luminaCard(padding: 12)
+    }
+
+    private func durationStepper(for exercise: Exercise) -> some View {
+        HStack(spacing: 6) {
+            // Outline icon here (vs. the row's own filled "minus.circle.fill"
+            // remove button) so the two destructive-looking minus icons in
+            // the same row read as visually distinct actions.
+            Button {
+                adjustDuration(for: exercise, by: -5)
+            } label: {
+                Image(systemName: "minus.circle")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.luminaPrimary)
+
+            Text(formattedDuration(duration(for: exercise)))
+                .font(.luminaCaption)
+                .monospacedDigit()
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                .frame(minWidth: 40)
+
+            Button {
+                adjustDuration(for: exercise, by: 5)
+            } label: {
+                Image(systemName: "plus.circle")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color.luminaPrimary)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(exercise.name) duration, \(formattedDuration(duration(for: exercise)))")
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: adjustDuration(for: exercise, by: 5)
+            case .decrement: adjustDuration(for: exercise, by: -5)
+            @unknown default: break
+            }
         }
     }
 }

@@ -130,6 +130,13 @@ struct RegionExerciseResolver {
 struct BodyPartExercisesView: View {
     let bodyParts: [String]
     @Query private var allExercises: [Exercise]
+    @StateObject private var miniRoutine = MiniRoutineState()
+    @State private var selectedExercise: Exercise?
+    @State private var showingMiniRoutineSession = false
+
+    private var isShowingDetail: Binding<Bool> {
+        Binding(get: { selectedExercise != nil }, set: { if !$0 { selectedExercise = nil } })
+    }
 
     init(bodyPart: String)        { self.bodyParts = [bodyPart] }
     init(bodyParts: [String])     { self.bodyParts = bodyParts }
@@ -152,47 +159,103 @@ struct BodyPartExercisesView: View {
                     description: Text(emptyDescription)
                 )
             } else {
-                List {
-                    if bodyParts.count > 1 {
-                        Section {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        if bodyParts.count > 1 {
                             Text(bodyParts.joined(separator: ", "))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        } header: {
-                            Text("Targeting")
+                                .font(.luminaCaption)
+                                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        }
+                        if !resolver.direct.isEmpty {
+                            exerciseSection(title: "\(resolver.direct.count) exercise\(resolver.direct.count == 1 ? "" : "s")", exercises: resolver.direct)
+                        }
+                        if !resolver.related.isEmpty {
+                            exerciseSection(title: relatedSectionTitle, footer: relatedFooterText, exercises: resolver.related)
                         }
                     }
-                    if !resolver.direct.isEmpty {
-                        Section {
-                            exerciseRows(resolver.direct)
-                        } header: {
-                            Text("\(resolver.direct.count) exercise\(resolver.direct.count == 1 ? "" : "s")")
-                        }
-                    }
-                    if !resolver.related.isEmpty {
-                        Section {
-                            exerciseRows(resolver.related)
-                        } header: {
-                            Text(relatedSectionTitle)
-                        } footer: {
-                            Text(relatedFooterText)
-                        }
-                    }
+                    .padding()
                 }
+                .tourAnchor("bodymap.regionResults")
             }
         }
         .navigationTitle(navTitle)
         .navigationBarTitleDisplayMode(.inline)
+        // `.safeAreaInset` stacks bottom-up in application order: the LAST
+        // one applied claims the outermost slot, right at the screen edge —
+        // exactly the 80pt zone the real floating `CustomTabBar` overlay
+        // occupies. `miniRoutineBar` must be applied BEFORE
+        // `.floatingTabBarClearance()` so it lands just above that reserved
+        // zone instead of underneath the tab bar (where its taps would be
+        // swallowed by the tab bar sitting on top of it).
+        .safeAreaInset(edge: .bottom) {
+            if !miniRoutine.exercises.isEmpty {
+                miniRoutineBar
+            }
+        }
         .floatingTabBarClearance()
+        .navigationDestination(isPresented: isShowingDetail) {
+            if let selectedExercise {
+                ExerciseDetailView(exercise: selectedExercise)
+            }
+        }
+        .sheet(isPresented: $showingMiniRoutineSession) {
+            SessionPlayerView(exercises: miniRoutine.exercises)
+        }
     }
 
     @ViewBuilder
-    private func exerciseRows(_ exercises: [Exercise]) -> some View {
-        ForEach(exercises, id: \.uuid) { exercise in
-            NavigationLink(destination: ExerciseDetailView(exercise: exercise)) {
-                ExerciseRow(exercise: exercise)
+    private func exerciseSection(title: String, footer: String? = nil, exercises: [Exercise]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                ForEach(exercises, id: \.uuid) { exercise in
+                    ExerciseGridTile(
+                        exercise: exercise,
+                        badge: .add(isSelected: miniRoutine.contains(exercise))
+                    ) {
+                        selectedExercise = exercise
+                    } onBadgeTap: {
+                        miniRoutine.toggle(exercise)
+                    }
+                }
+            }
+
+            if let footer {
+                Text(footer)
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
         }
+    }
+
+    private var miniRoutineBar: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(miniRoutine.exercises.count) selected")
+                    .font(.luminaCardTitle)
+                let m = miniRoutine.totalSeconds / 60, s = miniRoutine.totalSeconds % 60
+                Text("\(m):\(String(format: "%02d", s)) mini routine")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
+            Spacer(minLength: 8)
+            Button {
+                showingMiniRoutineSession = true
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "play.fill")
+                    Text("Start")
+                }
+            }
+            .buttonStyle(LuminaPillButtonStyle(kind: .prominent, compact: true))
+        }
+        .padding(14)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
+        .padding(.horizontal)
+        .padding(.bottom, 8)
     }
 
     // A single tapped region is named directly ("Spinal Erectors") rather
