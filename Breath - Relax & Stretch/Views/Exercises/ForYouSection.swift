@@ -8,13 +8,10 @@ struct ForYouCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Image(systemName: exercise.type == .breath ? "wind" : "figure.mind.and.body")
-                .font(.system(size: 40))
-                .foregroundStyle(Color.luminaPrimary.opacity(0.55))
+            let category = ExerciseCategory.primary(for: exercise.targetBodyParts)
+            PoseGlyphIcon(exercise: exercise, category: category, size: 96)
                 .frame(maxWidth: .infinity)
                 .frame(height: 110)
-                .background(Color.luminaMintTint)
-                .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.panel, style: .continuous))
 
             Text(exercise.name)
                 .font(.luminaLabel)
@@ -29,6 +26,50 @@ struct ForYouCard: View {
         }
         .frame(width: 128)
         .padding(8)
+        .luminaCard(padding: 0)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabel(for: exercise))
+    }
+
+    private func accessibilityLabel(for exercise: Exercise) -> String {
+        let motion = MotionAccent.resolve(for: exercise) == .circular ? ", circular motion" : ""
+        return "\(exercise.name), \(exercise.durationFormatted), \(exercise.type.rawValue)\(motion)"
+    }
+}
+
+// MARK: - Premade routine card
+
+struct PremadeRoutineCard: View {
+    let routine: PremadeRoutine
+    let meta: (count: Int, minutes: Int)?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Image(systemName: routine.icon)
+                .font(.system(size: 17, weight: .medium))
+                .foregroundStyle(Color.luminaPrimary)
+                .frame(width: 40, height: 40)
+                .background(Color.luminaMintTint, in: Circle())
+
+            Text(routine.title)
+                .font(.luminaCardTitle)
+                .foregroundStyle(Color.luminaOnSurface)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if let meta {
+                Text("\(meta.count) exercise\(meta.count == 1 ? "" : "s") · \(meta.minutes) min")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            } else {
+                Text("Unavailable")
+                    .font(.luminaCaption)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+            }
+        }
+        .padding(12)
+        .frame(width: 132, alignment: .leading)
         .luminaCard(padding: 0)
     }
 }
@@ -87,20 +128,9 @@ struct RecommendedCarousel: View {
 private struct RecommendedCard: View {
     let item: RecommendedExercise
 
-    private var icon: String {
-        item.exercise.type == .breath ? "wind" : "figure.mind.and.body"
-    }
-
     var body: some View {
         HStack(spacing: 14) {
-            Image(systemName: icon)
-                .font(.system(size: 30))
-                .foregroundStyle(item.category.accentColor)
-                .frame(width: 60, height: 60)
-                .background(
-                    RoundedRectangle(cornerRadius: LuminaRadius.chip, style: .continuous)
-                        .fill(item.category.accentColor.opacity(0.16))
-                )
+            PoseGlyphIcon(exercise: item.exercise, category: item.category, size: 60)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(item.category.rawValue.uppercased())
@@ -132,7 +162,12 @@ private struct RecommendedCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .luminaCard(padding: 14)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(item.category.rawValue): \(item.exercise.name), \(item.exercise.durationFormatted)")
+        .accessibilityLabel(accessibilityLabel)
+    }
+
+    private var accessibilityLabel: String {
+        let motion = MotionAccent.resolve(for: item.exercise) == .circular ? ", circular motion" : ""
+        return "\(item.category.rawValue): \(item.exercise.name), \(item.exercise.durationFormatted), \(item.exercise.type.rawValue)\(motion)"
     }
 }
 
@@ -174,18 +209,28 @@ struct GoalMeta {
     }
 
     static let all: [GoalMeta] = [
+        // Exercise names below are matched against SeedData.json at render
+        // time (see the file header comment). Several got lateralized into
+        // Left/Right pairs after these goals were first written — see
+        // CuratedContentIntegrityTests.
         GoalMeta(
             id: "flexibility",
             displayName: "Flexibility",
             exerciseNames: [
                 "Standing Hamstring Stretch",
-                "Hip Flexor Stretch",
-                "Standing Quad Stretch",
-                "Seated Figure-Four Stretch",
-                "Standing Side Stretch",
+                "Left Standing Hip-Flexor Stretch (Foot Elevated)",
+                "Right Standing Hip-Flexor Stretch (Foot Elevated)",
+                "Left Standing Quad Stretch",
+                "Right Standing Quad Stretch",
+                "Left Seated Figure-Four Stretch",
+                "Right Seated Figure-Four Stretch",
+                "Left Standing Crescent Moon Side Stretch",
+                "Right Standing Crescent Moon Side Stretch",
                 "Cat-Cow Flow",
-                "Seated Hamstring Stretch",
-                "Figure-4 Glute Stretch",
+                "Left Seated Hamstring Stretch",
+                "Right Seated Hamstring Stretch",
+                "Left Standing Figure-4 Stretch",
+                "Right Standing Figure-4 Stretch",
             ]
         ),
         GoalMeta(
@@ -193,7 +238,8 @@ struct GoalMeta {
             displayName: "Stress Relief",
             exerciseNames: [
                 "Shoulder Roll",
-                "Neck Side Stretch",
+                "Left Scalene Neck Stretch",
+                "Right Scalene Neck Stretch",
                 "Seated Neck Rolls",
                 "Eye Palming",
                 "Child's Pose",
@@ -207,12 +253,14 @@ struct GoalMeta {
             exerciseNames: [
                 "Cat-Cow Flow",
                 "Child's Pose",
-                "Knee-to-Chest Release",
+                "Double Knee-to-Chest Release",
                 "Pelvic Tilt",
-                "Glute Bridge",
-                "Seated Spinal Twist",
-                "Upper Back Cat-Cow",
-                "Supine Knee-to-Chest",
+                "Bridge Pose",
+                "Left Seated Spinal Twist",
+                "Right Seated Spinal Twist",
+                "Upper-Back Cat-Cow (Seated)",
+                "Left Single-Leg Supine Knee-to-Chest",
+                "Right Single-Leg Supine Knee-to-Chest",
             ]
         ),
         GoalMeta(
@@ -224,7 +272,7 @@ struct GoalMeta {
                 "4-7-8 Breathing",
                 "Diaphragmatic Breath with Counting",
                 "Alternate Nostril Breathing",
-                "Pursed Lip Breathing",
+                "Pursed-Lip Breathing",
             ]
         ),
         GoalMeta(

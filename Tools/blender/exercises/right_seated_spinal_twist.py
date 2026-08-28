@@ -7,6 +7,16 @@ demo mp4 (encode separately with Tools/blender/encode_mp4.swift).
 
 Third batch, exercise #7. Mirror of left_seated_spinal_twist.py — same twist
 magnitudes, opposite local-Y sign, highlighting the right-side muscles instead.
+
+Rotation-audit update (2026-08-07): added the same static seated leg pose as
+left_seated_spinal_twist.py (thigh -90 / shin +90 local-X, no L/R sign flip
+needed — hip flexion is straight-forward, not lateral). See
+ANIMATION_HANDOFF.md's "Rotation audit" section.
+
+Twist-direction correction (2026-08-08): mirror of the sign fix applied to its
+L/R partner — see that script's docstring and ANIMATION_HANDOFF.md's "Twist
+direction" section. +Y local-Y rotates toward the subject's own LEFT, not
+right as the handoff doc previously claimed.
 """
 import sys
 import os
@@ -27,18 +37,29 @@ CAMERA_AZIMUTH = 45
 
 WORKED_KEYWORDS = ("right oblique", "spinal erector", "lower back")
 
-POSES = {
-    0: {},
-    30: {"spine": (0, r(-15), 0)},
-    60: {
-        "spine": (0, r(-35), 0),
-        "chest": (0, r(-10), 0),
-    },
-    90: {
-        "spine": (0, r(-35), 0),
-        "chest": (0, r(-10), 0),
-    },
-    120: {},
+# Static seated leg pose (see ANIMATION_HANDOFF.md "Rotation audit"), held
+# constant across every keyframe.
+_SEATED = {
+    "thigh.L": (r(-90), 0, 0),
+    "thigh.R": (r(-90), 0, 0),
+    "shin.L": (r(90), 0, 0),
+    "shin.R": (r(90), 0, 0),
 }
 
-L.run(globals())
+POSES = {
+    0: dict(_SEATED),
+    30: {**_SEATED, "spine": (0, r(15), 0)},
+    60: {
+        **_SEATED,
+        "spine": (0, r(35), 0),
+        "chest": (0, r(10), 0),
+    },
+    90: {
+        **_SEATED,
+        "spine": (0, r(35), 0),
+        "chest": (0, r(10), 0),
+    },
+    120: dict(_SEATED),
+}
+
+L.run_seated(globals())

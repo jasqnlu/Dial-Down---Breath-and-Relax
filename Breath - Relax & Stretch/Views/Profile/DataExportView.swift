@@ -231,17 +231,13 @@ struct DataExportView: View {
 
         lines.append("")
         lines.append("# Routines")
-        lines.append("id,name,exerciseIDs,authorID,authorName,borrowedFromID,isPublic,borrowCount,createdAt")
+        lines.append("id,name,exerciseIDs,borrowedFromID,createdAt")
         for r in routineRows {
             lines.append([
                 r.id,
                 csvField(r.name),
                 r.exerciseIDs.joined(separator: ";"),
-                r.authorID ?? "",
-                csvField(r.authorName ?? ""),
                 r.borrowedFromID ?? "",
-                "\(r.isPublic)",
-                "\(r.borrowCount)",
                 iso.string(from: r.createdAt)
             ].joined(separator: ","))
         }
@@ -294,12 +290,8 @@ struct DataExportView: View {
                 "id":           r.id,
                 "name":         r.name,
                 "exerciseIDs":  r.exerciseIDs,
-                "isPublic":     r.isPublic,
-                "borrowCount":  r.borrowCount,
                 "createdAt":    iso.string(from: r.createdAt)
             ]
-            if let a = r.authorID { d["authorID"] = a }
-            if let n = r.authorName { d["authorName"] = n }
             if let b = r.borrowedFromID { d["borrowedFromID"] = b }
             return d
         }
@@ -362,22 +354,14 @@ private struct RoutineExportRow: Sendable {
     let id:             String
     let name:           String
     let exerciseIDs:    [String]
-    let authorID:       String?
-    let authorName:     String?
     let borrowedFromID: String?
-    let isPublic:       Bool
-    let borrowCount:    Int
     let createdAt:      Date
 
     init(_ r: Routine) {
         id             = r.uuid.uuidString
         name           = r.name
         exerciseIDs    = r.exerciseIDs.map { $0.uuidString }
-        authorID       = r.authorID
-        authorName     = r.authorName
         borrowedFromID = r.borrowedFromID?.uuidString
-        isPublic       = r.isPublic
-        borrowCount    = r.borrowCount
         createdAt      = r.createdAt
     }
 }

@@ -1,0 +1,1032 @@
+<title>Today Tab</title>
+<style>
+  :root {
+    --primary: #00685B;
+    --on-primary: #FFFFFF;
+    --primary-container: #008374;
+    --mint-tint: #D7F2EA;
+    --orange: #FF9651;
+    --on-orange: #6F3200;
+    --blue: #4C6DDD;
+    --surface: #F8FAFB;
+    --card-fill: #FFFFFF;
+    --container: #ECEEEF;
+    --on-surface: #191C1D;
+    --on-surface-variant: #3D4946;
+    --outline: #E1E3E4;
+    --gradient-start: #4AC4C4;
+    --gradient-end: #7663F1;
+
+    /* page ground, outside the phone frame — a quiet neutral with a hair
+       of teal so it doesn't read as a bare grey backdrop */
+    --page-bg: #EDF2F1;
+    --page-ink: #40514D;
+    --frame-bezel: #0C0E0E;
+    --shadow: rgba(15, 23, 42, 0.14);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --primary: #6ED8C5;
+      --on-primary: #00382F;
+      --primary-container: #005046;
+      --mint-tint: #17332E;
+      --orange: #994701;
+      --on-orange: #FFDBC8;
+      --blue: #B6C4FF;
+      --surface: #0E1413;
+      --card-fill: #1A2120;
+      --container: #242B2A;
+      --on-surface: #EFF1F2;
+      --on-surface-variant: #BCC9C5;
+      --outline: #2E3835;
+      --gradient-start: #2E7D7D;
+      --gradient-end: #4A3D99;
+
+      --page-bg: #0A0D0C;
+      --page-ink: #9DB0AC;
+      --frame-bezel: #000000;
+      --shadow: rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --primary: #6ED8C5;
+    --on-primary: #00382F;
+    --primary-container: #005046;
+    --mint-tint: #17332E;
+    --orange: #994701;
+    --on-orange: #FFDBC8;
+    --blue: #B6C4FF;
+    --surface: #0E1413;
+    --card-fill: #1A2120;
+    --container: #242B2A;
+    --on-surface: #EFF1F2;
+    --on-surface-variant: #BCC9C5;
+    --outline: #2E3835;
+    --gradient-start: #2E7D7D;
+    --gradient-end: #4A3D99;
+
+    --page-bg: #0A0D0C;
+    --page-ink: #9DB0AC;
+    --frame-bezel: #000000;
+    --shadow: rgba(0, 0, 0, 0.5);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--page-bg);
+    color: var(--page-ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding: 40px 16px 56px;
+    min-height: 100vh;
+  }
+
+  .page-label {
+    text-align: center;
+    max-width: 480px;
+  }
+  .page-label .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin: 0 0 6px;
+  }
+  .page-label h1 {
+    font-size: 21px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    color: var(--page-ink);
+    text-wrap: balance;
+  }
+  .page-label p {
+    font-size: 13.5px;
+    line-height: 1.5;
+    margin: 0;
+    opacity: 0.8;
+  }
+  .page-label mark {
+    background: none;
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  /* ---------- Phone frame ---------- */
+  .frame {
+    width: 390px;
+    max-width: 100%;
+    border-radius: 54px;
+    padding: 14px;
+    background: var(--frame-bezel);
+    box-shadow: 0 30px 60px -20px var(--shadow), 0 0 0 1px rgba(255,255,255,0.04) inset;
+  }
+
+  .screen {
+    position: relative;
+    width: 100%;
+    height: 844px;
+    max-height: 82vh;
+    border-radius: 40px;
+    overflow: hidden;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .notch {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 28px;
+    background: var(--frame-bezel);
+    border-radius: 16px;
+    z-index: 30;
+  }
+
+  .status-bar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 26px 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--on-surface);
+  }
+  .status-bar .glyphs { display: flex; align-items: center; gap: 5px; }
+  .status-bar svg { display: block; }
+
+  .scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 20px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    scrollbar-width: none;
+  }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* ---------- Greeting header ---------- */
+  .greeting-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding-top: 6px;
+  }
+  .greeting h2 {
+    margin: 0 0 2px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--on-surface);
+  }
+  .greeting .date {
+    margin: 0;
+    font-size: 13px;
+    color: var(--on-surface-variant);
+  }
+  .streak-pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: var(--card-fill);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--on-surface);
+    box-shadow: 0 1px 2px var(--shadow);
+    white-space: nowrap;
+  }
+
+  /* ---------- Hero card ---------- */
+  .hero {
+    position: relative;
+    border-radius: 24px;
+    padding: 20px;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: #fff;
+  }
+  .hero .halo {
+    position: absolute;
+    top: -34px;
+    right: -18px;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.10);
+  }
+  .hero .halo.small {
+    top: 8px;
+    right: 34px;
+    width: 108px;
+    height: 108px;
+    background: rgba(255,255,255,0.14);
+  }
+  .hero-content { position: relative; z-index: 1; }
+  .hero-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .hero h3 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 700;
+  }
+  .pin-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 3px 9px 3px 7px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.22);
+  }
+  .hero .meta {
+    margin: 4px 0 16px;
+    font-size: 14px;
+    opacity: 0.88;
+  }
+
+  .roadmap {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 18px;
+  }
+  .roadmap .node {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.94);
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+  }
+  .roadmap .link {
+    flex: 1;
+    height: 2px;
+    background: rgba(255,255,255,0.4);
+    min-width: 10px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .btn-ghost {
+    padding: 0 18px;
+    height: 40px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.16);
+    color: #fff;
+    font-size: 14.5px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+  }
+  .btn-solid {
+    padding: 0 26px;
+    height: 44px;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--blue);
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border: none;
+  }
+  .btn-solid svg { width: 13px; height: 13px; }
+
+  /* ---------- Section headers ---------- */
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .section-head h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--on-surface);
+  }
+  .section-head .see-all {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--primary);
+  }
+  .section { display: flex; flex-direction: column; }
+
+  .hscroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 2px 2px 8px;
+    margin: 0 -2px;
+    scrollbar-width: none;
+  }
+  .hscroll::-webkit-scrollbar { display: none; }
+
+  /* ---------- Recommended carousel card ---------- */
+  .rec-card {
+    flex: none;
+    width: 152px;
+    border-radius: 18px;
+    background: var(--card-fill);
+    box-shadow: 0 1px 3px var(--shadow);
+    overflow: hidden;
+  }
+  .rec-card .art {
+    height: 92px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+  }
+  .rec-card .art.a { background: linear-gradient(140deg, #CDEDE4, #A9DED0); }
+  .rec-card .art.b { background: linear-gradient(140deg, #E4E0FB, #C9C0F5); }
+  .rec-card .art.c { background: linear-gradient(140deg, #FDE6D2, #F9CFA3); }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .rec-card .art.a { background: linear-gradient(140deg, #133029, #1B4438); }
+    :root:not([data-theme="light"]) .rec-card .art.b { background: linear-gradient(140deg, #241F3D, #332C55); }
+    :root:not([data-theme="light"]) .rec-card .art.c { background: linear-gradient(140deg, #3A2A17, #4C3620); }
+  }
+  :root[data-theme="dark"] .rec-card .art.a { background: linear-gradient(140deg, #133029, #1B4438); }
+  :root[data-theme="dark"] .rec-card .art.b { background: linear-gradient(140deg, #241F3D, #332C55); }
+  :root[data-theme="dark"] .rec-card .art.c { background: linear-gradient(140deg, #3A2A17, #4C3620); }
+  .rec-card .body { padding: 10px 11px 12px; }
+  .rec-card .name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--on-surface);
+    margin: 0 0 3px;
+    line-height: 1.25;
+  }
+  .rec-card .sub {
+    font-size: 11px;
+    color: var(--on-surface-variant);
+    margin: 0;
+  }
+
+  /* ---------- Premade Routines card (new section) ---------- */
+  /* Compact tap-through card — no button, whole card is the target. Icon
+     tint is the only per-pack color accent, matching how RoutineListView's
+     entryRow and MiniRoutineReviewView's destinationRow already do a
+     colored-circle-glyph + text pattern elsewhere in the app. */
+  .premade-card {
+    flex: none;
+    width: 108px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 10px;
+    border-radius: 16px;
+    background: var(--card-fill);
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .premade-card .glyph {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+  }
+  .premade-card .glyph.office   { background: #DCE6FB; }
+  .premade-card .glyph.athletic { background: #FFE6D2; }
+  .premade-card .glyph.sleep    { background: #E4E0FB; }
+  .premade-card .glyph.runner   { background: var(--mint-tint); }
+  .premade-card .glyph.reset    { background: #D2F0EF; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .premade-card .glyph.office   { background: #1E2A47; }
+    :root:not([data-theme="light"]) .premade-card .glyph.athletic { background: #3A2A17; }
+    :root:not([data-theme="light"]) .premade-card .glyph.sleep    { background: #241F3D; }
+    :root:not([data-theme="light"]) .premade-card .glyph.reset    { background: #12312F; }
+  }
+  :root[data-theme="dark"] .premade-card .glyph.office   { background: #1E2A47; }
+  :root[data-theme="dark"] .premade-card .glyph.athletic { background: #3A2A17; }
+  :root[data-theme="dark"] .premade-card .glyph.sleep    { background: #241F3D; }
+  :root[data-theme="dark"] .premade-card .glyph.reset    { background: #12312F; }
+  .premade-card .title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--on-surface);
+    margin: 0;
+    line-height: 1.28;
+  }
+  .premade-card .meta {
+    font-size: 10.5px;
+    color: var(--on-surface-variant);
+    margin: -4px 0 0;
+  }
+
+  /* ---------- For You card ---------- */
+  .fy-card {
+    flex: none;
+    width: 130px;
+    border-radius: 16px;
+    background: var(--card-fill);
+    box-shadow: 0 1px 3px var(--shadow);
+    overflow: hidden;
+  }
+  .fy-card .thumb {
+    height: 88px;
+    background: var(--container);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: var(--on-surface-variant);
+  }
+  .fy-card .body { padding: 9px 10px 11px; }
+  .fy-card .name {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--on-surface);
+    margin: 0 0 4px;
+    line-height: 1.3;
+  }
+  .fy-card .type {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--primary);
+    background: var(--mint-tint);
+    padding: 2px 7px;
+    border-radius: 999px;
+  }
+
+  /* ---------- Floating tab bar ---------- */
+  .tabbar-wrap {
+    position: absolute;
+    left: 0; right: 0; bottom: 10px;
+    display: flex;
+    justify-content: center;
+    padding: 0 18px;
+    z-index: 20;
+  }
+  .tabbar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 8px;
+    border-radius: 30px;
+    background: color-mix(in srgb, var(--card-fill) 82%, transparent);
+    backdrop-filter: blur(14px);
+    border: 0.5px solid var(--outline);
+    box-shadow: 0 10px 30px var(--shadow);
+  }
+  .tab-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 10px;
+    border-radius: 999px;
+    color: var(--on-surface-variant);
+  }
+  .tab-item.active {
+    background: var(--mint-tint);
+    color: var(--primary);
+    padding: 10px 14px;
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .tab-item svg { width: 19px; height: 19px; flex: none; }
+
+  .home-indicator {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 134px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--on-surface);
+    opacity: 0.28;
+    z-index: 25;
+  }
+
+  .callout {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--primary);
+    background: var(--mint-tint);
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+
+  /* ---------- Frames row (two phones side by side) ---------- */
+  .frames-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .frame-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .frame-tag {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--page-ink);
+  }
+  .frame-tag .num {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: var(--on-primary);
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+  }
+  .frame-arrow {
+    align-self: center;
+    margin-top: 190px;
+    color: var(--on-surface-variant);
+    opacity: 0.5;
+  }
+
+  /* ---------- Routine builder screen (screen 2) ---------- */
+  /* This is the SAME screen used to build/edit any routine — RoutineBuilderView
+     — just opened pre-filled from a preset's exercise names instead of empty.
+     No bespoke "customize" UI: Form-style grouped sections, Cancel/Save
+     toolbar, and the same per-row duration stepper a hand-built routine gets. */
+  .navbar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 8px;
+  }
+  .navbar .tbtn {
+    font-size: 15px;
+    color: var(--primary);
+  }
+  .navbar .tbtn.save { font-weight: 700; }
+  .navbar h5 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--on-surface);
+  }
+
+  .form-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+    padding: 0 4px 7px;
+  }
+  .form-group {
+    background: var(--card-fill);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px var(--shadow);
+  }
+  .form-field {
+    padding: 13px 14px;
+    font-size: 14.5px;
+    color: var(--on-surface);
+  }
+  .form-field .caret {
+    display: inline-block;
+    width: 1.5px;
+    height: 15px;
+    background: var(--primary);
+    margin-left: 2px;
+    vertical-align: -3px;
+  }
+
+  .cz-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-top: 0.5px solid var(--outline);
+  }
+  .form-group .cz-row:first-child { border-top: none; }
+  .cz-row .pose {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--container);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex: none;
+  }
+  .cz-row .info { flex: 1; min-width: 0; }
+  .cz-row .name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--on-surface);
+    margin: 0 0 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cz-row .type {
+    font-size: 10.5px;
+    color: var(--on-surface-variant);
+    margin: 0;
+  }
+  .cz-stepper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+  }
+  .cz-stepper button {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    background: var(--container);
+    color: var(--on-surface);
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .cz-stepper button.primed {
+    background: var(--mint-tint);
+    color: var(--primary);
+  }
+  .cz-stepper .dur {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--on-surface);
+    min-width: 32px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .cz-remove {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #E0453C;
+    margin-left: 2px;
+  }
+  .cz-add-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-top: 0.5px solid var(--outline);
+    color: var(--primary);
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+</style>
+
+<div class="page-label">
+  <p class="eyebrow">Home tab redesign — static mockup</p>
+  <h1>Today, with two additions</h1>
+  <p>Same hero and rhythm as today's build. New: a <mark>Pinned as Today</mark> tag when a routine is kept, and a compact <mark>Premade Routines</mark> row between Recommended and For You. Tapping a card doesn't add it outright — it opens the exact same <mark>routine builder</mark> a hand-built routine gets, just pre-filled with the preset's name and exercises, so the user tweaks it into their own before saving.</p>
+</div>
+
+<div class="frames-row">
+<div class="frame-col">
+<div class="frame-tag"><span class="num">1</span>Tap a routine on Home</div>
+<div class="frame">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span class="glyphs">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="7" width="3" height="5" rx="0.5" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="0.5" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="0.5" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="0.5" fill="currentColor"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 2.4C10.9 2.4 13.5 3.6 15.4 5.5L14 6.9C12.4 5.3 10.3 4.4 8 4.4C5.7 4.4 3.6 5.3 2 6.9L0.6 5.5C2.5 3.6 5.1 2.4 8 2.4Z" fill="currentColor"/><circle cx="8" cy="9.5" r="1.6" fill="currentColor"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1" fill="none"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.2" fill="currentColor"/><rect x="22" y="4" width="2" height="4" rx="1" fill="currentColor"/></svg>
+      </span>
+    </div>
+
+    <div class="scroll">
+      <!-- Greeting -->
+      <div class="greeting-row">
+        <div class="greeting">
+          <h2>Good afternoon, Alex</h2>
+          <p class="date">Sunday, August 16</p>
+        </div>
+        <div class="streak-pill">🔥 12</div>
+      </div>
+
+      <!-- Hero -->
+      <div class="hero">
+        <div class="halo"></div>
+        <div class="halo small"></div>
+        <div class="hero-content">
+          <div class="hero-title-row">
+            <h3>Today's session</h3>
+            <span class="pin-tag">🔖 Pinned as Today</span>
+          </div>
+          <p class="meta">3 exercises · 6 min</p>
+
+          <div class="roadmap">
+            <div class="node">1</div><div class="link"></div>
+            <div class="node">2</div><div class="link"></div>
+            <div class="node">3</div>
+          </div>
+
+          <div class="hero-actions">
+            <button class="btn-ghost">Customize</button>
+            <button class="btn-solid">
+              <svg viewBox="0 0 12 14" fill="currentColor"><path d="M0 0L12 7L0 14V0Z"/></svg>
+              Begin
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommended for You -->
+      <div class="section">
+        <div class="section-head"><h4>Recommended for You</h4></div>
+        <div class="hscroll">
+          <div class="rec-card">
+            <div class="art a">🧘‍♀️</div>
+            <div class="body"><p class="name">Neck &amp; Shoulder Release</p><p class="sub">2 min · Stretch</p></div>
+          </div>
+          <div class="rec-card">
+            <div class="art b">🌬️</div>
+            <div class="body"><p class="name">4-7-8 Breathing</p><p class="sub">3 min · Breathing</p></div>
+          </div>
+          <div class="rec-card">
+            <div class="art c">🦵</div>
+            <div class="body"><p class="name">Hip Flexor Opener</p><p class="sub">90 sec · Mobility</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Premade Routines (new) -->
+      <div class="section">
+        <div class="section-head">
+          <h4>Premade Routines</h4>
+          <span class="see-all">See All</span>
+        </div>
+        <div class="hscroll">
+          <div class="premade-card">
+            <div class="glyph office">🖥️</div>
+            <p class="title">Office Stretch</p>
+            <p class="meta">5 · 8 min</p>
+          </div>
+
+          <div class="premade-card">
+            <div class="glyph athletic">🏃</div>
+            <p class="title">Athletic Recovery</p>
+            <p class="meta">6 · 11 min</p>
+          </div>
+
+          <div class="premade-card">
+            <div class="glyph sleep">🌙</div>
+            <p class="title">Better Sleep &amp; Breathing</p>
+            <p class="meta">5 · 9 min</p>
+          </div>
+
+          <div class="premade-card">
+            <div class="glyph runner">👟</div>
+            <p class="title">Runner's Warm-Up</p>
+            <p class="meta">6 · 10 min</p>
+          </div>
+
+          <div class="premade-card">
+            <div class="glyph reset">✨</div>
+            <p class="title">Full Body Reset</p>
+            <p class="meta">4 · 7 min</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- For You -->
+      <div class="section">
+        <div class="section-head"><h4>For You</h4></div>
+        <div class="hscroll">
+          <div class="fy-card">
+            <div class="thumb">🧎</div>
+            <div class="body"><p class="name">Child's Pose</p><span class="type">Stretch</span></div>
+          </div>
+          <div class="fy-card">
+            <div class="thumb">🌀</div>
+            <div class="body"><p class="name">Cat-Cow Flow</p><span class="type">Mobility</span></div>
+          </div>
+          <div class="fy-card">
+            <div class="thumb">🫁</div>
+            <div class="body"><p class="name">Box Breathing</p><span class="type">Breathing</span></div>
+          </div>
+          <div class="fy-card">
+            <div class="thumb">🦶</div>
+            <div class="body"><p class="name">Calf Stretch at Wall</p><span class="type">Stretch</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating tab bar -->
+    <div class="tabbar-wrap">
+      <div class="tabbar">
+        <div class="tab-item active">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4.2"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2v2.4M12 19.6V22M22 12h-2.4M4.4 12H2M19.1 4.9l-1.7 1.7M6.6 17.4l-1.7 1.7M19.1 19.1l-1.7-1.7M6.6 6.6L4.9 4.9"/></g></svg>
+          Today
+        </div>
+        <div class="tab-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="5" r="2.4"/><path d="M12 8v7M8.5 12h7M9 21l3-6 3 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="tab-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </div>
+        <div class="tab-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg>
+        </div>
+        <div class="tab-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="4.2" rx="1"/><rect x="4" y="9.9" width="16" height="4.2" rx="1"/><rect x="4" y="15.8" width="16" height="4.2" rx="1"/></svg>
+        </div>
+        <div class="tab-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8.4" r="3.4"/><path d="M5 20c0-3.6 3.1-6.4 7-6.4s7 2.8 7 6.4" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-indicator"></div>
+  </div>
+</div>
+</div>
+
+<div class="frame-arrow">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</div>
+
+<div class="frame-col">
+<div class="frame-tag"><span class="num">2</span>Same builder as any routine, pre-filled</div>
+<div class="frame">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span class="glyphs">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="7" width="3" height="5" rx="0.5" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="0.5" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="0.5" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="0.5" fill="currentColor"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 2.4C10.9 2.4 13.5 3.6 15.4 5.5L14 6.9C12.4 5.3 10.3 4.4 8 4.4C5.7 4.4 3.6 5.3 2 6.9L0.6 5.5C2.5 3.6 5.1 2.4 8 2.4Z" fill="currentColor"/><circle cx="8" cy="9.5" r="1.6" fill="currentColor"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1" fill="none"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.2" fill="currentColor"/><rect x="22" y="4" width="2" height="4" rx="1" fill="currentColor"/></svg>
+      </span>
+    </div>
+
+    <div class="navbar">
+      <span class="tbtn">Cancel</span>
+      <h5>New Routine</h5>
+      <span class="tbtn save">Save</span>
+    </div>
+
+    <div class="scroll" style="padding-bottom: 40px; gap: 22px;">
+      <div class="section">
+        <div class="form-header">Routine Name</div>
+        <div class="form-group">
+          <div class="form-field">Office Stretch<span class="caret"></span></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="form-header"><span>Exercises</span><span>8 min total</span></div>
+        <div class="form-group">
+          <div class="cz-row">
+            <div class="pose">🧎</div>
+            <div class="info">
+              <p class="name">Chin Tuck (Forward Head Reset)</p>
+              <p class="type">Stretch</p>
+            </div>
+            <div class="cz-stepper">
+              <button>−</button>
+              <span class="dur">0:30</span>
+              <button class="primed">＋</button>
+            </div>
+            <div class="cz-remove">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" opacity="0.14"/><rect x="7" y="11" width="10" height="2" rx="1"/></svg>
+            </div>
+          </div>
+
+          <div class="cz-row">
+            <div class="pose">🙆</div>
+            <div class="info">
+              <p class="name">Seated Neck Rolls</p>
+              <p class="type">Mobility</p>
+            </div>
+            <div class="cz-stepper">
+              <button>−</button>
+              <span class="dur">0:45</span>
+              <button class="primed">＋</button>
+            </div>
+            <div class="cz-remove">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" opacity="0.14"/><rect x="7" y="11" width="10" height="2" rx="1"/></svg>
+            </div>
+          </div>
+
+          <div class="cz-row">
+            <div class="pose">🤸</div>
+            <div class="info">
+              <p class="name">Shoulder Roll</p>
+              <p class="type">Mobility</p>
+            </div>
+            <div class="cz-stepper">
+              <button class="primed">−</button>
+              <span class="dur">0:30</span>
+              <button class="primed">＋</button>
+            </div>
+            <div class="cz-remove">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" opacity="0.14"/><rect x="7" y="11" width="10" height="2" rx="1"/></svg>
+            </div>
+          </div>
+
+          <div class="cz-row">
+            <div class="pose">🙏</div>
+            <div class="info">
+              <p class="name">Reverse Prayer Stretch</p>
+              <p class="type">Stretch</p>
+            </div>
+            <div class="cz-stepper">
+              <button>−</button>
+              <span class="dur">1:00</span>
+              <button class="primed">＋</button>
+            </div>
+            <div class="cz-remove">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" opacity="0.14"/><rect x="7" y="11" width="10" height="2" rx="1"/></svg>
+            </div>
+          </div>
+
+          <div class="cz-row">
+            <div class="pose">🌀</div>
+            <div class="info">
+              <p class="name">Wrist &amp; Forearm Release</p>
+              <p class="type">Stretch</p>
+            </div>
+            <div class="cz-stepper">
+              <button>−</button>
+              <span class="dur">0:45</span>
+              <button class="primed">＋</button>
+            </div>
+            <div class="cz-remove">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" opacity="0.14"/><rect x="7" y="11" width="10" height="2" rx="1"/></svg>
+            </div>
+          </div>
+
+          <div class="cz-add-row">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+            Add Exercise
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-indicator"></div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="page-label" style="max-width: 460px;">
+  <p style="font-size:11.5px; line-height:1.5; opacity:0.75; margin:0;">Screen 2 is <code style="font-size:10.5px;">RoutineBuilderView</code> itself — not a bespoke detail screen — opened with the preset's name and exercises pre-seeded, the same way it already opens pre-seeded from a picking session. "Add Exercise" still reaches the real exercise catalog; the new part is the per-row +/− duration stepper, saved as a per-routine override. Colors and type pulled straight from <code style="font-size:10.5px;">LuminaTheme.swift</code>. Static mockup, no motion.</p>
+</div>

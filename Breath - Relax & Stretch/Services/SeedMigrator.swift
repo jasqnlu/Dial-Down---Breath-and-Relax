@@ -255,4 +255,124 @@ enum SeedMigrator {
         }
         return changed
     }
+
+    /// v9 — inserts brand-new seed exercises added to the bundle after a
+    /// user's initial install, matched by `seedID` so it never duplicates a
+    /// row the user already has. Unlike v3–v6 (one-time vocabulary/id
+    /// migrations), this is NOT gated behind a version bump: exercises get
+    /// added to `SeedData.json` on an ongoing basis, and gating this would
+    /// mean only installs that happened to cross v9 at the right moment ever
+    /// pick up later additions. Naturally idempotent — a no-op once every
+    /// bundle entry has a matching on-device row — so it's cheap and safe to
+    /// run on every launch, same rationale as `migrateV7`.
+    @discardableResult
+    static func migrateV9(context: ModelContext, rawExercises: [[String: Any]]) -> Bool {
+        let existing = (try? context.fetch(FetchDescriptor<Exercise>())) ?? []
+        let existingSeedIDs = Set(existing.compactMap(\.seedID))
+
+        var changed = false
+        for raw in rawExercises {
+            guard
+                let seedID     = raw["id"] as? String,
+                !existingSeedIDs.contains(seedID),
+                let name         = raw["name"] as? String,
+                let typeStr      = raw["type"] as? String,
+                let type         = ExerciseType(rawValue: typeStr.capitalized),
+                let parts        = raw["targetBodyParts"] as? [String],
+                let duration     = raw["durationSeconds"] as? Int,
+                let difficulty   = raw["difficulty"] as? Int,
+                let instructions = raw["instructions"] as? [String]
+            else { continue }
+
+            let cueStyle = (raw["cueStyle"] as? String).flatMap { ExerciseCueStyle(rawValue: $0.capitalized) } ?? .hold
+            let exercise = Exercise(
+                name: name, type: type, targetBodyParts: parts,
+                durationSeconds: duration, difficulty: difficulty,
+                instructions: instructions,
+                mediaURL: raw["mediaURL"] as? String,
+                caution: raw["caution"] as? String,
+                isBilateral: raw["isBilateral"] as? Bool ?? true,
+                cueStyle: cueStyle
+            )
+            exercise.seedID = seedID
+            exercise.localVideoName = raw["localVideoName"] as? String
+            exercise.animationName = raw["animationName"] as? String
+            exercise.animationIsApproximate = raw["animationIsApproximate"] as? Bool ?? false
+            if let posesRaw = raw["poses"],
+               let posesData = try? JSONSerialization.data(withJSONObject: posesRaw) {
+                exercise.posesData = posesData
+            }
+            context.insert(exercise)
+            changed = true
+        }
+        return changed
+    }
+
+    /// v10 — backfills `Exercise.animationIsApproximate` onto already-seeded
+    /// rows, matched by `seedID`. Like `migrateV7`/`migrateV9`, NOT gated
+    /// behind a one-time version bump: which exercises are flagged as
+    /// approximate can grow over time as more rig limitations/animation bugs
+    /// are found, and a gated migration would only ever pick up whatever was
+    /// flagged as of the version-bump launch. Syncs in both directions
+    /// (matches the bundle exactly) since this is authored content, not user
+    /// data — same rationale as `migrateV8`'s cueStyle sync.
+    @discardableResult
+    static func migrateV10(context: ModelContext, rawExercises: [[String: Any]]) -> Bool {
+        var approximateBySeedID: [String: Bool] = [:]
+        for raw in rawExercises {
+            guard let id = raw["id"] as? String else { continue }
+            approximateBySeedID[id] = raw["animationIsApproximate"] as? Bool ?? false
+        }
+
+        let existing = (try? context.fetch(FetchDescriptor<Exercise>())) ?? []
+        var changed = false
+        for exercise in existing {
+            guard let seedID = exercise.seedID,
+                  let approximate = approximateBySeedID[seedID],
+                  exercise.animationIsApproximate != approximate else { continue }
+            exercise.animationIsApproximate = approximate
+            changed = true
+        }
+        return changed
+    }
+
+    /// v11 — backfills `Exercise.breathPattern` onto already-seeded rows,
+    /// matched by `seedID`. New installs already read `breathPattern` off the
+    /// bundle at seed-insert time; this matters for (a) users seeded before
+    /// the field existed, and (b) a newer exercise inserted later by
+    /// `migrateV9`'s own insert path, which predates `breathPattern` and
+    /// never sets it. Like `migrateV7`/`migrateV9`/`migrateV10`, this is NOT
+    /// gated behind a one-time `seedDataVersion` bump — patterns keep getting
+    /// authored for new exercises across releases, the same way `migrateV9`
+    /// itself keeps inserting new exercises; a one-time gate here would mean
+    /// any pattern-bearing exercise added after a device passed this version
+    /// never gets backfilled. Naturally idempotent (only fills when the
+    /// bundle's pattern actually differs from what's stored), so it's cheap
+    /// and safe to run on every launch.
+    @discardableResult
+    static func migrateV11(context: ModelContext, rawExercises: [[String: Any]]) -> Bool {
+        var patternBySeedID: [String: [BreathPhaseStep]] = [:]
+        for raw in rawExercises {
+            guard let id = raw["id"] as? String,
+                  let rawPattern = raw["breathPattern"] as? [[String: Any]], !rawPattern.isEmpty
+            else { continue }
+            let phases = rawPattern.compactMap { entry -> BreathPhaseStep? in
+                guard let label = entry["label"] as? String, let seconds = entry["seconds"] as? Int else { return nil }
+                return BreathPhaseStep(label: label, seconds: seconds)
+            }
+            guard !phases.isEmpty else { continue }
+            patternBySeedID[id] = phases
+        }
+
+        let existing = (try? context.fetch(FetchDescriptor<Exercise>())) ?? []
+        var changed = false
+        for exercise in existing {
+            guard let seedID = exercise.seedID,
+                  let pattern = patternBySeedID[seedID],
+                  exercise.breathPattern != pattern else { continue }
+            exercise.breathPattern = pattern
+            changed = true
+        }
+        return changed
+    }
 }

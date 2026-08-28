@@ -65,6 +65,24 @@ final class Exercise {
         set { posesData = (try? JSONEncoder().encode(newValue)) ?? Data() }
     }
 
+    /// Raw JSON-encoded storage for `breathPattern` — a primitive `Data`
+    /// property, not `[BreathPhaseStep]` directly, for the same reason `posesData`
+    /// and `cueStyleRaw` are: SwiftData's lightweight migration cannot safely
+    /// decode a newly-added non-primitive property on pre-existing on-disk
+    /// rows. Empty `Data()` (the default) means "no pattern authored" — the
+    /// session player falls back to the existing flat instruction-cycling.
+    var breathPatternData: Data = Data()
+
+    /// An authored inhale/hold/exhale sequence for Breath-type exercises,
+    /// e.g. Box Breathing's [Inhale 4, Hold 4, Exhale 4, Hold 4]. Empty for
+    /// every exercise until authored (see SeedData.json's "breathPattern" key)
+    /// and for any exercise this doesn't apply to. Falls back to `[]` for any
+    /// unparseable raw storage, same defensive treatment `poses`/`cueStyle` get.
+    var breathPattern: [BreathPhaseStep] {
+        get { (try? JSONDecoder().decode([BreathPhaseStep].self, from: breathPatternData)) ?? [] }
+        set { breathPatternData = (try? JSONEncoder().encode(newValue)) ?? Data() }
+    }
+
     /// Bundle-relative file name of Jason's self-filmed demo clip.
     var localVideoName: String? = nil
 
@@ -72,6 +90,15 @@ final class Exercise {
     /// (a baked, muted video). The scalable library tier; a filmed
     /// `localVideoName` wins over it when both are present (see `demoVideoName`).
     var animationName: String? = nil
+
+    /// Whether the generated 3D animation is a known approximation of the
+    /// real movement — e.g. because the rig has no bone for the joint that
+    /// actually does the rotating (no wrist/hand/ankle/foot bone exists;
+    /// see `Tools/blender/exercises/ANIMATION_HANDOFF.md`). Drives a small
+    /// disclaimer under the media card so the animation isn't mistaken for
+    /// an exact demonstration. Defaults to false — most animations are
+    /// accurate; the seed JSON only needs to mark the known exceptions.
+    var animationIsApproximate: Bool = false
 
     /// Resolves a bundle-relative clip name to its URL — nil when the name is
     /// unset/empty OR the file isn't bundled, so the UI can always fall back to

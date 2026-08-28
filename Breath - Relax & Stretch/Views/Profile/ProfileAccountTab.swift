@@ -9,21 +9,21 @@ struct ProfileAccountTab: View {
     @Binding var showSignOutConfirm: Bool
     @ObservedObject private var store = StoreManager.shared
     @State private var appLockOn = false
-    @State private var showingPaywall = false
+    @State private var showingTipJar = false
     @State private var showingSignIn = false
     @State private var showDeleteConfirm = false
 
     var body: some View {
         Group {
-            // Upgrade
-            if !store.isPro {
-                Section {
-                    Button {
-                        showingPaywall = true
-                    } label: {
-                        Label("Upgrade to Breath Pro", systemImage: "sparkles")
-                            .foregroundStyle(Color.accentColor)
-                    }
+            // Support development. Everything in the app is free; this is
+            // an optional tip, and unlocks nothing.
+            Section {
+                Button {
+                    showingTipJar = true
+                } label: {
+                    Label(store.hasTipped ? "Send Another Tip" : "Support Development",
+                          systemImage: "heart")
+                        .foregroundStyle(Color.accentColor)
                 }
             }
 
@@ -39,6 +39,7 @@ struct ProfileAccountTab: View {
                     statsRow(icon: "medal.fill",  color: .purple,
                              label: "Badges Earned", value: "\(profile.badges.count)")
                 }
+                .tourAnchor("profile.stats")
 
                 Section {
                     NavigationLink(destination: BadgesView(earnedBadges: profile.badges)) {
@@ -112,8 +113,8 @@ struct ProfileAccountTab: View {
         }
         .listRowBackground(Color.luminaCardFill)
         .onAppear { appLockOn = auth.appLockEnabled }
-        .sheet(isPresented: $showingPaywall) {
-            PaywallView()
+        .sheet(isPresented: $showingTipJar) {
+            TipJarView()
         }
         .sheet(isPresented: $showingSignIn) {
             AuthView()

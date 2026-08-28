@@ -62,6 +62,15 @@
             membership[MuscleGroup.parentOfHead(part) ?? part]
         })
     }
+
+    /// A single deterministic category for contexts that need one badge
+    /// color rather than the full set `categories(for:)` returns — picks
+    /// the first match in `allCases` declaration order. Falls back to
+    /// `.core` when no target body part resolves to any category.
+    static func primary(for targetBodyParts: [String]) -> ExerciseCategory {
+        let matched = categories(for: targetBodyParts)
+        return allCases.first(where: matched.contains) ?? .core
+    }
 }
 
 // MARK: - Focus-area personalisation

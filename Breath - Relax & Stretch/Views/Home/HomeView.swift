@@ -4,12 +4,12 @@ import SwiftData
 struct HomeView: View {
     @EnvironmentObject private var auth: AuthManager
     @EnvironmentObject private var router: DeepLinkRouter
+    @EnvironmentObject private var pickingSession: ExercisePickingSession
+    @EnvironmentObject private var tourCoordinator: TourCoordinator
     @Environment(\.scenePhase) private var scenePhase
     @Query private var exercises: [Exercise]
     @AppStorage("onboardingGoals") private var goalsStr = ""
-    @AppStorage("pendingInitialPaywall") private var pendingInitialPaywall = false
     @State private var selectedTab: Int
-    @State private var showingDeferredPaywall = false
     // Tabs are created on first visit and kept alive after, so nav/scroll
     // state survives switching (what TabView used to give us) without
     // TabView's 5-item UIKit limit — a 6th child spills into a "More"
@@ -45,19 +45,50 @@ struct HomeView: View {
 
             CustomTabBar(selectedTab: $selectedTab)
                 .padding(.bottom, 10)
+                .tourAnchor("chrome.tabBar")
+        }
+        .overlayPreferenceValue(TourAnchorPreferenceKey.self) { anchors in
+            GeometryReader { proxy in
+                TourSpotlightOverlay(anchors: anchors, proxy: proxy)
+            }
+            .ignoresSafeArea()
+        }
+        .onChange(of: tourCoordinator.isActive) { _, active in
+            // Covers restart() from an already-index-0 coordinator (every
+            // fresh app launch, and — critically — the ONLY entry point a
+            // returning user has: Profile > Settings > Help > Restart App
+            // Tutorial). currentStep?.tabIndex alone wouldn't change value
+            // in that case, so this fires on activation itself instead.
+            guard active, let tab = tourCoordinator.currentStep?.tabIndex else { return }
+            selectedTab = tab
+        }
+        .onChange(of: tourCoordinator.currentStep?.tabIndex) { _, tab in
+            // Drives every subsequent tab switch as the tour advances
+            // through sections (step 4 -> Body, step 8 -> Exercises, etc.).
+            // Without this, only the very first tab switch (handled above)
+            // ever happens and the tour appears frozen from section 2 on.
+            if let tab { selectedTab = tab }
         }
         .onChange(of: selectedTab) { _, tab in
             visitedTabs.insert(tab)
         }
         .onChange(of: scenePhase) { _, phase in
             guard phase == .active else { return }
-            presentDeferredPaywallIfNeeded()
         }
         .onReceive(NotificationCenter.default.publisher(for: .browseExercisesRequested)) { _ in
             selectedTab = 2
         }
-        .onReceive(NotificationCenter.default.publisher(for: .deferredPaywallRequested)) { _ in
-            presentDeferredPaywallIfNeeded()
+        .onReceive(NotificationCenter.default.publisher(for: .exercisePickingFinished)) { _ in
+            // Read lastFinishedOriginTab, NOT lastFinished — the destination
+            // screen's own handler consumes lastFinished (clearing it), and
+            // NotificationCenter delivery order between sibling .onReceive
+            // subscribers on this same notification isn't guaranteed. If we
+            // peeked at lastFinished here and the destination's handler ran
+            // first, we'd find nil and silently skip the tab switch.
+            // lastFinishedOriginTab is never consumed, so it's always safe
+            // to read regardless of ordering.
+            guard let originTab = pickingSession.lastFinishedOriginTab else { return }
+            selectedTab = originTab
         }
         .ignoresSafeArea(.keyboard)
         .sheet(item: pendingActionBinding) { action in
@@ -75,9 +106,6 @@ struct HomeView: View {
                     onDismiss: { router.pendingAction = nil }
                 )
             }
-        }
-        .sheet(isPresented: $showingDeferredPaywall) {
-            PaywallView()
         }
     }
 
@@ -99,11 +127,6 @@ struct HomeView: View {
         return recommended.isEmpty ? Array(exercises.prefix(4)) : recommended
     }
 
-    private func presentDeferredPaywallIfNeeded() {
-        guard pendingInitialPaywall, router.pendingAction == nil else { return }
-        pendingInitialPaywall = false
-        showingDeferredPaywall = true
-    }
 }
 
 #Preview {

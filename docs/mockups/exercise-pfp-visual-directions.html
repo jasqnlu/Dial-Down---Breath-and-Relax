@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Exercise PFP visual directions</title>
+  <style>
+    :root {
+      --bg: #f7f3ee;
+      --surface: #ffffff;
+      --text: #24211d;
+      --muted: #6f675f;
+      --line: #e6ddd2;
+      --ink: #ce7a25;
+      --ink-2: #2f9d92;
+      --ink-3: #6d53bd;
+      --premium-bg: #f6e3cb;
+      --playful-bg: #f7efe3;
+      --bold-bg: #ebe0d1;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, #ffffff 0, transparent 28%),
+        linear-gradient(180deg, #fbf8f3 0%, var(--bg) 100%);
+      color: var(--text);
+      font: 15px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      padding: 32px 20px 56px;
+    }
+    main { width: min(1140px, 100%); margin: 0 auto; }
+    h1 { margin: 0; font-size: clamp(30px, 4vw, 44px); letter-spacing: -0.04em; }
+    h2 { margin: 0; font-size: 18px; letter-spacing: -0.02em; }
+    p { margin: 0; color: var(--muted); }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--ink-2);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .intro {
+      display: grid;
+      gap: 14px;
+      max-width: 760px;
+      margin-bottom: 24px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      align-items: stretch;
+    }
+    .card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      border: 1px solid rgba(34, 27, 18, .08);
+      background: var(--surface);
+      box-shadow: 0 18px 40px rgba(60, 42, 20, .08);
+      padding: 18px;
+      min-height: 580px;
+    }
+    .card-header {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      border: 1px solid rgba(0, 0, 0, .08);
+      background: rgba(255, 255, 255, .68);
+    }
+    .badge::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+    .art {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 360px;
+      border-radius: 24px;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .note {
+      display: grid;
+      gap: 10px;
+      padding: 14px 0 2px;
+      border-top: 1px solid var(--line);
+    }
+    .bullets {
+      display: grid;
+      gap: 7px;
+      padding-left: 0;
+      margin: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .bullets li::before {
+      content: "•";
+      color: currentColor;
+      margin-right: 8px;
+    }
+    svg { display: block; width: 100%; height: 100%; }
+    .figure { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+    .body { stroke-width: 7.2; }
+    .joint { fill: currentColor; }
+    .head { fill: currentColor; }
+    .floor { stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+    .bold-line { fill: none; stroke: #cc6f1e; stroke-width: 7.2; stroke-linecap: round; stroke-linejoin: round; }
+    .shadow { filter: drop-shadow(0 16px 24px rgba(0, 0, 0, .12)); }
+
+    .premium {
+      background:
+        radial-gradient(circle at 72% 18%, rgba(255,255,255,.58), transparent 26%),
+        linear-gradient(180deg, #f7e3c5 0%, #ecd3af 100%);
+    }
+    .premium::after {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border-radius: 26px;
+      border: 1px solid rgba(108, 72, 23, .12);
+      pointer-events: none;
+    }
+    .premium-ring {
+      fill: none;
+      stroke: rgba(255,255,255,.56);
+      stroke-width: 3;
+    }
+    .premium-dot {
+      fill: #fff;
+      stroke: #c5812d;
+      stroke-width: 2;
+    }
+
+    .playful {
+      background:
+        radial-gradient(circle at 22% 22%, rgba(255,255,255,.8), transparent 22%),
+        linear-gradient(180deg, #f8efe6 0%, #f1e2cf 100%);
+    }
+    .sticker {
+      fill: #fff8f1;
+      stroke: #1d1a17;
+      stroke-width: 3;
+      filter: drop-shadow(0 10px 16px rgba(0, 0, 0, .12));
+    }
+    .burst {
+      fill: #ffd56a;
+      stroke: #1d1a17;
+      stroke-width: 2;
+    }
+    .spark {
+      fill: #f07c4a;
+      stroke: #1d1a17;
+      stroke-width: 1.6;
+    }
+
+    .bold {
+      background:
+        linear-gradient(140deg, #f0e5d7 0%, #e4d7c4 100%);
+    }
+    .name-tag {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      height: 42px;
+      border-radius: 14px;
+      background: #3b352d;
+      color: #f6f0e8;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .01em;
+      z-index: 2;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, .14);
+    }
+    .name-tag.small {
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      height: 34px;
+      font-size: 11px;
+      border-radius: 12px;
+    }
+    .caption {
+      margin-top: 22px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.7);
+      border: 1px solid rgba(0,0,0,.06);
+      color: var(--muted);
+    }
+    .sets {
+      display: grid;
+      gap: 18px;
+      margin-top: 22px;
+    }
+    .set-card {
+      border-radius: 28px;
+      border: 1px solid rgba(34, 27, 18, .08);
+      box-shadow: 0 18px 40px rgba(60, 42, 20, .08);
+      padding: 18px;
+      overflow: hidden;
+    }
+    .set-card h2 { margin-bottom: 6px; }
+    .set-card .set-lead { margin-bottom: 14px; }
+    .set-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .mini {
+      border-radius: 22px;
+      border: 1px solid rgba(0, 0, 0, .08);
+      background: rgba(255, 255, 255, .66);
+      padding: 14px;
+      min-height: 320px;
+    }
+    .mini h3 {
+      margin: 10px 0 4px;
+      font-size: 16px;
+    }
+    .mini p {
+      font-size: 13px;
+    }
+    .mini-art {
+      position: relative;
+      min-height: 220px;
+      border-radius: 18px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+    }
+    .mini-art .name-tag { z-index: 2; }
+    .mini svg { width: 100%; height: 100%; }
+    .clean-set {
+      background:
+        radial-gradient(circle at 75% 22%, rgba(255,255,255,.48), transparent 22%),
+        linear-gradient(180deg, #f7e3c5 0%, #ecd3af 100%);
+    }
+    .clean-set .mini {
+      background: rgba(255,255,255,.46);
+    }
+    .clean-set .mini-art {
+      background: linear-gradient(180deg, rgba(255,255,255,.24), rgba(255,255,255,.05));
+    }
+    .mini-art svg { position: relative; z-index: 1; }
+    .poster-set {
+      background: linear-gradient(140deg, #efe0cc 0%, #e1d1bd 100%);
+    }
+    .poster-set .mini {
+      background: rgba(255,255,255,.52);
+    }
+    .poster-set .mini-art {
+      background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,.02));
+    }
+    @media (max-width: 960px) {
+      .grid { grid-template-columns: 1fr; }
+      .card { min-height: 0; }
+      .art { min-height: 300px; }
+      .set-grid { grid-template-columns: 1fr; }
+      .mini { min-height: 0; }
+      .mini-art { min-height: 200px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="intro">
+      <p class="eyebrow">Exercise PFP directions</p>
+      <h1>Three ways to keep exercise avatars from feeling plain</h1>
+      <p>
+        Same pose language, different visual treatment. The point is to make the
+        icon feel specific and memorable without turning it into a busy illustration.
+      </p>
+    </div>
+
+    <section class="grid">
+      <article class="card">
+        <div class="card-header">
+          <div>
+            <h2>Clean premium</h2>
+            <p>Quiet, polished, and easy to scan in a list.</p>
+          </div>
+          <span class="badge" style="color: var(--ink)">Refined</span>
+        </div>
+        <div class="art premium">
+          <svg viewBox="0 0 100 100" aria-label="Clean premium standing quad stretch">
+            <circle cx="50" cy="50" r="41" class="premium-ring"/>
+            <circle cx="50" cy="50" r="34" fill="#f6d8b4"/>
+            <path class="floor" d="M22 79 H78"/>
+            <g style="color: var(--ink)">
+              <path class="figure body-line" d="M50 28 L49 52 L42 68 L40 88"/>
+              <path class="figure body-line" d="M49 52 L39 63 L46 74 L48 80"/>
+              <path class="figure body-line" d="M48 29 L40 38 L48 80"/>
+              <path class="figure body-line" d="M51 29 L64 37 L74 33"/>
+              <circle class="head" cx="50" cy="18" r="10"/>
+              <circle class="joint" cx="50" cy="28" r="3.4"/>
+              <circle class="joint" cx="39" cy="38" r="3.4"/>
+              <circle class="joint" cx="64" cy="37" r="3.4"/>
+              <circle class="joint" cx="49" cy="52" r="3.4"/>
+              <circle class="joint" cx="42" cy="68" r="3.4"/>
+              <circle class="joint" cx="40" cy="88" r="3.4"/>
+              <circle class="joint" cx="46" cy="74" r="3.4"/>
+              <circle class="joint" cx="48" cy="80" r="3.4"/>
+              <circle class="premium-dot" cx="76" cy="22" r="5"/>
+            </g>
+          </svg>
+        </div>
+        <div class="note">
+          <ul class="bullets">
+            <li>Strong silhouette, minimal extra decoration.</li>
+            <li>One small premium accent keeps it from feeling generic.</li>
+            <li>Best when the UI already has lots of content.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-header">
+          <div>
+            <h2>Playful comic</h2>
+            <p>More personality, still readable at small size.</p>
+          </div>
+          <span class="badge" style="color: var(--ink-3)">Character</span>
+        </div>
+        <div class="art playful">
+          <svg viewBox="0 0 100 100" aria-label="Playful comic standing quad stretch">
+            <path class="sticker" d="M16 16 H84 Q89 16 89 21 V79 Q89 84 84 84 H21 L11 90 V84 H16 Q11 84 11 79 V21 Q11 16 16 16 Z"/>
+            <path class="burst" d="M21 26 L26 20 L30 26 L36 22 L37 29 L44 28 L41 35 L47 39 L39 42 L40 48 L33 46 L30 52 L26 45 L19 47 L21 40 L14 36 L21 32 Z"/>
+            <path class="floor" d="M24 78 H76"/>
+            <g style="color: var(--ink-2)">
+              <path class="figure body-line" d="M50 28 L49 52 L43 68 L41 88"/>
+              <path class="figure body-line" d="M49 52 L39 63 L47 74 L49 80"/>
+              <path class="figure body-line" d="M48 29 L40 38 L49 80"/>
+              <path class="figure body-line" d="M51 29 L64 38 L75 34"/>
+              <circle class="head" cx="50" cy="18" r="10"/>
+              <circle class="joint" cx="50" cy="28" r="3.4"/>
+              <circle class="joint" cx="39" cy="38" r="3.4"/>
+              <circle class="joint" cx="64" cy="38" r="3.4"/>
+              <circle class="joint" cx="49" cy="52" r="3.4"/>
+              <circle class="joint" cx="43" cy="68" r="3.4"/>
+              <circle class="joint" cx="41" cy="88" r="3.4"/>
+              <circle class="joint" cx="47" cy="74" r="3.4"/>
+              <circle class="joint" cx="49" cy="80" r="3.4"/>
+              <circle class="spark" cx="80" cy="24" r="4"/>
+              <circle class="spark" cx="76" cy="72" r="3"/>
+            </g>
+          </svg>
+        </div>
+        <div class="note">
+          <ul class="bullets">
+            <li>Sticker edge and tiny burst shapes add character.</li>
+            <li>Feels a little more friendly in a wellness app.</li>
+            <li>Good if the brand can tolerate some playfulness.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-header">
+          <div>
+            <h2>Bold poster-like</h2>
+            <p>Heavier framing, stronger contrast, more presence.</p>
+          </div>
+          <span class="badge" style="color: var(--ink)">Graphic</span>
+        </div>
+        <div class="art bold">
+          <div class="name-tag">Standing Quad Stretch</div>
+          <svg viewBox="0 0 100 100" aria-label="Bold poster-like standing quad stretch">
+            <circle cx="50" cy="50" r="33" fill="#f7df9f" stroke="#c08924" stroke-width="2.5"/>
+            <path d="M22 77 C34 66, 46 59, 60 57" fill="none" stroke="#f4a64f" stroke-width="8" stroke-linecap="round"/>
+            <path class="floor" d="M25 79 H75"/>
+            <g transform="translate(3 4) scale(.9)" style="color: #cc6f1e">
+              <path class="figure body-line bold-line" d="M50 28 L49 52 L42 70 L40 88"/>
+              <path class="figure body-line bold-line" d="M49 52 L38 63 L46 74 L49 80"/>
+              <path class="figure body-line bold-line" d="M48 29 L39 38 L49 80"/>
+              <path class="figure body-line bold-line" d="M51 29 L64 37 L76 34"/>
+              <circle class="head" cx="50" cy="18" r="10"/>
+              <circle class="joint" cx="50" cy="28" r="3.6"/>
+              <circle class="joint" cx="39" cy="38" r="3.6"/>
+              <circle class="joint" cx="64" cy="37" r="3.6"/>
+              <circle class="joint" cx="49" cy="52" r="3.6"/>
+              <circle class="joint" cx="42" cy="70" r="3.6"/>
+              <circle class="joint" cx="40" cy="88" r="3.6"/>
+              <circle class="joint" cx="46" cy="74" r="3.6"/>
+              <circle class="joint" cx="49" cy="80" r="3.6"/>
+            </g>
+          </svg>
+        </div>
+        <div class="note">
+          <ul class="bullets">
+            <li>Thicker frame and darker base give it more weight.</li>
+            <li>Feels closer to a label or emblem than an icon.</li>
+            <li>Useful if you want every exercise to feel like a badge.</li>
+          </ul>
+        </div>
+      </article>
+    </section>
+
+    <div class="caption">
+      Best practical combo: keep the body silhouette exercise-specific, then vary
+      the frame and one small accent per exercise so the avatars are distinct
+      without becoming visually noisy.
+    </div>
+
+    <section class="sets">
+      <article class="set-card clean-set">
+        <h2>Clean premium, two example exercises</h2>
+        <p class="set-lead">Quiet, polished, and still readable when the avatar gets small.</p>
+        <div class="set-grid">
+          <div class="mini">
+            <div class="mini-art">
+              <div class="name-tag small">Standing Quad Stretch</div>
+              <svg viewBox="0 0 100 100" aria-label="Clean premium standing quad stretch example">
+                <circle cx="50" cy="50" r="42" fill="rgba(255,255,255,.34)"/>
+                <circle cx="50" cy="50" r="34" fill="#f5d8b7"/>
+                <path class="floor" d="M23 80 H77"/>
+                <g style="color: var(--ink)">
+                  <path class="figure body-line" d="M50 28 L49 52 L42 69 L40 88"/>
+                  <path class="figure body-line" d="M49 52 L39 63 L46 74 L48 80"/>
+                  <path class="figure body-line" d="M48 29 L40 38 L48 80"/>
+                  <path class="figure body-line" d="M51 29 L64 37 L74 33"/>
+                  <circle class="head" cx="50" cy="18" r="10"/>
+                  <circle class="joint" cx="50" cy="28" r="3.4"/>
+                  <circle class="joint" cx="39" cy="38" r="3.4"/>
+                  <circle class="joint" cx="64" cy="37" r="3.4"/>
+                  <circle class="joint" cx="49" cy="52" r="3.4"/>
+                  <circle class="joint" cx="42" cy="69" r="3.4"/>
+                  <circle class="joint" cx="40" cy="88" r="3.4"/>
+                  <circle class="joint" cx="46" cy="74" r="3.4"/>
+                  <circle class="joint" cx="48" cy="80" r="3.4"/>
+                  <circle class="premium-dot" cx="77" cy="23" r="5"/>
+                </g>
+              </svg>
+            </div>
+            <h3>Standing Quad Stretch</h3>
+            <p>Lifted foot and reaching hand define the exercise immediately.</p>
+          </div>
+          <div class="mini">
+            <div class="mini-art">
+              <div class="name-tag small">Seated Forward Fold</div>
+              <svg viewBox="0 0 100 100" aria-label="Clean premium seated forward fold example">
+                <circle cx="50" cy="50" r="42" fill="rgba(255,255,255,.34)"/>
+                <circle cx="50" cy="50" r="34" fill="#f6ddbf"/>
+                <path class="floor" d="M21 79 H79"/>
+                <g style="color: var(--ink)">
+                  <path class="figure body-line" d="M50 31 L50 53 L31 70 L19 70 M50 53 L69 70 L81 70"/>
+                  <path class="figure body-line" d="M50 38 L38 49 L31 62 M50 38 L62 49 L69 62"/>
+                  <circle class="head" cx="50" cy="20" r="10"/>
+                  <circle class="joint" cx="50" cy="31" r="3.4"/>
+                  <circle class="joint" cx="50" cy="53" r="3.4"/>
+                  <circle class="joint" cx="38" cy="49" r="3.4"/>
+                  <circle class="joint" cx="62" cy="49" r="3.4"/>
+                  <circle class="premium-dot" cx="76" cy="23" r="5"/>
+                </g>
+              </svg>
+            </div>
+            <h3>Seated Forward Fold</h3>
+            <p>Long fold line and grounded legs make the stretch clear.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="set-card poster-set">
+        <h2>Bold poster-like, two example exercises</h2>
+        <p class="set-lead">Heavier framing and stronger contrast for more presence.</p>
+        <div class="set-grid">
+          <div class="mini">
+            <div class="mini-art">
+              <div class="name-tag small">Overhead Triceps Stretch</div>
+              <svg viewBox="0 0 100 100" aria-label="Bold poster-like overhead triceps stretch example">
+                <circle cx="50" cy="50" r="33" fill="#f7df9f" stroke="#c08924" stroke-width="2.5"/>
+                <path d="M19 80 H81" fill="none" stroke="#d78a33" stroke-width="8" stroke-linecap="round"/>
+                <path d="M38 50 Q40 39 48 31" fill="none" stroke="#f0a44a" stroke-width="4" stroke-linecap="round"/>
+                <g transform="translate(3 4) scale(.9)" style="color: #cc6f1e">
+                  <path class="figure body-line bold-line" d="M50 28 L50 54 L42 74 L40 90"/>
+                  <path class="figure body-line bold-line" d="M50 54 L59 74 L61 90"/>
+                  <path class="figure body-line bold-line" d="M50 30 L40 24 L42 10 L50 17"/>
+                  <path class="figure body-line bold-line" d="M50 30 L60 24"/>
+                  <circle class="head" cx="50" cy="17" r="10"/>
+                  <circle class="joint" cx="50" cy="28" r="3.6"/>
+                  <circle class="joint" cx="40" cy="24" r="3.6"/>
+                  <circle class="joint" cx="42" cy="10" r="3.6"/>
+                  <circle class="joint" cx="60" cy="24" r="3.6"/>
+                  <circle class="joint" cx="50" cy="54" r="3.6"/>
+                </g>
+              </svg>
+            </div>
+            <h3>Overhead Triceps Stretch</h3>
+            <p>Upward elbow and crossed arm read cleanly inside the bold frame.</p>
+          </div>
+          <div class="mini">
+            <div class="mini-art">
+              <div class="name-tag small">Reach-Through Twist</div>
+              <svg viewBox="0 0 100 100" aria-label="Bold poster-like standing spinal twist example">
+                <circle cx="50" cy="50" r="33" fill="#f7df9f" stroke="#c08924" stroke-width="2.5"/>
+                <g transform="translate(3 4) scale(.9)" style="color: #cc6f1e">
+                  <path class="figure body-line bold-line" d="M50 29 L49 54 L42 73 L40 90"/>
+                  <path class="figure body-line bold-line" d="M49 54 L58 74 L60 90"/>
+                  <path class="figure body-line bold-line" d="M50 31 L36 40 L24 50"/>
+                  <path class="figure body-line bold-line" d="M50 31 L63 39 L76 33"/>
+                  <circle class="head" cx="50" cy="18" r="10"/>
+                  <circle class="joint" cx="50" cy="29" r="3.6"/>
+                  <circle class="joint" cx="36" cy="40" r="3.6"/>
+                  <circle class="joint" cx="63" cy="39" r="3.6"/>
+                  <circle class="joint" cx="50" cy="54" r="3.6"/>
+                </g>
+              </svg>
+            </div>
+            <h3>Reach-Through Twist</h3>
+            <p>Rotated shoulders and an extended arm make the twist read fast.</p>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
