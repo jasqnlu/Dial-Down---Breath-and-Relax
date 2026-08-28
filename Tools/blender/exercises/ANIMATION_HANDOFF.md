@@ -1,7 +1,115 @@
 # Exercise Animation — Handoff for a New Session
 
-**Last updated:** 2026-08-27 (31-exercise batch, clearing almost the entire
-remaining body-pose backlog)
+**Last updated:** 2026-08-27 (breathing batch — 46 breathing techniques via
+a new chest-expansion composition, plus Bridge Pose + Frog Rock retried)
+
+## Breathing batch (2026-08-27)
+
+Tackled the 65-exercise backlog left after the 31-exercise batch: 46
+breathing techniques (no rig precedent — the rig has no chest-expansion
+motion category), 11 jaw/eye/forehead/temple micro-exercises (no facial
+joints on this rig at all), and 8 dynamic poses already deferred/dropped in
+prior batches for structural reasons (no foot-ground-contact concept, a
+multi-pose flow, geometry tearing, camera framing).
+
+**Scope decided with the user up front, before building anything:**
+jaw/eye/forehead/temple (11) skipped and documented as needing a facial rig
+this project doesn't have — no attempt made, matching every prior batch's
+treatment of infeasible categories. Of the 8 dynamic poses, only the 2 that
+failed on previously-diagnosed, concrete bugs (Bridge Pose, Frog Rock) were
+retried; the other 6 (Cossack Squat L/R, Deep Squat Hold, Standing Sumo
+Squat Hold, 90/90 Hip Switch, Sun Salutation Warm-Up) still need a
+foot-ground-contact concept or multi-pose-flow model this rig doesn't have,
+left deferred.
+
+**New shared-pipeline capability: `animate()` gains `scale_poses`.** Every
+prior composition (300+ exercises) only ever needed bone ROTATION — a
+breathing chest-rise/fall isn't a rotation, it's the bone growing and
+shrinking in place. Added an optional `SCALE_POSES` cfg dict (same
+`{frame: {bone: (sx,sy,sz)}}` shape as `POSES`, applied to `pose_bone.scale`
+instead of `.rotation_euler`) to `_lib.animate()`, wired through
+`run_seated`. Fully backward compatible — every existing script omits it
+and is unaffected.
+
+**New composition: `box_breathing.py` (the probe), reused by all 46.**
+Ordinary proven seated-chair fold (`run_seated`). `chest` bone pulses
+ISOTROPICALLY (1.0 -> 1.13 -> 1.0, all three axes together) rather than on
+a single directional axis — this rig's chest bone is a purely-vertical
+edit bone and its local X/Z-vs-world mapping was never characterized for
+any prior composition, so isotropic sidesteps that ambiguity entirely at
+the cost of not distinguishing "front" expansion from "side." A small
+spine/head extension (-9°/-6° at peak) reinforces the inhale read
+alongside the scale pulse. Side camera (azimuth 90) — the chest is the
+widest visible landmark against open background from that angle. Verified
+by opening the rest/peak PNGs (not just the log): a real, visible pulse
+(chest silhouette measurably fuller, torso leaned back, chin lifted),
+confirmed again on a 5-exercise contact-sheet sample after fan-out. All 46
+share this ONE composition and are flagged `animationIsApproximate` — no
+real diaphragm/ribcage is modeled, this is a stylized breathing cue. `Eye
+Palming` is typed `breath` with no target parts and got the same
+treatment.
+
+**Bridge Pose, retried and shipped.** Previously dropped for "torn/spiky
+foot geometry + a dark gap at the crotch." Rebuilt on `run_supine`
+(ROLL_DEG=0) with legs held CONSTANT (not animated) at
+`double_knee_to_chest_release.py`'s proven-safe shallow symmetric fold
+(thigh -75 / shin 90) — removes the leg-tearing risk entirely, since
+nothing animates through a large sweep. Investigated the crotch gap by
+rendering at three arch magnitudes (-12°, -6°, -3°) and found it present
+even at REST (spine=0, no arch at all) — it's an inherent seam of this
+exact leg fold (already shipped in `double_knee_to_chest_release`), not
+something the spine-arch motion causes; re-diagnosed and accepted as a
+small pre-existing cosmetic artifact rather than a blocker. Camera: tried
+FORCE_TOPDOWN first (reasoning a hip lift is the same Z-axis-travel class
+as `double_knee_to_chest_release`'s knee lift) and it rendered as a
+standing figure — that camera's disambiguation depends on legs folding UP
+into the air, which Bridge Pose's don't. Fell back to the plain
+`run_supine` oblique default, which reads correctly as lying down. Shipped
+with an 8° spine arch (chest -4° counter-arch), confirmed ~45k changed
+pixels between rest/peak stills — real, modest motion.
+
+**Frog Rock, retried and shipped, two new bugs found.** Previously dropped
+for a badly-framed peak camera. Rebuilt on `run_quadruped`. First attempt
+added thigh abduction (local Z) on top of the proven quadruped thigh's
+existing local-X lean, to approximate "widen your knees" — rendered as a
+broken, diagonally-splayed figure: composing a second Euler axis onto an
+already-rotated bone doesn't isolate a clean "spread" from a rest pose (the
+same non-commuting-rotation trap `apply_supine_base`'s docstring already
+warns about for its own roll component, hit here on a different bone).
+Dropped the knee-widening detail entirely rather than debug the compound
+rotation. Second bug, after dropping abduction: STILL rendered broken and
+diagonal — root cause was `_BASE` omitting `apply_quadruped_base`'s own
+documented constant `spine: (r(95),0,0)`; without it `spine` defaults to 0
+(upright) while the legs are folded for quadruped, reading as a figure
+flung diagonally in midair. Lesson: `apply_quadruped_base` only performs
+the object-level Z translation — every `run_quadruped` script needs its
+OWN copy of the full per-bone constant set (spine/chest/thigh/shin/head/
+upperarm/forearm), it is not implied. Also switched `CAMERA_AZIMUTH` from
+90 (copied from a `run_seated` script, `childs_pose.py`) to 30 (proven for
+`run_quadruped` via `cat_cow_flow.py`) — 90 is NOT a proven quadruped
+angle, azimuth conventions don't transfer across base compositions.
+Shipped with a modest spine rock (95° -> 105°, within `cat_cow_flow`'s own
+proven 85-110 envelope) — confirmed real motion via a rest/peak pixel diff.
+
+**Verification for this batch:** all 46 breathing renders + both retries
+checked programmatically for 0 fallback muscles (all clean), AND had
+rest/peak PNGs actually opened and visually reviewed — this is what caught
+the two Frog Rock bugs, the FORCE_TOPDOWN misread on Bridge Pose, and
+confirmed the breathing pulse and gap-is-preexisting findings, none of
+which the log alone would have surfaced. A 5-exercise contact-sheet sample
+of the fanned-out (not individually-probed) breathing scripts confirmed no
+degradation across the mechanical fan-out. Full `xcodebuild` unit suite
+(412 tests) green throughout. New `BreathingBatchUITests` (parallel to
+`ThirtyOneExerciseBatchUITests`) verifies an 11-exercise sample opens live
+in the app and shows the approximate-animation disclaimer — passed live in
+the simulator.
+
+355/372 exercises now animated (was 307). The 17 remaining are 11 jaw/eye/
+forehead/temple micro-exercises (no facial rig) and 6 dynamic poses (Cossack
+Squat L/R, Deep Squat Hold, Standing Sumo Squat Hold, 90/90 Hip Switch, Sun
+Salutation Warm-Up) needing a foot-ground-contact concept or multi-pose-flow
+model this rig doesn't have — the entire remaining backlog is now
+infeasible-without-new-rig-capability, not just deferred-for-later.
 
 ## 31-exercise batch (2026-08-27)
 
