@@ -29,7 +29,9 @@
           "seconds": 6
         }
       ],
-      "id": "2528b87c-95b0-5143-8c46-3b8320565370"
+      "id": "2528b87c-95b0-5143-8c46-3b8320565370",
+      "animationName": "deep_belly_breath.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Box Breathing",
@@ -65,7 +67,9 @@
           "seconds": 4
         }
       ],
-      "id": "96903a29-2150-5848-a5cb-422770cd4600"
+      "id": "96903a29-2150-5848-a5cb-422770cd4600",
+      "animationName": "box_breathing.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "4-7-8 Breathing",
@@ -96,7 +100,9 @@
           "seconds": 8
         }
       ],
-      "id": "a262ed03-3f8e-5f38-bfc3-d5b560833c73"
+      "id": "a262ed03-3f8e-5f38-bfc3-d5b560833c73",
+      "animationName": "4_7_8_breathing.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Alternate Nostril Breathing",
@@ -114,7 +120,9 @@
         "Close the right nostril and exhale through the left for 4 counts.",
         "This completes one cycle. Repeat for the full duration."
       ],
-      "id": "5e2a28ea-3705-5bc9-b9a5-4180e89ea741"
+      "id": "5e2a28ea-3705-5bc9-b9a5-4180e89ea741",
+      "animationName": "alternate_nostril_breathing.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Pursed-Lip Breathing",
@@ -140,7 +148,9 @@
           "seconds": 4
         }
       ],
-      "id": "f1661f4f-3967-5b83-a894-d36a42185c80"
+      "id": "f1661f4f-3967-5b83-a894-d36a42185c80",
+      "animationName": "pursed_lip_breathing.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Diaphragmatic Breath with Counting",
@@ -166,7 +176,9 @@
           "seconds": 6
         }
       ],
-      "id": "3466f1c9-40ec-5b71-96c1-92323f236b55"
+      "id": "3466f1c9-40ec-5b71-96c1-92323f236b55",
+      "animationName": "diaphragmatic_breath_with_counting.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Coherent Breathing",
@@ -182,7 +194,9 @@
         "Keep the breath smooth and even, about 6 breaths per minute.",
         "Continue for the full duration."
       ],
-      "id": "7b14105a-b031-5012-94da-53940bb9f661"
+      "id": "7b14105a-b031-5012-94da-53940bb9f661",
+      "animationName": "coherent_breathing.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Humming Bee Breath",
@@ -198,7 +212,9 @@
         "Keep lips closed but jaw relaxed throughout the hum.",
         "Repeat for the full duration."
       ],
-      "id": "f08e4fa4-70f2-551b-9efa-4f07e5ae21a9"
+      "id": "f08e4fa4-70f2-551b-9efa-4f07e5ae21a9",
+      "animationName": "humming_bee_breath.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Lion's Breath",
@@ -214,7 +230,9 @@
         "Relax your face and return to a neutral breath.",
         "Repeat 5-6 times."
       ],
-      "id": "d5bc1290-8438-5453-8b7f-97e98a563021"
+      "id": "d5bc1290-8438-5453-8b7f-97e98a563021",
+      "animationName": "lion_s_breath.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Eye Palming",
@@ -229,7 +247,9 @@
         "Keep your fingers relaxed and breathe slowly, letting your eyes rest in the darkness.",
         "Hold for the full duration, then slowly lower your hands and open your eyes."
       ],
-      "id": "c6908bca-ba39-5c3c-988d-1a88c7f3444d"
+      "id": "c6908bca-ba39-5c3c-988d-1a88c7f3444d",
+      "animationName": "eye_palming.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Chin Tuck (Forward Head Reset)",
@@ -3181,7 +3201,9 @@
         "Keep the inhale and exhale perfectly balanced in length and smoothness.",
         "Continue for the full duration, gradually increasing the count if it feels easy."
       ],
-      "id": "5c106616-a4c4-5941-87c0-5df4edfd3e83"
+      "id": "5c106616-a4c4-5941-87c0-5df4edfd3e83",
+      "animationName": "equal_breathing_sama_vritti.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Ocean Breath (Ujjayi)",
@@ -3197,7 +3219,9 @@
         "Keep both the inhale and exhale slow, quiet, and audible only to you.",
         "Continue for the full duration."
       ],
-      "id": "20973826-9df4-5d1b-8e26-72096f862e21"
+      "id": "20973826-9df4-5d1b-8e26-72096f862e21",
+      "animationName": "ocean_breath_ujjayi.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Physiological Sigh",
@@ -3212,7 +3236,9 @@
         "Let out a long, slow, audible sigh through your mouth, releasing all the air.",
         "Pause briefly, then repeat 3-5 times to quickly calm your nervous system."
       ],
-      "id": "9eb02d66-cd72-57b6-80bc-be0cb249d5c4"
+      "id": "9eb02d66-cd72-57b6-80bc-be0cb249d5c4",
+      "animationName": "physiological_sigh.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Left Half-Kneeling Rear-Foot Instep Stretch",
@@ -3844,7 +3870,9 @@
         "Hold, feeling the stretch across your hip flexors and chest, then lower your spine back down slowly, one vertebra at a time."
       ],
       "caution": "Skip if you have neck or lower-back issues — keep the neck neutral and avoid turning your head while lifted.",
-      "id": "abe45c7a-3b15-412e-856e-bc76e65d4eb2"
+      "id": "abe45c7a-3b15-412e-856e-bc76e65d4eb2",
+      "animationName": "bridge_pose.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Standing Split Prep Stretch",
@@ -3880,7 +3908,9 @@
         "Exhale slowly through your nose or pursed lips for 8 counts, twice as long as your inhale.",
         "Repeat for the full duration, letting your body settle deeper with each exhale."
       ],
-      "id": "0e81758c-d768-4a7a-896e-4a9a7ddd0c56"
+      "id": "0e81758c-d768-4a7a-896e-4a9a7ddd0c56",
+      "animationName": "extended_exhale_breathing.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Counting Down Sleep Breath",
@@ -3895,7 +3925,9 @@
         "Inhale again, then exhale while counting 'nine,' continuing to count down with each exhale.",
         "If you lose track, simply restart from ten — the goal is a slow, wandering mind, not a perfect count."
       ],
-      "id": "cb84490b-b29c-433b-8115-3bef0cd12b30"
+      "id": "cb84490b-b29c-433b-8115-3bef0cd12b30",
+      "animationName": "counting_down_sleep_breath.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Cooling Sitali Breath",
@@ -3911,7 +3943,9 @@
         "Repeat for the full duration to help cool the body and calm the mind."
       ],
       "caution": "If you can't curl your tongue, sip air through slightly parted, pursed lips instead.",
-      "id": "aa78230a-315e-4660-a3df-a2c2db01157e"
+      "id": "aa78230a-315e-4660-a3df-a2c2db01157e",
+      "animationName": "cooling_sitali_breath.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Three-Part Breath (Dirga Pranayama)",
@@ -3926,7 +3960,9 @@
         "Exhale slowly in reverse order, releasing your chest first, then ribs, then belly.",
         "Continue this three-part wave of breath, moving slowly and smoothly for the full duration."
       ],
-      "id": "043eaace-956a-4146-888a-5c0bf168b879"
+      "id": "043eaace-956a-4146-888a-5c0bf168b879",
+      "animationName": "three_part_breath_dirga_pranayama.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Body Scan Breathing",
@@ -3941,7 +3977,9 @@
         "With each exhale, consciously relax that body part before moving your attention upward on the next inhale.",
         "Continue scanning up through your legs, torso, arms, and head until the timer ends."
       ],
-      "id": "1f95f1c0-00d1-4c18-b170-9ab0b5e76534"
+      "id": "1f95f1c0-00d1-4c18-b170-9ab0b5e76534",
+      "animationName": "body_scan_breathing.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Segmented Exhale Breathing (Viloma)",
@@ -3956,7 +3994,9 @@
         "Resume the exhale after each pause until your lungs feel empty, then inhale normally.",
         "Repeat the segmented exhale for the full duration."
       ],
-      "id": "8efc4170-8093-48e0-a6a0-7e2f920660e9"
+      "id": "8efc4170-8093-48e0-a6a0-7e2f920660e9",
+      "animationName": "segmented_exhale_breathing_viloma.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Progressive Relaxation Breath",
@@ -3971,7 +4011,9 @@
         "Inhale again, tensing the next muscle group up (thighs, then glutes, then abs, and so on), and exhale to release.",
         "Work your way up your whole body, pairing each tense-and-release with one slow breath cycle."
       ],
-      "id": "b2867133-6dd8-4ffd-a360-f19496749fc6"
+      "id": "b2867133-6dd8-4ffd-a360-f19496749fc6",
+      "animationName": "progressive_relaxation_breath.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Left-Nostril Calming Breath (Chandra Bhedana)",
@@ -3986,7 +4028,9 @@
         "Close your left nostril with your ring finger, release your thumb, and exhale slowly through your right nostril.",
         "Continue inhaling only through the left and exhaling only through the right for the full duration — this pattern is traditionally used to calm and cool the body before rest."
       ],
-      "id": "668913b8-bdb7-40a1-ae32-1b70a16afe26"
+      "id": "668913b8-bdb7-40a1-ae32-1b70a16afe26",
+      "animationName": "left_nostril_calming_breath_chandra_bhedana.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Standing IT Band Side Stretch (Left)",
@@ -4318,7 +4362,9 @@
         "Pause briefly, then begin the next double inhale.",
         "Repeat the double-inhale, long-exhale pattern for the full duration."
       ],
-      "id": "7c4855d3-d2f4-4484-9e5c-96d5bdc11b37"
+      "id": "7c4855d3-d2f4-4484-9e5c-96d5bdc11b37",
+      "animationName": "physiological_sigh_double_inhale_exhale.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Resonant Frequency Breathing (6 Breaths per Minute)",
@@ -4336,7 +4382,9 @@
         "Continue the steady in-and-out rhythm for the full duration."
       ],
       "caution": "If counting to 5 feels strained, shorten the count until the breath feels comfortable.",
-      "id": "5377b398-d5be-4a8f-80aa-b9a81c20010c"
+      "id": "5377b398-d5be-4a8f-80aa-b9a81c20010c",
+      "animationName": "resonant_frequency_breathing_6_breaths_per_minute.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Right-Nostril Energizing Breath (Surya Bhedana)",
@@ -4354,7 +4402,9 @@
         "Let your breath stay smooth and unforced throughout."
       ],
       "caution": "Skip this practice if you have high blood pressure, feel anxious or overheated, or are practicing close to bedtime — it's energizing, not calming.",
-      "id": "e7107623-31f2-4b0c-af1f-8d037ee9cada"
+      "id": "e7107623-31f2-4b0c-af1f-8d037ee9cada",
+      "animationName": "right_nostril_energizing_breath_surya_bhedana.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Skull Shining Breath (Kapalabhati)",
@@ -4372,7 +4422,9 @@
         "Repeat for one or two more rounds if comfortable, resting between each."
       ],
       "caution": "Avoid if pregnant, or if you have high blood pressure, a hernia, or recent abdominal or eye surgery. Stop immediately if you feel lightheaded.",
-      "id": "ddf35027-adec-41fb-bb50-f0979ebe51b2"
+      "id": "ddf35027-adec-41fb-bb50-f0979ebe51b2",
+      "animationName": "skull_shining_breath_kapalabhati.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "World's Greatest Stretch (Left Lead Leg)",
@@ -5159,7 +5211,9 @@
           "seconds": 3
         }
       ],
-      "id": "75dee65d-9191-46eb-98bb-4d1a55e1a1ce"
+      "id": "75dee65d-9191-46eb-98bb-4d1a55e1a1ce",
+      "animationName": "triangle_breathing_3_3_3.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "So-Hum Mantra Breath",
@@ -5174,7 +5228,9 @@
         "As you exhale slowly, silently say 'Hum' to yourself.",
         "Let your breath set the pace rather than forcing it, continuing the silent 'So-Hum' for the full duration."
       ],
-      "id": "1a4db798-b65e-4fda-b269-bbce38aa5019"
+      "id": "1a4db798-b65e-4fda-b269-bbce38aa5019",
+      "animationName": "so_hum_mantra_breath.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Breath Counting Meditation",
@@ -5189,7 +5245,9 @@
         "Continue counting up by one at the end of each exhale, up to 10.",
         "When you reach 10, or if you lose track, simply start again at 1."
       ],
-      "id": "30c1236f-e646-4423-81c8-33bd1813d269"
+      "id": "30c1236f-e646-4423-81c8-33bd1813d269",
+      "animationName": "breath_counting_meditation.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Segmented Inhale Breathing (Viloma 2)",
@@ -5226,7 +5284,9 @@
           "seconds": 6
         }
       ],
-      "id": "f38e9e2e-5e1e-46ac-a01a-aced859a407e"
+      "id": "f38e9e2e-5e1e-46ac-a01a-aced859a407e",
+      "animationName": "segmented_inhale_breathing_viloma_2.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "5-4-3-2-1 Grounding Breath",
@@ -5242,7 +5302,9 @@
         "Finish by noticing 2 things you can smell and 1 thing you can taste, keeping your breath slow and even throughout."
       ],
       "caution": "This is a grounding technique for calm attention, not a treatment for anxiety or panic disorders — seek professional support if you need it.",
-      "id": "3b3a8a55-7278-4f4a-8840-263fcf551d91"
+      "id": "3b3a8a55-7278-4f4a-8840-263fcf551d91",
+      "animationName": "5_4_3_2_1_grounding_breath.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Standing Doorway Bicep Stretch (Left)",
@@ -6264,7 +6326,9 @@
         "Repeat the cycle 2-3 times over the full duration, resting between rounds."
       ],
       "caution": "Skip if pregnant or if you have high blood pressure, heart conditions, or feel dizzy - stop immediately if lightheaded.",
-      "id": "84ff8161-f13e-473f-bc3c-06031a816119"
+      "id": "84ff8161-f13e-473f-bc3c-06031a816119",
+      "animationName": "bhastrika_bellows_breath.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Sitkari Breath (Hissing Cooling Breath)",
@@ -6279,7 +6343,9 @@
         "Close your mouth and exhale slowly and completely through your nose.",
         "Repeat this inhale-through-teeth, exhale-through-nose cycle for the full duration, noticing a cooling sensation."
       ],
-      "id": "b93f14fb-0c9d-4967-9041-989d54b50e8c"
+      "id": "b93f14fb-0c9d-4967-9041-989d54b50e8c",
+      "animationName": "sitkari_breath_hissing_cooling_breath.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Buteyko Control Pause Breathing",
@@ -6296,7 +6362,9 @@
         "Rest for a minute, then repeat the pause 2-3 more times over the full duration."
       ],
       "caution": "This practice is about a gentle first urge to breathe, not a maximal breath-hold - never force or strain, and stop if you feel unwell.",
-      "id": "b398be96-0560-44a0-96fc-2a408a8619a7"
+      "id": "b398be96-0560-44a0-96fc-2a408a8619a7",
+      "animationName": "buteyko_control_pause_breathing.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Cyclic Sighing (Multi-Cycle Protocol)",
@@ -6311,7 +6379,9 @@
         "Exhale slowly and completely through your mouth, letting the exhale last twice as long as the inhale.",
         "Repeat this double-inhale, long-exhale cycle continuously and evenly for the full duration."
       ],
-      "id": "3c9da3f5-c2b1-436a-bb2c-c6de68687380"
+      "id": "3c9da3f5-c2b1-436a-bb2c-c6de68687380",
+      "animationName": "cyclic_sighing_multi_cycle_protocol.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Extended Kumbhaka Breath Retention",
@@ -6342,7 +6412,9 @@
         }
       ],
       "caution": "Skip breath retention if pregnant or if you have high blood pressure, heart conditions, or a history of fainting.",
-      "id": "2ca8746a-3183-4b30-89bc-d7ef88378f77"
+      "id": "2ca8746a-3183-4b30-89bc-d7ef88378f77",
+      "animationName": "extended_kumbhaka_breath_retention.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Rectangle Breathing (4-2-6-2)",
@@ -6376,7 +6448,9 @@
           "seconds": 2
         }
       ],
-      "id": "3fa2512e-83cf-4942-a788-741de1a6ce3e"
+      "id": "3fa2512e-83cf-4942-a788-741de1a6ce3e",
+      "animationName": "rectangle_breathing_4_2_6_2.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Whispered \"Ha\" Release Breath",
@@ -6391,7 +6465,9 @@
         "Let each exhale feel like a release of tension, without forcing the sound.",
         "Continue the slow inhale and whispered-exhale cycle for the full duration."
       ],
-      "id": "80ea5499-96b8-42ee-9bc0-23389fa7264f"
+      "id": "80ea5499-96b8-42ee-9bc0-23389fa7264f",
+      "animationName": "whispered_ha_release_breath.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "4-4-8 Extended Exhale Countdown Breath",
@@ -6420,7 +6496,9 @@
           "seconds": 8
         }
       ],
-      "id": "2beb03be-8dc2-428e-aea2-6a922f8f5ba9"
+      "id": "2beb03be-8dc2-428e-aea2-6a922f8f5ba9",
+      "animationName": "4_4_8_extended_exhale_countdown_breath.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Overhead Finger Interlace Stretch",
@@ -7008,7 +7086,9 @@
         "Continue the gentle rocking motion for the full duration."
       ],
       "caution": "Move gently and stop if you feel any pinching in the hips or groin.",
-      "id": "52f1fe18-61a4-483f-9013-a2910c83029d"
+      "id": "52f1fe18-61a4-483f-9013-a2910c83029d",
+      "animationName": "frog_rock_kneeling_glute_mobility_flow.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Supine Cross-Body Double Knee Pull (Bilateral Glute Release)",
@@ -7450,7 +7530,9 @@
         "Whenever your mind wanders, gently bring your attention back to the breath.",
         "Continue this quiet observation for the full duration."
       ],
-      "id": "c410de80-2e19-4301-837f-2604f83ec510"
+      "id": "c410de80-2e19-4301-837f-2604f83ec510",
+      "animationName": "natural_breath_awareness_anapana_meditation.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Wave Breath (Sequential Full-Body Breath)",
@@ -7466,7 +7548,9 @@
         "Let the motion feel continuous and fluid rather than three separate steps.",
         "Continue the wave-like breathing for the full duration."
       ],
-      "id": "9c173f22-4fb7-4770-b3ee-8156921149f1"
+      "id": "9c173f22-4fb7-4770-b3ee-8156921149f1",
+      "animationName": "wave_breath_sequential_full_body_breath.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Yogic Ratio Breath (1:4:2 Pranayama)",
@@ -7497,7 +7581,9 @@
           "seconds": 6
         }
       ],
-      "id": "b6f0f20f-957c-47d9-913b-299a62c4b7bd"
+      "id": "b6f0f20f-957c-47d9-913b-299a62c4b7bd",
+      "animationName": "yogic_ratio_breath_1_4_2_pranayama.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Abdominal Lock Breath (Uddiyana Bandha Prep)",
@@ -7514,7 +7600,9 @@
         "Continue this cycle for the full duration."
       ],
       "caution": "Practice only on an empty stomach. Avoid if pregnant or menstruating, or if you have high or low blood pressure, glaucoma, a hernia, or ulcers. Stop if you feel dizzy.",
-      "id": "0152ab96-d625-4add-8876-4a536a4c8dbd"
+      "id": "0152ab96-d625-4add-8876-4a536a4c8dbd",
+      "animationName": "abdominal_lock_breath_uddiyana_bandha_prep.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Cadence Walking Breath (Step-Synced Breathing)",
@@ -7531,7 +7619,9 @@
         "Continue syncing your breath to your steps for the full duration."
       ],
       "caution": "Stay aware of your surroundings and only practice this while walking somewhere safe and familiar.",
-      "id": "81eab2ce-c4cd-4859-b641-4c3c18fcda45"
+      "id": "81eab2ce-c4cd-4859-b641-4c3c18fcda45",
+      "animationName": "cadence_walking_breath_step_synced_breathing.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Voluntary Yawn Release Breath",
@@ -7547,7 +7637,9 @@
         "Repeat several deliberate yawn-breaths, letting your eyes water or shoulders drop if that happens naturally.",
         "Continue for the full duration, resting between yawns as needed."
       ],
-      "id": "cff7c578-f034-47bd-8278-ef0ad5207001"
+      "id": "cff7c578-f034-47bd-8278-ef0ad5207001",
+      "animationName": "voluntary_yawn_release_breath.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Breath of Gratitude (Affective Labeling Breath)",
@@ -7563,7 +7655,9 @@
         "Choose a new thing to feel grateful for every few breaths, or stay with the same one.",
         "Continue for the full duration."
       ],
-      "id": "79e457e9-3dfe-486e-b4b5-2077e5044715"
+      "id": "79e457e9-3dfe-486e-b4b5-2077e5044715",
+      "animationName": "breath_of_gratitude_affective_labeling_breath.mp4",
+      "animationIsApproximate": true
     },
     {
       "name": "Descending Ladder Breath (Step-Down Countdown)",
@@ -7580,7 +7674,9 @@
         "Continue the descending pattern for the full duration, keeping each breath smooth rather than rushed."
       ],
       "caution": "If any count feels too fast or short of breath, stay at a longer count instead of continuing to descend.",
-      "id": "883ecd8a-6d1d-4be9-b288-fca5a5234155"
+      "id": "883ecd8a-6d1d-4be9-b288-fca5a5234155",
+      "animationName": "descending_ladder_breath_step_down_countdown.mp4",
+      "animationIsApproximate": true
     }
   ]
 }

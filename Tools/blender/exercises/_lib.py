@@ -457,14 +457,27 @@ def bind_head_skin(skin, arm_obj, mat_skin):
     add_armature(skin, arm_obj)
 
 
-def animate(arm_obj, poses, frame_end=FRAME_END, fps=FPS):
+def animate(arm_obj, poses, frame_end=FRAME_END, fps=FPS, scale_poses=None):
+    """`scale_poses` (added for the breathing batch, 2026-08-27) is the same
+    `{frame: {bone: (sx,sy,sz)}}` shape as `poses` but drives
+    `pose_bone.scale` instead of `.rotation_euler` — every prior composition
+    only ever needed rotation, but a chest-expansion breathing motion isn't a
+    rotation at all, it's the bone growing and shrinking in place. Optional
+    and fully backward compatible: omitted (None/{}), every existing script
+    is unaffected, and any bone absent from a given frame's scale dict simply
+    holds its default (1,1,1) that frame, mirroring how `poses` already
+    zeroes an absent bone's rotation."""
     scene = bpy.context.scene
     scene.render.fps = fps
     scene.frame_start = 0
     scene.frame_end = frame_end
+    scale_poses = scale_poses or {}
     animated = set()
     for pose in poses.values():
         animated.update(pose.keys())
+    scaled = set()
+    for pose in scale_poses.values():
+        scaled.update(pose.keys())
     for frame, pose in poses.items():
         for bone_name in animated:
             pb = arm_obj.pose.bones.get(bone_name)
@@ -473,6 +486,13 @@ def animate(arm_obj, poses, frame_end=FRAME_END, fps=FPS):
             pb.rotation_mode = 'XYZ'
             pb.rotation_euler = Euler(pose.get(bone_name, (0.0, 0.0, 0.0)))
             pb.keyframe_insert("rotation_euler", frame=frame)
+    for frame, spose in scale_poses.items():
+        for bone_name in scaled:
+            pb = arm_obj.pose.bones.get(bone_name)
+            if pb is None:
+                continue
+            pb.scale = Vector(spose.get(bone_name, (1.0, 1.0, 1.0)))
+            pb.keyframe_insert("scale", frame=frame)
     scene.frame_set(0)
 
 
@@ -929,7 +949,7 @@ def run_seated(cfg):
         apply_seated_base(arm_obj, cfg.get("SEATED_DROP", 0.46))
         bpy.context.view_layer.update()
 
-        animate(arm_obj, cfg["POSES"])
+        animate(arm_obj, cfg["POSES"], scale_poses=cfg.get("SCALE_POSES"))
         peak_frame = cfg.get("PEAK_FRAME", 60)
         bpy.context.scene.frame_set(peak_frame)
         bpy.context.view_layer.update()
