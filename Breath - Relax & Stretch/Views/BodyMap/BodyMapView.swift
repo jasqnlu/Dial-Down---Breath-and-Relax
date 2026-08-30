@@ -189,8 +189,13 @@ struct BodyMapView: View {
         tourCoordinator.notifyInteraction(id: "bodymap.findStretches")
     }
 
+    /// Cancel means "never mind" — it always returns to the plain body with
+    /// no dot and no bar, even if a single tap had set `selection` before the
+    /// double tap that opened this picker (or `handleRegionDrilled` set it
+    /// directly). We don't keep history of an earlier selection to restore.
     private func cancelDisambiguation() {
         withAnimation(.easeInOut(duration: 0.2)) {
+            selection = nil
             disambiguationCandidates = []
             focusPoint = nil
             focusedRegion = nil
