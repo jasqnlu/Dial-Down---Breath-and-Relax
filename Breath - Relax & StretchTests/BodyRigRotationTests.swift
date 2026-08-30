@@ -1,6 +1,7 @@
 import Testing
 import Foundation
 import simd
+import SceneKit
 @testable import BreathRelaxStretch
 
 /// The rig rotates about Y only, so "turn to face the tap" is one azimuth.
@@ -74,5 +75,40 @@ struct BodyRigRotationTests {
 
     @Test func aPointOnTheYAxisHasNoBearing() {
         #expect(BodyRig.rotationToFace(localPoint: [0, 1, 0], currentY: 0) == nil)
+    }
+}
+
+/// The "you tapped here" dot. One at a time, no sensation colour — the
+/// palette that used to drive it is deleted in this rework.
+struct BodyRigSelectionDotTests {
+
+    @Test @MainActor func aSelectionAddsExactlyOneNamedDot() {
+        let rig = BodyRig()
+        rig.updateSelection(point: [0.1, 0.3, 0.05])
+        #expect(rig.marksNode.childNodes.count == 1)
+        #expect(rig.marksNode.childNodes.first?.name == "selection-dot")
+    }
+
+    @Test @MainActor func aNewSelectionReplacesRatherThanAccumulates() {
+        let rig = BodyRig()
+        rig.updateSelection(point: [0.1, 0.3, 0.05])
+        rig.updateSelection(point: [-0.2, 0.1, 0.4])
+        #expect(rig.marksNode.childNodes.count == 1)
+    }
+
+    @Test @MainActor func theDotSitsAtTheTappedPoint() {
+        let rig = BodyRig()
+        rig.updateSelection(point: [-0.2, 0.1, 0.4])
+        let dot = try! #require(rig.marksNode.childNodes.first)
+        #expect(abs(dot.position.x - (-0.2)) < 1e-6)
+        #expect(abs(dot.position.y - 0.1) < 1e-6)
+        #expect(abs(dot.position.z - 0.4) < 1e-6)
+    }
+
+    @Test @MainActor func passingNilClearsTheDot() {
+        let rig = BodyRig()
+        rig.updateSelection(point: [0.1, 0.3, 0.05])
+        rig.updateSelection(point: nil)
+        #expect(rig.marksNode.childNodes.isEmpty)
     }
 }
