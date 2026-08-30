@@ -528,7 +528,42 @@ In `BodySceneView`, replace the `marks` property and the `onRegionTap` property 
     var onBackgroundTap: (() -> Void)? = nil
 ```
 
-Update the `init` signature and body to match — replace `marks: [String: BodyMark] = [:]` with `selectionPoint: SIMD3<Float>? = nil`, and `onRegionTap:` with the three new callbacks, assigning each to `self.<name>`. Keep every other parameter and its order (`facing`, `style`, then the new selection inputs and callbacks, then `disambiguationCandidates`, `focusPoint`, `focusedRegion`, `onCandidateFocused`, `onCandidateSelected`, `refocusToken`).
+Then replace `BodySceneView`'s memberwise `init` in full. It currently reads
+`marks:` / `onRegionTap:`; the new one reads:
+
+```swift
+    init(facing: BodyFacing,
+         style: BodyModelStyle = .anatomy,
+         selectionPoint: SIMD3<Float>? = nil,
+         onRegionSelected: ((String, SIMD3<Float>) -> Void)? = nil,
+         onRegionDrilled: ((String, SIMD3<Float>) -> Void)? = nil,
+         onBackgroundTap: (() -> Void)? = nil,
+         disambiguationCandidates: [MarkCandidate] = [],
+         focusPoint: SIMD3<Float>? = nil,
+         focusedRegion: String? = nil,
+         onCandidateFocused: ((String) -> Void)? = nil,
+         onCandidateSelected: ((String) -> Void)? = nil,
+         refocusToken: Int = 0) {
+        self.facing = facing
+        self.style = style
+        self.selectionPoint = selectionPoint
+        self.onRegionSelected = onRegionSelected
+        self.onRegionDrilled = onRegionDrilled
+        self.onBackgroundTap = onBackgroundTap
+        self.disambiguationCandidates = disambiguationCandidates
+        self.focusPoint = focusPoint
+        self.focusedRegion = focusedRegion
+        self.onCandidateFocused = onCandidateFocused
+        self.onCandidateSelected = onCandidateSelected
+        self.refocusToken = refocusToken
+        _rig = State(initialValue: BodyRig(style: style))
+        _cameraZ = State(initialValue: BodyRig.freeExploreCameraDistance)
+        _committedCameraZ = State(initialValue: BodyRig.freeExploreCameraDistance)
+    }
+```
+
+The three `_rig` / `_cameraZ` / `_committedCameraZ` lines at the end are
+unchanged from the existing init — keep them exactly as they are.
 
 - [ ] **Step 4: Rewrite the tap routing and gestures in `BodySceneView`**
 
