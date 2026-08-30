@@ -39,7 +39,7 @@ Visual walkthrough: <https://claude.ai/code/artifact/c85b4084-4455-49f9-b654-f9b
 | `Models/BodyMarkStore.swift` | **deleted** |
 | `Services/SeedMigrator.swift` | + `removeRetiredBodyMapMarkStorage(defaults:)` |
 | `Views/Onboarding/TourCoordinator.swift` | Two body-map steps renamed and recopied |
-| `Tests/BodyRigRotationTests.swift` | **new** — rotation math + selection dot |
+| `Tests/BodyRigRotationTests.swift` | **new** — rotation math + selection dot + retired-storage cleanup |
 
 `BodySceneView.swift` is already 1042 lines. This plan does not split it: the rig, its host and its view are one tightly-coupled unit that changes together, and splitting it is out of scope for an interaction rework. It comes out roughly net-neutral in size.
 
@@ -221,7 +221,7 @@ Leave the rest of `snap` — the `SCNTransaction` block and the `committedRotati
 xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests/BodyRigRotationTests"
 ```
 
-Expected: **9 tests, all passing.** If the count is 0, the file landed outside `Breath - Relax & StretchTests/` — move it.
+Expected: **10 tests, all passing.** If the count is 0, the file landed outside `Breath - Relax & StretchTests/` — move it.
 
 - [ ] **Step 6: Run the full unit suite to confirm `snap` didn't regress**
 
