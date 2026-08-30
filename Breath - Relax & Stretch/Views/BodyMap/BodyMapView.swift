@@ -144,6 +144,7 @@ struct BodyMapView: View {
         // inferred from the tapped x (see HeadZones).
         if region == "Head" {
             let pins = HeadZones.candidates(forTapAt: point)
+            selection = RegionSelection(region: region, point: point)
             focusPoint = point
             focusedRegion = pins.first?.name
             disambiguationCandidates = pins
@@ -167,6 +168,7 @@ struct BodyMapView: View {
         } else {
             // Zoom onto the actual tapped dot (not a candidate centre) and
             // auto-highlight the primary candidate.
+            selection = RegionSelection(region: region, point: point)
             focusPoint = point
             focusedRegion = pins.first?.name
             disambiguationCandidates = pins

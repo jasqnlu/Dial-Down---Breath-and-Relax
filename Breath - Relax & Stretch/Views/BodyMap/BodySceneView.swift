@@ -743,6 +743,15 @@ struct BodySceneView: View {
     @State private var isLoading = true
     @State private var scnView: SCNView?
     @State private var pinPositions: [String: CGPoint] = [:]
+    /// Set once the initial `facing`-driven rotation snap has happened.
+    /// `.onAppear` fires again when this view reappears after the exercise
+    /// list is popped — without this guard that re-snap would throw away a
+    /// tap-to-face rotation the single-tap path just set (see `handleSingleTap`),
+    /// spinning the body back to `facing.rotationY` even though nothing asked
+    /// it to. `.onChange(of: facing)` already owns every later facing change
+    /// (the Front/Back toggle), so this flag only needs to gate the one-time
+    /// initial snap.
+    @State private var didSnapInitialFacing = false
     @Environment(\.colorScheme) private var colorScheme
 
     private let minCameraZ: CGFloat = BodyRig.defaultCameraDistance * 0.62         // closer  = zoomed in
@@ -800,7 +809,7 @@ struct BodySceneView: View {
                     .gesture(rotationGesture, including: isFocused ? .none : .all)
                     .simultaneousGesture(zoomGesture, including: isFocused ? .none : .all)
                     .overlay(alignment: .top) {
-                        Text("Tap a sore spot · drag to rotate")
+                        Text("Tap a sore spot · double-tap for muscles · drag to rotate")
                             .font(.caption2.weight(.medium))
                             .padding(.horizontal, 10).padding(.vertical, 5)
                             .background(.regularMaterial, in: Capsule())
@@ -829,7 +838,10 @@ struct BodySceneView: View {
             // here would leave the camera's x/y and orientation mismatched,
             // which reads as the body having rotated.
             guard !isFocused else { return }
-            rig.snap(to: facing.rotationY)
+            if !didSnapInitialFacing {
+                rig.snap(to: facing.rotationY)
+                didSnapInitialFacing = true
+            }
             rig.cameraNode.position.z = Float(cameraZ)
         }
         .task(id: ObjectIdentifier(rig)) {
