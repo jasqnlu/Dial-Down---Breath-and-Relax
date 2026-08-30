@@ -1174,6 +1174,23 @@ git commit -m "feat(onboarding): retarget the body-map tour steps at tap-to-stre
 **Interfaces:**
 - Consumes: accessibility identifier `"bodymap.regionActionBar"` from Task 3
 
+**Carried forward from Task 3 — use `press(forDuration:)` for single taps on
+the body, not `.tap()`.** The single-tap recogniser is wired
+`singleTap.require(toFail: doubleTap)`, and XCUITest's bare
+`XCUICoordinate.tap()` does not reliably satisfy that dependency — the tap
+can be consumed while the double-tap recogniser is still deciding, so the
+selection never appears and the test flakes. `press(forDuration: 0.05)` on
+the same coordinate does satisfy it. Task 3 confirmed this against the real
+app (a reverted diagnostic showed the app behaving correctly under a manual
+tap), so this is an XCUITest harness artifact, not a bug in the gesture
+wiring — do NOT "fix" the app to make `.tap()` work.
+
+This applies only to taps landing on the SceneKit surface, which go through
+the gesture-recogniser pair. `bar.tap()` and `app.buttons["Cancel"].tap()`
+are ordinary SwiftUI buttons and are unaffected. `.doubleTap()` is likewise
+unaffected — it drives the double-tap recogniser directly, with nothing to
+wait on.
+
 - [ ] **Step 1: Rewrite the fast-path test**
 
 Replace the body of `BodyMapMarking3DUITests.swift` — keep its existing `setUpWithError`, `launchBodyTab(extraArgs:)` and `attach(_:_:)` helpers verbatim (they handle the 30s seed/migration wait and the 6s OBJ parse, both still needed) and replace the `@Test`-bearing methods with:
@@ -1187,7 +1204,7 @@ Replace the body of `BodyMapMarking3DUITests.swift` — keep its existing `setUp
 
         // Tap upper-left of the torso — reliably a shoulder/arm hit volume.
         let scene = app.otherElements.firstMatch
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.36, dy: 0.34)).tap()
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.36, dy: 0.34)).press(forDuration: 0.05)
 
         let bar = app.buttons["bodymap.regionActionBar"]
         XCTAssertTrue(bar.waitForExistence(timeout: 5),
@@ -1212,13 +1229,13 @@ Replace the body of `BodyMapMarking3DUITests.swift` — keep its existing `setUp
     func testTappingOffTheBodyClearsTheBar() throws {
         let app = launchBodyTab(extraArgs: [])
         let scene = app.otherElements.firstMatch
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.36, dy: 0.34)).tap()
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.36, dy: 0.34)).press(forDuration: 0.05)
 
         let bar = app.buttons["bodymap.regionActionBar"]
         XCTAssertTrue(bar.waitForExistence(timeout: 5))
 
         // Far left edge, clear of the silhouette.
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.5)).tap()
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.5)).press(forDuration: 0.05)
         let gone = NSPredicate(format: "exists == false")
         expectation(for: gone, evaluatedWith: bar)
         waitForExpectations(timeout: 5)
