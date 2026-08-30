@@ -325,6 +325,24 @@ final class BodyRig {
         }
     }
 
+    /// Renders the single "you tapped here" dot, or clears it when `nil`.
+    /// Replaces `updateMarks` — one neutral accent dot, no sensation colour,
+    /// and never more than one at a time.
+    func updateSelection(point: SIMD3<Float>?) {
+        marksNode.childNodes.forEach { $0.removeFromParentNode() }
+        guard let point else { return }
+        let sphere = SCNSphere(radius: 0.028)
+        let color = UIColor(Color.luminaPrimary)
+        let material = SCNMaterial()
+        material.diffuse.contents = color
+        material.emission.contents = color
+        sphere.materials = [material]
+        let node = SCNNode(geometry: sphere)
+        node.name = "selection-dot"
+        node.position = SCNVector3(point.x, point.y, point.z)
+        marksNode.addChildNode(node)
+    }
+
     /// Debug: launch with `-debugHitboxes YES` to render every hit volume as
     /// a translucent box over the skin — verifies box↔mesh alignment and the
     /// anatomical L/R relabel (at front view, "Left Biceps" must sit on the
