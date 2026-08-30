@@ -361,7 +361,18 @@ The behavioural change, in one commit: the second tap recogniser, the split call
 - Consumes: `BodyRig.rotationToFace(localPoint:currentY:threshold:)`, `BodyRig.updateSelection(point:)`, `BodyRig.snap(to:)`, `BodyRig.committedRotationY` (Tasks 1–2 and existing)
 - Produces:
   - `RegionActionBar(regionName: String, onFind: () -> Void)` with accessibility identifier `"bodymap.regionActionBar"`
-  - `BodySceneView(facing:style:selectionPoint:selectedRegion:onRegionSelected:onRegionDrilled:onBackgroundTap:disambiguationCandidates:focusPoint:focusedRegion:onCandidateFocused:onCandidateSelected:refocusToken:)`
+  - `BodySceneView(facing:style:selectionPoint:onRegionSelected:onRegionDrilled:onBackgroundTap:disambiguationCandidates:focusPoint:focusedRegion:onCandidateFocused:onCandidateSelected:refocusToken:)`
+
+**Scope note — no at-rest region tint.** The spec's §3.2 said the selected
+region's hit volume would take "a soft accent tint, reusing the box-drawing
+already built for candidates." That reuse does not exist: `showCandidates`
+and the candidate boxes colourise nodes on the **muscle layer**, which is
+`isHidden = true` / `opacity = 0` at rest (set in `BodyRig.init`) and only
+revealed by `rig.reveal` during the muscle picker. Tinting a region at rest
+would be new work, not reuse, so it is cut from scope — and with it the
+`selectedRegion` property, which would otherwise be declared and never read.
+The neutral selection dot plus the action bar naming the region are the
+selection affordance. Do not add a region highlight in this task.
 
 - [ ] **Step 1: Add `RegionActionBar`**
 
@@ -505,9 +516,6 @@ In `BodySceneView`, replace the `marks` property and the `onRegionTap` property 
 ```swift
     /// The point the user last single-tapped, rendered as one neutral dot.
     var selectionPoint: SIMD3<Float>? = nil
-    /// The region that point resolved to. Held for the caller's benefit and
-    /// to drive the region highlight.
-    var selectedRegion: String? = nil
 
     /// Single tap that resolved a region: the body has already been rotated
     /// to face it by the time this fires. Rotation stays free — hit-testing
@@ -520,7 +528,7 @@ In `BodySceneView`, replace the `marks` property and the `onRegionTap` property 
     var onBackgroundTap: (() -> Void)? = nil
 ```
 
-Update the `init` signature and body to match — replace `marks: [String: BodyMark] = [:]` with `selectionPoint: SIMD3<Float>? = nil, selectedRegion: String? = nil`, and `onRegionTap:` with the three new callbacks, assigning each to `self.<name>`. Keep every other parameter and its order (`facing`, `style`, then the new selection inputs and callbacks, then `disambiguationCandidates`, `focusPoint`, `focusedRegion`, `onCandidateFocused`, `onCandidateSelected`, `refocusToken`).
+Update the `init` signature and body to match — replace `marks: [String: BodyMark] = [:]` with `selectionPoint: SIMD3<Float>? = nil`, and `onRegionTap:` with the three new callbacks, assigning each to `self.<name>`. Keep every other parameter and its order (`facing`, `style`, then the new selection inputs and callbacks, then `disambiguationCandidates`, `focusPoint`, `focusedRegion`, `onCandidateFocused`, `onCandidateSelected`, `refocusToken`).
 
 - [ ] **Step 4: Rewrite the tap routing and gestures in `BodySceneView`**
 
@@ -684,7 +692,6 @@ struct BodyMapView: View {
                 BodySceneView(facing: facing,
                               style: .anatomy,
                               selectionPoint: selection?.point,
-                              selectedRegion: selection?.region,
                               onRegionSelected: handleRegionSelected,
                               onRegionDrilled: handleRegionDrilled,
                               onBackgroundTap: clearSelection,
