@@ -21,7 +21,7 @@ Visual walkthrough: <https://claude.ai/code/artifact/c85b4084-4455-49f9-b654-f9b
   ```
   xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests"
   ```
-- **Pre-existing failures that are NOT regressions:** `CuratedContentIntegrityTests` (4 cases — `everyContentPackExerciseNameExistsInSeedCatalog`, `everyGoalMetaExerciseNameExistsInSeedCatalog`, `starterProgramOnlyReferencesRealExerciseNames`, `proFullResetOnlyReferencesRealExerciseNames`). These fail on a clean base from curated-content data drift. Do not attribute them to this branch and do not try to fix them here.
+- **The baseline on this branch is FULLY GREEN: 412 tests in 59 suites, 0 failures** (measured on `worktree-bodymap-tap-to-stretch` at 9dbc7f8, before any task ran). Older project notes claim 4 `CuratedContentIntegrityTests` cases fail from curated-content data drift — that is stale; they pass now. **Treat any failing test as a real regression caused by your change.** Supabase `NSURLErrorDomain -1003` / "Connection N: failed to connect" lines in the log are expected offline noise from `AuthManagerTests`, not failures.
 - **Never `git checkout` `SeedData.json`** blind — unrelated staged work lives there.
 - Colour comes from `LuminaTheme.swift` tokens (`Color.luminaPrimary` etc.), never literal hex.
 - Do not touch `Services/SeedMigrator.swift:144` — that block migrates the older, unrelated `bodymap.markedRegions` key and is still live.
@@ -229,7 +229,7 @@ Expected: **9 tests, all passing.** If the count is 0, the file landed outside `
 xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests"
 ```
 
-Expected: green except the 4 known `CuratedContentIntegrityTests` failures listed in Global Constraints.
+Expected: **all 412+ tests passing, 0 failures.** The baseline is green, so any failure is yours.
 
 - [ ] **Step 7: Commit**
 
@@ -1015,7 +1015,7 @@ Expected: **no output.** Any hit is a reference the earlier tasks missed — fix
 xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests"
 ```
 
-Expected: green except the 4 known `CuratedContentIntegrityTests` failures.
+Expected: **all tests passing, 0 failures.** The baseline is green, so any failure is yours.
 
 - [ ] **Step 10: Commit**
 
