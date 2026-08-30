@@ -307,27 +307,9 @@ final class BodyRig {
 
     // MARK: - Marker dots
 
-    /// Rebuilds the marker-dot spheres from the mark set. Cheap for the
-    /// handful of marks a body carries; called on every mark change.
-    func updateMarks(_ marks: [String: BodyMark]) {
-        marksNode.childNodes.forEach { $0.removeFromParentNode() }
-        for (region, mark) in marks {
-            let sphere = SCNSphere(radius: 0.028)
-            let color = UIColor(sensationColors.first { $0.id == mark.sensationID }?.color ?? .red)
-            let material = SCNMaterial()
-            material.diffuse.contents = color
-            material.emission.contents = color
-            sphere.materials = [material]
-            let node = SCNNode(geometry: sphere)
-            node.name = region
-            node.position = SCNVector3(mark.point.x, mark.point.y, mark.point.z)
-            marksNode.addChildNode(node)
-        }
-    }
-
     /// Renders the single "you tapped here" dot, or clears it when `nil`.
-    /// Replaces `updateMarks` — one neutral accent dot, no sensation colour,
-    /// and never more than one at a time.
+    /// One neutral accent dot, no sensation colour, and never more than one
+    /// at a time.
     func updateSelection(point: SIMD3<Float>?) {
         marksNode.childNodes.forEach { $0.removeFromParentNode() }
         guard let point else { return }
@@ -711,11 +693,11 @@ struct BodySceneView: View {
     /// hit volume covers). Clears the selection.
     var onBackgroundTap: (() -> Void)? = nil
 
-    /// Non-empty while showing the post-confirm disambiguation popup: the
-    /// camera zooms to the first candidate and a labeled pin is placed for
-    /// each. Rotation/zoom gestures freeze while this is non-empty, since the
-    /// camera is under programmatic control and pin positions aren't
-    /// recomputed per-frame.
+    /// Non-empty while showing the double-tap disambiguation popup: a double
+    /// tap that resolves to more than one candidate zooms the camera to the
+    /// first candidate and places a labeled pin for each. Rotation/zoom
+    /// gestures freeze while this is non-empty, since the camera is under
+    /// programmatic control and pin positions aren't recomputed per-frame.
     var disambiguationCandidates: [MarkCandidate] = []
     /// The tapped dot to zoom onto (rigNode-local). When nil, falls back to the
     /// primary candidate's anchor for backward compatibility.

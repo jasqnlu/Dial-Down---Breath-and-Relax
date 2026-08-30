@@ -112,3 +112,39 @@ struct BodyRigSelectionDotTests {
         #expect(rig.marksNode.childNodes.isEmpty)
     }
 }
+
+/// The marking feature's persisted state outlives the feature itself, so it
+/// gets cleaned up on launch. Idempotent by construction — `removeObject` on
+/// an absent key is a no-op — so it is safe to run every time.
+struct RetiredBodyMapStorageTests {
+
+    private func freshDefaults() -> UserDefaults {
+        let name = "test-\(UUID().uuidString)"
+        let d = UserDefaults(suiteName: name)!
+        d.removePersistentDomain(forName: name)
+        return d
+    }
+
+    @Test func theRetiredMarkKeyIsRemoved() {
+        let defaults = freshDefaults()
+        defaults.set(Data([0x7b, 0x7d]), forKey: "bodymap.markedSensations")
+        SeedMigrator.removeRetiredBodyMapMarkStorage(defaults: defaults)
+        #expect(defaults.object(forKey: "bodymap.markedSensations") == nil)
+    }
+
+    @Test func runningItTwiceIsHarmless() {
+        let defaults = freshDefaults()
+        SeedMigrator.removeRetiredBodyMapMarkStorage(defaults: defaults)
+        SeedMigrator.removeRetiredBodyMapMarkStorage(defaults: defaults)
+        #expect(defaults.object(forKey: "bodymap.markedSensations") == nil)
+    }
+
+    @Test func itLeavesTheOlderRegionMigrationKeyAlone() {
+        // `bodymap.markedRegions` is a DIFFERENT key with a live migration in
+        // migrateV4. This cleanup must not touch it.
+        let defaults = freshDefaults()
+        defaults.set(["Left Biceps"], forKey: "bodymap.markedRegions")
+        SeedMigrator.removeRetiredBodyMapMarkStorage(defaults: defaults)
+        #expect(defaults.stringArray(forKey: "bodymap.markedRegions") == ["Left Biceps"])
+    }
+}
