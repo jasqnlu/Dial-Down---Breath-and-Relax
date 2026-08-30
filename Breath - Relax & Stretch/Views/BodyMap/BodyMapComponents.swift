@@ -122,7 +122,6 @@ struct BodyPartExercisesView: View {
     }
 
     init(bodyPart: String)        { self.bodyParts = [bodyPart] }
-    init(bodyParts: [String])     { self.bodyParts = bodyParts }
 
     private var resolver: RegionExerciseResolver {
         RegionExerciseResolver(regions: bodyParts, exercises: allExercises)

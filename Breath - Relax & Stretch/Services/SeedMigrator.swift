@@ -375,4 +375,16 @@ enum SeedMigrator {
         }
         return changed
     }
+
+    /// Drops the storage behind the retired body-map marking flow (sensation
+    /// colours + marked regions with dots), removed in the "Tap to Stretch"
+    /// rework. Not a versioned seed migration — it touches no SwiftData and
+    /// carries no `seedDataVersion` gate; `removeObject` on an absent key is
+    /// a no-op, so running it on every launch costs nothing.
+    ///
+    /// Deliberately does NOT touch `bodymap.markedRegions`, which is a
+    /// different, still-live key migrated by `migrateV4`.
+    static func removeRetiredBodyMapMarkStorage(defaults: UserDefaults = .standard) {
+        defaults.removeObject(forKey: "bodymap.markedSensations")
+    }
 }
