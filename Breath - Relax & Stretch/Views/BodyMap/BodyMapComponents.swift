@@ -1,56 +1,39 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Marked-areas banner
+// MARK: - Region action bar
 //
-// Appears once the user has marked one or more regions by tapping the 3D body.
-// Summarises what's marked and lets them jump to a combined exercise list.
+// Rises when a single tap selects a region. One tap from here to that
+// region's stretches — the visible counterpart to the double-tap shortcut
+// into the muscle picker, so the exercise path is never hidden behind a
+// gesture a user has to guess.
 
-struct MarkedAreasBanner: View {
-    let regionNames: [String]
-    let onFind:  () -> Void
-    let onClear: () -> Void
-
-    private var title: String {
-        regionNames.count == 1
-            ? regionNames[0]
-            : "\(regionNames.count) areas marked"
-    }
-
-    private var subtitle: String {
-        regionNames.count == 1
-            ? "Find stretches that target this area"
-            : regionNames.joined(separator: ", ")
-    }
+struct RegionActionBar: View {
+    let regionName: String
+    let onFind: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.luminaTitle)
-                Text(subtitle)
-                    .font(.luminaCaption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+        Button(action: onFind) {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Stretches for")
+                        .font(.luminaCaption)
+                        .foregroundStyle(.secondary)
+                    Text(regionName)
+                        .font(.luminaTitle)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Color.luminaPrimary)
             }
-
-            Spacer()
-
-            Button(action: onClear) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-            }
-            .accessibilityLabel("Clear marked areas")
-
-            Button(action: onFind) {
-                Label("Find Exercises", systemImage: "figure.mind.and.body")
-            }
-            .buttonStyle(LuminaPillButtonStyle(compact: true))
-            .accessibilityLabel("Find exercises for marked areas")
+            .luminaCard(padding: 16)
+            .padding(.horizontal, 16)
         }
-        .luminaCard(padding: 16)
-        .padding(.horizontal, 16)
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("bodymap.regionActionBar")
+        .accessibilityLabel("Find stretches for \(regionName)")
     }
 }
 
