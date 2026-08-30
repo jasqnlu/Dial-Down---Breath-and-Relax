@@ -346,6 +346,40 @@ final class BodyRig {
         }
     }
 
+    // MARK: - Rotation math
+
+    /// Signed shortest angular distance from `from` to `to`, wrapped to ±π —
+    /// so a turn never takes the long way round the seam.
+    static func shortestDelta(from: CGFloat, to: CGFloat) -> CGFloat {
+        let twoPi = 2 * CGFloat.pi
+        var delta = (to - from.truncatingRemainder(dividingBy: twoPi))
+            .truncatingRemainder(dividingBy: twoPi)
+        if delta >  .pi { delta -= twoPi }
+        if delta < -.pi { delta += twoPi }
+        return delta
+    }
+
+    /// The absolute rig Y-rotation that brings `localPoint` round to face the
+    /// camera (which sits on world +Z).
+    ///
+    /// `localPoint` is rigNode-LOCAL, so the rig's current rotation is already
+    /// factored out and the target is simply the negated bearing —
+    /// independent of `currentY`. `currentY` is used only to decide whether
+    /// the move is worth making.
+    ///
+    /// Returns `nil` when the point has no bearing (it sits on the Y axis) or
+    /// when the rig already faces it to within `threshold`, so a tap near
+    /// dead-centre is a no-op rather than a jitter.
+    static func rotationToFace(localPoint: SIMD3<Float>,
+                               currentY: CGFloat,
+                               threshold: CGFloat = 8 * .pi / 180) -> CGFloat? {
+        let planar = SIMD2<Float>(localPoint.x, localPoint.z)
+        guard simd_length(planar) > 1e-4 else { return nil }
+        let target = -CGFloat(atan2(localPoint.x, localPoint.z))
+        guard abs(shortestDelta(from: currentY, to: target)) >= threshold else { return nil }
+        return target
+    }
+
     // MARK: - Rotation
 
     func applyDragRotation(deltaX: CGFloat) {
@@ -508,13 +542,8 @@ final class BodyRig {
     /// Snap to the nearest equivalent of `target` (0 = front, π = back) via the
     /// shortest angular path, so flipping Front/Back never spins the long way round.
     func snap(to target: CGFloat) {
-        let twoPi = 2 * CGFloat.pi
         let current = committedRotationY
-        let normalizedCurrent = current.truncatingRemainder(dividingBy: twoPi)
-        var delta = (target - normalizedCurrent).truncatingRemainder(dividingBy: twoPi)
-        if delta > .pi  { delta -= twoPi }
-        if delta < -.pi { delta += twoPi }
-        let destination = current + delta
+        let destination = current + BodyRig.shortestDelta(from: current, to: target)
 
         SCNTransaction.begin()
         SCNTransaction.animationDuration = 0.35
