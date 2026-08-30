@@ -1033,6 +1033,33 @@ Expected: **3 tests, all passing.**
 
 In `BodySceneView.swift`, delete the whole `updateMarks(_:)` function (`:312`–`:326`, from its `/// Rebuilds the marker-dot spheres…` doc comment through its closing brace). `updateSelection` replaced it in Task 2 and is already wired up.
 
+- [ ] **Step 6b: Clear the two loose ends the Task 3 review found**
+
+Both are dead remnants of the removed flow, verified unreferenced.
+
+First, `Breath - Relax & Stretch/Views/BodyMap/BodySceneView.swift` around
+line 714 still documents `disambiguationCandidates` as *"the post-confirm
+disambiguation popup"*. There is no Confirm step any more — the trigger is a
+double tap. Reword that doc comment to describe the double-tap trigger.
+
+Second, `Breath - Relax & Stretch/Views/BodyMap/BodyMapComponents.swift`
+around line 125 declares two initializers:
+
+```swift
+    init(bodyPart: String)        { self.bodyParts = [bodyPart] }
+    init(bodyParts: [String])     { self.bodyParts = bodyParts }
+```
+
+`init(bodyParts:)` was reached only by the deleted `.marked([String])` route.
+Verified unreferenced app-wide: the sole construction site is
+`BodyMapView.swift:103`, using `init(bodyPart:)`. Delete the
+`init(bodyParts:)` line only.
+
+**Leave the internal `bodyParts` array plumbing alone** — the `navTitle` /
+`emptyDescription` multi-region branches and `RegionExerciseResolver(regions:)`
+all still take a collection, and collapsing that is a larger refactor with no
+behavioural benefit and no bearing on this rework.
+
 - [ ] **Step 7: Delete the three files**
 
 ```bash
@@ -1050,6 +1077,13 @@ grep -rn "BodyMarkStore\|SensationColor\|sensationColors\|LegendSheet\|MarkedAre
 ```
 
 Expected: **no output.** Any hit is a reference the earlier tasks missed — fix it before building.
+
+Then confirm the multi-region initializer is gone but its property survives:
+
+```bash
+grep -rn "init(bodyParts:" --include='*.swift' .   # expect: no output
+grep -rn "let bodyParts" --include='*.swift' .     # expect: the property declaration only
+```
 
 - [ ] **Step 9: Run the full unit suite**
 
@@ -1307,7 +1341,46 @@ In `BodyMapConfirmZoomUITests.swift`, keep the existing launch/attach helpers an
 xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchUITests/BodyMapMarking3DUITests" -only-testing:"Breath - Relax & StretchUITests/BodyMapConfirmZoomUITests"
 ```
 
+After Step 3b, re-run including whichever of the four you repointed, e.g.
+`-only-testing:"Breath - Relax & StretchUITests/MuscleRevealUITest"`.
+
+
 Expected: all cases pass. If a tap lands on empty space rather than the body, adjust the normalized offsets — the model is height-normalized and centred, so `dx` between 0.35 and 0.65 and `dy` between 0.3 and 0.6 is the reliable band. Attachments are kept, so open the screenshots to see where the tap landed rather than guessing.
+
+- [ ] **Step 3b: Deal with the four OTHER UI test files that drive the removed UI**
+
+Found by the Task 3 review — a gap in this plan, not something the earlier
+tasks missed. Four suites beyond the two you just rewrote still query
+`"Mark areas by tapping"`, `"Confirm marked area"` or
+`"Find exercises for marked areas"`:
+
+- `Breath - Relax & StretchUITests/MuscleRevealUITest.swift:25`
+- `Breath - Relax & StretchUITests/AnatomyRevealUITest.swift:29`
+- `Breath - Relax & StretchUITests/AnatomyJointRevealUITest.swift:23`
+- `Breath - Relax & StretchUITests/HeadZoneVerificationUITests.swift:51`
+
+They still **compile** — XCUITest addresses elements by string, not by app
+symbol — so nothing went red and the unit suite never noticed. They will
+**time out at runtime**, because the UI they drive no longer exists.
+
+For each, read what the suite actually verifies, then take whichever route
+fits:
+
+- If its real subject is the muscle/anatomy reveal or the head zones — i.e.
+  the muscle-selection overlay, which still exists — **repoint it at the
+  double-tap trigger**. Replace the Mark → tap → ✓ preamble with a single
+  `scene.coordinate(withNormalizedOffset:).doubleTap()`, keeping every
+  assertion about what the reveal shows. The overlay itself is unchanged, so
+  these assertions should still hold.
+- If the suite exists only to exercise the marking flow itself, **delete it**
+  — that behaviour is gone and Tasks 1–3 replaced its coverage.
+
+State in your report which route you took for each of the four, and why.
+Deleting a suite that still tests live behaviour is worse than repointing it,
+so prefer repointing when the subject survives.
+
+Use `press(forDuration: 0.05)` rather than `.tap()` for any single tap on the
+body, per the note above.
 
 - [ ] **Step 4: Rename the files to match what they now test**
 
