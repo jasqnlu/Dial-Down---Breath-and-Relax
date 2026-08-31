@@ -100,4 +100,67 @@ final class BodyMapFastPathUITests: XCTestCase {
         XCTAssertFalse(app.buttons["bodymap.regionActionBar"].exists,
                        "A drag should rotate without selecting a region")
     }
+
+    /// Contrast with `testTappingOffTheBodyClearsTheBar` above: a single tap
+    /// that resolves no region clears the bar, but a double tap that misses
+    /// the body is ignored entirely, so a fumbled double tap can't also wipe
+    /// out a selection the user already made. Guarded by one early return in
+    /// `handleDoubleTap` (`BodySceneView.swift`) that would regress silently
+    /// if someone "tidied" it into also clearing on a miss.
+    @MainActor
+    func testDoubleTappingOffTheBodyDoesNotClearTheBar() throws {
+        let app = launchBodyTab(extraArgs: [])
+        let scene = app.otherElements.firstMatch
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).press(forDuration: 0.05)
+
+        let bar = app.buttons["bodymap.regionActionBar"]
+        XCTAssertTrue(bar.waitForExistence(timeout: 5))
+        let labelBefore = bar.label
+        attach(app, "07-bar-before-miss-doubletap")
+
+        // Same clear-of-silhouette coordinate as the single-tap-miss test.
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.5)).doubleTap()
+        sleep(1)
+
+        XCTAssertTrue(bar.exists,
+                      "A double tap that misses the body should not clear the existing selection")
+        XCTAssertEqual(bar.label, labelBefore,
+                       "The bar's label should be unchanged by a missed double tap")
+        attach(app, "08-bar-survives-miss-doubletap")
+    }
+
+    /// The figure faces the viewer, so a tap on the VIEWER'S LEFT must
+    /// resolve to the figure's own RIGHT side, and vice versa. Restores
+    /// coverage dropped from the deleted `BodyMapMarking3DUITests` at
+    /// e5c06e3 (`testViewerLeftTapMapsToFigureRight` /
+    /// `testViewerRightTapMapsToFigureLeft`), adapted to the new bar-label
+    /// flow: asserting on the action bar's "Find stretches for <region>"
+    /// label directly is more robust than porting the old `sideVisible`
+    /// scan, since the bar's label is the single source of truth for what
+    /// the tap resolved to.
+    @MainActor
+    func testViewerLeftTapMapsToFigureRight() throws {
+        let app = launchBodyTab(extraArgs: [])
+        let scene = app.otherElements.firstMatch
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.42, dy: 0.40)).press(forDuration: 0.05)
+
+        let bar = app.buttons["bodymap.regionActionBar"]
+        XCTAssertTrue(bar.waitForExistence(timeout: 5))
+        attach(app, "09-viewer-left-tap")
+        XCTAssertTrue(bar.label.hasPrefix("Find stretches for Right "),
+                      "A tap on the viewer's left should resolve to the figure's own right side; got '\(bar.label)'")
+    }
+
+    @MainActor
+    func testViewerRightTapMapsToFigureLeft() throws {
+        let app = launchBodyTab(extraArgs: [])
+        let scene = app.otherElements.firstMatch
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.58, dy: 0.62)).press(forDuration: 0.05)
+
+        let bar = app.buttons["bodymap.regionActionBar"]
+        XCTAssertTrue(bar.waitForExistence(timeout: 5))
+        attach(app, "10-viewer-right-tap")
+        XCTAssertTrue(bar.label.hasPrefix("Find stretches for Left "),
+                      "A tap on the viewer's right should resolve to the figure's own left side; got '\(bar.label)'")
+    }
 }
