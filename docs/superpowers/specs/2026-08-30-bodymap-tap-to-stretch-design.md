@@ -95,6 +95,21 @@ routes taps to `handleCandidateHitTest`. Unchanged.
 | `onRegionDrilled(String, SIMD3<Float>)` | double tap that resolves a region |
 | `onBackgroundTap()` | a tap whose raycast resolves nothing |
 
+`marks: [String: BodyMark]` collapses to a single `selectionPoint:
+SIMD3<Float>?`. The dot-rendering path (`rig.updateMarks`) survives,
+reduced to a single neutral accent-coloured dot — no sensation, no colour
+choice.
+
+> **Revised during implementation (2026-08-30).** This section originally
+> also gave the selected region's hit volume "a soft accent tint, reusing
+> the box-drawing already built for candidates." That reuse does not exist:
+> `showCandidates` colourises nodes on the **muscle layer**, which is
+> `isHidden = true` / `opacity = 0` at rest (`BodyRig.init`) and only
+> revealed by `rig.reveal` during the muscle picker. An at-rest tint is new
+> work, not reuse — so it was cut, along with the `selectedRegion` property
+> that would have carried it and gone unread. The neutral dot plus the
+> region-naming action bar are the selection affordance. Adding a tint
+> later is additive and contained.
 `marks: [String: BodyMark]` collapses to `selectionPoint: SIMD3<Float>?`
 plus `selectedRegion: String?`. The dot-rendering path (`rig.updateMarks`)
 survives, reduced to a single neutral accent-coloured dot — no sensation,

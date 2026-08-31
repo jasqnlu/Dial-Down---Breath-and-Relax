@@ -27,13 +27,9 @@ struct TourStep: Identifiable {
     /// for a step whose interaction can land on more than one real target,
     /// which the current one-rect-per-step design can't represent as a
     /// single cutout:
-    /// - `bodymap.tapMarkAndRegion` needs the toolbar Mark button tapped
-    ///   first, then the body.
-    /// - `bodymap.confirmMark` needs the toolbar checkmark tapped, but a
-    ///   tap that's ambiguous between a couple of marked regions opens a
-    ///   disambiguation candidate list that can render anywhere on screen
-    ///   (wherever the user tapped the body earlier) — nowhere near the
-    ///   checkmark's small `fixedFrame` cutout.
+    /// - `bodymap.tapRegion` advances when the user taps the body
+    /// - `bodymap.findStretches` anchors to the action bar, which only
+    ///   exists once a region is selected — so it follows `bodymap.tapRegion`
     /// When `false`, the dim layer stops intercepting taps everywhere on
     /// screen, letting all of them pass through to the real app underneath;
     /// the tooltip card itself is unaffected and keeps its own hit-testing.
@@ -59,9 +55,9 @@ extension TourStep: Equatable {
 }
 
 extension TourStep {
-    /// Both toolbar-hosted callouts (the body-map Confirm button and the
-    /// Routines "+" button) render in `.primaryAction` placement, which iOS
-    /// always docks top-trailing — so one shared fallback rect covers both.
+    /// The Routines "+" button is the sole toolbar-hosted callout, rendering
+    /// in `.primaryAction` placement, which iOS always docks top-trailing —
+    /// so this fallback rect covers it.
     ///
     /// Deliberately does NOT use `proxy.safeAreaInsets.top`: the
     /// `GeometryProxy` this closure receives comes from a `GeometryReader`
@@ -99,12 +95,12 @@ extension TourStep {
         // MARK: Body
         TourStep(id: "tabbar.body", tabIndex: 1,
                  title: "Body", message: "Rotate the body and tap an area that's bothering you."),
-        TourStep(id: "bodymap.tapMarkAndRegion",
-                 title: "Mark a Spot", message: "Tap Mark up top, then tap a spot on the body that feels tense or sore.",
+        TourStep(id: "bodymap.tapRegion",
+                 title: "Tap a Sore Spot", message: "Tap anywhere that feels tense or sore — the body turns to face it.",
                  isInteractive: true, blocksBackgroundTaps: false),
-        TourStep(id: "bodymap.confirmMark",
-                 title: "Confirm It", message: "Tap the checkmark to confirm — if it asks you to pick between a couple of spots, tap the one you meant.",
-                 isInteractive: true, fixedFrame: toolbarPrimaryActionFrame, blocksBackgroundTaps: false),
+        TourStep(id: "bodymap.findStretches",
+                 title: "Find Stretches", message: "Tap here for stretches that target it. Double-tap the body instead to pick an exact muscle.",
+                 isInteractive: true, blocksBackgroundTaps: false),
         TourStep(id: "bodymap.regionResults",
                  title: "Exercises for This Spot", message: "Here's everything that targets the area you picked."),
 

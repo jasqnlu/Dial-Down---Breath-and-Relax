@@ -51,3 +51,6 @@ __pycache__/
 # finished clips from Resources/Animations/ instead; see
 # Tools/blender/exercises/ANIMATION_HANDOFF.md).
 Tools/blender/generated/
+
+# Subagent-driven-development scratch (ledger, briefs, review packages)
+.superpowers/

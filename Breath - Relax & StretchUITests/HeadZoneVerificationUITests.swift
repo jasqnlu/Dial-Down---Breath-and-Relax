@@ -1,9 +1,9 @@
 import XCTest
 
-/// Simulator verification for the head fan-out: tapping the head should surface
-/// the four evidence-based face zones (Forehead + one side's Eye, Temple, Jaw)
-/// as pins, with the side inferred from the tapped x. Asserts the fan-out is
-/// functionally correct and attaches screenshots.
+/// Simulator verification for the head fan-out: double-tapping the head
+/// should surface the four evidence-based face zones (Forehead + one side's
+/// Eye, Temple, Jaw) as pins, with the side inferred from the tapped x.
+/// Asserts the fan-out is functionally correct and attaches screenshots.
 ///
 /// ANCHOR TUNING: the on-face dot positions come from HeadZones.leftAnchors /
 /// foreheadAnchor (currently estimates). To fine-tune, run this test in Xcode
@@ -20,8 +20,7 @@ final class HeadZoneVerificationUITests: XCTestCase {
         app.launchArguments += ["-hasCompletedOnboarding", "YES",
                                 "-hasSeenAppGuide", "YES",
                                 "-auth.isSignedIn", "YES",
-                                "-auth.provider", "guest",
-                                "-debugMarkMode", "YES"]
+                                "-auth.provider", "guest"]
         app.launch()
         app.descendants(matching: .any)["Body"].firstMatch.tap()
         sleep(6) // async OBJ parse
@@ -38,25 +37,22 @@ final class HeadZoneVerificationUITests: XCTestCase {
     @MainActor
     func testHeadFansIntoFaceZones() throws {
         let app = launchBodyTab()
-        let window = app.windows.firstMatch
+        let scene = app.otherElements.firstMatch
         attach(app, "00-body-initial")
 
-        // Tap the head, slightly right-of-centre. (Offset retuned for the
-        // skin-covered pivot's BodySkinMuscle model, which renders the body
-        // smaller/lower in frame than the old BodyAnatomy model — the previous
-        // dy: 0.16 landed above the head in empty space.)
-        window.coordinate(withNormalizedOffset: CGVector(dx: 0.54, dy: 0.29)).tap()
-        sleep(1)
-        attach(app, "01-head-dot-placed")
-        app.descendants(matching: .any)["Confirm marked area"].firstMatch.tap()
-        sleep(2)
-        attach(app, "02-head-zones-fanned")
+        // Double tap the head, slightly right-of-centre. (Offset retuned for
+        // the skin-covered pivot's BodySkinMuscle model, which renders the
+        // body smaller/lower in frame than the old BodyAnatomy model — a
+        // naive dy: 0.16 lands above the head in empty space.)
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.56, dy: 0.29)).doubleTap()
+        attach(app, "01-head-double-tapped")
 
         let hint = app.staticTexts["Which area did you mean?"]
-        XCTAssertTrue(hint.waitForExistence(timeout: 3),
-                      "Tapping the head should fan into the face-zone disambiguation")
+        XCTAssertTrue(hint.waitForExistence(timeout: 8),
+                      "Double-tapping the head should fan into the face-zone disambiguation")
         sleep(1) // let the candidate-label fade-in animation settle before enumerating buttons —
                  // without this, allElementsBoundByIndex can race a still-animating button count.
+        attach(app, "02-head-zones-fanned")
 
         let labels = app.buttons.allElementsBoundByIndex.map(\.label).filter { $0.contains("—") }
         let names = Set(labels.map {

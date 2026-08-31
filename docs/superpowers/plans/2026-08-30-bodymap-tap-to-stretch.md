@@ -21,6 +21,7 @@ Visual walkthrough: <https://claude.ai/code/artifact/c85b4084-4455-49f9-b654-f9b
   ```
   xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests"
   ```
+- **The baseline on this branch is FULLY GREEN: 412 tests in 59 suites, 0 failures** (measured on `worktree-bodymap-tap-to-stretch` at 9dbc7f8, before any task ran). Older project notes claim 4 `CuratedContentIntegrityTests` cases fail from curated-content data drift — that is stale; they pass now. **Treat any failing test as a real regression caused by your change.** Supabase `NSURLErrorDomain -1003` / "Connection N: failed to connect" lines in the log are expected offline noise from `AuthManagerTests`, not failures.
 - **Pre-existing failures that are NOT regressions:** `CuratedContentIntegrityTests` (4 cases — `everyContentPackExerciseNameExistsInSeedCatalog`, `everyGoalMetaExerciseNameExistsInSeedCatalog`, `starterProgramOnlyReferencesRealExerciseNames`, `proFullResetOnlyReferencesRealExerciseNames`). These fail on a clean base from curated-content data drift. Do not attribute them to this branch and do not try to fix them here.
 - **Never `git checkout` `SeedData.json`** blind — unrelated staged work lives there.
 - Colour comes from `LuminaTheme.swift` tokens (`Color.luminaPrimary` etc.), never literal hex.
@@ -39,6 +40,7 @@ Visual walkthrough: <https://claude.ai/code/artifact/c85b4084-4455-49f9-b654-f9b
 | `Models/BodyMarkStore.swift` | **deleted** |
 | `Services/SeedMigrator.swift` | + `removeRetiredBodyMapMarkStorage(defaults:)` |
 | `Views/Onboarding/TourCoordinator.swift` | Two body-map steps renamed and recopied |
+| `Tests/BodyRigRotationTests.swift` | **new** — rotation math + selection dot + retired-storage cleanup |
 | `Tests/BodyRigRotationTests.swift` | **new** — rotation math + selection dot |
 
 `BodySceneView.swift` is already 1042 lines. This plan does not split it: the rig, its host and its view are one tightly-coupled unit that changes together, and splitting it is out of scope for an interaction rework. It comes out roughly net-neutral in size.
@@ -221,6 +223,7 @@ Leave the rest of `snap` — the `SCNTransaction` block and the `committedRotati
 xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests/BodyRigRotationTests"
 ```
 
+Expected: **10 tests, all passing.** If the count is 0, the file landed outside `Breath - Relax & StretchTests/` — move it.
 Expected: **9 tests, all passing.** If the count is 0, the file landed outside `Breath - Relax & StretchTests/` — move it.
 
 - [ ] **Step 6: Run the full unit suite to confirm `snap` didn't regress**
@@ -229,6 +232,7 @@ Expected: **9 tests, all passing.** If the count is 0, the file landed outside `
 xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests"
 ```
 
+Expected: **all 412+ tests passing, 0 failures.** The baseline is green, so any failure is yours.
 Expected: green except the 4 known `CuratedContentIntegrityTests` failures listed in Global Constraints.
 
 - [ ] **Step 7: Commit**
@@ -361,6 +365,18 @@ The behavioural change, in one commit: the second tap recogniser, the split call
 - Consumes: `BodyRig.rotationToFace(localPoint:currentY:threshold:)`, `BodyRig.updateSelection(point:)`, `BodyRig.snap(to:)`, `BodyRig.committedRotationY` (Tasks 1–2 and existing)
 - Produces:
   - `RegionActionBar(regionName: String, onFind: () -> Void)` with accessibility identifier `"bodymap.regionActionBar"`
+  - `BodySceneView(facing:style:selectionPoint:onRegionSelected:onRegionDrilled:onBackgroundTap:disambiguationCandidates:focusPoint:focusedRegion:onCandidateFocused:onCandidateSelected:refocusToken:)`
+
+**Scope note — no at-rest region tint.** The spec's §3.2 said the selected
+region's hit volume would take "a soft accent tint, reusing the box-drawing
+already built for candidates." That reuse does not exist: `showCandidates`
+and the candidate boxes colourise nodes on the **muscle layer**, which is
+`isHidden = true` / `opacity = 0` at rest (set in `BodyRig.init`) and only
+revealed by `rig.reveal` during the muscle picker. Tinting a region at rest
+would be new work, not reuse, so it is cut from scope — and with it the
+`selectedRegion` property, which would otherwise be declared and never read.
+The neutral selection dot plus the action bar naming the region are the
+selection affordance. Do not add a region highlight in this task.
   - `BodySceneView(facing:style:selectionPoint:selectedRegion:onRegionSelected:onRegionDrilled:onBackgroundTap:disambiguationCandidates:focusPoint:focusedRegion:onCandidateFocused:onCandidateSelected:refocusToken:)`
 
 - [ ] **Step 1: Add `RegionActionBar`**
@@ -520,6 +536,42 @@ In `BodySceneView`, replace the `marks` property and the `onRegionTap` property 
     var onBackgroundTap: (() -> Void)? = nil
 ```
 
+Then replace `BodySceneView`'s memberwise `init` in full. It currently reads
+`marks:` / `onRegionTap:`; the new one reads:
+
+```swift
+    init(facing: BodyFacing,
+         style: BodyModelStyle = .anatomy,
+         selectionPoint: SIMD3<Float>? = nil,
+         onRegionSelected: ((String, SIMD3<Float>) -> Void)? = nil,
+         onRegionDrilled: ((String, SIMD3<Float>) -> Void)? = nil,
+         onBackgroundTap: (() -> Void)? = nil,
+         disambiguationCandidates: [MarkCandidate] = [],
+         focusPoint: SIMD3<Float>? = nil,
+         focusedRegion: String? = nil,
+         onCandidateFocused: ((String) -> Void)? = nil,
+         onCandidateSelected: ((String) -> Void)? = nil,
+         refocusToken: Int = 0) {
+        self.facing = facing
+        self.style = style
+        self.selectionPoint = selectionPoint
+        self.onRegionSelected = onRegionSelected
+        self.onRegionDrilled = onRegionDrilled
+        self.onBackgroundTap = onBackgroundTap
+        self.disambiguationCandidates = disambiguationCandidates
+        self.focusPoint = focusPoint
+        self.focusedRegion = focusedRegion
+        self.onCandidateFocused = onCandidateFocused
+        self.onCandidateSelected = onCandidateSelected
+        self.refocusToken = refocusToken
+        _rig = State(initialValue: BodyRig(style: style))
+        _cameraZ = State(initialValue: BodyRig.freeExploreCameraDistance)
+        _committedCameraZ = State(initialValue: BodyRig.freeExploreCameraDistance)
+    }
+```
+
+The three `_rig` / `_cameraZ` / `_committedCameraZ` lines at the end are
+unchanged from the existing init — keep them exactly as they are.
 Update the `init` signature and body to match — replace `marks: [String: BodyMark] = [:]` with `selectionPoint: SIMD3<Float>? = nil, selectedRegion: String? = nil`, and `onRegionTap:` with the three new callbacks, assigning each to `self.<name>`. Keep every other parameter and its order (`facing`, `style`, then the new selection inputs and callbacks, then `disambiguationCandidates`, `focusPoint`, `focusedRegion`, `onCandidateFocused`, `onCandidateSelected`, `refocusToken`).
 
 - [ ] **Step 4: Rewrite the tap routing and gestures in `BodySceneView`**
@@ -991,6 +1043,33 @@ Expected: **3 tests, all passing.**
 
 In `BodySceneView.swift`, delete the whole `updateMarks(_:)` function (`:312`–`:326`, from its `/// Rebuilds the marker-dot spheres…` doc comment through its closing brace). `updateSelection` replaced it in Task 2 and is already wired up.
 
+- [ ] **Step 6b: Clear the two loose ends the Task 3 review found**
+
+Both are dead remnants of the removed flow, verified unreferenced.
+
+First, `Breath - Relax & Stretch/Views/BodyMap/BodySceneView.swift` around
+line 714 still documents `disambiguationCandidates` as *"the post-confirm
+disambiguation popup"*. There is no Confirm step any more — the trigger is a
+double tap. Reword that doc comment to describe the double-tap trigger.
+
+Second, `Breath - Relax & Stretch/Views/BodyMap/BodyMapComponents.swift`
+around line 125 declares two initializers:
+
+```swift
+    init(bodyPart: String)        { self.bodyParts = [bodyPart] }
+    init(bodyParts: [String])     { self.bodyParts = bodyParts }
+```
+
+`init(bodyParts:)` was reached only by the deleted `.marked([String])` route.
+Verified unreferenced app-wide: the sole construction site is
+`BodyMapView.swift:103`, using `init(bodyPart:)`. Delete the
+`init(bodyParts:)` line only.
+
+**Leave the internal `bodyParts` array plumbing alone** — the `navTitle` /
+`emptyDescription` multi-region branches and `RegionExerciseResolver(regions:)`
+all still take a collection, and collapsing that is a larger refactor with no
+behavioural benefit and no bearing on this rework.
+
 - [ ] **Step 7: Delete the three files**
 
 ```bash
@@ -1009,12 +1088,20 @@ grep -rn "BodyMarkStore\|SensationColor\|sensationColors\|LegendSheet\|MarkedAre
 
 Expected: **no output.** Any hit is a reference the earlier tasks missed — fix it before building.
 
+Then confirm the multi-region initializer is gone but its property survives:
+
+```bash
+grep -rn "init(bodyParts:" --include='*.swift' .   # expect: no output
+grep -rn "let bodyParts" --include='*.swift' .     # expect: the property declaration only
+```
+
 - [ ] **Step 9: Run the full unit suite**
 
 ```
 xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchTests"
 ```
 
+Expected: **all tests passing, 0 failures.** The baseline is green, so any failure is yours.
 Expected: green except the 4 known `CuratedContentIntegrityTests` failures.
 
 - [ ] **Step 10: Commit**
@@ -1132,6 +1219,23 @@ git commit -m "feat(onboarding): retarget the body-map tour steps at tap-to-stre
 **Interfaces:**
 - Consumes: accessibility identifier `"bodymap.regionActionBar"` from Task 3
 
+**Carried forward from Task 3 — use `press(forDuration:)` for single taps on
+the body, not `.tap()`.** The single-tap recogniser is wired
+`singleTap.require(toFail: doubleTap)`, and XCUITest's bare
+`XCUICoordinate.tap()` does not reliably satisfy that dependency — the tap
+can be consumed while the double-tap recogniser is still deciding, so the
+selection never appears and the test flakes. `press(forDuration: 0.05)` on
+the same coordinate does satisfy it. Task 3 confirmed this against the real
+app (a reverted diagnostic showed the app behaving correctly under a manual
+tap), so this is an XCUITest harness artifact, not a bug in the gesture
+wiring — do NOT "fix" the app to make `.tap()` work.
+
+This applies only to taps landing on the SceneKit surface, which go through
+the gesture-recogniser pair. `bar.tap()` and `app.buttons["Cancel"].tap()`
+are ordinary SwiftUI buttons and are unaffected. `.doubleTap()` is likewise
+unaffected — it drives the double-tap recogniser directly, with nothing to
+wait on.
+
 - [ ] **Step 1: Rewrite the fast-path test**
 
 Replace the body of `BodyMapMarking3DUITests.swift` — keep its existing `setUpWithError`, `launchBodyTab(extraArgs:)` and `attach(_:_:)` helpers verbatim (they handle the 30s seed/migration wait and the 6s OBJ parse, both still needed) and replace the `@Test`-bearing methods with:
@@ -1145,6 +1249,7 @@ Replace the body of `BodyMapMarking3DUITests.swift` — keep its existing `setUp
 
         // Tap upper-left of the torso — reliably a shoulder/arm hit volume.
         let scene = app.otherElements.firstMatch
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.36, dy: 0.34)).press(forDuration: 0.05)
         scene.coordinate(withNormalizedOffset: CGVector(dx: 0.36, dy: 0.34)).tap()
 
         let bar = app.buttons["bodymap.regionActionBar"]
@@ -1170,12 +1275,14 @@ Replace the body of `BodyMapMarking3DUITests.swift` — keep its existing `setUp
     func testTappingOffTheBodyClearsTheBar() throws {
         let app = launchBodyTab(extraArgs: [])
         let scene = app.otherElements.firstMatch
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.36, dy: 0.34)).press(forDuration: 0.05)
         scene.coordinate(withNormalizedOffset: CGVector(dx: 0.36, dy: 0.34)).tap()
 
         let bar = app.buttons["bodymap.regionActionBar"]
         XCTAssertTrue(bar.waitForExistence(timeout: 5))
 
         // Far left edge, clear of the silhouette.
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.5)).press(forDuration: 0.05)
         scene.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.5)).tap()
         let gone = NSPredicate(format: "exists == false")
         expectation(for: gone, evaluatedWith: bar)
@@ -1248,6 +1355,47 @@ In `BodyMapConfirmZoomUITests.swift`, keep the existing launch/attach helpers an
 xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme BreathRelaxStretch -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:"Breath - Relax & StretchUITests/BodyMapMarking3DUITests" -only-testing:"Breath - Relax & StretchUITests/BodyMapConfirmZoomUITests"
 ```
 
+After Step 3b, re-run including whichever of the four you repointed, e.g.
+`-only-testing:"Breath - Relax & StretchUITests/MuscleRevealUITest"`.
+
+
+Expected: all cases pass. If a tap lands on empty space rather than the body, adjust the normalized offsets — the model is height-normalized and centred, so `dx` between 0.35 and 0.65 and `dy` between 0.3 and 0.6 is the reliable band. Attachments are kept, so open the screenshots to see where the tap landed rather than guessing.
+
+- [ ] **Step 3b: Deal with the four OTHER UI test files that drive the removed UI**
+
+Found by the Task 3 review — a gap in this plan, not something the earlier
+tasks missed. Four suites beyond the two you just rewrote still query
+`"Mark areas by tapping"`, `"Confirm marked area"` or
+`"Find exercises for marked areas"`:
+
+- `Breath - Relax & StretchUITests/MuscleRevealUITest.swift:25`
+- `Breath - Relax & StretchUITests/AnatomyRevealUITest.swift:29`
+- `Breath - Relax & StretchUITests/AnatomyJointRevealUITest.swift:23`
+- `Breath - Relax & StretchUITests/HeadZoneVerificationUITests.swift:51`
+
+They still **compile** — XCUITest addresses elements by string, not by app
+symbol — so nothing went red and the unit suite never noticed. They will
+**time out at runtime**, because the UI they drive no longer exists.
+
+For each, read what the suite actually verifies, then take whichever route
+fits:
+
+- If its real subject is the muscle/anatomy reveal or the head zones — i.e.
+  the muscle-selection overlay, which still exists — **repoint it at the
+  double-tap trigger**. Replace the Mark → tap → ✓ preamble with a single
+  `scene.coordinate(withNormalizedOffset:).doubleTap()`, keeping every
+  assertion about what the reveal shows. The overlay itself is unchanged, so
+  these assertions should still hold.
+- If the suite exists only to exercise the marking flow itself, **delete it**
+  — that behaviour is gone and Tasks 1–3 replaced its coverage.
+
+State in your report which route you took for each of the four, and why.
+Deleting a suite that still tests live behaviour is worse than repointing it,
+so prefer repointing when the subject survives.
+
+Use `press(forDuration: 0.05)` rather than `.tap()` for any single tap on the
+body, per the note above.
+
 Expected: all cases pass. If a tap lands on empty space rather than the body, adjust the normalized offsets — the model is height-normalized and centred, so `dx` between 0.35 and 0.65 and `dy` between 0.3 and 0.6 is the reliable band. Attachments are kept, so open the screenshots to see where the tap landed rather than guessing.
 
 - [ ] **Step 4: Rename the files to match what they now test**
@@ -1280,6 +1428,19 @@ Per `CLAUDE.md`, the graph must be kept current after code changes. AST-only, no
 graphify update .
 ```
 
+- [ ] **Step 2: Do NOT commit it**
+
+`graphify-out/` is deliberately git-ignored — see `.gitignore:40`, whose own
+comment says "regenerate with `graphify update .`". It is generated AST cache
+(~651 files, ~124k lines), derived entirely from the source, and committing it
+would bloat the repo and conflict on every branch.
+
+There is nothing to commit for this task. The refreshed graph lives on disk
+for this checkout, which is the whole point.
+
+**If you find yourself reaching for `git add -f` here, stop** — the force flag
+is the signal that the ignore rule is doing its job, not an obstacle to route
+around.
 - [ ] **Step 2: Commit**
 
 ```bash

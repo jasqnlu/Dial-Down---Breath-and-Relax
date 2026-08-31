@@ -239,6 +239,7 @@ struct BreathRelaxStretchApp: App {
         migrateSeedToV9IfNeeded()
         migrateSeedToV10IfNeeded()
         migrateSeedToV11IfNeeded()
+        removeRetiredBodyMapStorage()
     }
 
     /// Loads the bundled seed JSON's exercise array, or nil if unavailable.
@@ -376,6 +377,13 @@ struct BreathRelaxStretchApp: App {
             }
         }
         seedDataVersion = max(seedDataVersion, 11)
+    }
+
+    /// One-line cleanup of retired body-map marking storage. Unlike the
+    /// `migrateSeedToVNIfNeeded` family this has no version gate — it is
+    /// idempotent and touches only UserDefaults.
+    private func removeRetiredBodyMapStorage() {
+        SeedMigrator.removeRetiredBodyMapMarkStorage()
     }
 
     // MARK: - Remote catalog sync (best-effort, offline-first)
