@@ -24,7 +24,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		8506FCE02FCBA3210029F3D0 /* Breath - Relax & Stretch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "Breath - Relax & Stretch.app"; path = BreathRelaxStretch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8506FCE02FCBA3210029F3D0 /* BreathRelaxStretch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BreathRelaxStretch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8506FCEF2FCBA3220029F3D0 /* Breath - Relax & StretchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Breath - Relax & StretchTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8506FCF92FCBA3220029F3D0 /* Breath - Relax & StretchUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Breath - Relax & StretchUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -85,7 +85,7 @@
 		8506FCE12FCBA3210029F3D0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8506FCE02FCBA3210029F3D0 /* Breath - Relax & Stretch.app */,
+				8506FCE02FCBA3210029F3D0 /* BreathRelaxStretch.app */,
 				8506FCEF2FCBA3220029F3D0 /* Breath - Relax & StretchTests.xctest */,
 				8506FCF92FCBA3220029F3D0 /* Breath - Relax & StretchUITests.xctest */,
 			);
@@ -114,7 +114,7 @@
 			packageProductDependencies = (
 			);
 			productName = BreathRelaxStretch;
-			productReference = 8506FCE02FCBA3210029F3D0 /* Breath - Relax & Stretch.app */;
+			productReference = 8506FCE02FCBA3210029F3D0 /* BreathRelaxStretch.app */;
 			productType = "com.apple.product-type.application";
 		};
 		8506FCEE2FCBA3220029F3D0 /* Breath - Relax & StretchTests */ = {
