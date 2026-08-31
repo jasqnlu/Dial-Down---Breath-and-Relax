@@ -1412,12 +1412,19 @@ Per `CLAUDE.md`, the graph must be kept current after code changes. AST-only, no
 graphify update .
 ```
 
-- [ ] **Step 2: Commit**
+- [ ] **Step 2: Do NOT commit it**
 
-```bash
-git add graphify-out
-git commit -m "chore: refresh knowledge graph after bodymap rework"
-```
+`graphify-out/` is deliberately git-ignored — see `.gitignore:40`, whose own
+comment says "regenerate with `graphify update .`". It is generated AST cache
+(~651 files, ~124k lines), derived entirely from the source, and committing it
+would bloat the repo and conflict on every branch.
+
+There is nothing to commit for this task. The refreshed graph lives on disk
+for this checkout, which is the whole point.
+
+**If you find yourself reaching for `git add -f` here, stop** — the force flag
+is the signal that the ignore rule is doing its job, not an obstacle to route
+around.
 
 ---
 
