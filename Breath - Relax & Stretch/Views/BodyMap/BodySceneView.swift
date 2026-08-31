@@ -736,6 +736,11 @@ struct BodySceneView: View {
     var onCandidateFocused: ((String) -> Void)? = nil
     /// A tap on the already-focused candidate → drill into its exercises.
     var onCandidateSelected: ((String) -> Void)? = nil
+    /// A double-tap whose raycast misses the body's mesh entirely — a
+    /// double-tap "outside" the body. Fires in every state (idle, selected,
+    /// or focused on the muscle picker); the parent decides what "outside"
+    /// cancels.
+    var onOutsideDoubleTap: (() -> Void)? = nil
     /// Bumped by the parent when returning from the pushed exercise list, to
     /// re-apply the zoom + re-project the labels: a covered SCNView pauses
     /// rendering and its projected anchors go stale, so the scene must be
@@ -779,6 +784,7 @@ struct BodySceneView: View {
          focusedRegion: String? = nil,
          onCandidateFocused: ((String) -> Void)? = nil,
          onCandidateSelected: ((String) -> Void)? = nil,
+         onOutsideDoubleTap: (() -> Void)? = nil,
          refocusToken: Int = 0) {
         self.facing = facing
         self.style = style
@@ -791,6 +797,7 @@ struct BodySceneView: View {
         self.focusedRegion = focusedRegion
         self.onCandidateFocused = onCandidateFocused
         self.onCandidateSelected = onCandidateSelected
+        self.onOutsideDoubleTap = onOutsideDoubleTap
         self.refocusToken = refocusToken
         _rig = State(initialValue: BodyRig(style: style))
         _cameraZ = State(initialValue: BodyRig.freeExploreCameraDistance)
@@ -814,6 +821,7 @@ struct BodySceneView: View {
                                   onSingleTap: singleTapHandler,
                                   onDoubleTap: doubleTapHandler,
                                   doubleTapEnabled: !isFocused,
+                                  onOutsideDoubleTap: { point, view in handleOutsideDoubleTap(at: point, in: view) },
                                   onViewReady: { scnView = $0 })
                     .gesture(rotationGesture, including: isFocused ? .none : .all)
                     .simultaneousGesture(zoomGesture, including: isFocused ? .none : .all)
@@ -1002,6 +1010,17 @@ struct BodySceneView: View {
         withAnimation(.easeIn(duration: 0.2)) {
             pinPositions = positions
         }
+    }
+
+    /// A double-tap "outside" the body: the raycast at the tap location finds
+    /// no hit at all (a tap that lands on the mesh — including the selection
+    /// dot or a candidate pin — isn't "outside"). Mirrors `resolveRegion`'s
+    /// hit-testing so the two agree on where the body actually is under the
+    /// current rotation/zoom.
+    private func handleOutsideDoubleTap(at point: CGPoint, in view: SCNView) {
+        let hits = view.hitTest(point, options: [.searchMode: SCNHitTestSearchMode.all.rawValue as NSNumber])
+        guard hits.isEmpty else { return }
+        onOutsideDoubleTap?()
     }
 
     /// Stage 1: raycast the visible skin surface — the only unhidden geometry
