@@ -12,7 +12,7 @@ import SceneKit
 //          ├─ muscleNode   (grayscale muscle pieces, hidden at rest — revealed on tap)
 //          └─ marksNode    (marker-dot spheres, normalized-space coords)
 //
-// At rest, `skinNode` is the only visible surface (marking taps hit it) and
+// At rest, `skinNode` is the only visible surface (taps hit it) and
 // `muscleNode.isHidden == true` (hidden geometry is excluded from hit-testing).
 // A tap reveals the muscle layer: `muscleNode` unhides and fades in while
 // `skinNode` fades to a translucent scrim, then candidate muscles colorize.
@@ -290,7 +290,7 @@ final class BodyRig {
     }
 
     /// Restores the opaque skin and hides the muscle layer again once the fade
-    /// completes (so marking taps go back to hitting only the skin), and resets
+    /// completes (so taps go back to hitting only the skin), and resets
     /// every muscle piece's tint.
     func dismissReveal() {
         SCNTransaction.begin()
@@ -396,7 +396,7 @@ final class BodyRig {
     // MARK: - Disambiguation focus
 
     /// Dollies the camera to frame `localPoint` (rigNode-local, normalized
-    /// model space) close-up and centered — the confirm-step zoom onto the
+    /// model space) close-up and centered — the double-tap zoom onto the
     /// actual tapped dot. The camera approaches along the dot's **outward
     /// radial-horizontal normal** (the direction from the body's central Y
     /// axis out through the dot) rather than a fixed world-Z, so a dot on the
@@ -545,13 +545,17 @@ final class BodyRig {
         let current = committedRotationY
         let destination = current + BodyRig.shortestDelta(from: current, to: target)
 
+        // Eager, not deferred to the completion block: applyDragRotation /
+        // commitDragRotation compose against committedRotationY synchronously,
+        // so if this snap is mid-animation when a drag starts, the stored
+        // bearing must already read as `destination` (where the rig is
+        // heading) or the drag composes against a stale pre-snap value and
+        // the body visibly jumps. Do not move this back into completionBlock.
+        committedRotationY = destination
         SCNTransaction.begin()
         SCNTransaction.animationDuration = 0.35
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
         rigNode.eulerAngles.y = Float(destination)
-        SCNTransaction.completionBlock = { [weak self] in
-            self?.committedRotationY = destination
-        }
         SCNTransaction.commit()
     }
 }
@@ -648,7 +652,7 @@ private extension BodyFacing {
     var rotationY: CGFloat { self == .front ? 0 : .pi }
 }
 
-/// A muscle region offered by the confirm-step disambiguation popup, with
+/// A muscle region offered by the double-tap muscle-selection overlay, with
 /// the rigNode-local point its label/leader anchors to (its hitbox center)
 /// and the box bounds used to draw the "rough" on-body region highlight.
 struct MarkCandidate: Equatable, Identifiable {
@@ -952,7 +956,7 @@ struct BodySceneView: View {
     /// Zooms onto the tapped dot and reveals the muscle layer — fading the skin
     /// to a translucent scrim while the muscle mesh fades in and each candidate
     /// colorizes; projects the label anchors once the dolly settles. Shared by
-    /// the initial confirm and the return-from-navigation re-focus.
+    /// the initial double-tap and the return-from-navigation re-focus.
     private func applyFocus(for candidates: [MarkCandidate]) {
         guard let primary = candidates.first else { return }
         rig.focus(on: focusPoint ?? primary.point) { projectPinPositions(for: candidates) }

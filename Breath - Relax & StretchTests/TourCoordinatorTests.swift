@@ -112,7 +112,7 @@ struct TourCoordinatorTests {
         #expect(nonBlockingIDs == ["bodymap.tapRegion", "bodymap.findStretches"])
     }
 
-    @Test func onlyTheTwoToolbarStepsHaveFixedFrame() {
+    @Test func onlyTheRoutinesToolbarStepHasFixedFrame() {
         let fixedFrameIDs = Set(TourStep.allSteps.filter { $0.fixedFrame != nil }.map(\.id))
         #expect(fixedFrameIDs == ["routines.createButton"])
     }
