@@ -66,4 +66,42 @@ final class BodyMapMusclePickerUITests: XCTestCase {
         waitForExpectations(timeout: 5)
         attach(app, "03-back-to-body")
     }
+
+    /// Follows the double-tap path all the way to a candidate: focus an
+    /// unfocused rail label, confirm its accessibility label flips from
+    /// "— highlight region" to "— view exercises", then tap it again to
+    /// drill into its stretch list. Deliberately targets an UNFOCUSED
+    /// candidate rather than the auto-focused first one
+    /// (`focusedRegion = pins.first?.name` on open) — this exercises both
+    /// halves of `handleCandidateTap`'s focus/select branch instead of only
+    /// the already-focused half, which is strictly more coverage.
+    @MainActor
+    func testTappingACandidateFocusesThenSelectsIt() throws {
+        let app = launchBodyTab(extraArgs: [])
+        let scene = app.otherElements.firstMatch
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).doubleTap()
+        XCTAssertTrue(app.staticTexts["Which area did you mean?"].waitForExistence(timeout: 8))
+        attach(app, "04-picker-open")
+
+        let unfocused = app.buttons.matching(
+            NSPredicate(format: "label ENDSWITH '— highlight region'")
+        ).firstMatch
+        XCTAssertTrue(unfocused.waitForExistence(timeout: 5),
+                      "Expected at least one unfocused candidate on the rail")
+        let fullLabel = unfocused.label
+        let name = String(fullLabel.dropLast(" — highlight region".count))
+
+        unfocused.tap()
+
+        let focused = app.buttons["\(name) — view exercises"]
+        XCTAssertTrue(focused.waitForExistence(timeout: 5),
+                      "Tapping an unfocused candidate should flip its label to '— view exercises'")
+        attach(app, "05-candidate-focused")
+
+        focused.tap()
+
+        XCTAssertTrue(app.navigationBars[name].waitForExistence(timeout: 5),
+                      "Tapping the now-focused candidate should push the stretch list for '\(name)'")
+        attach(app, "06-candidate-stretch-list")
+    }
 }
