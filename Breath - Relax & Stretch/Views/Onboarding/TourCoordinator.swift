@@ -55,9 +55,9 @@ extension TourStep: Equatable {
 }
 
 extension TourStep {
-    /// Both toolbar-hosted callouts (the body-map Confirm button and the
-    /// Routines "+" button) render in `.primaryAction` placement, which iOS
-    /// always docks top-trailing — so one shared fallback rect covers both.
+    /// The Routines "+" button is the sole toolbar-hosted callout, rendering
+    /// in `.primaryAction` placement, which iOS always docks top-trailing —
+    /// so this fallback rect covers it.
     ///
     /// Deliberately does NOT use `proxy.safeAreaInsets.top`: the
     /// `GeometryProxy` this closure receives comes from a `GeometryReader`

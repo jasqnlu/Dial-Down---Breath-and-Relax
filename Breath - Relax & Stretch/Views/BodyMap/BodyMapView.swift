@@ -163,6 +163,15 @@ struct BodyMapView: View {
                               minBound: $0.minBound, maxBound: $0.maxBound)
             }
         }
+        // Currently unreachable, kept as a defensive guard: `resolveRegion`
+        // only ever produces a region here via `MuscleHitResolver.regionName`,
+        // whose nearest-centre fallback returns non-nil for any point given a
+        // non-empty volume set; `candidates` shares that same fallback via
+        // `primaryVolume`, so `raw` always contains at least `primary.name`,
+        // which is guaranteed present in `volumesByName`. The parent-drop
+        // filter above can only remove a name that is the parent of a head
+        // also in `raw`, and a head is never its own parent, so it can't
+        // empty the list either. `pins` is therefore never empty in practice.
         if pins.isEmpty {
             exercisesRoute = ExercisesRoute(region: region)
         } else {
@@ -172,6 +181,7 @@ struct BodyMapView: View {
             focusPoint = point
             focusedRegion = pins.first?.name
             disambiguationCandidates = pins
+            tourCoordinator.notifyInteraction(id: "bodymap.tapRegion")
         }
     }
 
