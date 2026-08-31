@@ -70,14 +70,14 @@ struct TourCoordinatorTests {
 
     @Test func notifyInteractionAdvancesOnlyWhenIDMatchesTheCurrentInteractiveStep() {
         let coordinator = makeCoordinator()
-        for _ in 0..<4 { coordinator.advance() } // land on bodymap.tapMarkAndRegion
-        #expect(coordinator.currentStep?.id == "bodymap.tapMarkAndRegion")
+        for _ in 0..<4 { coordinator.advance() } // land on bodymap.tapRegion
+        #expect(coordinator.currentStep?.id == "bodymap.tapRegion")
 
         coordinator.notifyInteraction(id: "some.other.id")
-        #expect(coordinator.currentStep?.id == "bodymap.tapMarkAndRegion") // no-op: id doesn't match
+        #expect(coordinator.currentStep?.id == "bodymap.tapRegion") // no-op: id doesn't match
 
-        coordinator.notifyInteraction(id: "bodymap.tapMarkAndRegion")
-        #expect(coordinator.currentStep?.id == "bodymap.confirmMark") // matches: advances
+        coordinator.notifyInteraction(id: "bodymap.tapRegion")
+        #expect(coordinator.currentStep?.id == "bodymap.findStretches") // matches: advances
     }
 
     @Test func notifyInteractionIsNoOpOnANonInteractiveStep() {
@@ -104,16 +104,16 @@ struct TourCoordinatorTests {
 
     @Test func onlyTheTwoBodyMapStepsAreInteractive() {
         let interactiveIDs = Set(TourStep.allSteps.filter(\.isInteractive).map(\.id))
-        #expect(interactiveIDs == ["bodymap.tapMarkAndRegion", "bodymap.confirmMark"])
+        #expect(interactiveIDs == ["bodymap.tapRegion", "bodymap.findStretches"])
     }
 
     @Test func onlyTheTwoBodyMapStepsDisableBackgroundTapBlocking() {
         let nonBlockingIDs = Set(TourStep.allSteps.filter { !$0.blocksBackgroundTaps }.map(\.id))
-        #expect(nonBlockingIDs == ["bodymap.tapMarkAndRegion", "bodymap.confirmMark"])
+        #expect(nonBlockingIDs == ["bodymap.tapRegion", "bodymap.findStretches"])
     }
 
-    @Test func onlyTheTwoToolbarStepsHaveFixedFrame() {
+    @Test func onlyTheRoutinesToolbarStepHasFixedFrame() {
         let fixedFrameIDs = Set(TourStep.allSteps.filter { $0.fixedFrame != nil }.map(\.id))
-        #expect(fixedFrameIDs == ["bodymap.confirmMark", "routines.createButton"])
+        #expect(fixedFrameIDs == ["routines.createButton"])
     }
 }

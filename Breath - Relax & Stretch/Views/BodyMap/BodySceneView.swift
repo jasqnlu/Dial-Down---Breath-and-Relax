@@ -12,7 +12,7 @@ import SceneKit
 //          ├─ muscleNode   (grayscale muscle pieces, hidden at rest — revealed on tap)
 //          └─ marksNode    (marker-dot spheres, normalized-space coords)
 //
-// At rest, `skinNode` is the only visible surface (marking taps hit it) and
+// At rest, `skinNode` is the only visible surface (taps hit it) and
 // `muscleNode.isHidden == true` (hidden geometry is excluded from hit-testing).
 // A tap reveals the muscle layer: `muscleNode` unhides and fades in while
 // `skinNode` fades to a translucent scrim, then candidate muscles colorize.
@@ -290,7 +290,7 @@ final class BodyRig {
     }
 
     /// Restores the opaque skin and hides the muscle layer again once the fade
-    /// completes (so marking taps go back to hitting only the skin), and resets
+    /// completes (so taps go back to hitting only the skin), and resets
     /// every muscle piece's tint.
     func dismissReveal() {
         SCNTransaction.begin()
@@ -307,22 +307,22 @@ final class BodyRig {
 
     // MARK: - Marker dots
 
-    /// Rebuilds the marker-dot spheres from the mark set. Cheap for the
-    /// handful of marks a body carries; called on every mark change.
-    func updateMarks(_ marks: [String: BodyMark]) {
+    /// Renders the single "you tapped here" dot, or clears it when `nil`.
+    /// One neutral accent dot, no sensation colour, and never more than one
+    /// at a time.
+    func updateSelection(point: SIMD3<Float>?) {
         marksNode.childNodes.forEach { $0.removeFromParentNode() }
-        for (region, mark) in marks {
-            let sphere = SCNSphere(radius: 0.028)
-            let color = UIColor(sensationColors.first { $0.id == mark.sensationID }?.color ?? .red)
-            let material = SCNMaterial()
-            material.diffuse.contents = color
-            material.emission.contents = color
-            sphere.materials = [material]
-            let node = SCNNode(geometry: sphere)
-            node.name = region
-            node.position = SCNVector3(mark.point.x, mark.point.y, mark.point.z)
-            marksNode.addChildNode(node)
-        }
+        guard let point else { return }
+        let sphere = SCNSphere(radius: 0.028)
+        let color = UIColor(Color.luminaPrimary)
+        let material = SCNMaterial()
+        material.diffuse.contents = color
+        material.emission.contents = color
+        sphere.materials = [material]
+        let node = SCNNode(geometry: sphere)
+        node.name = "selection-dot"
+        node.position = SCNVector3(point.x, point.y, point.z)
+        marksNode.addChildNode(node)
     }
 
     /// Debug: launch with `-debugHitboxes YES` to render every hit volume as
@@ -346,6 +346,40 @@ final class BodyRig {
         }
     }
 
+    // MARK: - Rotation math
+
+    /// Signed shortest angular distance from `from` to `to`, wrapped to ±π —
+    /// so a turn never takes the long way round the seam.
+    static func shortestDelta(from: CGFloat, to: CGFloat) -> CGFloat {
+        let twoPi = 2 * CGFloat.pi
+        var delta = (to - from.truncatingRemainder(dividingBy: twoPi))
+            .truncatingRemainder(dividingBy: twoPi)
+        if delta >  .pi { delta -= twoPi }
+        if delta < -.pi { delta += twoPi }
+        return delta
+    }
+
+    /// The absolute rig Y-rotation that brings `localPoint` round to face the
+    /// camera (which sits on world +Z).
+    ///
+    /// `localPoint` is rigNode-LOCAL, so the rig's current rotation is already
+    /// factored out and the target is simply the negated bearing —
+    /// independent of `currentY`. `currentY` is used only to decide whether
+    /// the move is worth making.
+    ///
+    /// Returns `nil` when the point has no bearing (it sits on the Y axis) or
+    /// when the rig already faces it to within `threshold`, so a tap near
+    /// dead-centre is a no-op rather than a jitter.
+    static func rotationToFace(localPoint: SIMD3<Float>,
+                               currentY: CGFloat,
+                               threshold: CGFloat = 8 * .pi / 180) -> CGFloat? {
+        let planar = SIMD2<Float>(localPoint.x, localPoint.z)
+        guard simd_length(planar) > 1e-4 else { return nil }
+        let target = -CGFloat(atan2(localPoint.x, localPoint.z))
+        guard abs(shortestDelta(from: currentY, to: target)) >= threshold else { return nil }
+        return target
+    }
+
     // MARK: - Rotation
 
     func applyDragRotation(deltaX: CGFloat) {
@@ -362,7 +396,7 @@ final class BodyRig {
     // MARK: - Disambiguation focus
 
     /// Dollies the camera to frame `localPoint` (rigNode-local, normalized
-    /// model space) close-up and centered — the confirm-step zoom onto the
+    /// model space) close-up and centered — the double-tap zoom onto the
     /// actual tapped dot. The camera approaches along the dot's **outward
     /// radial-horizontal normal** (the direction from the body's central Y
     /// axis out through the dot) rather than a fixed world-Z, so a dot on the
@@ -508,21 +542,20 @@ final class BodyRig {
     /// Snap to the nearest equivalent of `target` (0 = front, π = back) via the
     /// shortest angular path, so flipping Front/Back never spins the long way round.
     func snap(to target: CGFloat) {
-        let twoPi = 2 * CGFloat.pi
         let current = committedRotationY
-        let normalizedCurrent = current.truncatingRemainder(dividingBy: twoPi)
-        var delta = (target - normalizedCurrent).truncatingRemainder(dividingBy: twoPi)
-        if delta > .pi  { delta -= twoPi }
-        if delta < -.pi { delta += twoPi }
-        let destination = current + delta
+        let destination = current + BodyRig.shortestDelta(from: current, to: target)
 
+        // Eager, not deferred to the completion block: applyDragRotation /
+        // commitDragRotation compose against committedRotationY synchronously,
+        // so if this snap is mid-animation when a drag starts, the stored
+        // bearing must already read as `destination` (where the rig is
+        // heading) or the drag composes against a stale pre-snap value and
+        // the body visibly jumps. Do not move this back into completionBlock.
+        committedRotationY = destination
         SCNTransaction.begin()
         SCNTransaction.animationDuration = 0.35
         SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
         rigNode.eulerAngles.y = Float(destination)
-        SCNTransaction.completionBlock = { [weak self] in
-            self?.committedRotationY = destination
-        }
         SCNTransaction.commit()
     }
 }
@@ -535,7 +568,11 @@ final class BodyRig {
 private struct SceneKitContainer: UIViewRepresentable {
     let scene: SCNScene
     let pointOfView: SCNNode
-    var onTap: ((CGPoint, SCNView) -> Void)?
+    var onSingleTap: ((CGPoint, SCNView) -> Void)?
+    var onDoubleTap: ((CGPoint, SCNView) -> Void)?
+    /// Disabled while the muscle picker is up, so candidate taps there don't
+    /// pay the double-tap fail interval for a gesture that does nothing.
+    var doubleTapEnabled: Bool = true
     /// Fired once after the SCNView is created — lets BodySceneView hold a
     /// reference for `projectPoint` (candidate-pin placement), since
     /// SwiftUI's SceneView hides the underlying SCNView entirely.
@@ -548,15 +585,32 @@ private struct SceneKitContainer: UIViewRepresentable {
         view.rendersContinuously = true
         view.antialiasingMode = .multisampling4X
         view.backgroundColor = .clear
-        let tap = UITapGestureRecognizer(target: context.coordinator,
-                                         action: #selector(Coordinator.handleTap(_:)))
-        view.addGestureRecognizer(tap)
+
+        let double = UITapGestureRecognizer(target: context.coordinator,
+                                            action: #selector(Coordinator.handleDoubleTap(_:)))
+        double.numberOfTapsRequired = 2
+        view.addGestureRecognizer(double)
+        context.coordinator.doubleTapRecognizer = double
+
+        let single = UITapGestureRecognizer(target: context.coordinator,
+                                            action: #selector(Coordinator.handleSingleTap(_:)))
+        single.numberOfTapsRequired = 1
+        // Without this the single tap also fires on the FIRST tap of every
+        // double tap — rotating the body out from under the muscle picker
+        // just as it opens. The cost is that a single tap resolves one
+        // double-tap interval (~300 ms) after the finger lifts; the 0.35 s
+        // rotate that starts then is what makes it read as lead-in.
+        single.require(toFail: double)
+        view.addGestureRecognizer(single)
+
         DispatchQueue.main.async { onViewReady?(view) }
         return view
     }
 
     func updateUIView(_ view: SCNView, context: Context) {
-        context.coordinator.onTap = onTap
+        context.coordinator.onSingleTap = onSingleTap
+        context.coordinator.onDoubleTap = onDoubleTap
+        context.coordinator.doubleTapRecognizer?.isEnabled = doubleTapEnabled
         // A covered SCNView pauses its display link; re-assert continuous
         // rendering so it resumes drawing when revealed (e.g. after popping the
         // exercise list) instead of showing a stale/blank frame.
@@ -564,15 +618,29 @@ private struct SceneKitContainer: UIViewRepresentable {
         view.isPlaying = true
     }
 
-    func makeCoordinator() -> Coordinator { Coordinator(onTap: onTap) }
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onSingleTap: onSingleTap, onDoubleTap: onDoubleTap)
+    }
 
     final class Coordinator: NSObject {
-        var onTap: ((CGPoint, SCNView) -> Void)?
-        init(onTap: ((CGPoint, SCNView) -> Void)?) { self.onTap = onTap }
+        var onSingleTap: ((CGPoint, SCNView) -> Void)?
+        var onDoubleTap: ((CGPoint, SCNView) -> Void)?
+        weak var doubleTapRecognizer: UITapGestureRecognizer?
 
-        @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
+        init(onSingleTap: ((CGPoint, SCNView) -> Void)?,
+             onDoubleTap: ((CGPoint, SCNView) -> Void)?) {
+            self.onSingleTap = onSingleTap
+            self.onDoubleTap = onDoubleTap
+        }
+
+        @objc func handleSingleTap(_ recognizer: UITapGestureRecognizer) {
             guard let view = recognizer.view as? SCNView else { return }
-            onTap?(recognizer.location(in: view), view)
+            onSingleTap?(recognizer.location(in: view), view)
+        }
+
+        @objc func handleDoubleTap(_ recognizer: UITapGestureRecognizer) {
+            guard let view = recognizer.view as? SCNView else { return }
+            onDoubleTap?(recognizer.location(in: view), view)
         }
     }
 }
@@ -584,7 +652,7 @@ private extension BodyFacing {
     var rotationY: CGFloat { self == .front ? 0 : .pi }
 }
 
-/// A muscle region offered by the confirm-step disambiguation popup, with
+/// A muscle region offered by the double-tap muscle-selection overlay, with
 /// the rigNode-local point its label/leader anchors to (its hitbox center)
 /// and the box bounds used to draw the "rough" on-body region highlight.
 struct MarkCandidate: Equatable, Identifiable {
@@ -616,20 +684,24 @@ struct BodySceneView: View {
     /// Which anatomy layer to render. `.anatomy` is the only style.
     var style: BodyModelStyle = .anatomy
 
-    /// Current marks, rendered as marker-dot spheres on the body.
-    var marks: [String: BodyMark] = [:]
+    /// The point the user last single-tapped, rendered as one neutral dot.
+    var selectionPoint: SIMD3<Float>? = nil
 
-    /// When set, tapping the body resolves the tapped surface point to a
-    /// region name (see `MuscleHitResolver`) and calls back with the name and
-    /// the point in normalized model space. Rotation stays free — hit-testing
+    /// Single tap that resolved a region: the body has already been rotated
+    /// to face it by the time this fires. Rotation stays free — hit-testing
     /// works at any camera angle.
-    var onRegionTap: ((String, SIMD3<Float>) -> Void)? = nil
+    var onRegionSelected: ((String, SIMD3<Float>) -> Void)? = nil
+    /// Double tap that resolved a region — the muscle-picker trigger.
+    var onRegionDrilled: ((String, SIMD3<Float>) -> Void)? = nil
+    /// A tap whose raycast resolved nothing (off the mesh, or on a spot no
+    /// hit volume covers). Clears the selection.
+    var onBackgroundTap: (() -> Void)? = nil
 
-    /// Non-empty while showing the post-confirm disambiguation popup: the
-    /// camera zooms to the first candidate and a labeled pin is placed for
-    /// each. Rotation/zoom gestures freeze while this is non-empty, since the
-    /// camera is under programmatic control and pin positions aren't
-    /// recomputed per-frame.
+    /// Non-empty while showing the double-tap disambiguation popup: a double
+    /// tap that resolves to more than one candidate zooms the camera to the
+    /// first candidate and places a labeled pin for each. Rotation/zoom
+    /// gestures freeze while this is non-empty, since the camera is under
+    /// programmatic control and pin positions aren't recomputed per-frame.
     var disambiguationCandidates: [MarkCandidate] = []
     /// The tapped dot to zoom onto (rigNode-local). When nil, falls back to the
     /// primary candidate's anchor for backward compatibility.
@@ -657,6 +729,15 @@ struct BodySceneView: View {
     @State private var isLoading = true
     @State private var scnView: SCNView?
     @State private var pinPositions: [String: CGPoint] = [:]
+    /// Set once the initial `facing`-driven rotation snap has happened.
+    /// `.onAppear` fires again when this view reappears after the exercise
+    /// list is popped — without this guard that re-snap would throw away a
+    /// tap-to-face rotation the single-tap path just set (see `handleSingleTap`),
+    /// spinning the body back to `facing.rotationY` even though nothing asked
+    /// it to. `.onChange(of: facing)` already owns every later facing change
+    /// (the Front/Back toggle), so this flag only needs to gate the one-time
+    /// initial snap.
+    @State private var didSnapInitialFacing = false
     @Environment(\.colorScheme) private var colorScheme
 
     private let minCameraZ: CGFloat = BodyRig.defaultCameraDistance * 0.62         // closer  = zoomed in
@@ -666,8 +747,10 @@ struct BodySceneView: View {
 
     init(facing: BodyFacing,
          style: BodyModelStyle = .anatomy,
-         marks: [String: BodyMark] = [:],
-         onRegionTap: ((String, SIMD3<Float>) -> Void)? = nil,
+         selectionPoint: SIMD3<Float>? = nil,
+         onRegionSelected: ((String, SIMD3<Float>) -> Void)? = nil,
+         onRegionDrilled: ((String, SIMD3<Float>) -> Void)? = nil,
+         onBackgroundTap: (() -> Void)? = nil,
          disambiguationCandidates: [MarkCandidate] = [],
          focusPoint: SIMD3<Float>? = nil,
          focusedRegion: String? = nil,
@@ -676,8 +759,10 @@ struct BodySceneView: View {
          refocusToken: Int = 0) {
         self.facing = facing
         self.style = style
-        self.marks = marks
-        self.onRegionTap = onRegionTap
+        self.selectionPoint = selectionPoint
+        self.onRegionSelected = onRegionSelected
+        self.onRegionDrilled = onRegionDrilled
+        self.onBackgroundTap = onBackgroundTap
         self.disambiguationCandidates = disambiguationCandidates
         self.focusPoint = focusPoint
         self.focusedRegion = focusedRegion
@@ -703,12 +788,14 @@ struct BodySceneView: View {
                 )
             } else {
                 SceneKitContainer(scene: rig.scene, pointOfView: rig.cameraNode,
-                                  onTap: tapHandler,
+                                  onSingleTap: singleTapHandler,
+                                  onDoubleTap: doubleTapHandler,
+                                  doubleTapEnabled: !isFocused,
                                   onViewReady: { scnView = $0 })
                     .gesture(rotationGesture, including: isFocused ? .none : .all)
                     .simultaneousGesture(zoomGesture, including: isFocused ? .none : .all)
                     .overlay(alignment: .top) {
-                        Text("Drag to rotate")
+                        Text("Tap a sore spot · double-tap for muscles · drag to rotate")
                             .font(.caption2.weight(.medium))
                             .padding(.horizontal, 10).padding(.vertical, 5)
                             .background(.regularMaterial, in: Capsule())
@@ -737,7 +824,10 @@ struct BodySceneView: View {
             // here would leave the camera's x/y and orientation mismatched,
             // which reads as the body having rotated.
             guard !isFocused else { return }
-            rig.snap(to: facing.rotationY)
+            if !didSnapInitialFacing {
+                rig.snap(to: facing.rotationY)
+                didSnapInitialFacing = true
+            }
             rig.cameraNode.position.z = Float(cameraZ)
         }
         .task(id: ObjectIdentifier(rig)) {
@@ -746,7 +836,7 @@ struct BodySceneView: View {
             // if `rig` itself is ever replaced (it currently isn't post-init,
             // but keeps this correct if that changes).
             await rig.loadIfNeeded()
-            rig.updateMarks(marks)          // persisted marks show on first load
+            rig.updateSelection(point: selectionPoint)
             rig.addDebugHitboxesIfEnabled()
             isLoading = false
         }
@@ -775,8 +865,8 @@ struct BodySceneView: View {
             guard !disambiguationCandidates.isEmpty else { return }
             applyFocus(for: disambiguationCandidates)
         }
-        .onChange(of: marks) { _, newMarks in
-            rig.updateMarks(newMarks)
+        .onChange(of: selectionPoint) { _, newPoint in
+            rig.updateSelection(point: newPoint)
         }
         .onAppear { applyBackground() }
         .onChange(of: colorScheme) { _, _ in applyBackground() }
@@ -793,16 +883,43 @@ struct BodySceneView: View {
 
     // MARK: - Tap → region resolution
 
-    /// While focused (disambiguation), taps hit-test the revealed muscle mesh so
-    /// tapping a highlighted muscle on the body selects it directly. Otherwise,
-    /// taps mark — but only when a region-tap callback is installed, so plain
-    /// viewing never pays for hit-testing.
-    private var tapHandler: ((CGPoint, SCNView) -> Void)? {
+    /// While focused (the muscle picker), taps hit-test the revealed muscle
+    /// mesh so tapping a highlighted muscle selects it directly, and the
+    /// double-tap recogniser is switched off entirely. Otherwise a single tap
+    /// selects and a double tap drills.
+    private var singleTapHandler: ((CGPoint, SCNView) -> Void)? {
         if isFocused {
             return { point, view in handleCandidateHitTest(at: point, in: view) }
         }
-        guard onRegionTap != nil else { return nil }
-        return { point, view in handleTap(at: point, in: view) }
+        guard onRegionSelected != nil || onBackgroundTap != nil else { return nil }
+        return { point, view in handleSingleTap(at: point, in: view) }
+    }
+
+    private var doubleTapHandler: ((CGPoint, SCNView) -> Void)? {
+        guard !isFocused, onRegionDrilled != nil else { return nil }
+        return { point, view in handleDoubleTap(at: point, in: view) }
+    }
+
+    /// Single tap: turn the body to face the tapped point, then report the
+    /// region. `rotationToFace` returns nil when the rig already faces it,
+    /// which is the common case for a tap on the side already showing.
+    private func handleSingleTap(at point: CGPoint, in view: SCNView) {
+        guard let (region, local) = resolveRegion(at: point, in: view) else {
+            onBackgroundTap?()
+            return
+        }
+        if let target = BodyRig.rotationToFace(localPoint: local,
+                                               currentY: rig.committedRotationY) {
+            rig.snap(to: target)
+        }
+        onRegionSelected?(region, local)
+    }
+
+    /// Double tap: straight into the muscle picker. A miss is ignored rather
+    /// than clearing, so a fumbled double tap doesn't also wipe the selection.
+    private func handleDoubleTap(at point: CGPoint, in view: SCNView) {
+        guard let (region, local) = resolveRegion(at: point, in: view) else { return }
+        onRegionDrilled?(region, local)
     }
 
     /// Raycasts the revealed muscle geometry; the nearest hit whose muscle node
@@ -839,7 +956,7 @@ struct BodySceneView: View {
     /// Zooms onto the tapped dot and reveals the muscle layer — fading the skin
     /// to a translucent scrim while the muscle mesh fades in and each candidate
     /// colorizes; projects the label anchors once the dolly settles. Shared by
-    /// the initial confirm and the return-from-navigation re-focus.
+    /// the initial double-tap and the return-from-navigation re-focus.
     private func applyFocus(for candidates: [MarkCandidate]) {
         guard let primary = candidates.first else { return }
         rig.focus(on: focusPoint ?? primary.point) { projectPinPositions(for: candidates) }
@@ -864,20 +981,20 @@ struct BodySceneView: View {
         }
     }
 
-    /// Stage 1: raycast the visible skin surface — the only unhidden geometry at
-    /// rest (marker dots are excluded explicitly, so the first non-marker hit is
-    /// the skin surface point). Stage 2: convert the world hit point to
-    /// rigNode-local (normalized model space, rotation factored out) and resolve
-    /// it with pure math.
-    private func handleTap(at point: CGPoint, in view: SCNView) {
-        guard let onRegionTap else { return }
+    /// Stage 1: raycast the visible skin surface — the only unhidden geometry
+    /// at rest (the selection dot is excluded explicitly, so the first
+    /// non-marker hit is the skin surface point). Stage 2: convert the world
+    /// hit point to rigNode-local (normalized model space, rotation factored
+    /// out) and resolve it with pure math.
+    private func resolveRegion(at point: CGPoint, in view: SCNView) -> (String, SIMD3<Float>)? {
         let hits = view.hitTest(point, options: [.searchMode: SCNHitTestSearchMode.all.rawValue as NSNumber])
-        guard let hit = hits.first(where: { !isMarkerNode($0.node) }) else { return }
+        guard let hit = hits.first(where: { !isMarkerNode($0.node) }) else { return nil }
         let local = rig.rigNode.convertPosition(hit.worldCoordinates, from: nil)
         let normalized = SIMD3(Float(local.x), Float(local.y), Float(local.z))
-        if let region = MuscleHitResolver.regionName(at: normalized, in: BodyHitVolumes.all) {
-            onRegionTap(region, normalized)
+        guard let region = MuscleHitResolver.regionName(at: normalized, in: BodyHitVolumes.all) else {
+            return nil
         }
+        return (region, normalized)
     }
 
     private func isMarkerNode(_ node: SCNNode) -> Bool {
