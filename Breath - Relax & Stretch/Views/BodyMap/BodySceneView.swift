@@ -573,6 +573,15 @@ private struct SceneKitContainer: UIViewRepresentable {
     /// Disabled while the muscle picker is up, so candidate taps there don't
     /// pay the double-tap fail interval for a gesture that does nothing.
     var doubleTapEnabled: Bool = true
+    /// A double-tap anywhere on the view, including off the body's
+    /// silhouette — deliberately a SEPARATE recognizer from `onDoubleTap`'s,
+    /// with no `require(toFail:)` relationship to `single`. Tying this to the
+    /// existing double-tap recognizer instead would force it to stay enabled
+    /// (and single-tap's fail-interval wait with it) even while the muscle
+    /// picker is up, undoing the latency work above. Always enabled; its
+    /// handler only acts on a raycast miss, so it never competes with a real
+    /// single/double tap on the mesh.
+    var onOutsideDoubleTap: ((CGPoint, SCNView) -> Void)?
     /// Fired once after the SCNView is created — lets BodySceneView hold a
     /// reference for `projectPoint` (candidate-pin placement), since
     /// SwiftUI's SceneView hides the underlying SCNView entirely.
@@ -603,6 +612,11 @@ private struct SceneKitContainer: UIViewRepresentable {
         single.require(toFail: double)
         view.addGestureRecognizer(single)
 
+        let outsideDouble = UITapGestureRecognizer(target: context.coordinator,
+                                                    action: #selector(Coordinator.handleOutsideDoubleTap(_:)))
+        outsideDouble.numberOfTapsRequired = 2
+        view.addGestureRecognizer(outsideDouble)
+
         DispatchQueue.main.async { onViewReady?(view) }
         return view
     }
@@ -610,6 +624,7 @@ private struct SceneKitContainer: UIViewRepresentable {
     func updateUIView(_ view: SCNView, context: Context) {
         context.coordinator.onSingleTap = onSingleTap
         context.coordinator.onDoubleTap = onDoubleTap
+        context.coordinator.onOutsideDoubleTap = onOutsideDoubleTap
         context.coordinator.doubleTapRecognizer?.isEnabled = doubleTapEnabled
         // A covered SCNView pauses its display link; re-assert continuous
         // rendering so it resumes drawing when revealed (e.g. after popping the
@@ -619,18 +634,21 @@ private struct SceneKitContainer: UIViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onSingleTap: onSingleTap, onDoubleTap: onDoubleTap)
+        Coordinator(onSingleTap: onSingleTap, onDoubleTap: onDoubleTap, onOutsideDoubleTap: onOutsideDoubleTap)
     }
 
     final class Coordinator: NSObject {
         var onSingleTap: ((CGPoint, SCNView) -> Void)?
         var onDoubleTap: ((CGPoint, SCNView) -> Void)?
+        var onOutsideDoubleTap: ((CGPoint, SCNView) -> Void)?
         weak var doubleTapRecognizer: UITapGestureRecognizer?
 
         init(onSingleTap: ((CGPoint, SCNView) -> Void)?,
-             onDoubleTap: ((CGPoint, SCNView) -> Void)?) {
+             onDoubleTap: ((CGPoint, SCNView) -> Void)?,
+             onOutsideDoubleTap: ((CGPoint, SCNView) -> Void)? = nil) {
             self.onSingleTap = onSingleTap
             self.onDoubleTap = onDoubleTap
+            self.onOutsideDoubleTap = onOutsideDoubleTap
         }
 
         @objc func handleSingleTap(_ recognizer: UITapGestureRecognizer) {
@@ -641,6 +659,11 @@ private struct SceneKitContainer: UIViewRepresentable {
         @objc func handleDoubleTap(_ recognizer: UITapGestureRecognizer) {
             guard let view = recognizer.view as? SCNView else { return }
             onDoubleTap?(recognizer.location(in: view), view)
+        }
+
+        @objc func handleOutsideDoubleTap(_ recognizer: UITapGestureRecognizer) {
+            guard let view = recognizer.view as? SCNView else { return }
+            onOutsideDoubleTap?(recognizer.location(in: view), view)
         }
     }
 }
