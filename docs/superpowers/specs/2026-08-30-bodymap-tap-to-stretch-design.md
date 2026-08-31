@@ -110,6 +110,11 @@ choice.
 > that would have carried it and gone unread. The neutral dot plus the
 > region-naming action bar are the selection affordance. Adding a tint
 > later is additive and contained.
+`marks: [String: BodyMark]` collapses to `selectionPoint: SIMD3<Float>?`
+plus `selectedRegion: String?`. The dot-rendering path (`rig.updateMarks`)
+survives, reduced to a single neutral accent-coloured dot — no sensation,
+no colour choice. The selected region's hit volume takes a soft accent
+tint, reusing the box-drawing already built for candidates.
 
 ### 3.3 Rotate-to-face — `BodyRig`
 
