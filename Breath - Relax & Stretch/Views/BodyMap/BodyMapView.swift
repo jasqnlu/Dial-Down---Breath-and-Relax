@@ -213,19 +213,17 @@ struct BodyMapView: View {
         }
     }
 
-    /// A double-tap that misses the body entirely — same intent as tapping
-    /// Cancel: put down whatever "finding which exercises" UI is up. While
-    /// the muscle picker is open, that's `cancelDisambiguation` (which also
-    /// zooms the camera back out — see `BodySceneView`'s
-    /// `disambiguationCandidates` `onChange`, which resets the camera once
-    /// candidates go empty). Otherwise, if a single tap left a selection up,
-    /// it just clears that dot/bar — there's no zoom to undo yet.
+    /// A double-tap that misses the body entirely, while the muscle picker
+    /// is open — same intent as tapping Cancel: puts the picker down and (via
+    /// `BodySceneView`'s `disambiguationCandidates` `onChange`, which resets
+    /// the camera once candidates go empty) zooms back out. Deliberately
+    /// scoped to `isDisambiguating` only: outside that state, a missed double
+    /// tap is a no-op, same as a missed single tap under `handleDoubleTap` —
+    /// a fumbled double tap must not wipe a plain single-tap selection either
+    /// (see `testDoubleTappingOffTheBodyDoesNotClearTheBar`).
     private func handleOutsideDoubleTap() {
-        if isDisambiguating {
-            cancelDisambiguation()
-        } else if selection != nil {
-            clearSelection()
-        }
+        guard isDisambiguating else { return }
+        cancelDisambiguation()
     }
 
     // MARK: - Facing control
