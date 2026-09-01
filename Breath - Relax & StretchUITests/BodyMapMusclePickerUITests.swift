@@ -127,5 +127,14 @@ final class BodyMapMusclePickerUITests: XCTestCase {
         waitForExpectations(timeout: 5)
         XCTAssertTrue(app.navigationBars["Body Map"].exists,
                       "Should still be on Body Map, not navigated to a stretch list")
+
+        // Must STAY gone, not just disappear momentarily — an
+        // `expectation(for:)` above only proves it vanished at some point in
+        // the window, not that it stuck. Checked repeatedly.
+        for _ in 0..<6 {
+            usleep(200_000)
+            XCTAssertFalse(app.staticTexts["Which area did you mean?"].exists,
+                           "The picker should not reappear after being cancelled")
+        }
     }
 }
