@@ -133,6 +133,35 @@ final class BodyMapFastPathUITests: XCTestCase {
         }
     }
 
+    /// A double tap outside the body resets the camera even fully at rest —
+    /// no selection, no picker — as a quick "undo my pinch" gesture. There's
+    /// no accessibility-visible signal for camera distance, so this pinches
+    /// in first (a visibly bigger body) and screenshots before/after the
+    /// outside double-tap for manual visual confirmation; the hard
+    /// assertions guard against a crash or an accidental navigation.
+    @MainActor
+    func testDoubleTappingOffTheBodyAtRestResetsTheZoom() throws {
+        let app = launchBodyTab(extraArgs: [])
+        let scene = app.otherElements.firstMatch
+
+        // Pinch in (scale > 1 zooms in) around the body's center.
+        scene.pinch(withScale: 2.5, velocity: 2)
+        sleep(1)
+        attach(app, "09-pinched-in-at-rest")
+
+        XCTAssertFalse(app.buttons["bodymap.regionActionBar"].exists,
+                       "A pinch should zoom without selecting a region")
+
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.5)).doubleTap()
+        sleep(1)
+        attach(app, "10-after-outside-doubletap-at-rest")
+
+        XCTAssertTrue(app.navigationBars["Body Map"].exists,
+                      "Should still be on Body Map — an outside double tap at rest must not navigate")
+        XCTAssertFalse(app.buttons["bodymap.regionActionBar"].exists,
+                       "Still no selection — the outside double tap must not have hit the body")
+    }
+
     /// The figure faces the viewer, so a tap on the VIEWER'S LEFT must
     /// resolve to the figure's own RIGHT side, and vice versa. Restores
     /// coverage dropped from the deleted `BodyMapMarking3DUITests` at
