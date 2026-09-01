@@ -573,6 +573,15 @@ private struct SceneKitContainer: UIViewRepresentable {
     /// Disabled while the muscle picker is up, so candidate taps there don't
     /// pay the double-tap fail interval for a gesture that does nothing.
     var doubleTapEnabled: Bool = true
+    /// A double-tap anywhere on the view, including off the body's
+    /// silhouette — deliberately a SEPARATE recognizer from `onDoubleTap`'s,
+    /// with no `require(toFail:)` relationship to `single`. Tying this to the
+    /// existing double-tap recognizer instead would force it to stay enabled
+    /// (and single-tap's fail-interval wait with it) even while the muscle
+    /// picker is up, undoing the latency work above. Always enabled; its
+    /// handler only acts on a raycast miss, so it never competes with a real
+    /// single/double tap on the mesh.
+    var onOutsideDoubleTap: ((CGPoint, SCNView) -> Void)?
     /// Fired once after the SCNView is created — lets BodySceneView hold a
     /// reference for `projectPoint` (candidate-pin placement), since
     /// SwiftUI's SceneView hides the underlying SCNView entirely.
@@ -603,6 +612,19 @@ private struct SceneKitContainer: UIViewRepresentable {
         single.require(toFail: double)
         view.addGestureRecognizer(single)
 
+        let outsideDouble = UITapGestureRecognizer(target: context.coordinator,
+                                                    action: #selector(Coordinator.handleOutsideDoubleTap(_:)))
+        outsideDouble.numberOfTapsRequired = 2
+        // Two same-class recognizers on one view default to mutually
+        // exclusive recognition — without this, UIKit lets only one of
+        // `double` and `outsideDouble` ever win, silently breaking whichever
+        // one loses (this broke the existing double-tap-opens-the-picker
+        // flow the first time). The delegate opts both into recognizing the
+        // same double-tap simultaneously; each still only acts within its
+        // own hit/miss branch, so nothing double-fires.
+        outsideDouble.delegate = context.coordinator
+        view.addGestureRecognizer(outsideDouble)
+
         DispatchQueue.main.async { onViewReady?(view) }
         return view
     }
@@ -610,6 +632,7 @@ private struct SceneKitContainer: UIViewRepresentable {
     func updateUIView(_ view: SCNView, context: Context) {
         context.coordinator.onSingleTap = onSingleTap
         context.coordinator.onDoubleTap = onDoubleTap
+        context.coordinator.onOutsideDoubleTap = onOutsideDoubleTap
         context.coordinator.doubleTapRecognizer?.isEnabled = doubleTapEnabled
         // A covered SCNView pauses its display link; re-assert continuous
         // rendering so it resumes drawing when revealed (e.g. after popping the
@@ -619,18 +642,26 @@ private struct SceneKitContainer: UIViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onSingleTap: onSingleTap, onDoubleTap: onDoubleTap)
+        Coordinator(onSingleTap: onSingleTap, onDoubleTap: onDoubleTap, onOutsideDoubleTap: onOutsideDoubleTap)
     }
 
-    final class Coordinator: NSObject {
+    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
         var onSingleTap: ((CGPoint, SCNView) -> Void)?
         var onDoubleTap: ((CGPoint, SCNView) -> Void)?
+        var onOutsideDoubleTap: ((CGPoint, SCNView) -> Void)?
         weak var doubleTapRecognizer: UITapGestureRecognizer?
 
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                               shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+            true
+        }
+
         init(onSingleTap: ((CGPoint, SCNView) -> Void)?,
-             onDoubleTap: ((CGPoint, SCNView) -> Void)?) {
+             onDoubleTap: ((CGPoint, SCNView) -> Void)?,
+             onOutsideDoubleTap: ((CGPoint, SCNView) -> Void)? = nil) {
             self.onSingleTap = onSingleTap
             self.onDoubleTap = onDoubleTap
+            self.onOutsideDoubleTap = onOutsideDoubleTap
         }
 
         @objc func handleSingleTap(_ recognizer: UITapGestureRecognizer) {
@@ -641,6 +672,11 @@ private struct SceneKitContainer: UIViewRepresentable {
         @objc func handleDoubleTap(_ recognizer: UITapGestureRecognizer) {
             guard let view = recognizer.view as? SCNView else { return }
             onDoubleTap?(recognizer.location(in: view), view)
+        }
+
+        @objc func handleOutsideDoubleTap(_ recognizer: UITapGestureRecognizer) {
+            guard let view = recognizer.view as? SCNView else { return }
+            onOutsideDoubleTap?(recognizer.location(in: view), view)
         }
     }
 }
@@ -713,6 +749,11 @@ struct BodySceneView: View {
     var onCandidateFocused: ((String) -> Void)? = nil
     /// A tap on the already-focused candidate → drill into its exercises.
     var onCandidateSelected: ((String) -> Void)? = nil
+    /// A double-tap whose raycast misses the body's mesh entirely — a
+    /// double-tap "outside" the body. Fires in every state (idle, selected,
+    /// or focused on the muscle picker); the parent decides what "outside"
+    /// cancels.
+    var onOutsideDoubleTap: (() -> Void)? = nil
     /// Bumped by the parent when returning from the pushed exercise list, to
     /// re-apply the zoom + re-project the labels: a covered SCNView pauses
     /// rendering and its projected anchors go stale, so the scene must be
@@ -756,6 +797,7 @@ struct BodySceneView: View {
          focusedRegion: String? = nil,
          onCandidateFocused: ((String) -> Void)? = nil,
          onCandidateSelected: ((String) -> Void)? = nil,
+         onOutsideDoubleTap: (() -> Void)? = nil,
          refocusToken: Int = 0) {
         self.facing = facing
         self.style = style
@@ -768,6 +810,7 @@ struct BodySceneView: View {
         self.focusedRegion = focusedRegion
         self.onCandidateFocused = onCandidateFocused
         self.onCandidateSelected = onCandidateSelected
+        self.onOutsideDoubleTap = onOutsideDoubleTap
         self.refocusToken = refocusToken
         _rig = State(initialValue: BodyRig(style: style))
         _cameraZ = State(initialValue: BodyRig.freeExploreCameraDistance)
@@ -791,6 +834,7 @@ struct BodySceneView: View {
                                   onSingleTap: singleTapHandler,
                                   onDoubleTap: doubleTapHandler,
                                   doubleTapEnabled: !isFocused,
+                                  onOutsideDoubleTap: { point, view in handleOutsideDoubleTap(at: point, in: view) },
                                   onViewReady: { scnView = $0 })
                     .gesture(rotationGesture, including: isFocused ? .none : .all)
                     .simultaneousGesture(zoomGesture, including: isFocused ? .none : .all)
@@ -915,8 +959,11 @@ struct BodySceneView: View {
         onRegionSelected?(region, local)
     }
 
-    /// Double tap: straight into the muscle picker. A miss is ignored rather
-    /// than clearing, so a fumbled double tap doesn't also wipe the selection.
+    /// Double tap: straight into the muscle picker. A miss here is ignored —
+    /// unlike `handleOutsideDoubleTap` below, this only ever fires for a
+    /// *fumbled* double tap (this recognizer is disabled while the picker is
+    /// already up), so it shouldn't also wipe the selection. A deliberate
+    /// double tap on empty space is handled separately.
     private func handleDoubleTap(at point: CGPoint, in view: SCNView) {
         guard let (region, local) = resolveRegion(at: point, in: view) else { return }
         onRegionDrilled?(region, local)
@@ -979,6 +1026,34 @@ struct BodySceneView: View {
         withAnimation(.easeIn(duration: 0.2)) {
             pinPositions = positions
         }
+    }
+
+    /// A double-tap "outside" the body: the raycast at the tap location finds
+    /// no hit at all (a tap that lands on the mesh — including the selection
+    /// dot or a candidate pin — isn't "outside"). Mirrors `resolveRegion`'s
+    /// hit-testing so the two agree on where the body actually is under the
+    /// current rotation/zoom.
+    ///
+    /// Fires in EVERY state, including fully at rest (no selection, no
+    /// picker) — a quick way to reset any prior pinch back to a framing that
+    /// shows the whole body, not just a way to back out of something.
+    ///
+    /// While the muscle picker is up, the parent's `onOutsideDoubleTap`
+    /// cancels it, which (via `disambiguationCandidates`'s `onChange` below)
+    /// already zooms the camera back out — nothing more to do here. In every
+    /// other state (plain selection, or fully at rest) there's no such
+    /// `onChange` to piggyback on, so this resets the camera itself: back to
+    /// the free-explore framing, so the whole body is visible again
+    /// regardless of any prior pinch.
+    private func handleOutsideDoubleTap(at point: CGPoint, in view: SCNView) {
+        let hits = view.hitTest(point, options: [.searchMode: SCNHitTestSearchMode.all.rawValue as NSNumber])
+        guard hits.isEmpty else { return }
+        if !isFocused {
+            cameraZ = BodyRig.freeExploreCameraDistance
+            committedCameraZ = cameraZ
+            rig.resetCamera(distance: cameraZ)
+        }
+        onOutsideDoubleTap?()
     }
 
     /// Stage 1: raycast the visible skin surface — the only unhidden geometry
