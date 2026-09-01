@@ -101,32 +101,36 @@ final class BodyMapFastPathUITests: XCTestCase {
                        "A drag should rotate without selecting a region")
     }
 
-    /// Contrast with `testTappingOffTheBodyClearsTheBar` above: a single tap
-    /// that resolves no region clears the bar, but a double tap that misses
-    /// the body is ignored entirely, so a fumbled double tap can't also wipe
-    /// out a selection the user already made. Guarded by one early return in
-    /// `handleDoubleTap` (`BodySceneView.swift`) that would regress silently
-    /// if someone "tidied" it into also clearing on a miss.
+    /// A DELIBERATE double tap off the body clears the bar too — same as a
+    /// single tap-off-body (`testTappingOffTheBodyClearsTheBar` above), but
+    /// this one also zooms the camera back out to the free-explore framing,
+    /// so the whole body is visible again regardless of any prior pinch.
+    /// This is `BodySceneView.handleOutsideDoubleTap`, distinct from
+    /// `handleDoubleTap`'s silent miss (used only when the OTHER, always-on
+    /// double-tap-to-drill recogniser happens to land off the mesh — a
+    /// fumbled double tap, which must NOT wipe a selection either).
     @MainActor
-    func testDoubleTappingOffTheBodyDoesNotClearTheBar() throws {
+    func testDoubleTappingOffTheBodyClearsTheBarAndZoomsOut() throws {
         let app = launchBodyTab(extraArgs: [])
         let scene = app.otherElements.firstMatch
         scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).press(forDuration: 0.05)
 
         let bar = app.buttons["bodymap.regionActionBar"]
         XCTAssertTrue(bar.waitForExistence(timeout: 5))
-        let labelBefore = bar.label
-        attach(app, "07-bar-before-miss-doubletap")
+        attach(app, "07-bar-before-outside-doubletap")
 
         // Same clear-of-silhouette coordinate as the single-tap-miss test.
         scene.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.5)).doubleTap()
-        sleep(1)
+        let gone = NSPredicate(format: "exists == false")
+        expectation(for: gone, evaluatedWith: bar)
+        waitForExpectations(timeout: 5)
+        attach(app, "08-bar-cleared-by-outside-doubletap")
 
-        XCTAssertTrue(bar.exists,
-                      "A double tap that misses the body should not clear the existing selection")
-        XCTAssertEqual(bar.label, labelBefore,
-                       "The bar's label should be unchanged by a missed double tap")
-        attach(app, "08-bar-survives-miss-doubletap")
+        // Must STAY cleared, not just disappear momentarily.
+        for _ in 0..<6 {
+            usleep(200_000)
+            XCTAssertFalse(bar.exists, "The bar should not reappear after being cleared")
+        }
     }
 
     /// The figure faces the viewer, so a tap on the VIEWER'S LEFT must
