@@ -16,10 +16,10 @@ struct TourStep: Identifiable {
     /// True only for the two body-map steps, which wait for a real tap
     /// instead of a Next button.
     let isInteractive: Bool
-    /// Screen-relative fallback for the two toolbar-hosted callouts, where
+    /// Screen-relative fallback for a toolbar-hosted callout, where
     /// `.tourAnchor` can't cross the `NavigationStack` → `UINavigationController`
-    /// boundary reliably. `nil` for every other step, which uses real anchor
-    /// tracking instead.
+    /// boundary reliably. No current step needs this (the tour is anchor-only
+    /// now), but the mechanism stays available for a future toolbar callout.
     let fixedFrame: ((GeometryProxy) -> CGRect)?
     /// Whether the dim layer's Path should hit-test at all for this step.
     /// `true` (the default) for every ordinary step — the dim layer blocks
@@ -55,42 +55,14 @@ extension TourStep: Equatable {
 }
 
 extension TourStep {
-    /// The Routines "+" button is the sole toolbar-hosted callout, rendering
-    /// in `.primaryAction` placement, which iOS always docks top-trailing —
-    /// so this fallback rect covers it.
-    ///
-    /// Deliberately does NOT use `proxy.safeAreaInsets.top`: the
-    /// `GeometryProxy` this closure receives comes from a `GeometryReader`
-    /// that sits under `.ignoresSafeArea()` in `HomeView` (so the dim
-    /// overlay itself can paint edge-to-edge). That makes the reader report
-    /// its OWN safe-area insets as zero, not the device's real value —
-    /// confirmed by direct instrumentation: `proxy.safeAreaInsets.top`
-    /// measured 0 on a device whose real top inset is ~59pt, so the old
-    /// `y: proxy.safeAreaInsets.top + 4` placed this rect (and therefore the
-    /// dim layer's cutout) roughly 60pt too high — nowhere near the real
-    /// toolbar button, which is why it was never actually tappable through
-    /// the overlay despite `fixedFrame` "looking" correct on paper. Reading
-    /// the key window's safe area directly via UIKit sidesteps that.
-    private static var deviceSafeAreaTop: CGFloat {
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap { $0.windows }
-            .first(where: \.isKeyWindow)?
-            .safeAreaInsets.top ?? 59
-    }
-
-    private static let toolbarPrimaryActionFrame: (GeometryProxy) -> CGRect = { proxy in
-        CGRect(x: proxy.size.width - 60, y: deviceSafeAreaTop + 4, width: 44, height: 40)
-    }
-
+    /// A light, one-step-per-section overview: each tab gets a single
+    /// callout on arrival, except Body, which keeps a short interactive
+    /// walkthrough (tap-to-advance) since that's the one flow worth
+    /// teaching by doing rather than telling.
     static let allSteps: [TourStep] = [
         // MARK: Today
         TourStep(id: "tabbar.today", tabIndex: 0,
-                 title: "Today", message: "Start here each day — this is your Today tab."),
-        TourStep(id: "today.heroCard",
-                 title: "Today's Session", message: "Your picked routine for right now. Customize it or tap Begin to start."),
-        TourStep(id: "today.recommended",
-                 title: "Recommended for You", message: "More routines picked from your goals — swipe through for other options."),
+                 title: "Today", message: "Start here each day. Your picked routine is ready, or browse more below."),
 
         // MARK: Body
         TourStep(id: "tabbar.body", tabIndex: 1,
@@ -101,41 +73,22 @@ extension TourStep {
         TourStep(id: "bodymap.findStretches",
                  title: "Find Stretches", message: "Tap here for stretches that target it. Double-tap the body instead to pick an exact muscle.",
                  isInteractive: true, blocksBackgroundTaps: false),
-        TourStep(id: "bodymap.regionResults",
-                 title: "Exercises for This Spot", message: "Here's everything that targets the area you picked."),
 
         // MARK: Exercises
         TourStep(id: "tabbar.exercises", tabIndex: 2,
-                 title: "Exercises", message: "Browse the full library any time."),
-        TourStep(id: "exercises.search",
-                 title: "Search", message: "Search by name, or filter by type with the icon next to it."),
-        TourStep(id: "exercises.browseByArea",
-                 title: "Browse by Area", message: "Or explore the map below — grouped by body region."),
+                 title: "Exercises", message: "Browse the full library, search by name, or explore by body region."),
 
         // MARK: Breathe
         TourStep(id: "tabbar.breathe", tabIndex: 3,
-                 title: "Breathe", message: "Guided breathing patterns, any time you need to reset."),
-        TourStep(id: "breathe.patternPicker",
-                 title: "Pick a Pattern", message: "Choose the pattern that fits how you're feeling."),
-        TourStep(id: "breathe.previewCircle",
-                 title: "Preview or Begin", message: "Tap the circle for a one-round preview, or use the controls below to start a full session."),
+                 title: "Breathe", message: "Guided patterns — pick one, then preview or start a full session."),
 
         // MARK: Routines
         TourStep(id: "tabbar.routines", tabIndex: 4,
                  title: "Routines", message: "Build your own routines or borrow ready-made ones."),
-        TourStep(id: "routines.sharedList",
-                 title: "Premade Routines", message: "Start from a ready-made routine built around a goal."),
-        TourStep(id: "routines.createButton",
-                 title: "Create Your Own", message: "Tap + to build a routine from your favorite exercises.",
-                 fixedFrame: toolbarPrimaryActionFrame),
 
         // MARK: Profile
         TourStep(id: "tabbar.profile", tabIndex: 5,
-                 title: "Profile", message: "Track your progress and manage settings here."),
-        TourStep(id: "profile.stats",
-                 title: "Your Stats", message: "Streaks, points, and badges — a running record of your practice."),
-        TourStep(id: "profile.restartTour",
-                 title: "Come Back Anytime", message: "Restart this tour whenever you like from here. That's the tour — enjoy!"),
+                 title: "Profile", message: "Track your stats, and restart this tour anytime from here."),
     ]
 }
 
