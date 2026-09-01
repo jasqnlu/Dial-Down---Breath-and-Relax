@@ -104,4 +104,28 @@ final class BodyMapMusclePickerUITests: XCTestCase {
                       "Tapping the now-focused candidate should push the stretch list for '\(name)'")
         attach(app, "06-candidate-stretch-list")
     }
+
+    /// Double-tapping empty space outside the body's silhouette, while the
+    /// muscle picker is open, must behave like tapping Cancel: the picker
+    /// goes away and the camera zooms back out — without navigating to a
+    /// stretch list.
+    @MainActor
+    func testDoubleTapOutsideBodyCancelsThePickerAndZoomsOut() throws {
+        let app = launchBodyTab(extraArgs: [])
+        let scene = app.otherElements.firstMatch
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).doubleTap()
+        XCTAssertTrue(app.staticTexts["Which area did you mean?"].waitForExistence(timeout: 8))
+        attach(app, "07-picker-open")
+
+        // Double-tap empty space inside the scene view, off to the side of
+        // the (zoomed-in, centered) body.
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.08, dy: 0.45)).doubleTap()
+        attach(app, "08-after-outside-double-tap")
+
+        let gone = NSPredicate(format: "exists == false")
+        expectation(for: gone, evaluatedWith: app.staticTexts["Which area did you mean?"])
+        waitForExpectations(timeout: 5)
+        XCTAssertTrue(app.navigationBars["Body Map"].exists,
+                      "Should still be on Body Map, not navigated to a stretch list")
+    }
 }
