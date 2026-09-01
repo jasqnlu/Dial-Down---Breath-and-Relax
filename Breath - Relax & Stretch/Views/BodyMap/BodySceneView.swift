@@ -615,6 +615,14 @@ private struct SceneKitContainer: UIViewRepresentable {
         let outsideDouble = UITapGestureRecognizer(target: context.coordinator,
                                                     action: #selector(Coordinator.handleOutsideDoubleTap(_:)))
         outsideDouble.numberOfTapsRequired = 2
+        // Two same-class recognizers on one view default to mutually
+        // exclusive recognition — without this, UIKit lets only one of
+        // `double` and `outsideDouble` ever win, silently breaking whichever
+        // one loses (this broke the existing double-tap-opens-the-picker
+        // flow the first time). The delegate opts both into recognizing the
+        // same double-tap simultaneously; each still only acts within its
+        // own hit/miss branch, so nothing double-fires.
+        outsideDouble.delegate = context.coordinator
         view.addGestureRecognizer(outsideDouble)
 
         DispatchQueue.main.async { onViewReady?(view) }
@@ -637,11 +645,16 @@ private struct SceneKitContainer: UIViewRepresentable {
         Coordinator(onSingleTap: onSingleTap, onDoubleTap: onDoubleTap, onOutsideDoubleTap: onOutsideDoubleTap)
     }
 
-    final class Coordinator: NSObject {
+    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
         var onSingleTap: ((CGPoint, SCNView) -> Void)?
         var onDoubleTap: ((CGPoint, SCNView) -> Void)?
         var onOutsideDoubleTap: ((CGPoint, SCNView) -> Void)?
         weak var doubleTapRecognizer: UITapGestureRecognizer?
+
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                               shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+            true
+        }
 
         init(onSingleTap: ((CGPoint, SCNView) -> Void)?,
              onDoubleTap: ((CGPoint, SCNView) -> Void)?,
