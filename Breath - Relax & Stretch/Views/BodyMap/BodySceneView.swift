@@ -1034,17 +1034,20 @@ struct BodySceneView: View {
     /// hit-testing so the two agree on where the body actually is under the
     /// current rotation/zoom.
     ///
+    /// Fires in EVERY state, including fully at rest (no selection, no
+    /// picker) — a quick way to reset any prior pinch back to a framing that
+    /// shows the whole body, not just a way to back out of something.
+    ///
     /// While the muscle picker is up, the parent's `onOutsideDoubleTap`
     /// cancels it, which (via `disambiguationCandidates`'s `onChange` below)
-    /// already zooms the camera back out — nothing more to do here. With a
-    /// plain single-tap selection instead (the "Stretches for…" bar, no
-    /// picker), there's no such `onChange` to piggyback on, so this resets
-    /// the camera itself: back to the free-explore framing, so the whole
-    /// body is visible again regardless of any prior pinch.
+    /// already zooms the camera back out — nothing more to do here. In every
+    /// other state (plain selection, or fully at rest) there's no such
+    /// `onChange` to piggyback on, so this resets the camera itself: back to
+    /// the free-explore framing, so the whole body is visible again
+    /// regardless of any prior pinch.
     private func handleOutsideDoubleTap(at point: CGPoint, in view: SCNView) {
         let hits = view.hitTest(point, options: [.searchMode: SCNHitTestSearchMode.all.rawValue as NSNumber])
         guard hits.isEmpty else { return }
-        guard isFocused || selectionPoint != nil else { return }
         if !isFocused {
             cameraZ = BodyRig.freeExploreCameraDistance
             committedCameraZ = cameraZ
