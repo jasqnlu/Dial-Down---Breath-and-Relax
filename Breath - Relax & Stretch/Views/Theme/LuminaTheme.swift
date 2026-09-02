@@ -26,6 +26,11 @@ extension Color {
     static let luminaMintTint         = Color(UIColor.lumina(light: 0xD7F2EA, dark: 0x17332E))
     static let luminaOrange           = Color(UIColor.lumina(light: 0xFF9651, dark: 0x994701))
     static let luminaOnOrange         = Color(UIColor.lumina(light: 0x6F3200, dark: 0xFFDBC8))
+    /// A brighter variant of `luminaOrange`, same hue — used only for the
+    /// lit streak flame (TodayView.streakButton), which reads as a small,
+    /// glanceable badge rather than a filled container background, so it
+    /// wants more punch than `luminaOrange`'s container-friendly tone.
+    static let luminaFlameLit         = Color(UIColor.lumina(light: 0xFFAD70, dark: 0xC65C00))
     static let luminaBlue             = Color(UIColor.lumina(light: 0x4C6DDD, dark: 0xB6C4FF))
     static let luminaSurface          = Color(UIColor.lumina(light: 0xF8FAFB, dark: 0x0E1413))
     static let luminaCardFill         = Color(UIColor.lumina(light: 0xFFFFFF, dark: 0x1A2120))

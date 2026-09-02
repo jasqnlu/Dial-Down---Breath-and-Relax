@@ -95,7 +95,30 @@ struct RoutineListView: View {
                 }
             }
             .sheet(isPresented: $showingBuilder) {
-                RoutineBuilderView()
+                // "+ New Routine" now opens the same customize-and-reorder
+                // screen Today's Customize button and the mini-routine
+                // review's "Create New Routine" use — RoutineBuilderView
+                // remains only for *editing* an already-saved routine
+                // (below), whose Save/Update toolbar semantics don't apply
+                // to a from-scratch creation flow.
+                CustomizeRoutineView(
+                    title: "New Routine",
+                    exercises: [],
+                    isPinned: false,
+                    showsNameField: true,
+                    showsPinToggle: false,
+                    primaryActionLabel: "Save Routine",
+                    primaryActionIcon: "checkmark",
+                    pickingOriginTab: 4 // Routines tab
+                ) { name, exercises, _, durationOverrides in
+                    let routine = Routine(
+                        name: name,
+                        exerciseIDs: exercises.map(\.uuid),
+                        exerciseDurationOverrides: durationOverrides
+                    )
+                    modelContext.insert(routine)
+                    try? modelContext.save()
+                }
             }
             .sheet(item: $routineToEdit) { routine in
                 RoutineBuilderView(routineToEdit: routine)
