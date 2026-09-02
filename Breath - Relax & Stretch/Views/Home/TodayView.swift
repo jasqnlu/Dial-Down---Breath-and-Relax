@@ -196,7 +196,7 @@ struct TodayView: View {
                 title: customizeOverride?.title ?? timeOfDayFocus.heroTitle,
                 exercises: customizeOverride?.exercises ?? sessionExercises,
                 isPinned: customizeOverride?.isPinned ?? isPinnedActive,
-                onDone: { exercises, pinned, durationOverrides in
+                onDone: { _, exercises, pinned, durationOverrides in
                     customizeOverride = nil
                     if pinned {
                         if let existingID = UUID(uuidString: pinnedTodayRoutineIDString),
@@ -349,7 +349,7 @@ struct TodayView: View {
                 if showStreakEmoji {
                     Image(systemName: "flame.fill")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(isLit ? Color.luminaOrange : Color.luminaOnSurfaceVariant.opacity(0.5))
+                        .foregroundStyle(isLit ? Color.luminaFlameLit : Color.luminaOnSurfaceVariant.opacity(0.5))
                 }
                 Text("\(streak)")
                     .font(.custom("ManropeExtraLight-Bold", size: 15, relativeTo: .subheadline))
@@ -366,7 +366,13 @@ struct TodayView: View {
     // MARK: - Hero: today's session
 
     private var heroCard: some View {
-        let totalSecs = sessionExercises.reduce(0) { $0 + $1.durationSeconds }
+        // Reads sessionDurationOverrides (a customized/lowered duration set
+        // via Customize) rather than each exercise's raw durationSeconds —
+        // otherwise this total silently drifted from what the session
+        // actually plays at, the same class of bug the SessionPlayerView
+        // timer fix addressed.
+        let overrides = sessionDurationOverrides
+        let totalSecs = sessionExercises.reduce(0) { $0 + (overrides[$1.uuid] ?? $1.durationSeconds) }
         // Round rather than truncate, so e.g. a 90s session reads "2m" instead
         // of always flooring to "1m" regardless of how much over a minute it is.
         let mins = totalSecs > 0 ? max(1, Int((Double(totalSecs) / 60).rounded())) : 0
@@ -415,7 +421,7 @@ struct TodayView: View {
                         .opacity(0.85)
                 }
 
-                RoadmapWave(exercises: sessionExercises)
+                RoadmapWave(exercises: sessionExercises, durationOverrides: overrides)
 
                 HStack {
                     // Demoted to a plain text link — a second pill here
