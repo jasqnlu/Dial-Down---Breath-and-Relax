@@ -31,17 +31,26 @@ enum SessionRecorder {
         var healthKitKind: HealthKitKind
     }
 
+    /// The streak state after a `record()` call — split out from a bare Int
+    /// so callers (the post-session summary screen) can tell a genuine
+    /// streak bump from a second session completed the same day, which
+    /// leaves `streak` unchanged and shouldn't replay the "streak up" beat.
+    struct Outcome {
+        var streak: Int
+        var streakIncreased: Bool
+    }
+
     /// Persists the session, updates profile stats/streak/badges, and fans out
-    /// to HealthKit/Calendar/Widget. Returns the profile's streak after the
-    /// update (0 if no profile exists yet) so callers can use it without a
-    /// second fetch.
+    /// to HealthKit/Calendar/Widget. Returns the profile's streak state after
+    /// the update (zero/unchanged if no profile exists yet) so callers can
+    /// use it without a second fetch.
     @discardableResult
     static func record(
         _ input: Input,
         modelContext: ModelContext,
         calendarSyncEnabled: Bool,
         totalSessionsCompleted: Int
-    ) -> Int {
+    ) -> Outcome {
         let session = Session(
             routineID: input.routineID,
             startedAt: input.startedAt,
@@ -54,18 +63,19 @@ enum SessionRecorder {
         session.roundsCompleted = input.roundsCompleted
         modelContext.insert(session)
 
-        var streak = 0
+        var outcome = Outcome(streak: 0, streakIncreased: false)
         let descriptor = FetchDescriptor<UserProfile>()
         if let profile = try? modelContext.fetch(descriptor).first {
             profile.totalPoints += input.pointsEarned
             profile.totalMinutes += max(1, Int(input.completedAt.timeIntervalSince(input.startedAt) / 60))
+            let previousStreak = profile.streak
             GamificationService.updateStreak(for: profile)
             let newBadges = GamificationService.newBadges(for: profile, bodyPartsCovered: input.bodyPartsCovered)
             GamificationService.applyBadges(newBadges, to: profile)
             if input.isBorrowedRoutine {
                 GamificationService.awardBadge("Borrowed & Built", to: profile)
             }
-            streak = profile.streak
+            outcome = Outcome(streak: profile.streak, streakIncreased: profile.streak > previousStreak)
         }
 
         do {
@@ -93,11 +103,11 @@ enum SessionRecorder {
 
         // Widget — update shared data so home screen widgets refresh
         WidgetDataService.write(
-            streak: streak,
+            streak: outcome.streak,
             totalSessions: totalSessionsCompleted,
             lastSessionDate: input.completedAt
         )
 
-        return streak
+        return outcome
     }
 }
