@@ -248,47 +248,62 @@ struct SessionPlayerView: View {
                 .accessibilityLabel("Session progress")
                 .accessibilityValue("\(Int((sessionProgress * 100).rounded())) percent")
 
-            Spacer()
+            // Everything between the top bar and the transport controls
+            // scrolls — some exercises (e.g. ones carrying
+            // AnimationAccuracyNote's extra caveat line, or just a longer
+            // name/instruction) push total content past what a fixed,
+            // non-scrolling VStack can fit on screen. Before this, that
+            // overflow silently pushed the back/pause/skip row off the
+            // bottom edge — still present in the view hierarchy, just not
+            // visible or reachable.
+            ScrollView {
+                VStack(spacing: 0) {
+                    Text(exercise.name)
+                        .font(.luminaDisplay)
+                        .foregroundStyle(Color.luminaOnSurface)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                        .padding(.top, 24)
 
-            Text(exercise.name)
-                .font(.luminaDisplay)
-                .foregroundStyle(Color.luminaOnSurface)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+                    Text(exercise.type.rawValue)
+                        .font(.luminaLabel)
+                        .textCase(.uppercase)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        .padding(.top, 4)
 
-            Text(exercise.type.rawValue)
-                .font(.luminaLabel)
-                .textCase(.uppercase)
-                .foregroundStyle(Color.luminaOnSurfaceVariant)
-                .padding(.top, 4)
+                    cueBadge(for: exercise.cueStyle)
 
-            cueBadge(for: exercise.cueStyle)
+                    if exercise.type != .breath {
+                        ExerciseMediaCard(exercise: exercise)
+                            .padding(.top, 24)
+                    } else {
+                        BreathingCircle(
+                            isPaused: isPaused,
+                            cycleDuration: breathingCycleDuration(for: exercise)
+                        )
+                            .padding()
+                    }
 
-            Spacer()
+                    if let pattern = activeBreathPattern {
+                        breathPhaseCue(pattern: pattern)
+                    } else {
+                        instructionCue(for: exercise)
+                    }
 
-            if exercise.type != .breath {
-                ExerciseMediaCard(exercise: exercise)
-            } else {
-                BreathingCircle(
-                    isPaused: isPaused,
-                    cycleDuration: breathingCycleDuration(for: exercise)
-                )
-                    .padding()
+                    Text(timeString(secondsRemaining))
+                        .font(.system(size: exerciseTimerSize, weight: .thin, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundStyle(Color.luminaOnSurface)
+                        .padding(.top, 24)
+                        .padding(.bottom, 24)
+                }
+                .frame(maxWidth: .infinity)
             }
-
-            if let pattern = activeBreathPattern {
-                breathPhaseCue(pattern: pattern)
-            } else {
-                instructionCue(for: exercise)
-            }
-
-            Text(timeString(secondsRemaining))
-                .font(.system(size: exerciseTimerSize, weight: .thin, design: .rounded))
-                .monospacedDigit()
-                .foregroundStyle(Color.luminaOnSurface)
-
-            Spacer()
-
+        }
+        .safeAreaInset(edge: .bottom) {
+            // Pinned outside the ScrollView, not part of its scrolling
+            // content — always on screen regardless of how tall the
+            // exercise's content above it is.
             HStack(spacing: 48) {
                 Button {
                     impactLight.impactOccurred()
@@ -331,7 +346,10 @@ struct SessionPlayerView: View {
                 }
                 .accessibilityLabel("Skip exercise")
             }
+            .padding(.top, 12)
             .padding(.bottom, 48)
+            .frame(maxWidth: .infinity)
+            .background(Color.luminaSurface)
         }
         .background(Color.luminaSurface.ignoresSafeArea())
         .overlay(alignment: .topTrailing) {
