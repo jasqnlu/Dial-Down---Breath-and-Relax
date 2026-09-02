@@ -14,13 +14,27 @@ final class Routine {
     /// RoutineBuilderView's +/− stepper, read by SessionPlayerView during
     /// playback (see `effectiveDuration(for:)`).
     var exerciseDurationOverrides: [UUID: Int] = [:]
+    /// Whether this routine is one of the user's "Today" launch candidates
+    /// — replaces the old single `pinnedTodayRoutineID` AppStorage string,
+    /// which could only ever point at one routine. Several routines can be
+    /// pinned at once; `pinnedOrder` breaks the tie for which one Today
+    /// actually shows/starts. Additive, defaulted field — no explicit
+    /// SwiftData migration needed (see the inline-defaults comment above).
+    var isPinnedToToday: Bool = false
+    /// Priority among pinned routines, ascending — 0 is shown first. Only
+    /// meaningful when `isPinnedToToday` is true; irrelevant (but left as
+    /// whatever it last was) once unpinned, so re-pinning doesn't need to
+    /// invent a fresh value from scratch.
+    var pinnedOrder: Int = 0
 
     init(
         uuid: UUID = UUID(),
         name: String,
         exerciseIDs: [UUID] = [],
         borrowedFromID: UUID? = nil,
-        exerciseDurationOverrides: [UUID: Int] = [:]
+        exerciseDurationOverrides: [UUID: Int] = [:],
+        isPinnedToToday: Bool = false,
+        pinnedOrder: Int = 0
     ) {
         self.uuid = uuid
         self.name = name
@@ -28,5 +42,7 @@ final class Routine {
         self.borrowedFromID = borrowedFromID
         self.createdAt = Date()
         self.exerciseDurationOverrides = exerciseDurationOverrides
+        self.isPinnedToToday = isPinnedToToday
+        self.pinnedOrder = pinnedOrder
     }
 }
