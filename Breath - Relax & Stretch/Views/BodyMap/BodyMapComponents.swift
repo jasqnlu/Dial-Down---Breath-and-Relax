@@ -110,12 +110,43 @@ struct RegionExerciseResolver {
 
 // MARK: - Filtered exercise list for one or more body parts
 
+/// What the "Next" → Customize → "Start" hand-off carries forward into the
+/// session sheet. `Identifiable` so it can drive `.sheet(item:)`, which
+/// hands this value to the sheet's content closure as a parameter rather
+/// than having that closure read `@State` from `self` — the latter was
+/// observed to sometimes present against a stale, pre-update snapshot of
+/// that state (an empty exercise list, even after the state had already
+/// been set correctly).
+private struct MiniRoutineSessionPayload: Identifiable {
+    let id = UUID()
+    let exercises: [Exercise]
+    let durationOverrides: [UUID: Int]
+}
+
 struct BodyPartExercisesView: View {
     let bodyParts: [String]
     @Query private var allExercises: [Exercise]
     @StateObject private var miniRoutine = MiniRoutineState()
     @State private var selectedExercise: Exercise?
-    @State private var showingMiniRoutineSession = false
+    // "Next" opens the same customize-and-reorder screen Today's Customize
+    // and the standalone mini-routine review's "Start Mini-Routine" use
+    // (CustomizeRoutineView) — see that view's doc comment — instead of
+    // jumping straight into SessionPlayerView the way this used to.
+    @State private var showingCustomizeForMiniRoutine = false
+    /// What Customize returned, carried forward to the session sheet once
+    /// Customize has fully dismissed (two sibling sheet-presentation
+    /// triggers can't both flip in the same tick). Driving the session
+    /// sheet via `.sheet(item:)` — rather than a separate Bool plus this
+    /// array read inside the content closure — matters here: a `.sheet
+    /// (isPresented:)` content closure that reads `@State` via `self`
+    /// was observed (logged) to sometimes evaluate against a stale
+    /// pre-update snapshot of that state, presenting with an empty
+    /// exercise list even though the state had already been set
+    /// correctly by this point. `.sheet(item:)` hands the payload to the
+    /// closure as a parameter instead, so it can't go stale.
+    @State private var pendingMiniRoutineSession: MiniRoutineSessionPayload?
+    /// Drives the session sheet itself via `.sheet(item:)`.
+    @State private var miniRoutineSession: MiniRoutineSessionPayload?
 
     private var isShowingDetail: Binding<Bool> {
         Binding(get: { selectedExercise != nil }, set: { if !$0 { selectedExercise = nil } })
@@ -180,8 +211,31 @@ struct BodyPartExercisesView: View {
                 ExerciseDetailView(exercise: selectedExercise)
             }
         }
-        .sheet(isPresented: $showingMiniRoutineSession) {
-            SessionPlayerView(exercises: miniRoutine.exercises)
+        .sheet(isPresented: $showingCustomizeForMiniRoutine, onDismiss: {
+            // Customize has now fully dismissed — safe to present the
+            // session sheet. Handing it the payload as a value (not
+            // re-reading `@State` from inside its own content closure)
+            // is what makes `.sheet(item:)` reliable here; see
+            // `pendingMiniRoutineSession`'s doc comment.
+            if let payload = pendingMiniRoutineSession {
+                miniRoutineSession = payload
+                pendingMiniRoutineSession = nil
+            }
+        }) {
+            CustomizeRoutineView(
+                title: "Mini Routine",
+                exercises: miniRoutine.exercises,
+                isPinned: false,
+                showsPinToggle: false,
+                primaryActionLabel: "Start",
+                pickingOriginTab: 1, // Body tab
+                showsAddExercisesButton: false
+            ) { _, exercises, _, durationOverrides in
+                pendingMiniRoutineSession = MiniRoutineSessionPayload(exercises: exercises, durationOverrides: durationOverrides)
+            }
+        }
+        .sheet(item: $miniRoutineSession) { payload in
+            SessionPlayerView(exercises: payload.exercises, durationOverrides: payload.durationOverrides)
         }
     }
 
@@ -225,11 +279,11 @@ struct BodyPartExercisesView: View {
             }
             Spacer(minLength: 8)
             Button {
-                showingMiniRoutineSession = true
+                showingCustomizeForMiniRoutine = true
             } label: {
                 HStack(spacing: 6) {
-                    Image(systemName: "play.fill")
-                    Text("Start")
+                    Text("Next")
+                    Image(systemName: "chevron.right")
                 }
             }
             .buttonStyle(LuminaPillButtonStyle(kind: .prominent, compact: true))
