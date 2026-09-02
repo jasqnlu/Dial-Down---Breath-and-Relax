@@ -29,6 +29,7 @@ struct SessionPlayerView: View {
     @State private var isPaused = false
     @State private var showingSummary = false
     @State private var totalPointsEarned = 0
+    @State private var streakOutcome = SessionRecorder.Outcome(streak: 0, streakIncreased: false)
     @State private var sessionStarted = Date()
     @State private var shouldRequestReview = false
     @State private var showingExitConfirmation = false
@@ -117,7 +118,11 @@ struct SessionPlayerView: View {
     var body: some View {
         Group {
             if showingSummary {
-                SessionSummaryView(pointsEarned: totalPointsEarned) {
+                SessionSummaryView(
+                    pointsEarned: totalPointsEarned,
+                    streak: streakOutcome.streak,
+                    streakIncreased: streakOutcome.streakIncreased
+                ) {
                     onComplete?(totalPointsEarned)
                     dismiss()
                 }
@@ -663,7 +668,7 @@ struct SessionPlayerView: View {
         let exerciseNames = exercises.map { $0.name }.joined(separator: ", ")
 
         totalSessionsCompleted += 1
-        SessionRecorder.record(
+        streakOutcome = SessionRecorder.record(
             SessionRecorder.Input(
                 routineID: routineID,
                 startedAt: sessionStarted,

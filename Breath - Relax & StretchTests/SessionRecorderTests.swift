@@ -58,7 +58,7 @@ struct SessionRecorderTests {
         let profile = UserProfile(profileID: "test", displayName: "Tester")
         context.insert(profile)
 
-        let streak = SessionRecorder.record(
+        let outcome = SessionRecorder.record(
             baseInput(pointsEarned: 20), modelContext: context,
             calendarSyncEnabled: false, totalSessionsCompleted: 1)
 
@@ -66,7 +66,25 @@ struct SessionRecorderTests {
         #expect(profile.totalMinutes >= 1)
         #expect(profile.streak == 1)
         #expect(profile.badges.contains("First Breath"))
-        #expect(streak == 1)
+        #expect(outcome.streak == 1)
+        #expect(outcome.streakIncreased == true)
+    }
+
+    @Test func recordReportsNoStreakIncreaseOnASecondSessionTheSameDay() {
+        let context = makeContext()
+        let profile = UserProfile(profileID: "test", displayName: "Tester")
+        context.insert(profile)
+
+        SessionRecorder.record(
+            baseInput(), modelContext: context,
+            calendarSyncEnabled: false, totalSessionsCompleted: 1)
+        let outcome = SessionRecorder.record(
+            baseInput(), modelContext: context,
+            calendarSyncEnabled: false, totalSessionsCompleted: 2)
+
+        #expect(profile.streak == 1)
+        #expect(outcome.streak == 1)
+        #expect(outcome.streakIncreased == false)
     }
 
     @Test func recordAwardsBorrowedBadgeForBorrowedRoutines() {
@@ -96,11 +114,12 @@ struct SessionRecorderTests {
 
     @Test func recordWithoutAnExistingProfileStillInsertsTheSessionAndReturnsZeroStreak() {
         let context = makeContext()
-        let streak = SessionRecorder.record(
+        let outcome = SessionRecorder.record(
             baseInput(), modelContext: context,
             calendarSyncEnabled: false, totalSessionsCompleted: 1)
 
-        #expect(streak == 0)
+        #expect(outcome.streak == 0)
+        #expect(outcome.streakIncreased == false)
         #expect(try! context.fetch(FetchDescriptor<Session>()).count == 1)
     }
 

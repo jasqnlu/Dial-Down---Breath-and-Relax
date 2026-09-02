@@ -336,9 +336,19 @@ struct RoadmapWave: View {
                     .opacity(RoadmapWaveGeometry.badgeOpacity(scale: scale))
             }
             PoseGlyphIcon(exercise: exercise, category: category, size: size)
+            // A fixed dark scrim behind the label (rather than
+            // luminaOnSurfaceVariant straight on the background) so it stays
+            // legible at a fixed contrast regardless of what's behind it —
+            // TodayView's saturated hero gradient in particular, where plain
+            // text was hard to read wherever the halo/vignette didn't happen
+            // to darken it.
             Text(exercise.durationFormatted)
                 .font(.luminaCaption)
-                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                .fontWeight(.semibold)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 1)
+                .background(Color.black.opacity(0.22), in: Capsule())
         }
         // Pivoting near the bottom of the stack (by the duration label)
         // rather than dead-center means scaling up pushes the glyph

@@ -313,20 +313,31 @@ struct TodayView: View {
     /// The only stat on this screen — always visible (even at a 0 streak,
     /// now that the removed stat-tile row isn't showing it as a fallback)
     /// and a real NavigationLink into Progress & Charts, not just a
-    /// decorative badge.
+    /// decorative badge. At 0 the flame+count reads as a small failure
+    /// badge, so instead of swapping it out at 0 the same flame+count stays
+    /// in place at every streak value — only the flame's own color changes,
+    /// unlit (grey) at 0 and lit (orange) once today counts toward a
+    /// streak, so the badge never reads as a bare failure state.
     private var streakButton: some View {
-        NavigationLink(destination: ProgressChartsView()) {
-            HStack(spacing: 4) {
-                if showStreakEmoji { Text("🔥") }
-                Text("\(profile?.streak ?? 0)")
+        let streak = profile?.streak ?? 0
+        let isLit = streak > 0
+        return NavigationLink(destination: ProgressChartsView()) {
+            HStack(spacing: 5) {
+                if showStreakEmoji {
+                    Image(systemName: "flame.fill")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(isLit ? Color.luminaOrange : Color.luminaOnSurfaceVariant.opacity(0.5))
+                }
+                Text("\(streak)")
                     .font(.custom("ManropeExtraLight-Bold", size: 15, relativeTo: .subheadline))
+                    .foregroundStyle(isLit ? Color.luminaOnSurface : Color.luminaOnSurfaceVariant)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 7)
             .background(Color.luminaCardFill, in: Capsule())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(profile?.streak ?? 0) day streak, view progress")
+        .accessibilityLabel(isLit ? "\(streak) day streak, view progress" : "No streak yet today, view progress")
     }
 
     // MARK: - Hero: today's session
@@ -383,14 +394,24 @@ struct TodayView: View {
 
                 RoadmapWave(exercises: sessionExercises)
 
-                HStack(spacing: 10) {
+                HStack {
+                    // Demoted to a plain text link — a second pill here
+                    // read as competing with Begin for the primary action.
+                    // A Spacer (rather than a fixed gap) pins it to the
+                    // leading edge and Begin to the trailing edge, so the
+                    // pair spans the card's full width instead of both
+                    // bunching on the left.
                     Button {
                         showingCustomize = true
                     } label: {
                         Text("Customize")
                             .font(.luminaLabel)
+                            .foregroundStyle(.white.opacity(0.8))
+                            .underline()
                     }
-                    .buttonStyle(LuminaPillButtonStyle(kind: .ghost, compact: true))
+                    .buttonStyle(.plain)
+
+                    Spacer(minLength: 12)
 
                     Button {
                         showingSession = true
@@ -398,12 +419,21 @@ struct TodayView: View {
                         HStack(spacing: 8) {
                             Image(systemName: "play.fill")
                             Text("Begin")
+                            if mins > 0 {
+                                Text("\(mins) min")
+                                    .font(.luminaCaption)
+                                    .fontWeight(.semibold)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(Color.luminaOnPrimary.opacity(0.18), in: Capsule())
+                            }
                         }
                         .font(.luminaCardTitle)
-                        .foregroundStyle(Color.luminaBlue)
-                        .padding(.horizontal, 28)
-                        .frame(height: 44)
-                        .background(.white, in: Capsule())
+                        .foregroundStyle(Color.luminaOnPrimary)
+                        .padding(.horizontal, 24)
+                        .frame(height: 48)
+                        .background(Color.luminaPrimary, in: Capsule())
+                        .shadow(color: Color.luminaPrimary.opacity(0.35), radius: 10, y: 5)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Begin today's session: \(sessionExercises.count) exercises, \(mins) minutes")
@@ -417,6 +447,20 @@ struct TodayView: View {
         .tourAnchor("today.heroCard")
     }
 
+    // MARK: - Section headers
+    //
+    // A small uppercase label rather than `.luminaTitle` — the size the hero
+    // title uses. These sections are secondary to "Today's session"; giving
+    // their headers the same weight made them compete with the hero for top
+    // billing instead of reading as its supporting content.
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title.uppercased())
+            .font(.luminaCaption)
+            .fontWeight(.bold)
+            .tracking(1.2)
+            .foregroundStyle(Color.luminaOnSurfaceVariant)
+    }
+
     // MARK: - Recommended (rotating carousel)
 
     @ViewBuilder
@@ -424,8 +468,7 @@ struct TodayView: View {
         let items = recommendedItems
         if !items.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Recommended for You")
-                    .font(.luminaTitle)
+                sectionHeader("Recommended for You")
                 RecommendedCarousel(items: items)
             }
             .tourAnchor("today.recommended")
@@ -437,8 +480,7 @@ struct TodayView: View {
     @ViewBuilder
     private var premadeRoutinesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Premade Routines")
-                .font(.luminaTitle)
+            sectionHeader("Premade Routines")
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: 12) {
@@ -476,8 +518,7 @@ struct TodayView: View {
     private var forYouSection: some View {
         if !forYouExercises.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                Text("For You")
-                    .font(.luminaTitle)
+                sectionHeader("For You")
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(alignment: .top, spacing: 12) {

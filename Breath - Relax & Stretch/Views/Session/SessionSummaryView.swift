@@ -2,7 +2,16 @@ import SwiftUI
 
 struct SessionSummaryView: View {
     let pointsEarned: Int
+    /// The profile's streak after this session (0 with no profile yet).
+    var streak: Int = 0
+    /// Whether *this* session is what moved the streak — false for a second
+    /// session completed the same day, where `streak` is unchanged and the
+    /// flame shouldn't replay its "just lit" animation.
+    var streakIncreased: Bool = false
     let onDismiss: () -> Void
+
+    @State private var flameIsLit = false
+    @State private var displayedStreak = 0
 
     var body: some View {
         VStack(spacing: 32) {
@@ -36,19 +45,58 @@ struct SessionSummaryView: View {
                     .foregroundStyle(.secondary)
             }
 
-            VStack(spacing: 4) {
-                Image(systemName: "medal.fill")
-                    .font(.system(size: 22))
-                    .foregroundStyle(Color.luminaOrange)
-                Text("+\(pointsEarned)")
-                    .font(.luminaHeadline)
-                    .foregroundStyle(Color.luminaPrimary)
-                Text("points earned")
-                    .font(.luminaLabel)
-                    .foregroundStyle(Color.luminaOnSurfaceVariant)
-                    .textCase(.uppercase)
+            HStack(spacing: 12) {
+                // Streak — grey/unlit at 0, and for a genuine bump (not a
+                // second session the same day, which leaves the streak
+                // unchanged) the flame lights up and the count steps up
+                // from yesterday's value once the view appears, rather than
+                // just materializing already-incremented.
+                VStack(spacing: 4) {
+                    Image(systemName: "flame.fill")
+                        .font(.system(size: 22))
+                        .foregroundStyle(flameIsLit ? Color.luminaOrange : Color.luminaOnSurfaceVariant.opacity(0.5))
+                        .scaleEffect(flameIsLit ? 1 : 0.82)
+                        .animation(.spring(response: 0.45, dampingFraction: 0.55), value: flameIsLit)
+                    Text("\(displayedStreak)")
+                        .font(.luminaHeadline)
+                        .foregroundStyle(Color.luminaPrimary)
+                        .contentTransition(.numericText())
+                    Text("day streak")
+                        .font(.luminaLabel)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        .textCase(.uppercase)
+                }
+                .frame(maxWidth: .infinity)
+                .luminaCard()
+
+                VStack(spacing: 4) {
+                    Image(systemName: "medal.fill")
+                        .font(.system(size: 22))
+                        .foregroundStyle(Color.luminaOrange)
+                    Text("+\(pointsEarned)")
+                        .font(.luminaHeadline)
+                        .foregroundStyle(Color.luminaPrimary)
+                    Text("points earned")
+                        .font(.luminaLabel)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        .textCase(.uppercase)
+                }
+                .frame(maxWidth: .infinity)
+                .luminaCard()
             }
-            .luminaCard()
+            .padding(.horizontal, 24)
+            .onAppear {
+                if streakIncreased {
+                    displayedStreak = max(0, streak - 1)
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.35)) {
+                        displayedStreak = streak
+                        flameIsLit = true
+                    }
+                } else {
+                    displayedStreak = streak
+                    flameIsLit = streak > 0
+                }
+            }
 
             Spacer()
 
@@ -68,6 +116,10 @@ struct SessionSummaryView: View {
     }
 }
 
-#Preview {
-    SessionSummaryView(pointsEarned: 42) {}
+#Preview("Streak increased") {
+    SessionSummaryView(pointsEarned: 42, streak: 4, streakIncreased: true) {}
+}
+
+#Preview("Second session today") {
+    SessionSummaryView(pointsEarned: 18, streak: 4, streakIncreased: false) {}
 }
