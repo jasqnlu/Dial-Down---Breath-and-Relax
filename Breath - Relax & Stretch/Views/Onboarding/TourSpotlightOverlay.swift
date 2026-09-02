@@ -1,8 +1,10 @@
 import SwiftUI
 
-/// Dims the screen, cuts a spotlight around the current tour step's target,
-/// and shows a Lumina-styled tooltip beside it. Renders nothing when the
-/// tour isn't active.
+/// Highlights the current tour step's target with a glowing outline and
+/// shows a Lumina-styled tooltip pinned near the bottom of the screen.
+/// Nothing dims and nothing blocks taps — the real app stays fully visible
+/// and fully interactive underneath, including the tab bar itself. Renders
+/// nothing when the tour isn't active.
 ///
 /// `anchors`/`proxy` are supplied by the caller (`HomeView`) via
 /// `.overlayPreferenceValue` attached to its OUTER ZStack, since
@@ -18,18 +20,10 @@ struct TourSpotlightOverlay: View {
         if coordinator.isActive, let step = coordinator.currentStep {
             let targetRect = resolvedRect(for: step, anchors: anchors, proxy: proxy)
             ZStack {
-                if step.blocksBackgroundTaps {
-                    dimLayer(cutout: targetRect, size: proxy.size)
-                } else {
-                    // The two body-map steps need real taps to land anywhere
-                    // on the body/toolbar, not just inside one cutout — so
-                    // instead of dimming the whole screen and disabling its
-                    // hit-testing, leave the screen fully lit and tappable,
-                    // and only block the one thing that would derail the
-                    // flow: switching tabs mid-step.
-                    tabBarBlocker(anchors: anchors, proxy: proxy)
+                if let targetRect {
+                    highlightRing(around: targetRect)
                 }
-                tooltipCard(step: step, targetRect: targetRect, screenSize: proxy.size)
+                tooltipCard(step: step, targetRect: targetRect, anchors: anchors, proxy: proxy)
             }
             .transition(.opacity)
             .animation(.easeInOut(duration: 0.25), value: step.id)
@@ -44,56 +38,48 @@ struct TourSpotlightOverlay: View {
         return proxy[anchor]
     }
 
-    /// A full-screen dim `Path` with the target rect subtracted via an
-    /// even-odd fill. Because the cutout is excluded from the path's own
-    /// geometry, SwiftUI's default hit-testing lets taps inside it reach the
-    /// real view underneath — no extra hit-testing code needed. This is
-    /// what makes the interactive body-map steps work.
-    private func dimLayer(cutout: CGRect?, size: CGSize) -> some View {
-        Path { path in
-            path.addRect(CGRect(origin: .zero, size: size))
-            if let cutout {
-                let inset = cutout.insetBy(dx: -8, dy: -8)
-                path.addRoundedRect(in: inset, cornerSize: CGSize(width: 16, height: 16))
-            }
-        }
-        .fill(Color.black.opacity(0.55), style: FillStyle(eoFill: true))
+    /// A glowing accent-colored outline around the current target — no fill,
+    /// so it never dims or hit-tests the real content underneath. This is
+    /// the tour's only visual callout now that the screen always stays lit
+    /// and fully tappable.
+    private func highlightRing(around rect: CGRect) -> some View {
+        let inset = rect.insetBy(dx: -8, dy: -8)
+        return RoundedRectangle(cornerRadius: 16, style: .continuous)
+            .stroke(Color.luminaPrimary, lineWidth: 3)
+            .shadow(color: Color.luminaPrimary.opacity(0.6), radius: 10)
+            .frame(width: inset.width, height: inset.height)
+            .position(x: inset.midX, y: inset.midY)
+            .allowsHitTesting(false)
     }
 
-    /// A small opaque scrim sized to the real tab bar's own frame — the one
-    /// thing kept off-limits when the rest of the screen is left fully lit
-    /// and tappable (see `body`). Positioned from `"chrome.tabBar"`, tagged
-    /// on the `CustomTabBar` call site in `HomeView`. If that anchor hasn't
-    /// resolved yet, renders nothing rather than guessing at a screen-edge
-    /// rect — better to briefly allow a tab tap than to block the wrong
-    /// area of the screen.
-    @ViewBuilder
-    private func tabBarBlocker(anchors: [String: Anchor<CGRect>], proxy: GeometryProxy) -> some View {
-        if let tabBarAnchor = anchors["chrome.tabBar"] {
-            let tabBarRect = proxy[tabBarAnchor]
-            Color.black.opacity(0.35)
-                .frame(width: tabBarRect.width, height: tabBarRect.height)
-                .position(x: tabBarRect.midX, y: tabBarRect.midY)
-                .allowsHitTesting(true)
-        }
-    }
-
-    private func tooltipCard(step: TourStep, targetRect: CGRect?, screenSize: CGSize) -> some View {
-        // No target rect yet (no anchor tagged, no fixedFrame) — center the
-        // card on screen rather than anchoring it to nothing.
-        let placeBelow = targetRect.map { $0.midY < screenSize.height * 0.55 } ?? true
+    private func tooltipCard(step: TourStep, targetRect: CGRect?, anchors: [String: Anchor<CGRect>], proxy: GeometryProxy) -> some View {
+        let screenSize = proxy.size
         let cardWidth = min(screenSize.width - 48, 340)
-        // `fixedFrame` targets are small toolbar buttons docked at a screen
-        // edge (top-trailing), unlike anchor-based targets which are large
-        // content areas with real room around them. The default 110pt
-        // clearance is sized for those larger anchors; for a small target
-        // this close to the top edge it isn't enough — the card's own
-        // (opaque, hit-testing) body ends up overlapping the target rect,
-        // swallowing taps meant for the real button underneath. Widen the
-        // clearance for this case only; anchor-based steps keep the
-        // original 110pt gap untouched.
-        let isFixedFrameTarget = step.fixedFrame != nil
-        let verticalClearance: CGFloat = isFixedFrameTarget ? 190 : 110
+
+        // Always sit just above the real tab bar, whatever its anchor
+        // reports — that's the one thing on every screen worth staying
+        // clear of by default. If that hasn't resolved yet, fall back to a
+        // reasonable guess rather than pinning to the very bottom edge.
+        let tabBarTop = anchors["chrome.tabBar"].map { screenSize.height - proxy[$0].minY }
+            ?? 90
+        var bottomInset = tabBarTop + 16
+
+        // A small, precisely-tappable target near the bottom — like the
+        // body map's floating "Find Stretches" action bar — needs the card
+        // pushed clear of its own TOP edge, not just the tab bar's:
+        // otherwise the card's height (which varies with message length)
+        // can grow up over it. Comparing against the target's bottom edge
+        // alone isn't enough — a short target sitting well above the tab
+        // bar can still end up under a tall card growing upward from the
+        // pinned baseline.
+        //
+        // Large targets (the body scene itself, which spans nearly the
+        // whole screen) are deliberately exempt: there's no way to clear a
+        // target that big, and tapping it works from anywhere on it, so
+        // the card sitting low and covering its bottom edge is fine.
+        if let targetRect, targetRect.height < 200 {
+            bottomInset = max(bottomInset, screenSize.height - targetRect.minY + 16)
+        }
 
         return VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top) {
@@ -146,15 +132,8 @@ struct TourSpotlightOverlay: View {
         .frame(width: cardWidth, alignment: .leading)
         .background(Color.luminaCardFill, in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
         .shadow(color: .black.opacity(0.18), radius: 20, y: 8)
-        .position(
-            x: screenSize.width / 2,
-            y: {
-                guard let targetRect else { return screenSize.height / 2 }
-                return placeBelow
-                    ? min(targetRect.maxY + verticalClearance, screenSize.height - 140)
-                    : max(targetRect.minY - verticalClearance, 140)
-            }()
-        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .padding(.bottom, bottomInset)
     }
 }
 
