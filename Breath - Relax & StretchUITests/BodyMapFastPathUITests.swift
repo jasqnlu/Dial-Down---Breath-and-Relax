@@ -101,32 +101,65 @@ final class BodyMapFastPathUITests: XCTestCase {
                        "A drag should rotate without selecting a region")
     }
 
-    /// Contrast with `testTappingOffTheBodyClearsTheBar` above: a single tap
-    /// that resolves no region clears the bar, but a double tap that misses
-    /// the body is ignored entirely, so a fumbled double tap can't also wipe
-    /// out a selection the user already made. Guarded by one early return in
-    /// `handleDoubleTap` (`BodySceneView.swift`) that would regress silently
-    /// if someone "tidied" it into also clearing on a miss.
+    /// A DELIBERATE double tap off the body clears the bar too — same as a
+    /// single tap-off-body (`testTappingOffTheBodyClearsTheBar` above), but
+    /// this one also zooms the camera back out to the free-explore framing,
+    /// so the whole body is visible again regardless of any prior pinch.
+    /// This is `BodySceneView.handleOutsideDoubleTap`, distinct from
+    /// `handleDoubleTap`'s silent miss (used only when the OTHER, always-on
+    /// double-tap-to-drill recogniser happens to land off the mesh — a
+    /// fumbled double tap, which must NOT wipe a selection either).
     @MainActor
-    func testDoubleTappingOffTheBodyDoesNotClearTheBar() throws {
+    func testDoubleTappingOffTheBodyClearsTheBarAndZoomsOut() throws {
         let app = launchBodyTab(extraArgs: [])
         let scene = app.otherElements.firstMatch
         scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).press(forDuration: 0.05)
 
         let bar = app.buttons["bodymap.regionActionBar"]
         XCTAssertTrue(bar.waitForExistence(timeout: 5))
-        let labelBefore = bar.label
-        attach(app, "07-bar-before-miss-doubletap")
+        attach(app, "07-bar-before-outside-doubletap")
 
         // Same clear-of-silhouette coordinate as the single-tap-miss test.
         scene.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.5)).doubleTap()
-        sleep(1)
+        let gone = NSPredicate(format: "exists == false")
+        expectation(for: gone, evaluatedWith: bar)
+        waitForExpectations(timeout: 5)
+        attach(app, "08-bar-cleared-by-outside-doubletap")
 
-        XCTAssertTrue(bar.exists,
-                      "A double tap that misses the body should not clear the existing selection")
-        XCTAssertEqual(bar.label, labelBefore,
-                       "The bar's label should be unchanged by a missed double tap")
-        attach(app, "08-bar-survives-miss-doubletap")
+        // Must STAY cleared, not just disappear momentarily.
+        for _ in 0..<6 {
+            usleep(200_000)
+            XCTAssertFalse(bar.exists, "The bar should not reappear after being cleared")
+        }
+    }
+
+    /// A double tap outside the body resets the camera even fully at rest —
+    /// no selection, no picker — as a quick "undo my pinch" gesture. There's
+    /// no accessibility-visible signal for camera distance, so this pinches
+    /// in first (a visibly bigger body) and screenshots before/after the
+    /// outside double-tap for manual visual confirmation; the hard
+    /// assertions guard against a crash or an accidental navigation.
+    @MainActor
+    func testDoubleTappingOffTheBodyAtRestResetsTheZoom() throws {
+        let app = launchBodyTab(extraArgs: [])
+        let scene = app.otherElements.firstMatch
+
+        // Pinch in (scale > 1 zooms in) around the body's center.
+        scene.pinch(withScale: 2.5, velocity: 2)
+        sleep(1)
+        attach(app, "09-pinched-in-at-rest")
+
+        XCTAssertFalse(app.buttons["bodymap.regionActionBar"].exists,
+                       "A pinch should zoom without selecting a region")
+
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.5)).doubleTap()
+        sleep(1)
+        attach(app, "10-after-outside-doubletap-at-rest")
+
+        XCTAssertTrue(app.navigationBars["Body Map"].exists,
+                      "Should still be on Body Map — an outside double tap at rest must not navigate")
+        XCTAssertFalse(app.buttons["bodymap.regionActionBar"].exists,
+                       "Still no selection — the outside double tap must not have hit the body")
     }
 
     /// The figure faces the viewer, so a tap on the VIEWER'S LEFT must
