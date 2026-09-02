@@ -32,6 +32,17 @@ struct TodayView: View {
     @State private var brokenStreakValue: Int? = nil
     @EnvironmentObject private var pickingSession: ExercisePickingSession
     @State private var customizeOverride: (title: String, exercises: [Exercise], isPinned: Bool)?
+    /// What Customize just returned, when the user adjusted exercises or
+    /// durations without pinning them as the permanent Today routine.
+    /// Without this, the un-pinned edits had nowhere to live: the session
+    /// sheet re-derives `sessionExercises`/`sessionDurationOverrides` from
+    /// the pinned routine or time-of-day recommendation, so a one-off
+    /// duration tweak was silently discarded and the session started with
+    /// the old defaults. Consumed once by the `showingSession` sheet, then
+    /// cleared on dismiss so it doesn't stick around for a later, unrelated
+    /// "Begin" tap.
+    @State private var pendingSessionExercises: [Exercise]?
+    @State private var pendingSessionDurationOverrides: [UUID: Int]?
 
     enum TimeOfDayFocus: Equatable {
         case wakeUp, unwind, none
@@ -153,8 +164,14 @@ struct TodayView: View {
             .toolbar(.hidden, for: .navigationBar)
             .floatingTabBarClearance()
         }
-        .sheet(isPresented: $showingSession) {
-            SessionPlayerView(exercises: sessionExercises, durationOverrides: sessionDurationOverrides)
+        .sheet(isPresented: $showingSession, onDismiss: {
+            pendingSessionExercises = nil
+            pendingSessionDurationOverrides = nil
+        }) {
+            SessionPlayerView(
+                exercises: pendingSessionExercises ?? sessionExercises,
+                durationOverrides: pendingSessionDurationOverrides ?? sessionDurationOverrides
+            )
         }
         .sheet(isPresented: $showingCustomize, onDismiss: {
             // Present the session sheet only after Customize has fully
@@ -212,6 +229,12 @@ struct TodayView: View {
                             try? modelContext.save()
                         }
                         pinnedTodayRoutineIDString = ""
+                        // Not pinned, so there's no Routine to persist these
+                        // edits onto — carry them forward for just the
+                        // session about to start instead of letting the
+                        // sheet's default re-derivation discard them.
+                        pendingSessionExercises = exercises
+                        pendingSessionDurationOverrides = durationOverrides
                     }
                     pendingShowSessionAfterCustomize = true
                 }

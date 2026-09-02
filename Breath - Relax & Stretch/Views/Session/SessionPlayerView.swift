@@ -22,7 +22,6 @@ struct SessionPlayerView: View {
 
     @AppStorage("totalSessionsCompleted") private var totalSessionsCompleted = 0
     @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
-    @AppStorage("sessionDurationMultiplier") private var durationMultiplier: Double = 1.0
 
     @State private var currentIndex = 0
     @State private var secondsRemaining = 0
@@ -95,7 +94,7 @@ struct SessionPlayerView: View {
 
     private var totalSessionSeconds: Int {
         exercises.reduce(0) { total, exercise in
-            total + Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
+            total + effectiveDuration(for: exercise)
         }
     }
 
@@ -103,11 +102,18 @@ struct SessionPlayerView: View {
         guard currentIndex < exercises.count else { return totalSessionSeconds }
 
         let completed = exercises.prefix(currentIndex).reduce(0) { total, exercise in
-            total + Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
+            total + effectiveDuration(for: exercise)
         }
-        let currentDuration = Self.scaledDuration(base: effectiveDuration(for: exercises[currentIndex]), multiplier: durationMultiplier)
+        let currentDuration = effectiveDuration(for: exercises[currentIndex])
         let currentElapsed = max(0, min(currentDuration, currentDuration - secondsRemaining))
         return completed + currentElapsed
+    }
+
+    /// The exercise coming up after the current one, or nil on the last
+    /// exercise — drives the "Up Next" preview card.
+    private var nextExercise: Exercise? {
+        let nextIndex = currentIndex + 1
+        return nextIndex < exercises.count ? exercises[nextIndex] : nil
     }
 
     private var sessionProgress: Double {
@@ -229,15 +235,6 @@ struct SessionPlayerView: View {
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
                 }
                 Spacer()
-                Picker("Speed", selection: $durationMultiplier) {
-                    Text("0.5x").tag(0.5)
-                    Text("1x").tag(1.0)
-                    Text("2x").tag(2.0)
-                }
-                .pickerStyle(.segmented)
-                .frame(width: 160)
-                .accessibilityLabel("Exercise duration speed")
-                Spacer()
                 Text("\(currentIndex + 1) / \(exercises.count)")
                     .font(.luminaCaption)
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
@@ -295,13 +292,15 @@ struct SessionPlayerView: View {
             HStack(spacing: 48) {
                 Button {
                     impactLight.impactOccurred()
-                    advanceToNext(completion: skipCompletion())
+                    goToPrevious()
                 } label: {
-                    Image(systemName: "forward.skip")
+                    Image(systemName: "backward.skip")
                         .font(.title)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
-                .accessibilityLabel("Skip exercise")
+                .accessibilityLabel("Previous exercise")
 
                 Button {
                     impactLight.impactOccurred()
@@ -320,13 +319,66 @@ struct SessionPlayerView: View {
                 }
                 .accessibilityLabel(isPaused ? "Resume session" : "Pause session")
 
-                Image(systemName: "forward.skip")
-                    .font(.title)
-                    .hidden()
+                Button {
+                    impactLight.impactOccurred()
+                    advanceToNext(completion: skipCompletion())
+                } label: {
+                    Image(systemName: "forward.skip")
+                        .font(.title)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel("Skip exercise")
             }
             .padding(.bottom, 48)
         }
         .background(Color.luminaSurface.ignoresSafeArea())
+        .overlay(alignment: .topTrailing) {
+            if let nextExercise, secondsRemaining <= Self.upNextLeadSeconds {
+                upNextCard(for: nextExercise)
+                    .padding(.top, 60)
+                    .padding(.trailing, 16)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity)
+                            .animation(.easeOut(duration: 0.35)),
+                        removal: .opacity.animation(.easeIn(duration: 0.2))
+                    ))
+            }
+        }
+        .animation(.easeOut(duration: 0.35), value: secondsRemaining <= Self.upNextLeadSeconds)
+    }
+
+    /// Small preview card that slides in once the current exercise's
+    /// countdown reaches `upNextLeadSeconds`, showing what's coming next —
+    /// mirrors the "Up Next" treatment from Apple Fitness-style workout
+    /// players. Tapping it jumps straight to that exercise, same as the
+    /// skip button.
+    @ViewBuilder
+    private func upNextCard(for exercise: Exercise) -> some View {
+        Button {
+            impactLight.impactOccurred()
+            advanceToNext(completion: skipCompletion())
+        } label: {
+            VStack(spacing: 0) {
+                ExerciseMediaCard(exercise: exercise)
+                    .frame(width: 96, height: 96)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+
+                Text("Up Next")
+                    .font(.luminaCaption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+                    .background(Color.black.opacity(0.55))
+            }
+            .frame(width: 96)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Up next: \(exercise.name). Tap to skip ahead.")
     }
 
     @ViewBuilder
@@ -454,14 +506,14 @@ struct SessionPlayerView: View {
 
     // MARK: - Logic
 
-    static func scaledDuration(base: Int, multiplier: Double) -> Int {
-        max(1, Int(Double(base) * multiplier))
-    }
+    /// How many seconds are left in the current exercise when the "Up Next"
+    /// preview slides in.
+    static let upNextLeadSeconds = 5
 
     /// The exercise's duration after applying this session's routine-level
     /// override, if any — the single point every duration read in this view
-    /// goes through, so `durationOverrides` and the speed multiplier compose
-    /// correctly no matter which call site reads it.
+    /// goes through, so a customized duration takes effect no matter which
+    /// call site reads it.
     private func effectiveDuration(for exercise: Exercise) -> Int {
         durationOverrides[exercise.uuid] ?? exercise.durationSeconds
     }
@@ -471,11 +523,11 @@ struct SessionPlayerView: View {
     }
 
     private func breathingCycleDuration(for exercise: Exercise) -> Double {
-        let scaled = Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
+        let duration = effectiveDuration(for: exercise)
         // Breath exercises in the stretch player do not carry a phase model,
         // so tie the visual cadence to the exercise length instead of a fixed
         // 4s pulse. Longer holds breathe more slowly; short drills stay lively.
-        return min(8, max(3, Double(scaled) / 10))
+        return min(8, max(3, Double(duration) / 10))
     }
 
     private func beginNextExercise() {
@@ -532,8 +584,7 @@ struct SessionPlayerView: View {
     }
 
     private func startExercise() {
-        let baseDuration = effectiveDuration(for: currentExercise) ?? 60
-        let duration = Self.scaledDuration(base: baseDuration, multiplier: durationMultiplier)
+        let duration = effectiveDuration(for: currentExercise) ?? 60
         secondsRemaining = duration
         phaseEndDate = Date().addingTimeInterval(TimeInterval(duration))
         pausedRemaining = nil
@@ -604,7 +655,7 @@ struct SessionPlayerView: View {
     /// special-case handling needed, unlike instructionCueTask's cycling.
     private func updateBreathPhaseStepIfNeeded() {
         guard let pattern = activeBreathPattern, let exercise = currentExercise else { return }
-        let totalDuration = Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
+        let totalDuration = effectiveDuration(for: exercise)
         let elapsed = max(0, totalDuration - secondsRemaining)
         guard let resolved = BreathPhaseCycle.resolve(pattern: pattern, elapsedSeconds: elapsed) else { return }
 
@@ -658,6 +709,19 @@ struct SessionPlayerView: View {
             saveSession()
             showingSummary = true
         }
+    }
+
+    /// Jumps to the previous exercise (or restarts the current one if
+    /// already on the first) — the "up next"-style player's back button.
+    /// Unlike `advanceToNext`, no points/completion is recorded for the
+    /// exercise being left, and no get-ready countdown is shown: stepping
+    /// back is meant to be instant, mirroring the forward skip's immediacy.
+    private func goToPrevious() {
+        if currentIndex > 0 {
+            currentIndex -= 1
+        }
+        breathTick = 0
+        startExercise()
     }
 
     // MARK: - Persistence
