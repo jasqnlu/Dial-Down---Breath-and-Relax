@@ -2,10 +2,10 @@ import Testing
 @testable import BreathRelaxStretch
 
 struct TourCoordinatorTests {
-    @Test func catalogHasEightStepsWithUniqueIDs() {
+    @Test func catalogHasSevenStepsWithUniqueIDs() {
         let steps = TourStep.allSteps
-        #expect(steps.count == 8)
-        #expect(Set(steps.map(\.id)).count == 8)
+        #expect(steps.count == 7)
+        #expect(Set(steps.map(\.id)).count == 7)
     }
 
     @Test func catalogHasSixSections() {
@@ -30,7 +30,7 @@ struct TourCoordinatorTests {
     @Test func advanceMovesToNextStep() {
         let coordinator = makeCoordinator()
         coordinator.advance()
-        #expect(coordinator.currentStep?.id == "tabbar.body")
+        #expect(coordinator.currentStep?.id == "bodymap.tapRegion")
     }
 
     @Test func advanceOnLastStepFinishes() {
@@ -44,34 +44,31 @@ struct TourCoordinatorTests {
 
     @Test func backStaysWithinASection() {
         let coordinator = makeCoordinator()
-        coordinator.advance() // tabbar.body
         coordinator.advance() // bodymap.tapRegion
         coordinator.advance() // bodymap.findStretches
         coordinator.back()
-        #expect(coordinator.currentStep?.id == "bodymap.tapRegion")
+        #expect(coordinator.currentStep?.id == "bodymap.tapRegion") // first step of the section — back() stops here
         coordinator.back()
-        #expect(coordinator.currentStep?.id == "tabbar.body") // first step of the section — back() stops here
-        coordinator.back()
-        #expect(coordinator.currentStep?.id == "tabbar.body") // no-op past the section boundary
+        #expect(coordinator.currentStep?.id == "bodymap.tapRegion") // no-op past the section boundary
     }
 
     @Test func skipToNextSectionJumpsToNextTabsFirstStep() {
         let coordinator = makeCoordinator()
-        coordinator.advance() // tabbar.body
+        coordinator.advance() // bodymap.tapRegion
         coordinator.skipToNextSection()
         #expect(coordinator.currentStep?.id == "tabbar.exercises")
     }
 
     @Test func skipFromLastSectionFinishesTheTour() {
         let coordinator = makeCoordinator()
-        for _ in 0..<7 { coordinator.advance() } // walk to the last step, tabbar.profile
+        for _ in 0..<6 { coordinator.advance() } // walk to the last step, tabbar.profile
         coordinator.skipToNextSection()
         #expect(coordinator.isActive == false)
     }
 
     @Test func notifyInteractionAdvancesOnlyWhenIDMatchesTheCurrentInteractiveStep() {
         let coordinator = makeCoordinator()
-        for _ in 0..<2 { coordinator.advance() } // land on bodymap.tapRegion
+        coordinator.advance() // land on bodymap.tapRegion
         #expect(coordinator.currentStep?.id == "bodymap.tapRegion")
 
         coordinator.notifyInteraction(id: "some.other.id")

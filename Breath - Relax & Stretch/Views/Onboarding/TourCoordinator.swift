@@ -50,9 +50,7 @@ extension TourStep {
                  title: "Today", message: "Start here each day. Your picked routine is ready, or browse more below."),
 
         // MARK: Body
-        TourStep(id: "tabbar.body", tabIndex: 1,
-                 title: "Body", message: "Rotate the body and tap an area that's bothering you."),
-        TourStep(id: "bodymap.tapRegion",
+        TourStep(id: "bodymap.tapRegion", tabIndex: 1,
                  title: "Tap a Sore Spot", message: "Tap anywhere that feels tense or sore — the body turns to face it.",
                  isInteractive: true),
         TourStep(id: "bodymap.findStretches",
@@ -78,7 +76,7 @@ extension TourStep {
 }
 
 /// Drives the coach-mark tour: which step is current, and how
-/// Back/Next/Skip/Restart move through the 19-step catalog. Pure state —
+/// Back/Next/Skip/Restart move through the step catalog. Pure state —
 /// `TourSpotlightOverlay` renders whatever `currentStep` says, and
 /// `HomeView`/`ProfileView` read it to drive their own tab state.
 final class TourCoordinator: ObservableObject {
