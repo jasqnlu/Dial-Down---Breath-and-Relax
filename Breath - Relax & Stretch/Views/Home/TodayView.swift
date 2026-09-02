@@ -22,7 +22,20 @@ struct TodayView: View {
     @AppStorage("onboardingGoals") private var goalsStr = ""
     @AppStorage("onboardingAreas") private var onboardingAreas = ""
     @AppStorage("showStreakEmoji") private var showStreakEmoji = true
-    @AppStorage("pinnedTodayRoutineID") private var pinnedTodayRoutineIDString = ""
+    /// Not the source of truth for which routine Today shows anymore (that's
+    /// `Routine.isPinnedToToday`/`pinnedOrder`, which several routines can
+    /// carry at once) — this is purely bookkeeping so Customize's own
+    /// "Keep as my Today routine" toggle updates the *same* implicit
+    /// routine in place across repeat customizations, instead of inserting
+    /// a duplicate every time. Kept under its original key for continuity.
+    @AppStorage("pinnedTodayRoutineID") private var customizeManagedRoutineIDString = ""
+    /// One-time migration gate: the very first pin model was a single
+    /// AppStorage UUID (still read via `customizeManagedRoutineIDString`
+    /// above for its own purpose). Runs once to carry any pre-existing pin
+    /// forward onto the new `isPinnedToToday`/`pinnedOrder` fields — see
+    /// `.onAppear`.
+    @AppStorage("didMigratePinnedRoutineToPriorityModel") private var didMigrateToPriorityModel = false
+    @State private var showingPinnedOrderEditor = false
 
     @State private var showingSession = false
     @State private var showingCustomize = false
@@ -74,37 +87,54 @@ struct TodayView: View {
         Set(goalsStr.split(separator: ",").map(String.init))
     }
 
-    /// The saved "Today" routine the user pinned via Customize ("Keep as my
-    /// Today routine"), if any is set and it still resolves to at least one
-    /// real exercise. Checked before any time-of-day-based recommendation.
-    private var pinnedSessionExercises: [Exercise]? {
-        guard let pinnedID = UUID(uuidString: pinnedTodayRoutineIDString),
-              let routine = routines.first(where: { $0.uuid == pinnedID }) else {
-            return nil
+    /// Every routine the user has pinned as a Today launch candidate,
+    /// highest-priority first. Several can be pinned at once (via
+    /// Customize's toggle, or the Routines list's own pin action);
+    /// `pinnedOrder` — user-arranged via the reorder sheet below — breaks
+    /// the tie for which one Today actually shows.
+    private var pinnedRoutinesInOrder: [Routine] {
+        routines.filter(\.isPinnedToToday).sorted { $0.pinnedOrder < $1.pinnedOrder }
+    }
+
+    /// The priority value a newly-pinned routine should get — appended to
+    /// the end of the current pinned list, never jumping ahead of routines
+    /// the user already arranged.
+    private func nextPinnedOrder() -> Int {
+        (pinnedRoutinesInOrder.map(\.pinnedOrder).max() ?? -1) + 1
+    }
+
+    /// The highest-priority pinned routine that still resolves to at least
+    /// one real exercise — lower-priority pins, or ones referencing exercises
+    /// that no longer exist, are skipped rather than leaving Today empty.
+    private var pinnedSessionRoutine: Routine? {
+        let byID = Dictionary(uniqueKeysWithValues: exercises.map { ($0.uuid, $0) })
+        return pinnedRoutinesInOrder.first { routine in
+            !routine.exerciseIDs.compactMap({ byID[$0] }).isEmpty
         }
+    }
+
+    /// The winning pinned routine's exercises, if any is set and resolves.
+    /// Checked before any time-of-day-based recommendation.
+    private var pinnedSessionExercises: [Exercise]? {
+        guard let routine = pinnedSessionRoutine else { return nil }
         let byID = Dictionary(uniqueKeysWithValues: exercises.map { ($0.uuid, $0) })
         let resolved = routine.exerciseIDs.compactMap { byID[$0] }
         return resolved.isEmpty ? nil : resolved
     }
 
-    /// Whether the hero card is currently showing the pinned "Today"
-    /// routine rather than a time-of-day/goal-based recommendation — drives
-    /// the "Pinned as Today" tag next to the hero title.
+    /// Whether the hero card is currently showing a pinned routine rather
+    /// than a time-of-day/goal-based recommendation — drives the "Pinned as
+    /// Today" tag next to the hero title.
     private var isPinnedActive: Bool {
         pinnedSessionExercises != nil
     }
 
-    /// The pinned "Today" routine's per-exercise duration overrides, or
+    /// The winning pinned routine's per-exercise duration overrides, or
     /// empty when nothing is pinned — threaded into SessionPlayerView so
     /// durations customized (and saved) via Customize actually take effect
     /// during playback, not just in the preview.
     private var sessionDurationOverrides: [UUID: Int] {
-        guard let pinnedID = UUID(uuidString: pinnedTodayRoutineIDString),
-              let routine = routines.first(where: { $0.uuid == pinnedID }),
-              pinnedSessionExercises != nil else {
-            return [:]
-        }
-        return routine.exerciseDurationOverrides
+        pinnedSessionRoutine?.exerciseDurationOverrides ?? [:]
     }
 
     /// Today's session: the pinned "Today" routine if one is set, else
@@ -199,7 +229,7 @@ struct TodayView: View {
                 onDone: { _, exercises, pinned, durationOverrides in
                     customizeOverride = nil
                     if pinned {
-                        if let existingID = UUID(uuidString: pinnedTodayRoutineIDString),
+                        if let existingID = UUID(uuidString: customizeManagedRoutineIDString),
                            let existing = routines.first(where: { $0.uuid == existingID }) {
                             // Update the already-pinned routine in place rather
                             // than inserting a duplicate every time the user
@@ -207,14 +237,20 @@ struct TodayView: View {
                             existing.exerciseIDs = exercises.map(\.uuid)
                             existing.name = "Today"
                             existing.exerciseDurationOverrides = durationOverrides
+                            if !existing.isPinnedToToday {
+                                existing.isPinnedToToday = true
+                                existing.pinnedOrder = nextPinnedOrder()
+                            }
                         } else {
                             let routine = Routine(
                                 name: "Today",
                                 exerciseIDs: exercises.map(\.uuid),
-                                exerciseDurationOverrides: durationOverrides
+                                exerciseDurationOverrides: durationOverrides,
+                                isPinnedToToday: true,
+                                pinnedOrder: nextPinnedOrder()
                             )
                             modelContext.insert(routine)
-                            pinnedTodayRoutineIDString = routine.uuid.uuidString
+                            customizeManagedRoutineIDString = routine.uuid.uuidString
                         }
                         try? modelContext.save()
                     } else {
@@ -223,12 +259,12 @@ struct TodayView: View {
                         // an orphan in the CloudKit-synced store, and the next
                         // re-pin (with the ID already cleared) would insert a
                         // brand-new duplicate instead of ever finding it again.
-                        if let existingID = UUID(uuidString: pinnedTodayRoutineIDString),
+                        if let existingID = UUID(uuidString: customizeManagedRoutineIDString),
                            let existing = routines.first(where: { $0.uuid == existingID }) {
                             modelContext.delete(existing)
                             try? modelContext.save()
                         }
-                        pinnedTodayRoutineIDString = ""
+                        customizeManagedRoutineIDString = ""
                         // Not pinned, so there's no Routine to persist these
                         // edits onto — carry them forward for just the
                         // session about to start instead of letting the
@@ -288,10 +324,25 @@ struct TodayView: View {
             // new key rather than silently dropping it for upgrading users.
             // The old key is left in place (unused) rather than deleted —
             // there's no reader left for it either way.
-            if pinnedTodayRoutineIDString.isEmpty,
+            if customizeManagedRoutineIDString.isEmpty,
                let legacy = UserDefaults.standard.string(forKey: "pinnedWakeUpRoutineID"),
                !legacy.isEmpty {
-                pinnedTodayRoutineIDString = legacy
+                customizeManagedRoutineIDString = legacy
+            }
+            // Second one-time migration: carry the single old-model pin
+            // forward onto the new isPinnedToToday/pinnedOrder fields, which
+            // are what session selection actually reads now. Only needs to
+            // run once — later pins (from here or the Routines list) set
+            // these fields directly.
+            if !didMigrateToPriorityModel {
+                if let pinnedID = UUID(uuidString: customizeManagedRoutineIDString),
+                   let routine = routines.first(where: { $0.uuid == pinnedID }),
+                   !routine.isPinnedToToday {
+                    routine.isPinnedToToday = true
+                    routine.pinnedOrder = 0
+                    try? modelContext.save()
+                }
+                didMigrateToPriorityModel = true
             }
             if !reduceMotion { isBreathingIn = true }
             if let profile {
@@ -329,8 +380,36 @@ struct TodayView: View {
 
             Spacer()
 
+            // Only worth showing once there's an actual order to arrange —
+            // a single pin (or none) has nothing to reorder, and the icon
+            // would just read as clutter next to the streak badge.
+            if pinnedRoutinesInOrder.count > 1 {
+                pinnedOrderButton
+            }
+
             streakButton
         }
+        .sheet(isPresented: $showingPinnedOrderEditor) {
+            PinnedRoutineOrderView(routines: pinnedRoutinesInOrder) { try? modelContext.save() }
+        }
+    }
+
+    /// Opens the reorder sheet for pinned routines — the "which one wins
+    /// when you open the app" priority list. Lives next to the streak
+    /// badge since that's the only existing top-of-screen chrome; there's
+    /// no toolbar here to hang it on (the nav bar is hidden).
+    private var pinnedOrderButton: some View {
+        Button {
+            showingPinnedOrderEditor = true
+        } label: {
+            Image(systemName: "arrow.up.arrow.down.circle")
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                .frame(width: 34, height: 34)
+                .background(Color.luminaCardFill, in: Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Arrange pinned routine order")
     }
 
     /// The only stat on this screen — always visible (even at a 0 streak,
