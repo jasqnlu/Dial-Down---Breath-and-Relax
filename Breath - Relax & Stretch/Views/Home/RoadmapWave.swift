@@ -245,6 +245,13 @@ struct RoadmapWaveCurve: View {
 struct RoadmapWave: View {
     let exercises: [Exercise]
     var numbered: Bool = false
+    /// Per-exercise duration overrides, keyed by exercise UUID — absent key
+    /// means "use the exercise's own durationSeconds." Threaded through so
+    /// node sizing and each node's duration label reflect a customized
+    /// (e.g. shortened) duration instead of always showing the catalog
+    /// default, wherever this is shown alongside CustomizeRoutineView's own
+    /// duration stepper.
+    var durationOverrides: [UUID: Int] = [:]
 
     /// Continuous horizontal content-offset, read every scroll frame via
     /// `.onScrollGeometryChange` — not just the settled post-snap position
@@ -263,7 +270,14 @@ struct RoadmapWave: View {
         midY + RoadmapWaveGeometry.amplitude + RoadmapWaveGeometry.focusBottomExtent(numbered: numbered)
     }
 
-    private var durations: [Int] { exercises.map(\.durationSeconds) }
+    /// The exercise's duration after applying `durationOverrides`, if any —
+    /// mirrors the identically named helper in CustomizeRoutineView /
+    /// SessionPlayerView / RoutineBuilderView.
+    private func duration(for exercise: Exercise) -> Int {
+        durationOverrides[exercise.uuid] ?? exercise.durationSeconds
+    }
+
+    private var durations: [Int] { exercises.map(duration(for:)) }
 
     private var padding: CGFloat {
         RoadmapWaveGeometry.viewportPadding(visibleWidth: viewportWidth)
@@ -310,10 +324,18 @@ struct RoadmapWave: View {
         .accessibilityLabel(accessibilityLabel)
     }
 
+    /// Mirrors `Exercise.durationFormatted`'s "m:ss" formatting, but reads
+    /// the overridden duration rather than always the catalog default.
+    private func durationFormatted(for exercise: Exercise) -> String {
+        let seconds = duration(for: exercise)
+        let m = seconds / 60, s = seconds % 60
+        return s == 0 ? "\(m):00" : "\(m):\(String(format: "%02d", s))"
+    }
+
     @ViewBuilder
     private func nodeView(index: Int, exercise: Exercise) -> some View {
         let category = ExerciseCategory.primary(for: exercise.targetBodyParts)
-        let size = RoadmapWaveGeometry.nodeSize(forDuration: exercise.durationSeconds, in: durations)
+        let size = RoadmapWaveGeometry.nodeSize(forDuration: duration(for: exercise), in: durations)
         let x = RoadmapWaveGeometry.x(at: index, padding: padding)
         let y = RoadmapWaveGeometry.y(at: index, midY: midY)
         let distance = abs(x - focusCenterX)
@@ -342,7 +364,7 @@ struct RoadmapWave: View {
             // TodayView's saturated hero gradient in particular, where plain
             // text was hard to read wherever the halo/vignette didn't happen
             // to darken it.
-            Text(exercise.durationFormatted)
+            Text(durationFormatted(for: exercise))
                 .font(.luminaCaption)
                 .fontWeight(.semibold)
                 .foregroundStyle(.white)
@@ -411,7 +433,7 @@ struct RoadmapWave: View {
 
     private var accessibilityLabel: String {
         guard !exercises.isEmpty else { return "No exercises" }
-        let items = exercises.map { "\($0.name), \($0.durationFormatted)" }.joined(separator: "; ")
+        let items = exercises.map { "\($0.name), \(durationFormatted(for: $0))" }.joined(separator: "; ")
         return "\(exercises.count) exercise\(exercises.count == 1 ? "" : "s"): \(items)"
     }
 }
