@@ -21,30 +21,15 @@ struct TourStep: Identifiable {
     /// boundary reliably. No current step needs this (the tour is anchor-only
     /// now), but the mechanism stays available for a future toolbar callout.
     let fixedFrame: ((GeometryProxy) -> CGRect)?
-    /// Whether the dim layer's Path should hit-test at all for this step.
-    /// `true` (the default) for every ordinary step — the dim layer blocks
-    /// taps outside its cutout, same as before. `false` is an escape hatch
-    /// for a step whose interaction can land on more than one real target,
-    /// which the current one-rect-per-step design can't represent as a
-    /// single cutout:
-    /// - `bodymap.tapRegion` advances when the user taps the body
-    /// - `bodymap.findStretches` anchors to the action bar, which only
-    ///   exists once a region is selected — so it follows `bodymap.tapRegion`
-    /// When `false`, the dim layer stops intercepting taps everywhere on
-    /// screen, letting all of them pass through to the real app underneath;
-    /// the tooltip card itself is unaffected and keeps its own hit-testing.
-    let blocksBackgroundTaps: Bool
 
     init(id: String, tabIndex: Int? = nil, title: String, message: String,
-         isInteractive: Bool = false, fixedFrame: ((GeometryProxy) -> CGRect)? = nil,
-         blocksBackgroundTaps: Bool = true) {
+         isInteractive: Bool = false, fixedFrame: ((GeometryProxy) -> CGRect)? = nil) {
         self.id = id
         self.tabIndex = tabIndex
         self.title = title
         self.message = message
         self.isInteractive = isInteractive
         self.fixedFrame = fixedFrame
-        self.blocksBackgroundTaps = blocksBackgroundTaps
     }
 }
 
@@ -69,10 +54,10 @@ extension TourStep {
                  title: "Body", message: "Rotate the body and tap an area that's bothering you."),
         TourStep(id: "bodymap.tapRegion",
                  title: "Tap a Sore Spot", message: "Tap anywhere that feels tense or sore — the body turns to face it.",
-                 isInteractive: true, blocksBackgroundTaps: false),
+                 isInteractive: true),
         TourStep(id: "bodymap.findStretches",
                  title: "Find Stretches", message: "Tap here for stretches that target it. Double-tap the body instead to pick an exact muscle.",
-                 isInteractive: true, blocksBackgroundTaps: false),
+                 isInteractive: true),
 
         // MARK: Exercises
         TourStep(id: "tabbar.exercises", tabIndex: 2,

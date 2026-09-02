@@ -108,11 +108,6 @@ struct TourCoordinatorTests {
         #expect(interactiveIDs == ["bodymap.tapRegion", "bodymap.findStretches"])
     }
 
-    @Test func onlyTheTwoBodyMapStepsDisableBackgroundTapBlocking() {
-        let nonBlockingIDs = Set(TourStep.allSteps.filter { !$0.blocksBackgroundTaps }.map(\.id))
-        #expect(nonBlockingIDs == ["bodymap.tapRegion", "bodymap.findStretches"])
-    }
-
     @Test func noStepHasFixedFrame() {
         let fixedFrameIDs = Set(TourStep.allSteps.filter { $0.fixedFrame != nil }.map(\.id))
         #expect(fixedFrameIDs.isEmpty)
