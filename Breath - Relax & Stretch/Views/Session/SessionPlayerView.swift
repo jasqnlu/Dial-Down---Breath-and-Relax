@@ -284,12 +284,20 @@ struct SessionPlayerView: View {
                     // The type ("STRETCH"/"BREATH") and hold/keep-going cue
                     // used to be two separate full-width lines stacked above
                     // the media, eating a chunk of vertical space on every
-                    // exercise. They now live as a small badge cluster
-                    // overlaid on the media's corner instead.
+                    // exercise. For a stretch, they live as a small badge
+                    // cluster overlaid on the media's corner; for a breath
+                    // exercise there's no media card to anchor a corner to,
+                    // so they instead sit right under the inhale/exhale
+                    // phase readout below, grouped with the reading they
+                    // actually describe.
                     ZStack(alignment: .topTrailing) {
                         if exercise.type != .breath {
                             ExerciseMediaCard(exercise: exercise)
                                 .frame(maxHeight: proxy.size.height * 0.6)
+
+                            indicatorCluster(for: exercise)
+                                .padding(.top, 4)
+                                .padding(.trailing, 20)
                         } else {
                             BreathingCircle(
                                 isPaused: isPaused,
@@ -297,10 +305,6 @@ struct SessionPlayerView: View {
                                 diameter: min(220, proxy.size.height * 0.5)
                             )
                         }
-
-                        indicatorCluster(for: exercise)
-                            .padding(.top, 4)
-                            .padding(.trailing, 20)
                     }
                     .frame(maxWidth: .infinity)
 
@@ -308,8 +312,14 @@ struct SessionPlayerView: View {
 
                     if let pattern = activeBreathPattern {
                         breathPhaseCue(pattern: pattern)
+                        inlineIndicatorCluster(for: exercise)
+                            .padding(.top, 6)
                     } else {
                         instructionCue(for: exercise)
+                        if exercise.type == .breath {
+                            inlineIndicatorCluster(for: exercise)
+                                .padding(.top, 6)
+                        }
                     }
 
                     Spacer(minLength: 2)
@@ -402,9 +412,22 @@ struct SessionPlayerView: View {
             advanceToNext(completion: skipCompletion())
         } label: {
             VStack(spacing: 0) {
-                ExerciseMediaCard(exercise: exercise)
+                // Breath exercises don't carry a demo video/animation the
+                // way stretches do, so ExerciseMediaCard would render
+                // nothing here — use the same pose-glyph "profile picture"
+                // the rest of the app falls back to instead.
+                if exercise.type == .breath {
+                    PoseGlyphIcon(
+                        exercise: exercise,
+                        category: ExerciseCategory.primary(for: exercise.targetBodyParts),
+                        size: 96
+                    )
                     .frame(width: 96, height: 96)
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                } else {
+                    ExerciseMediaCard(exercise: exercise)
+                        .frame(width: 96, height: 96)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
 
                 Text("Up Next")
                     .font(.luminaCaption)
@@ -422,25 +445,44 @@ struct SessionPlayerView: View {
         .accessibilityLabel("Up next: \(exercise.name). Tap to skip ahead.")
     }
 
-    /// Small badge cluster overlaid on the media card / breathing circle's
-    /// corner: the exercise type ("STRETCH"/"BREATH") above the hold/keep-
-    /// going cue. Kept together here (rather than as two separate full-width
-    /// lines in the main flow) is what actually frees up the vertical space
-    /// the no-scroll layout depends on.
+    @ViewBuilder
+    private func typeBadge(for exercise: Exercise) -> some View {
+        Text(exercise.type.rawValue)
+            .font(.luminaCaption)
+            .fontWeight(.semibold)
+            .textCase(.uppercase)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Color.black.opacity(0.45), in: Capsule())
+            .accessibilityLabel("Exercise type")
+            .accessibilityValue(exercise.type.rawValue)
+    }
+
+    /// Small badge cluster overlaid on the media card's corner: the exercise
+    /// type ("STRETCH") above the hold/keep-going cue. Kept together here
+    /// (rather than as two separate full-width lines in the main flow) is
+    /// what actually frees up the vertical space the no-scroll layout
+    /// depends on. Stretch exercises only — breath uses
+    /// `inlineIndicatorCluster` instead, since there's no media corner to
+    /// anchor to.
     @ViewBuilder
     private func indicatorCluster(for exercise: Exercise) -> some View {
         VStack(alignment: .trailing, spacing: 4) {
-            Text(exercise.type.rawValue)
-                .font(.luminaCaption)
-                .fontWeight(.semibold)
-                .textCase(.uppercase)
-                .foregroundStyle(.white)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(Color.black.opacity(0.45), in: Capsule())
-                .accessibilityLabel("Exercise type")
-                .accessibilityValue(exercise.type.rawValue)
+            typeBadge(for: exercise)
+            cueBadge(for: exercise.cueStyle)
+        }
+    }
 
+    /// Same two badges as `indicatorCluster`, but side by side and meant to
+    /// sit directly under the breath-phase readout (or instruction text for
+    /// a pattern-less breath exercise) rather than floating on a media
+    /// corner — visually groups "BREATH" + the cue with the phase reading
+    /// they actually describe.
+    @ViewBuilder
+    private func inlineIndicatorCluster(for exercise: Exercise) -> some View {
+        HStack(spacing: 8) {
+            typeBadge(for: exercise)
             cueBadge(for: exercise.cueStyle)
         }
     }
@@ -533,6 +575,16 @@ struct SessionPlayerView: View {
                 .foregroundStyle(Color.luminaOnSurface)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
+            // The exercise's pose-glyph "profile picture" — centered as the
+            // dominant visual on this screen, same icon the rest of the app
+            // uses to represent the exercise when there's no demo media.
+            if let exercise = currentExercise {
+                PoseGlyphIcon(
+                    exercise: exercise,
+                    category: ExerciseCategory.primary(for: exercise.targetBodyParts),
+                    size: 150
+                )
+            }
             Text("\(getReadyCount)")
                 .font(.system(size: getReadyCountSize, weight: .thin, design: .rounded))
                 .monospacedDigit()
@@ -557,7 +609,7 @@ struct SessionPlayerView: View {
             }
             Spacer()
             Button("Skip") { skipGetReady() }
-                .buttonStyle(LuminaPillButtonStyle(kind: .ghost, compact: true))
+                .buttonStyle(LuminaPillButtonStyle(kind: .ghost))
         }
         .padding()
         .background(Color.luminaSurface.ignoresSafeArea())
