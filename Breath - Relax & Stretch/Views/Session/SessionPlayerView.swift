@@ -276,12 +276,12 @@ struct SessionPlayerView: View {
                     ZStack(alignment: .topTrailing) {
                         if exercise.type != .breath {
                             ExerciseMediaCard(exercise: exercise)
-                                .frame(maxHeight: proxy.size.height * 0.42)
+                                .frame(maxHeight: proxy.size.height * 0.6)
                         } else {
                             BreathingCircle(
                                 isPaused: isPaused,
                                 cycleDuration: breathingCycleDuration(for: exercise),
-                                diameter: min(160, proxy.size.height * 0.34)
+                                diameter: min(220, proxy.size.height * 0.5)
                             )
                         }
 
@@ -291,7 +291,7 @@ struct SessionPlayerView: View {
                     }
                     .frame(maxWidth: .infinity)
 
-                    Spacer(minLength: 8)
+                    Spacer(minLength: 4)
 
                     if let pattern = activeBreathPattern {
                         breathPhaseCue(pattern: pattern)
@@ -299,7 +299,7 @@ struct SessionPlayerView: View {
                         instructionCue(for: exercise)
                     }
 
-                    Spacer(minLength: 8)
+                    Spacer(minLength: 2)
 
                     Text(timeString(secondsRemaining))
                         .font(.system(size: exerciseTimerSize, weight: .thin, design: .rounded))
