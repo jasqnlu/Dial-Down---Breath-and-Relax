@@ -47,7 +47,6 @@ struct CustomizeRoutineView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var pinnedToggle: Bool
     @State private var currentExercises: [Exercise]
-    @State private var indexPendingRemoval: Int?
     /// Per-exercise duration overrides, keyed by exercise UUID — seconds.
     /// Absent key means "use the exercise's own durationSeconds." Passed
     /// back through `onDone` so the caller can save it onto the pinned
@@ -197,24 +196,6 @@ struct CustomizeRoutineView: View {
                     }
                 }
             }
-            .confirmationDialog(
-                "Remove this exercise?",
-                isPresented: Binding(
-                    get: { indexPendingRemoval != nil },
-                    set: { if !$0 { indexPendingRemoval = nil } }
-                ),
-                presenting: indexPendingRemoval
-            ) { index in
-                Button("Remove", role: .destructive) {
-                    let removedID = currentExercises[index].uuid
-                    currentExercises.remove(at: index)
-                    durationOverrides.removeValue(forKey: removedID)
-                    indexPendingRemoval = nil
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: { index in
-                Text("\"\(currentExercises[index].name)\" will be removed from this routine.")
-            }
             .safeAreaInset(edge: .bottom) {
                 Button {
                     onDone(routineName, currentExercises, pinnedToggle, durationOverrides)
@@ -275,14 +256,24 @@ struct CustomizeRoutineView: View {
 
             durationStepper(for: exercise)
 
-            Button(role: .destructive) {
-                indexPendingRemoval = index
+            TapAgainToConfirmButton {
+                let removedID = currentExercises[index].uuid
+                currentExercises.remove(at: index)
+                durationOverrides.removeValue(forKey: removedID)
             } label: {
                 Image(systemName: "minus.circle.fill")
             }
+            .accessibilityLabel("Remove \(exercise.name)")
+            .accessibilityIdentifier("removeExercise-\(exercise.uuid)")
             .buttonStyle(.plain)
             .foregroundStyle(.red)
         }
+        // Without this, the row's own "customizeExerciseRow-N" identifier
+        // (used for drag-reorder testing) swallows this remove button's
+        // identifier into one merged row-level element — this keeps the
+        // remove button (and the duration stepper's +/- buttons)
+        // independently reachable, both for VoiceOver and UI tests.
+        .accessibilityElement(children: .contain)
         .luminaCard(padding: 12)
     }
 
