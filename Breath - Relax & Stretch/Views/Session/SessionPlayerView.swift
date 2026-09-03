@@ -309,7 +309,7 @@ struct SessionPlayerView: View {
                     impactLight.impactOccurred()
                     goToPrevious()
                 } label: {
-                    Image(systemName: "backward.skip")
+                    Image(systemName: "backward.end.fill")
                         .font(.title)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
                         .frame(width: 44, height: 44)
@@ -338,7 +338,7 @@ struct SessionPlayerView: View {
                     impactLight.impactOccurred()
                     advanceToNext(completion: skipCompletion())
                 } label: {
-                    Image(systemName: "forward.skip")
+                    Image(systemName: "forward.end.fill")
                         .font(.title)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
                         .frame(width: 44, height: 44)
