@@ -31,7 +31,12 @@ struct SessionPlayerView: View {
     @State private var streakOutcome = SessionRecorder.Outcome(streak: 0, streakIncreased: false)
     @State private var sessionStarted = Date()
     @State private var shouldRequestReview = false
-    @State private var showingExitConfirmation = false
+    /// Tap-again-to-confirm exit, replacing a native confirmation alert: the
+    /// first tap on the X arms this and shows a "Double tap to confirm"
+    /// caption; a second tap while armed actually exits. `exitArmTask`
+    /// disarms it again after a few seconds if that second tap never comes.
+    @State private var isExitArmed = false
+    @State private var exitArmTask: Task<Void, Never>? = nil
     /// Each exercise's own completion fraction, so the session's overall
     /// completionPercent reflects everything done, not just the last exercise.
     @State private var exerciseCompletions: [Double] = []
@@ -176,6 +181,7 @@ struct SessionPlayerView: View {
             VoiceCueService.shared.stop()
             getReadyTask?.cancel()
             instructionCueTask?.cancel()
+            exitArmTask?.cancel()
         }
         .task {
             for await _ in Timer.publish(every: 1, on: .main, in: .common).autoconnect().values {
@@ -209,16 +215,6 @@ struct SessionPlayerView: View {
                 shouldRequestReview = false
             }
         }
-        .confirmationDialog(
-            "End session?",
-            isPresented: $showingExitConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("End Session", role: .destructive) { dismiss() }
-            Button("Keep Going", role: .cancel) {}
-        } message: {
-            Text("Your progress on this session won't be saved.")
-        }
     }
 
     // MARK: - Player UI
@@ -233,6 +229,23 @@ struct SessionPlayerView: View {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title2)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
+                }
+                .accessibilityLabel("Close")
+                .accessibilityIdentifier("sessionCloseButton")
+                .accessibilityHint(isExitArmed ? "Double tap to confirm" : "")
+                .overlay(alignment: .leading) {
+                    if isExitArmed {
+                        Text("Double tap to confirm")
+                            .font(.luminaCaption)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Color.black.opacity(0.75), in: Capsule())
+                            .fixedSize()
+                            .offset(x: 36)
+                            .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .leading)))
+                            .allowsHitTesting(false)
+                    }
                 }
                 Spacer()
                 Text("\(currentIndex + 1) / \(exercises.count)")
@@ -618,14 +631,31 @@ struct SessionPlayerView: View {
         startExercise()
     }
 
-    /// Dismisses immediately if nothing has been done yet; otherwise confirms
-    /// first so an accidental tap mid-routine doesn't silently discard progress.
+    /// Dismisses immediately if nothing has been done yet; otherwise requires
+    /// a second tap (within `exitConfirmWindow`) so an accidental tap
+    /// mid-routine doesn't silently discard progress — a "Double tap to
+    /// confirm" caption near the X is the only feedback in between, rather
+    /// than a native confirmation alert.
+    private static let exitConfirmWindow: Double = 2.5
+
     private func requestExit() {
-        if currentIndex > 0 {
-            showingExitConfirmation = true
-        } else {
+        guard currentIndex > 0 else {
             dismiss()
+            return
         }
+        guard isExitArmed else {
+            impactLight.impactOccurred()
+            exitArmTask?.cancel()
+            withAnimation(.easeOut(duration: 0.2)) { isExitArmed = true }
+            exitArmTask = Task { @MainActor in
+                try? await Task.sleep(for: .seconds(Self.exitConfirmWindow))
+                guard !Task.isCancelled else { return }
+                withAnimation(.easeIn(duration: 0.2)) { isExitArmed = false }
+            }
+            return
+        }
+        exitArmTask?.cancel()
+        dismiss()
     }
 
     private func skipCompletion() -> Double {
