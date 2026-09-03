@@ -248,41 +248,50 @@ struct SessionPlayerView: View {
                 .accessibilityLabel("Session progress")
                 .accessibilityValue("\(Int((sessionProgress * 100).rounded())) percent")
 
-            // Everything between the top bar and the transport controls
-            // scrolls — some exercises (e.g. ones carrying
-            // AnimationAccuracyNote's extra caveat line, or just a longer
-            // name/instruction) push total content past what a fixed,
-            // non-scrolling VStack can fit on screen. Before this, that
-            // overflow silently pushed the back/pause/skip row off the
-            // bottom edge — still present in the view hierarchy, just not
-            // visible or reachable.
-            ScrollView {
+            // Everything between the top bar and the transport controls is
+            // sized to the space actually available (via GeometryReader)
+            // rather than scrolling — the name, instruction/cue text, and
+            // countdown timer always keep their full size and stay on
+            // screen; the media card / breathing circle is the one thing
+            // capped and shrunk to whatever room is left, so a tall device
+            // and an SE-class one both show everything at once.
+            GeometryReader { proxy in
                 VStack(spacing: 0) {
                     Text(exercise.name)
                         .font(.luminaDisplay)
                         .foregroundStyle(Color.luminaOnSurface)
                         .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.6)
                         .padding(.horizontal)
-                        .padding(.top, 24)
+                        .padding(.top, 16)
 
-                    Text(exercise.type.rawValue)
-                        .font(.luminaLabel)
-                        .textCase(.uppercase)
-                        .foregroundStyle(Color.luminaOnSurfaceVariant)
-                        .padding(.top, 4)
+                    Spacer(minLength: 8)
 
-                    cueBadge(for: exercise.cueStyle)
+                    // The type ("STRETCH"/"BREATH") and hold/keep-going cue
+                    // used to be two separate full-width lines stacked above
+                    // the media, eating a chunk of vertical space on every
+                    // exercise. They now live as a small badge cluster
+                    // overlaid on the media's corner instead.
+                    ZStack(alignment: .topTrailing) {
+                        if exercise.type != .breath {
+                            ExerciseMediaCard(exercise: exercise)
+                                .frame(maxHeight: proxy.size.height * 0.42)
+                        } else {
+                            BreathingCircle(
+                                isPaused: isPaused,
+                                cycleDuration: breathingCycleDuration(for: exercise),
+                                diameter: min(160, proxy.size.height * 0.34)
+                            )
+                        }
 
-                    if exercise.type != .breath {
-                        ExerciseMediaCard(exercise: exercise)
-                            .padding(.top, 24)
-                    } else {
-                        BreathingCircle(
-                            isPaused: isPaused,
-                            cycleDuration: breathingCycleDuration(for: exercise)
-                        )
-                            .padding()
+                        indicatorCluster(for: exercise)
+                            .padding(.top, 4)
+                            .padding(.trailing, 20)
                     }
+                    .frame(maxWidth: .infinity)
+
+                    Spacer(minLength: 8)
 
                     if let pattern = activeBreathPattern {
                         breathPhaseCue(pattern: pattern)
@@ -290,14 +299,15 @@ struct SessionPlayerView: View {
                         instructionCue(for: exercise)
                     }
 
+                    Spacer(minLength: 8)
+
                     Text(timeString(secondsRemaining))
                         .font(.system(size: exerciseTimerSize, weight: .thin, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(Color.luminaOnSurface)
-                        .padding(.top, 24)
-                        .padding(.bottom, 24)
+                        .padding(.bottom, 8)
                 }
-                .frame(maxWidth: .infinity)
+                .frame(width: proxy.size.width, height: proxy.size.height)
             }
         }
         .safeAreaInset(edge: .bottom) {
@@ -399,6 +409,29 @@ struct SessionPlayerView: View {
         .accessibilityLabel("Up next: \(exercise.name). Tap to skip ahead.")
     }
 
+    /// Small badge cluster overlaid on the media card / breathing circle's
+    /// corner: the exercise type ("STRETCH"/"BREATH") above the hold/keep-
+    /// going cue. Kept together here (rather than as two separate full-width
+    /// lines in the main flow) is what actually frees up the vertical space
+    /// the no-scroll layout depends on.
+    @ViewBuilder
+    private func indicatorCluster(for exercise: Exercise) -> some View {
+        VStack(alignment: .trailing, spacing: 4) {
+            Text(exercise.type.rawValue)
+                .font(.luminaCaption)
+                .fontWeight(.semibold)
+                .textCase(.uppercase)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(Color.black.opacity(0.45), in: Capsule())
+                .accessibilityLabel("Exercise type")
+                .accessibilityValue(exercise.type.rawValue)
+
+            cueBadge(for: exercise.cueStyle)
+        }
+    }
+
     @ViewBuilder
     private func cueBadge(for cueStyle: ExerciseCueStyle) -> some View {
         Text(cueStyle == .hold ? "Hold" : "Keep Going")
@@ -410,7 +443,6 @@ struct SessionPlayerView: View {
             .background(Color.luminaMintTint, in: Capsule())
             .scaleEffect(cueStyle == .repeatMotion && cueBadgePulsing ? 1.07 : 1.0)
             .opacity(cueStyle == .repeatMotion && cueBadgePulsing ? 0.82 : 1.0)
-            .padding(.top, 12)
             .accessibilityLabel("Exercise cue")
             .accessibilityValue(cueStyle == .hold ? "Hold" : "Keep going")
             .onAppear {
@@ -784,23 +816,27 @@ struct SessionPlayerView: View {
 struct BreathingCircle: View {
     let isPaused: Bool
     let cycleDuration: Double
+    /// Base diameter of the mid/outer rings — defaults to the original fixed
+    /// size, but the session player passes a smaller value on tight screens
+    /// so this shrinks along with everything else that needs the room.
+    var diameter: CGFloat = 160
     @State private var scale: CGFloat = 1.0
 
     var body: some View {
         ZStack {
             Circle()
                 .fill(Color.luminaGradientStart.opacity(0.10))
-                .frame(width: 160, height: 160)
+                .frame(width: diameter, height: diameter)
                 .scaleEffect(scale * 1.2)
 
             Circle()
                 .fill(Color.luminaPrimary.opacity(0.15))
-                .frame(width: 160, height: 160)
+                .frame(width: diameter, height: diameter)
                 .scaleEffect(scale)
 
             Circle()
                 .fill(Color.luminaPrimary.opacity(0.25))
-                .frame(width: 100, height: 100)
+                .frame(width: diameter * 0.625, height: diameter * 0.625)
         }
         .onAppear { animate() }
         .onChange(of: cycleDuration) { _, _ in
