@@ -45,9 +45,16 @@ final class SessionPlayerUpNextUITests: XCTestCase {
         tiles.element(boundBy: 1).tap()
 
         app.buttons["Continue"].tap()
-        let startMiniRoutine = app.buttons["Start Mini-Routine"]
-        XCTAssertTrue(startMiniRoutine.waitForExistence(timeout: 10))
-        startMiniRoutine.tap()
+
+        // "Review Picks" screen: tap the "Start Mini-Routine" row to reach
+        // the actual start screen, which has its own "Start" pill button.
+        let startMiniRoutineRow = app.buttons["Start Mini-Routine"]
+        XCTAssertTrue(startMiniRoutineRow.waitForExistence(timeout: 10))
+        startMiniRoutineRow.tap()
+
+        let startButton = app.buttons["Start"]
+        XCTAssertTrue(startButton.waitForExistence(timeout: 10))
+        startButton.tap()
 
         let pauseButton = app.buttons["Pause session"]
         XCTAssertTrue(pauseButton.waitForExistence(timeout: 10), "Session player should appear")
