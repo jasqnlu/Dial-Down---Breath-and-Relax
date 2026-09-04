@@ -22,7 +22,6 @@ struct SessionPlayerView: View {
 
     @AppStorage("totalSessionsCompleted") private var totalSessionsCompleted = 0
     @AppStorage("calendarSyncEnabled") private var calendarSyncEnabled = false
-    @AppStorage("sessionDurationMultiplier") private var durationMultiplier: Double = 1.0
 
     @State private var currentIndex = 0
     @State private var secondsRemaining = 0
@@ -32,7 +31,6 @@ struct SessionPlayerView: View {
     @State private var streakOutcome = SessionRecorder.Outcome(streak: 0, streakIncreased: false)
     @State private var sessionStarted = Date()
     @State private var shouldRequestReview = false
-    @State private var showingExitConfirmation = false
     /// Each exercise's own completion fraction, so the session's overall
     /// completionPercent reflects everything done, not just the last exercise.
     @State private var exerciseCompletions: [Double] = []
@@ -95,7 +93,7 @@ struct SessionPlayerView: View {
 
     private var totalSessionSeconds: Int {
         exercises.reduce(0) { total, exercise in
-            total + Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
+            total + effectiveDuration(for: exercise)
         }
     }
 
@@ -103,11 +101,18 @@ struct SessionPlayerView: View {
         guard currentIndex < exercises.count else { return totalSessionSeconds }
 
         let completed = exercises.prefix(currentIndex).reduce(0) { total, exercise in
-            total + Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
+            total + effectiveDuration(for: exercise)
         }
-        let currentDuration = Self.scaledDuration(base: effectiveDuration(for: exercises[currentIndex]), multiplier: durationMultiplier)
+        let currentDuration = effectiveDuration(for: exercises[currentIndex])
         let currentElapsed = max(0, min(currentDuration, currentDuration - secondsRemaining))
         return completed + currentElapsed
+    }
+
+    /// The exercise coming up after the current one, or nil on the last
+    /// exercise — drives the "Up Next" preview card.
+    private var nextExercise: Exercise? {
+        let nextIndex = currentIndex + 1
+        return nextIndex < exercises.count ? exercises[nextIndex] : nil
     }
 
     private var sessionProgress: Double {
@@ -203,16 +208,6 @@ struct SessionPlayerView: View {
                 shouldRequestReview = false
             }
         }
-        .confirmationDialog(
-            "End session?",
-            isPresented: $showingExitConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("End Session", role: .destructive) { dismiss() }
-            Button("Keep Going", role: .cancel) {}
-        } message: {
-            Text("Your progress on this session won't be saved.")
-        }
     }
 
     // MARK: - Player UI
@@ -223,20 +218,18 @@ struct SessionPlayerView: View {
 
             // Top bar
             HStack {
-                Button { requestExit() } label: {
+                TapAgainToConfirmButton(
+                    captionAlignment: .leading,
+                    captionAnchor: .leading,
+                    captionOffset: CGSize(width: 36, height: 0),
+                    action: { dismiss() }
+                ) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title2)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
                 }
-                Spacer()
-                Picker("Speed", selection: $durationMultiplier) {
-                    Text("0.5x").tag(0.5)
-                    Text("1x").tag(1.0)
-                    Text("2x").tag(2.0)
-                }
-                .pickerStyle(.segmented)
-                .frame(width: 160)
-                .accessibilityLabel("Exercise duration speed")
+                .accessibilityLabel("Close")
+                .accessibilityIdentifier("sessionCloseButton")
                 Spacer()
                 Text("\(currentIndex + 1) / \(exercises.count)")
                     .font(.luminaCaption)
@@ -251,57 +244,94 @@ struct SessionPlayerView: View {
                 .accessibilityLabel("Session progress")
                 .accessibilityValue("\(Int((sessionProgress * 100).rounded())) percent")
 
-            Spacer()
+            // Everything between the top bar and the transport controls is
+            // sized to the space actually available (via GeometryReader)
+            // rather than scrolling — the name, instruction/cue text, and
+            // countdown timer always keep their full size and stay on
+            // screen; the media card / breathing circle is the one thing
+            // capped and shrunk to whatever room is left, so a tall device
+            // and an SE-class one both show everything at once.
+            GeometryReader { proxy in
+                VStack(spacing: 0) {
+                    Text(exercise.name)
+                        .font(.luminaDisplay)
+                        .foregroundStyle(Color.luminaOnSurface)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.6)
+                        .padding(.horizontal)
+                        .padding(.top, 16)
 
-            Text(exercise.name)
-                .font(.luminaDisplay)
-                .foregroundStyle(Color.luminaOnSurface)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+                    Spacer(minLength: 8)
 
-            Text(exercise.type.rawValue)
-                .font(.luminaLabel)
-                .textCase(.uppercase)
-                .foregroundStyle(Color.luminaOnSurfaceVariant)
-                .padding(.top, 4)
+                    // The type ("STRETCH"/"BREATH") and hold/keep-going cue
+                    // used to be two separate full-width lines stacked above
+                    // the media, eating a chunk of vertical space on every
+                    // exercise. For a stretch, they live as a small badge
+                    // cluster overlaid on the media's corner; for a breath
+                    // exercise there's no media card to anchor a corner to,
+                    // so they instead sit right under the inhale/exhale
+                    // phase readout below, grouped with the reading they
+                    // actually describe.
+                    ZStack(alignment: .topTrailing) {
+                        if exercise.type != .breath {
+                            ExerciseMediaCard(exercise: exercise)
+                                .frame(maxHeight: proxy.size.height * 0.6)
 
-            cueBadge(for: exercise.cueStyle)
+                            indicatorCluster(for: exercise)
+                                .padding(.top, 4)
+                                .padding(.trailing, 20)
+                        } else {
+                            BreathingCircle(
+                                isPaused: isPaused,
+                                cycleDuration: breathingCycleDuration(for: exercise),
+                                diameter: min(220, proxy.size.height * 0.5)
+                            )
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
 
-            Spacer()
+                    Spacer(minLength: 4)
 
-            if exercise.type != .breath {
-                ExerciseMediaCard(exercise: exercise)
-            } else {
-                BreathingCircle(
-                    isPaused: isPaused,
-                    cycleDuration: breathingCycleDuration(for: exercise)
-                )
-                    .padding()
+                    if let pattern = activeBreathPattern {
+                        breathPhaseCue(pattern: pattern)
+                        inlineIndicatorCluster(for: exercise)
+                            .padding(.top, 6)
+                    } else {
+                        instructionCue(for: exercise)
+                        if exercise.type == .breath {
+                            inlineIndicatorCluster(for: exercise)
+                                .padding(.top, 6)
+                        }
+                    }
+
+                    Spacer(minLength: 2)
+
+                    Text(timeString(secondsRemaining))
+                        .font(.system(size: exerciseTimerSize, weight: .thin, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundStyle(Color.luminaOnSurface)
+                        .padding(.bottom, 8)
+                }
+                .frame(width: proxy.size.width, height: proxy.size.height)
             }
-
-            if let pattern = activeBreathPattern {
-                breathPhaseCue(pattern: pattern)
-            } else {
-                instructionCue(for: exercise)
-            }
-
-            Text(timeString(secondsRemaining))
-                .font(.system(size: exerciseTimerSize, weight: .thin, design: .rounded))
-                .monospacedDigit()
-                .foregroundStyle(Color.luminaOnSurface)
-
-            Spacer()
-
+        }
+        .safeAreaInset(edge: .bottom) {
+            // Pinned outside the ScrollView, not part of its scrolling
+            // content — always on screen regardless of how tall the
+            // exercise's content above it is.
             HStack(spacing: 48) {
                 Button {
                     impactLight.impactOccurred()
-                    advanceToNext(completion: skipCompletion())
+                    goToPrevious()
                 } label: {
-                    Image(systemName: "forward.skip")
+                    Image(systemName: "backward.end.fill")
                         .font(.title)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
-                .accessibilityLabel("Skip exercise")
+                .accessibilityLabel("Previous exercise")
 
                 Button {
                     impactLight.impactOccurred()
@@ -320,13 +350,124 @@ struct SessionPlayerView: View {
                 }
                 .accessibilityLabel(isPaused ? "Resume session" : "Pause session")
 
-                Image(systemName: "forward.skip")
-                    .font(.title)
-                    .hidden()
+                Button {
+                    impactLight.impactOccurred()
+                    advanceToNext(completion: skipCompletion())
+                } label: {
+                    Image(systemName: "forward.end.fill")
+                        .font(.title)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel("Skip exercise")
             }
+            .padding(.top, 12)
             .padding(.bottom, 48)
+            .frame(maxWidth: .infinity)
+            .background(Color.luminaSurface)
         }
         .background(Color.luminaSurface.ignoresSafeArea())
+        .overlay(alignment: .topTrailing) {
+            if let nextExercise, secondsRemaining <= Self.upNextLeadSeconds {
+                upNextCard(for: nextExercise)
+                    .padding(.top, 60)
+                    .padding(.trailing, 16)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity)
+                            .animation(.easeOut(duration: 0.35)),
+                        removal: .opacity.animation(.easeIn(duration: 0.2))
+                    ))
+            }
+        }
+        .animation(.easeOut(duration: 0.35), value: secondsRemaining <= Self.upNextLeadSeconds)
+    }
+
+    /// Small preview card that slides in once the current exercise's
+    /// countdown reaches `upNextLeadSeconds`, showing what's coming next —
+    /// mirrors the "Up Next" treatment from Apple Fitness-style workout
+    /// players. Tapping it jumps straight to that exercise, same as the
+    /// skip button.
+    @ViewBuilder
+    private func upNextCard(for exercise: Exercise) -> some View {
+        Button {
+            impactLight.impactOccurred()
+            advanceToNext(completion: skipCompletion())
+        } label: {
+            VStack(spacing: 0) {
+                // Breath exercises don't carry a demo video/animation the
+                // way stretches do, so ExerciseMediaCard would render
+                // nothing here — use the same pose-glyph "profile picture"
+                // the rest of the app falls back to instead.
+                if exercise.type == .breath {
+                    PoseGlyphIcon(
+                        exercise: exercise,
+                        category: ExerciseCategory.primary(for: exercise.targetBodyParts),
+                        size: 96
+                    )
+                    .frame(width: 96, height: 96)
+                } else {
+                    ExerciseMediaCard(exercise: exercise)
+                        .frame(width: 96, height: 96)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
+
+                Text("Up Next")
+                    .font(.luminaCaption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+                    .background(Color.black.opacity(0.55))
+            }
+            .frame(width: 96)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Up next: \(exercise.name). Tap to skip ahead.")
+    }
+
+    @ViewBuilder
+    private func typeBadge(for exercise: Exercise) -> some View {
+        Text(exercise.type.rawValue)
+            .font(.luminaCaption)
+            .fontWeight(.semibold)
+            .textCase(.uppercase)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Color.black.opacity(0.45), in: Capsule())
+            .accessibilityLabel("Exercise type")
+            .accessibilityValue(exercise.type.rawValue)
+    }
+
+    /// Small badge cluster overlaid on the media card's corner: the exercise
+    /// type ("STRETCH") above the hold/keep-going cue. Kept together here
+    /// (rather than as two separate full-width lines in the main flow) is
+    /// what actually frees up the vertical space the no-scroll layout
+    /// depends on. Stretch exercises only — breath uses
+    /// `inlineIndicatorCluster` instead, since there's no media corner to
+    /// anchor to.
+    @ViewBuilder
+    private func indicatorCluster(for exercise: Exercise) -> some View {
+        VStack(alignment: .trailing, spacing: 4) {
+            typeBadge(for: exercise)
+            cueBadge(for: exercise.cueStyle)
+        }
+    }
+
+    /// Same two badges as `indicatorCluster`, but side by side and meant to
+    /// sit directly under the breath-phase readout (or instruction text for
+    /// a pattern-less breath exercise) rather than floating on a media
+    /// corner — visually groups "BREATH" + the cue with the phase reading
+    /// they actually describe.
+    @ViewBuilder
+    private func inlineIndicatorCluster(for exercise: Exercise) -> some View {
+        HStack(spacing: 8) {
+            typeBadge(for: exercise)
+            cueBadge(for: exercise.cueStyle)
+        }
     }
 
     @ViewBuilder
@@ -340,7 +481,6 @@ struct SessionPlayerView: View {
             .background(Color.luminaMintTint, in: Capsule())
             .scaleEffect(cueStyle == .repeatMotion && cueBadgePulsing ? 1.07 : 1.0)
             .opacity(cueStyle == .repeatMotion && cueBadgePulsing ? 0.82 : 1.0)
-            .padding(.top, 12)
             .accessibilityLabel("Exercise cue")
             .accessibilityValue(cueStyle == .hold ? "Hold" : "Keep going")
             .onAppear {
@@ -418,6 +558,16 @@ struct SessionPlayerView: View {
                 .foregroundStyle(Color.luminaOnSurface)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
+            // The exercise's pose-glyph "profile picture" — centered as the
+            // dominant visual on this screen, same icon the rest of the app
+            // uses to represent the exercise when there's no demo media.
+            if let exercise = currentExercise {
+                PoseGlyphIcon(
+                    exercise: exercise,
+                    category: ExerciseCategory.primary(for: exercise.targetBodyParts),
+                    size: 150
+                )
+            }
             Text("\(getReadyCount)")
                 .font(.system(size: getReadyCountSize, weight: .thin, design: .rounded))
                 .monospacedDigit()
@@ -442,8 +592,14 @@ struct SessionPlayerView: View {
             }
             Spacer()
             Button("Skip") { skipGetReady() }
-                .buttonStyle(LuminaPillButtonStyle(kind: .ghost, compact: true))
+                .buttonStyle(LuminaPillButtonStyle(kind: .ghost))
         }
+        // Without this, the VStack sizes to its widest child (usually an
+        // instruction line or the name text) rather than the full screen —
+        // its .background() below then only covers that narrower width,
+        // leaving whatever's behind it (a different, grey-ish shade)
+        // visible as vertical strips down both edges.
+        .frame(maxWidth: .infinity)
         .padding()
         .background(Color.luminaSurface.ignoresSafeArea())
         .contentShape(Rectangle())
@@ -454,14 +610,14 @@ struct SessionPlayerView: View {
 
     // MARK: - Logic
 
-    static func scaledDuration(base: Int, multiplier: Double) -> Int {
-        max(1, Int(Double(base) * multiplier))
-    }
+    /// How many seconds are left in the current exercise when the "Up Next"
+    /// preview slides in.
+    static let upNextLeadSeconds = 5
 
     /// The exercise's duration after applying this session's routine-level
     /// override, if any — the single point every duration read in this view
-    /// goes through, so `durationOverrides` and the speed multiplier compose
-    /// correctly no matter which call site reads it.
+    /// goes through, so a customized duration takes effect no matter which
+    /// call site reads it.
     private func effectiveDuration(for exercise: Exercise) -> Int {
         durationOverrides[exercise.uuid] ?? exercise.durationSeconds
     }
@@ -471,11 +627,11 @@ struct SessionPlayerView: View {
     }
 
     private func breathingCycleDuration(for exercise: Exercise) -> Double {
-        let scaled = Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
+        let duration = effectiveDuration(for: exercise)
         // Breath exercises in the stretch player do not carry a phase model,
         // so tie the visual cadence to the exercise length instead of a fixed
         // 4s pulse. Longer holds breathe more slowly; short drills stay lively.
-        return min(8, max(3, Double(scaled) / 10))
+        return min(8, max(3, Double(duration) / 10))
     }
 
     private func beginNextExercise() {
@@ -516,24 +672,13 @@ struct SessionPlayerView: View {
         startExercise()
     }
 
-    /// Dismisses immediately if nothing has been done yet; otherwise confirms
-    /// first so an accidental tap mid-routine doesn't silently discard progress.
-    private func requestExit() {
-        if currentIndex > 0 {
-            showingExitConfirmation = true
-        } else {
-            dismiss()
-        }
-    }
-
     private func skipCompletion() -> Double {
         guard let duration = effectiveDuration(for: currentExercise) else { return 0.5 }
         return GamificationService.skipCompletion(elapsedSeconds: duration - secondsRemaining, durationSeconds: duration)
     }
 
     private func startExercise() {
-        let baseDuration = effectiveDuration(for: currentExercise) ?? 60
-        let duration = Self.scaledDuration(base: baseDuration, multiplier: durationMultiplier)
+        let duration = effectiveDuration(for: currentExercise) ?? 60
         secondsRemaining = duration
         phaseEndDate = Date().addingTimeInterval(TimeInterval(duration))
         pausedRemaining = nil
@@ -604,7 +749,7 @@ struct SessionPlayerView: View {
     /// special-case handling needed, unlike instructionCueTask's cycling.
     private func updateBreathPhaseStepIfNeeded() {
         guard let pattern = activeBreathPattern, let exercise = currentExercise else { return }
-        let totalDuration = Self.scaledDuration(base: effectiveDuration(for: exercise), multiplier: durationMultiplier)
+        let totalDuration = effectiveDuration(for: exercise)
         let elapsed = max(0, totalDuration - secondsRemaining)
         guard let resolved = BreathPhaseCycle.resolve(pattern: pattern, elapsedSeconds: elapsed) else { return }
 
@@ -660,6 +805,19 @@ struct SessionPlayerView: View {
         }
     }
 
+    /// Jumps to the previous exercise (or restarts the current one if
+    /// already on the first) — the "up next"-style player's back button.
+    /// Unlike `advanceToNext`, no points/completion is recorded for the
+    /// exercise being left, and no get-ready countdown is shown: stepping
+    /// back is meant to be instant, mirroring the forward skip's immediacy.
+    private func goToPrevious() {
+        if currentIndex > 0 {
+            currentIndex -= 1
+        }
+        breathTick = 0
+        startExercise()
+    }
+
     // MARK: - Persistence
 
     private func saveSession() {
@@ -702,23 +860,27 @@ struct SessionPlayerView: View {
 struct BreathingCircle: View {
     let isPaused: Bool
     let cycleDuration: Double
+    /// Base diameter of the mid/outer rings — defaults to the original fixed
+    /// size, but the session player passes a smaller value on tight screens
+    /// so this shrinks along with everything else that needs the room.
+    var diameter: CGFloat = 160
     @State private var scale: CGFloat = 1.0
 
     var body: some View {
         ZStack {
             Circle()
                 .fill(Color.luminaGradientStart.opacity(0.10))
-                .frame(width: 160, height: 160)
+                .frame(width: diameter, height: diameter)
                 .scaleEffect(scale * 1.2)
 
             Circle()
                 .fill(Color.luminaPrimary.opacity(0.15))
-                .frame(width: 160, height: 160)
+                .frame(width: diameter, height: diameter)
                 .scaleEffect(scale)
 
             Circle()
                 .fill(Color.luminaPrimary.opacity(0.25))
-                .frame(width: 100, height: 100)
+                .frame(width: diameter * 0.625, height: diameter * 0.625)
         }
         .onAppear { animate() }
         .onChange(of: cycleDuration) { _, _ in
