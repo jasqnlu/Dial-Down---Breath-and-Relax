@@ -594,6 +594,12 @@ struct SessionPlayerView: View {
             Button("Skip") { skipGetReady() }
                 .buttonStyle(LuminaPillButtonStyle(kind: .ghost))
         }
+        // Without this, the VStack sizes to its widest child (usually an
+        // instruction line or the name text) rather than the full screen —
+        // its .background() below then only covers that narrower width,
+        // leaving whatever's behind it (a different, grey-ish shade)
+        // visible as vertical strips down both edges.
+        .frame(maxWidth: .infinity)
         .padding()
         .background(Color.luminaSurface.ignoresSafeArea())
         .contentShape(Rectangle())
