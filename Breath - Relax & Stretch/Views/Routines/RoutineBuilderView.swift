@@ -54,7 +54,6 @@ struct RoutineBuilderView: View {
 
     @State private var routineName = ""
     @State private var selectedIDs: [UUID] = []
-    @State private var indexPendingRemoval: Int?
     /// Per-exercise duration overrides, keyed by exercise UUID — seconds.
     /// Absent key means "use the exercise's own durationSeconds." Persisted
     /// onto `Routine.exerciseDurationOverrides` on save.
@@ -166,28 +165,6 @@ struct RoutineBuilderView: View {
                         .disabled(routineName.isEmpty || selectedIDs.isEmpty)
                 }
             }
-            .confirmationDialog(
-                "Remove this exercise?",
-                isPresented: Binding(
-                    get: { indexPendingRemoval != nil },
-                    set: { if !$0 { indexPendingRemoval = nil } }
-                ),
-                presenting: indexPendingRemoval
-            ) { index in
-                Button("Remove", role: .destructive) {
-                    let removedID = selectedIDs[index]
-                    selectedIDs.remove(at: index)
-                    durationOverrides.removeValue(forKey: removedID)
-                    indexPendingRemoval = nil
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: { index in
-                if let exercise = exercises.first(where: { $0.uuid == selectedIDs[index] }) {
-                    Text("\"\(exercise.name)\" will be removed from this routine.")
-                } else {
-                    Text("This exercise will be removed from this routine.")
-                }
-            }
             .onAppear {
                 if let restoredState {
                     routineName       = restoredState.name
@@ -260,14 +237,23 @@ struct RoutineBuilderView: View {
 
             durationStepper(for: exercise)
 
-            Button(role: .destructive) {
-                indexPendingRemoval = index
+            TapAgainToConfirmButton {
+                let removedID = selectedIDs[index]
+                selectedIDs.remove(at: index)
+                durationOverrides.removeValue(forKey: removedID)
             } label: {
                 Image(systemName: "minus.circle.fill")
             }
+            .accessibilityLabel("Remove \(exercise.name)")
+            .accessibilityIdentifier("removeExercise-\(exercise.uuid)")
             .buttonStyle(.plain)
             .foregroundStyle(.red)
         }
+        // Keeps the remove button (and the duration stepper's +/- buttons)
+        // independently reachable rather than getting merged into one
+        // row-level accessibility element — see the matching comment in
+        // CustomizeRoutineView.exerciseRow.
+        .accessibilityElement(children: .contain)
         .luminaCard(padding: 12)
     }
 
