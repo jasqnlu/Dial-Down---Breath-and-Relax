@@ -39,9 +39,16 @@ struct PoseGlyphIcon: View {
 
             if let seatRect = archetype.seatRect {
                 let midX = mirroredX(seatRect.midX)
+                // clipShape(Circle()) below already guarantees this can't
+                // render past the badge, but its flat ends land close to
+                // tangent with the circle's curve at this width, which can
+                // show a faint anti-aliasing fringe right at the clip edge.
+                // Shrinking it gives real clearance instead of a
+                // mathematically-exact fit.
+                let seatWidth = seatRect.width * size * 0.82
                 RoundedRectangle(cornerRadius: seatRect.height * size / 2, style: .continuous)
                     .fill(color.opacity(0.28))
-                    .frame(width: seatRect.width * size, height: seatRect.height * size)
+                    .frame(width: seatWidth, height: seatRect.height * size)
                     .position(x: midX * size, y: seatRect.midY * size)
             }
 
