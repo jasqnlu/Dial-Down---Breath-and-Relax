@@ -1,38 +1,91 @@
 import SwiftUI
 
-/// Presented from the Home hero's Customize button. Lets the user preview
-/// today's session as a numbered roadmap, adjust each exercise's duration
-/// or remove it, add more exercises via a cross-tab picking session on the
-/// real Exercises tab (see ExercisePickingSession), and decide whether to
-/// pin the result as their permanent Today routine — in which case the
-/// duration overrides are saved onto that routine too.
+/// The shared "preview a set of exercises, adjust duration/order, decide
+/// what to do with it" screen. Originally just Today's Customize button,
+/// now reused by three flows that all boil down to the same job — review a
+/// roadmap of exercises, tweak per-exercise duration and ordering, then
+/// commit to an action:
+///   - Today: `showsNameField: false`, `showsPinToggle: true`, "Begin" —
+///     preview today's session, optionally pin it as the permanent Today
+///     routine, then play it.
+///   - Create New Routine: `showsNameField: true`, `showsPinToggle: false`,
+///     "Save Routine" — name it and save to the Routines list.
+///   - Start Mini-Routine: `showsNameField: false`, `showsPinToggle: false`,
+///     "Start" — play once, nothing saved.
+/// `RoutineBuilderView` remains the separate screen for *editing* an
+/// already-saved routine (it also owns the Save/Update toolbar semantics
+/// that make sense there but not here).
 struct CustomizeRoutineView: View {
     let title: String
     let isPinned: Bool
-    let onDone: (_ exercises: [Exercise], _ pinned: Bool, _ durationOverrides: [UUID: Int]) -> Void
+    /// Shows a routine-name text field at the top, for flows that create a
+    /// new saved `Routine` (Create New Routine). Today and Start
+    /// Mini-Routine leave this off — neither one names anything.
+    var showsNameField: Bool = false
+    var initialName: String = ""
+    /// Shows the "Keep as my Today routine" pin toggle — only meaningful
+    /// for Today's own Customize flow.
+    var showsPinToggle: Bool = true
+    var primaryActionLabel: String = "Begin"
+    var primaryActionIcon: String = "play.fill"
+    /// Which tab index the cross-tab "Add Exercises" picking session should
+    /// return to — see `ExercisePickingSession.Context.originTab`. Today's
+    /// Customize is opened from the Today tab (0); routine-creation flows
+    /// pass the tab they were opened from instead.
+    var pickingOriginTab: Int = 0
+    /// Hides the "Add Exercises" toolbar button — for flows already nested
+    /// inside another `ExercisePickingSession` (MiniRoutineReviewView's
+    /// "Create New Routine"/"Start Mini-Routine", both presented from a
+    /// screen that only exists because a pick just finished). Beginning a
+    /// second, cross-tab picking session from inside one of those doesn't
+    /// have anywhere consistent to round-trip back to, so it mirrors
+    /// RoutineBuilderView's own `allowsCrossTabAddExercise: false` for the
+    /// same call sites, pre-unification.
+    var showsAddExercisesButton: Bool = true
+    let onDone: (_ name: String, _ exercises: [Exercise], _ pinned: Bool, _ durationOverrides: [UUID: Int]) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var pinnedToggle: Bool
     @State private var currentExercises: [Exercise]
-    @State private var indexPendingRemoval: Int?
     /// Per-exercise duration overrides, keyed by exercise UUID — seconds.
     /// Absent key means "use the exercise's own durationSeconds." Passed
     /// back through `onDone` so the caller can save it onto the pinned
-    /// Today routine and thread it into today's SessionPlayerView.
+    /// Today routine / new routine and thread it into the SessionPlayerView
+    /// that follows.
     @State private var durationOverrides: [UUID: Int] = [:]
+    @State private var routineName: String
     @EnvironmentObject private var pickingSession: ExercisePickingSession
 
-    init(title: String, exercises: [Exercise], isPinned: Bool,
-         onDone: @escaping (_ exercises: [Exercise], _ pinned: Bool, _ durationOverrides: [UUID: Int]) -> Void) {
+    init(
+        title: String, exercises: [Exercise], isPinned: Bool,
+        showsNameField: Bool = false, initialName: String = "",
+        showsPinToggle: Bool = true,
+        primaryActionLabel: String = "Begin", primaryActionIcon: String = "play.fill",
+        pickingOriginTab: Int = 0, showsAddExercisesButton: Bool = true,
+        onDone: @escaping (_ name: String, _ exercises: [Exercise], _ pinned: Bool, _ durationOverrides: [UUID: Int]) -> Void
+    ) {
         self.title = title
         self.isPinned = isPinned
+        self.showsNameField = showsNameField
+        self.initialName = initialName
+        self.showsPinToggle = showsPinToggle
+        self.primaryActionLabel = primaryActionLabel
+        self.primaryActionIcon = primaryActionIcon
+        self.pickingOriginTab = pickingOriginTab
+        self.showsAddExercisesButton = showsAddExercisesButton
         self.onDone = onDone
         self._pinnedToggle = State(initialValue: isPinned)
         self._currentExercises = State(initialValue: exercises)
+        self._routineName = State(initialValue: initialName)
     }
 
     private var totalSeconds: Int { currentExercises.reduce(0) { $0 + duration(for: $1) } }
     private var totalMinutes: Int { max(1, Int((Double(totalSeconds) / 60).rounded())) }
+
+    private var canSubmit: Bool {
+        !currentExercises.isEmpty
+            && (!showsNameField || !routineName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+    }
 
     /// The exercise's duration after applying this session's own override,
     /// if any — mirrors RoutineBuilderView's/SessionPlayerView's identically
@@ -53,24 +106,54 @@ struct CustomizeRoutineView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("\(currentExercises.count) EXERCISES · \(totalMinutes) MIN")
+            // A List (rather than the old plain ScrollView+VStack) so the
+            // exercise section can use .onMove for drag-to-reorder — same
+            // mechanism RoutineBuilderView's own exercise list already
+            // uses. The summary/roadmap/pin-toggle block above it rides
+            // along as a second, non-reorderable section.
+            List {
+                Section {
+                    if showsNameField {
+                        TextField("Routine name", text: $routineName)
+                            .font(.luminaBody)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                    }
+
+                    Text("\(currentExercises.count) EXERCISE\(currentExercises.count == 1 ? "" : "S") · \(totalMinutes) MIN")
                         .font(.luminaCaption)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
 
-                    RoadmapWave(exercises: currentExercises, numbered: true)
+                    RoadmapWave(exercises: currentExercises, numbered: true, durationOverrides: durationOverrides)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
 
-                    saveToggleRow
-
-                    VStack(spacing: 10) {
-                        ForEach(Array(currentExercises.enumerated()), id: \.element.uuid) { index, exercise in
-                            exerciseRow(index: index, exercise: exercise)
-                        }
+                    if showsPinToggle {
+                        saveToggleRow
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     }
                 }
-                .padding()
+
+                Section {
+                    ForEach(Array(currentExercises.enumerated()), id: \.element.uuid) { index, exercise in
+                        exerciseRow(index: index, exercise: exercise)
+                            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            // Stable, index-based (not name-based) hook for
+                            // UI tests to drag-reorder by — a name-based
+                            // query would break once two rows swap places.
+                            .accessibilityIdentifier("customizeExerciseRow-\(index)")
+                    }
+                    .onMove { currentExercises.move(fromOffsets: $0, toOffset: $1) }
+                }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .background(Color.luminaSurface)
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
@@ -89,60 +172,45 @@ struct CustomizeRoutineView: View {
                 // hit): a tap meant for "Add Exercises" as the list's last
                 // row actually triggered Begin instead. The toolbar has no
                 // such neighbor and needs no scrolling to reach.
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        pickingSession.begin(context: .init(
-                            title: title,
-                            isPinned: pinnedToggle,
-                            baseExercises: currentExercises,
-                            originTab: 0,
-                            editingRoutineID: nil,
-                            durationOverrides: [:]
-                        ))
-                        dismiss()
-                        // Same "dismiss + switch to Exercises tab" need
-                        // SessionPlayerView already has (Views/Session/
-                        // SessionPlayerView.swift) — reusing the existing
-                        // notification rather than adding a second one.
-                        NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
-                    } label: {
-                        Label("Add Exercises", systemImage: "plus")
-                            .labelStyle(.titleAndIcon)
+                if showsAddExercisesButton {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            pickingSession.begin(context: .init(
+                                title: title,
+                                isPinned: pinnedToggle,
+                                baseExercises: currentExercises,
+                                originTab: pickingOriginTab,
+                                editingRoutineID: nil,
+                                durationOverrides: [:]
+                            ))
+                            dismiss()
+                            // Same "dismiss + switch tabs" need SessionPlayerView
+                            // already has (Views/Session/SessionPlayerView.swift)
+                            // — reusing the existing notification rather than
+                            // adding a second one.
+                            NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
+                        } label: {
+                            Label("Add Exercises", systemImage: "plus")
+                                .labelStyle(.titleAndIcon)
+                        }
                     }
                 }
             }
-            .confirmationDialog(
-                "Remove this exercise?",
-                isPresented: Binding(
-                    get: { indexPendingRemoval != nil },
-                    set: { if !$0 { indexPendingRemoval = nil } }
-                ),
-                presenting: indexPendingRemoval
-            ) { index in
-                Button("Remove", role: .destructive) {
-                    let removedID = currentExercises[index].uuid
-                    currentExercises.remove(at: index)
-                    durationOverrides.removeValue(forKey: removedID)
-                    indexPendingRemoval = nil
-                }
-                Button("Cancel", role: .cancel) {}
-            } message: { index in
-                Text("\"\(currentExercises[index].name)\" will be removed from this routine.")
-            }
             .safeAreaInset(edge: .bottom) {
                 Button {
-                    onDone(currentExercises, pinnedToggle, durationOverrides)
+                    onDone(routineName, currentExercises, pinnedToggle, durationOverrides)
                     dismiss()
                 } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: "play.fill")
-                        Text("Begin")
+                        Image(systemName: primaryActionIcon)
+                        Text(primaryActionLabel)
                     }
                 }
                 .buttonStyle(LuminaPillButtonStyle(kind: .prominent))
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(.regularMaterial)
+                .disabled(!canSubmit)
             }
         }
     }
@@ -188,14 +256,24 @@ struct CustomizeRoutineView: View {
 
             durationStepper(for: exercise)
 
-            Button(role: .destructive) {
-                indexPendingRemoval = index
+            TapAgainToConfirmButton {
+                let removedID = currentExercises[index].uuid
+                currentExercises.remove(at: index)
+                durationOverrides.removeValue(forKey: removedID)
             } label: {
                 Image(systemName: "minus.circle.fill")
             }
+            .accessibilityLabel("Remove \(exercise.name)")
+            .accessibilityIdentifier("removeExercise-\(exercise.uuid)")
             .buttonStyle(.plain)
             .foregroundStyle(.red)
         }
+        // Without this, the row's own "customizeExerciseRow-N" identifier
+        // (used for drag-reorder testing) swallows this remove button's
+        // identifier into one merged row-level element — this keeps the
+        // remove button (and the duration stepper's +/- buttons)
+        // independently reachable, both for VoiceOver and UI tests.
+        .accessibilityElement(children: .contain)
         .luminaCard(padding: 12)
     }
 
