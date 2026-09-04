@@ -31,7 +31,6 @@ struct SessionPlayerView: View {
     @State private var streakOutcome = SessionRecorder.Outcome(streak: 0, streakIncreased: false)
     @State private var sessionStarted = Date()
     @State private var shouldRequestReview = false
-    @State private var showingExitConfirmation = false
     /// Each exercise's own completion fraction, so the session's overall
     /// completionPercent reflects everything done, not just the last exercise.
     @State private var exerciseCompletions: [Double] = []
@@ -209,16 +208,6 @@ struct SessionPlayerView: View {
                 shouldRequestReview = false
             }
         }
-        .confirmationDialog(
-            "End session?",
-            isPresented: $showingExitConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("End Session", role: .destructive) { dismiss() }
-            Button("Keep Going", role: .cancel) {}
-        } message: {
-            Text("Your progress on this session won't be saved.")
-        }
     }
 
     // MARK: - Player UI
@@ -229,11 +218,18 @@ struct SessionPlayerView: View {
 
             // Top bar
             HStack {
-                Button { requestExit() } label: {
+                TapAgainToConfirmButton(
+                    captionAlignment: .leading,
+                    captionAnchor: .leading,
+                    captionOffset: CGSize(width: 36, height: 0),
+                    action: { dismiss() }
+                ) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title2)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
                 }
+                .accessibilityLabel("Close")
+                .accessibilityIdentifier("sessionCloseButton")
                 Spacer()
                 Text("\(currentIndex + 1) / \(exercises.count)")
                     .font(.luminaCaption)
@@ -248,56 +244,76 @@ struct SessionPlayerView: View {
                 .accessibilityLabel("Session progress")
                 .accessibilityValue("\(Int((sessionProgress * 100).rounded())) percent")
 
-            // Everything between the top bar and the transport controls
-            // scrolls — some exercises (e.g. ones carrying
-            // AnimationAccuracyNote's extra caveat line, or just a longer
-            // name/instruction) push total content past what a fixed,
-            // non-scrolling VStack can fit on screen. Before this, that
-            // overflow silently pushed the back/pause/skip row off the
-            // bottom edge — still present in the view hierarchy, just not
-            // visible or reachable.
-            ScrollView {
+            // Everything between the top bar and the transport controls is
+            // sized to the space actually available (via GeometryReader)
+            // rather than scrolling — the name, instruction/cue text, and
+            // countdown timer always keep their full size and stay on
+            // screen; the media card / breathing circle is the one thing
+            // capped and shrunk to whatever room is left, so a tall device
+            // and an SE-class one both show everything at once.
+            GeometryReader { proxy in
                 VStack(spacing: 0) {
                     Text(exercise.name)
                         .font(.luminaDisplay)
                         .foregroundStyle(Color.luminaOnSurface)
                         .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.6)
                         .padding(.horizontal)
-                        .padding(.top, 24)
+                        .padding(.top, 16)
 
-                    Text(exercise.type.rawValue)
-                        .font(.luminaLabel)
-                        .textCase(.uppercase)
-                        .foregroundStyle(Color.luminaOnSurfaceVariant)
-                        .padding(.top, 4)
+                    Spacer(minLength: 8)
 
-                    cueBadge(for: exercise.cueStyle)
+                    // The type ("STRETCH"/"BREATH") and hold/keep-going cue
+                    // used to be two separate full-width lines stacked above
+                    // the media, eating a chunk of vertical space on every
+                    // exercise. For a stretch, they live as a small badge
+                    // cluster overlaid on the media's corner; for a breath
+                    // exercise there's no media card to anchor a corner to,
+                    // so they instead sit right under the inhale/exhale
+                    // phase readout below, grouped with the reading they
+                    // actually describe.
+                    ZStack(alignment: .topTrailing) {
+                        if exercise.type != .breath {
+                            ExerciseMediaCard(exercise: exercise)
+                                .frame(maxHeight: proxy.size.height * 0.6)
 
-                    if exercise.type != .breath {
-                        ExerciseMediaCard(exercise: exercise)
-                            .padding(.top, 24)
-                    } else {
-                        BreathingCircle(
-                            isPaused: isPaused,
-                            cycleDuration: breathingCycleDuration(for: exercise)
-                        )
-                            .padding()
+                            indicatorCluster(for: exercise)
+                                .padding(.top, 4)
+                                .padding(.trailing, 20)
+                        } else {
+                            BreathingCircle(
+                                isPaused: isPaused,
+                                cycleDuration: breathingCycleDuration(for: exercise),
+                                diameter: min(220, proxy.size.height * 0.5)
+                            )
+                        }
                     }
+                    .frame(maxWidth: .infinity)
+
+                    Spacer(minLength: 4)
 
                     if let pattern = activeBreathPattern {
                         breathPhaseCue(pattern: pattern)
+                        inlineIndicatorCluster(for: exercise)
+                            .padding(.top, 6)
                     } else {
                         instructionCue(for: exercise)
+                        if exercise.type == .breath {
+                            inlineIndicatorCluster(for: exercise)
+                                .padding(.top, 6)
+                        }
                     }
+
+                    Spacer(minLength: 2)
 
                     Text(timeString(secondsRemaining))
                         .font(.system(size: exerciseTimerSize, weight: .thin, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(Color.luminaOnSurface)
-                        .padding(.top, 24)
-                        .padding(.bottom, 24)
+                        .padding(.bottom, 8)
                 }
-                .frame(maxWidth: .infinity)
+                .frame(width: proxy.size.width, height: proxy.size.height)
             }
         }
         .safeAreaInset(edge: .bottom) {
@@ -309,7 +325,7 @@ struct SessionPlayerView: View {
                     impactLight.impactOccurred()
                     goToPrevious()
                 } label: {
-                    Image(systemName: "backward.skip")
+                    Image(systemName: "backward.end.fill")
                         .font(.title)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
                         .frame(width: 44, height: 44)
@@ -338,7 +354,7 @@ struct SessionPlayerView: View {
                     impactLight.impactOccurred()
                     advanceToNext(completion: skipCompletion())
                 } label: {
-                    Image(systemName: "forward.skip")
+                    Image(systemName: "forward.end.fill")
                         .font(.title)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
                         .frame(width: 44, height: 44)
@@ -379,9 +395,22 @@ struct SessionPlayerView: View {
             advanceToNext(completion: skipCompletion())
         } label: {
             VStack(spacing: 0) {
-                ExerciseMediaCard(exercise: exercise)
+                // Breath exercises don't carry a demo video/animation the
+                // way stretches do, so ExerciseMediaCard would render
+                // nothing here — use the same pose-glyph "profile picture"
+                // the rest of the app falls back to instead.
+                if exercise.type == .breath {
+                    PoseGlyphIcon(
+                        exercise: exercise,
+                        category: ExerciseCategory.primary(for: exercise.targetBodyParts),
+                        size: 96
+                    )
                     .frame(width: 96, height: 96)
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                } else {
+                    ExerciseMediaCard(exercise: exercise)
+                        .frame(width: 96, height: 96)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
 
                 Text("Up Next")
                     .font(.luminaCaption)
@@ -400,6 +429,48 @@ struct SessionPlayerView: View {
     }
 
     @ViewBuilder
+    private func typeBadge(for exercise: Exercise) -> some View {
+        Text(exercise.type.rawValue)
+            .font(.luminaCaption)
+            .fontWeight(.semibold)
+            .textCase(.uppercase)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Color.black.opacity(0.45), in: Capsule())
+            .accessibilityLabel("Exercise type")
+            .accessibilityValue(exercise.type.rawValue)
+    }
+
+    /// Small badge cluster overlaid on the media card's corner: the exercise
+    /// type ("STRETCH") above the hold/keep-going cue. Kept together here
+    /// (rather than as two separate full-width lines in the main flow) is
+    /// what actually frees up the vertical space the no-scroll layout
+    /// depends on. Stretch exercises only — breath uses
+    /// `inlineIndicatorCluster` instead, since there's no media corner to
+    /// anchor to.
+    @ViewBuilder
+    private func indicatorCluster(for exercise: Exercise) -> some View {
+        VStack(alignment: .trailing, spacing: 4) {
+            typeBadge(for: exercise)
+            cueBadge(for: exercise.cueStyle)
+        }
+    }
+
+    /// Same two badges as `indicatorCluster`, but side by side and meant to
+    /// sit directly under the breath-phase readout (or instruction text for
+    /// a pattern-less breath exercise) rather than floating on a media
+    /// corner — visually groups "BREATH" + the cue with the phase reading
+    /// they actually describe.
+    @ViewBuilder
+    private func inlineIndicatorCluster(for exercise: Exercise) -> some View {
+        HStack(spacing: 8) {
+            typeBadge(for: exercise)
+            cueBadge(for: exercise.cueStyle)
+        }
+    }
+
+    @ViewBuilder
     private func cueBadge(for cueStyle: ExerciseCueStyle) -> some View {
         Text(cueStyle == .hold ? "Hold" : "Keep Going")
             .font(.luminaLabel)
@@ -410,7 +481,6 @@ struct SessionPlayerView: View {
             .background(Color.luminaMintTint, in: Capsule())
             .scaleEffect(cueStyle == .repeatMotion && cueBadgePulsing ? 1.07 : 1.0)
             .opacity(cueStyle == .repeatMotion && cueBadgePulsing ? 0.82 : 1.0)
-            .padding(.top, 12)
             .accessibilityLabel("Exercise cue")
             .accessibilityValue(cueStyle == .hold ? "Hold" : "Keep going")
             .onAppear {
@@ -488,6 +558,16 @@ struct SessionPlayerView: View {
                 .foregroundStyle(Color.luminaOnSurface)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
+            // The exercise's pose-glyph "profile picture" — centered as the
+            // dominant visual on this screen, same icon the rest of the app
+            // uses to represent the exercise when there's no demo media.
+            if let exercise = currentExercise {
+                PoseGlyphIcon(
+                    exercise: exercise,
+                    category: ExerciseCategory.primary(for: exercise.targetBodyParts),
+                    size: 150
+                )
+            }
             Text("\(getReadyCount)")
                 .font(.system(size: getReadyCountSize, weight: .thin, design: .rounded))
                 .monospacedDigit()
@@ -512,8 +592,14 @@ struct SessionPlayerView: View {
             }
             Spacer()
             Button("Skip") { skipGetReady() }
-                .buttonStyle(LuminaPillButtonStyle(kind: .ghost, compact: true))
+                .buttonStyle(LuminaPillButtonStyle(kind: .ghost))
         }
+        // Without this, the VStack sizes to its widest child (usually an
+        // instruction line or the name text) rather than the full screen —
+        // its .background() below then only covers that narrower width,
+        // leaving whatever's behind it (a different, grey-ish shade)
+        // visible as vertical strips down both edges.
+        .frame(maxWidth: .infinity)
         .padding()
         .background(Color.luminaSurface.ignoresSafeArea())
         .contentShape(Rectangle())
@@ -584,16 +670,6 @@ struct SessionPlayerView: View {
         getReadyTask?.cancel()
         isShowingGetReady = false
         startExercise()
-    }
-
-    /// Dismisses immediately if nothing has been done yet; otherwise confirms
-    /// first so an accidental tap mid-routine doesn't silently discard progress.
-    private func requestExit() {
-        if currentIndex > 0 {
-            showingExitConfirmation = true
-        } else {
-            dismiss()
-        }
     }
 
     private func skipCompletion() -> Double {
@@ -784,23 +860,27 @@ struct SessionPlayerView: View {
 struct BreathingCircle: View {
     let isPaused: Bool
     let cycleDuration: Double
+    /// Base diameter of the mid/outer rings — defaults to the original fixed
+    /// size, but the session player passes a smaller value on tight screens
+    /// so this shrinks along with everything else that needs the room.
+    var diameter: CGFloat = 160
     @State private var scale: CGFloat = 1.0
 
     var body: some View {
         ZStack {
             Circle()
                 .fill(Color.luminaGradientStart.opacity(0.10))
-                .frame(width: 160, height: 160)
+                .frame(width: diameter, height: diameter)
                 .scaleEffect(scale * 1.2)
 
             Circle()
                 .fill(Color.luminaPrimary.opacity(0.15))
-                .frame(width: 160, height: 160)
+                .frame(width: diameter, height: diameter)
                 .scaleEffect(scale)
 
             Circle()
                 .fill(Color.luminaPrimary.opacity(0.25))
-                .frame(width: 100, height: 100)
+                .frame(width: diameter * 0.625, height: diameter * 0.625)
         }
         .onAppear { animate() }
         .onChange(of: cycleDuration) { _, _ in
