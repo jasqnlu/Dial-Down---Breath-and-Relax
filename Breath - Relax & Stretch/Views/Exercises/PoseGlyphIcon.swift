@@ -67,6 +67,10 @@ struct PoseGlyphIcon: View {
             }
         }
         .frame(width: size, height: size)
+        // The seat bar (seated archetypes only) and, at extreme aspect
+        // ratios, limb strokes near the edge can extend past the circle's
+        // true boundary — clip so nothing ever pokes out past the badge.
+        .clipShape(Circle())
         .accessibilityHidden(true)
     }
 
