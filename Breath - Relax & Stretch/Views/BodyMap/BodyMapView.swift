@@ -3,12 +3,16 @@ import SwiftData
 
 // MARK: - BodyMapView
 //
-// One freely-rotatable 3D body, two ways in. A single tap turns the body to
-// face the tapped point, marks it, and raises a bar straight to that
-// region's stretches. A double tap opens the muscle picker — camera to the
-// dot, skin fades, ≤4 candidate muscles. No modes, no sensation colours, no
-// checkmark; see
-// docs/superpowers/specs/2026-08-30-bodymap-tap-to-stretch-design.md
+// One freely-rotatable 3D body, one way in. A tap turns the body to face the
+// tapped point and drills straight into the muscle picker — camera to the
+// dot, skin fades, ≤4 candidate muscles. Tapping off the picker (missing the
+// body) collapses it back to the zoomed region view — dot, bar, no picker —
+// rather than fully resetting; tapping outside the body from THAT resting
+// state (or from full rest) zooms back out to fit the whole body on screen.
+// No modes, no sensation colours, no checkmark; see
+// docs/superpowers/specs/2026-08-30-bodymap-tap-to-stretch-design.md (gesture
+// roles have since swapped — single tap now does what double tap describes
+// there).
 //
 // Hit-testing raycasts the skin mesh and resolves the point in pure Swift
 // (MuscleHitResolver), so rotation stays free at all times.
@@ -72,15 +76,13 @@ struct BodyMapView: View {
                 BodySceneView(facing: facing,
                               style: .anatomy,
                               selectionPoint: selection?.point,
-                              onRegionSelected: handleRegionSelected,
                               onRegionDrilled: handleRegionDrilled,
-                              onBackgroundTap: clearSelection,
+                              onBackgroundTap: handleOutsideTap,
                               disambiguationCandidates: disambiguationCandidates,
                               focusPoint: focusPoint,
                               focusedRegion: focusedRegion,
                               onCandidateFocused: handleCandidateFocused,
                               onCandidateSelected: handleCandidateSelected,
-                              onOutsideDoubleTap: handleOutsideDoubleTap,
                               refocusToken: refocusToken)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .tourAnchor("bodymap.tapRegion")
@@ -116,30 +118,24 @@ struct BodyMapView: View {
 
     private var isDisambiguating: Bool { !disambiguationCandidates.isEmpty }
 
-    // MARK: - Fast path (single tap)
-
-    /// The body has already rotated to face the point by the time this fires
-    /// — BodySceneView owns the rig, so it does the turn itself.
-    private func handleRegionSelected(region: String, point: SIMD3<Float>) {
-        withAnimation(.easeInOut(duration: 0.18)) {
-            selection = RegionSelection(region: region, point: point)
-        }
-        impact.impactOccurred()
-        tourCoordinator.notifyInteraction(id: "bodymap.tapRegion")
-    }
-
     private func clearSelection() {
-        withAnimation(.easeInOut(duration: 0.18)) { selection = nil }
+        withAnimation(.easeInOut(duration: 0.18)) {
+            selection = nil
+            focusPoint = nil
+        }
     }
 
-    // MARK: - Precise path (double tap)
+    // MARK: - Tap → muscle picker
 
     /// Surfaces the muscle groups plausibly meant by the tap
     /// (`MuscleHitResolver.candidates`) as labeled pins — the point is to let
     /// the user disambiguate *which* muscle they mean before seeing
     /// exercises. Only if no hit volume resolves at all do we fall back to
-    /// navigating straight to the tapped region.
+    /// navigating straight to the tapped region. The body has already
+    /// rotated to face the point by the time this fires — BodySceneView owns
+    /// the rig, so it does the turn itself.
     private func handleRegionDrilled(region: String, point: SIMD3<Float>) {
+        impact.impactOccurred()
         // The head fans out into fixed, evidence-based face zones with
         // hand-tuned anchors instead of geometric hit-box candidates. Side is
         // inferred from the tapped x (see HeadZones).
@@ -149,6 +145,7 @@ struct BodyMapView: View {
             focusPoint = point
             focusedRegion = pins.first?.name
             disambiguationCandidates = pins
+            tourCoordinator.notifyInteraction(id: "bodymap.tapRegion")
             return
         }
         // Pull a few extra candidates so that, after dropping any parent group
@@ -194,41 +191,40 @@ struct BodyMapView: View {
 
     /// Second tap on the focused candidate → drill into its exercises. The
     /// zoom/candidate/focus state is deliberately KEPT alive so pressing Back
-    /// returns to the zoomed dot; it's torn down only by Cancel.
+    /// returns to the zoomed dot; only Cancel (or an outside tap) tears down
+    /// the candidates, and even then the zoom itself survives.
     private func handleCandidateSelected(_ region: String) {
         exercisesRoute = ExercisesRoute(region: region)
         tourCoordinator.notifyInteraction(id: "bodymap.findStretches")
     }
 
-    /// Cancel means "never mind" — it always returns to the plain body with
-    /// no dot and no bar, even if a single tap had set `selection` before the
-    /// double tap that opened this picker (or `handleRegionDrilled` set it
-    /// directly). We don't keep history of an earlier selection to restore.
+    /// Tapping off the picker means "not that one" rather than "never mind"
+    /// — it closes the picker but keeps `selection`/`focusPoint`, landing
+    /// back on the zoomed region view (dot + "Stretches for…" bar) instead
+    /// of resetting all the way out. Shared by the Cancel button and a
+    /// background tap while disambiguating (`handleOutsideTap` below).
     private func cancelDisambiguation() {
         withAnimation(.easeInOut(duration: 0.2)) {
-            selection = nil
             disambiguationCandidates = []
-            focusPoint = nil
             focusedRegion = nil
         }
     }
 
-    /// A DELIBERATE double-tap that misses the body — distinct from a
-    /// fumbled one (a stray double tap that happens to land off the mesh
-    /// while trying to do something else, handled by `handleDoubleTap`'s
-    /// silent miss, which must NOT wipe a selection). This always shows the
-    /// whole body again (`BodySceneView.handleOutsideDoubleTap` resets the
-    /// camera to the free-explore framing unconditionally — even fully at
-    /// rest, as a quick "undo my pinch" gesture) and additionally puts down
-    /// whatever's up here:
-    /// - Muscle picker open → `cancelDisambiguation`, same as tapping
-    ///   Cancel; `BodySceneView`'s `disambiguationCandidates` `onChange`
-    ///   does its own camera reset once candidates go empty, redundant with
-    ///   (but not conflicting with) the one above.
-    /// - Plain single-tap selection (the "Stretches for…" bar) → clears it.
+    /// A tap that misses the body — fires in EVERY state (idle, zoomed
+    /// region, or the muscle picker), and `BodySceneView.handleOutsideTap`
+    /// always shows the whole body again when nothing is focused (an "undo
+    /// my pinch" gesture that works even fully at rest). This additionally
+    /// backs out whatever's up here, one level at a time:
+    /// - Muscle picker open → `cancelDisambiguation` closes it but keeps the
+    ///   zoom, so the NEXT outside tap is the one that resets the camera
+    ///   (`BodySceneView`'s `disambiguationCandidates` `onChange` leaves the
+    ///   camera alone while `focusPoint` stays set).
+    /// - Zoomed region selected, no picker → `clearSelection` drops
+    ///   `focusPoint` too, so this tap's camera-reset (in `BodySceneView`)
+    ///   actually takes effect.
     /// - Fully at rest (nothing selected) → nothing to clear here; the zoom
-    ///   reset above is the whole point.
-    private func handleOutsideDoubleTap() {
+    ///   reset in `BodySceneView` is the whole point.
+    private func handleOutsideTap() {
         if isDisambiguating {
             cancelDisambiguation()
         } else if selection != nil {
