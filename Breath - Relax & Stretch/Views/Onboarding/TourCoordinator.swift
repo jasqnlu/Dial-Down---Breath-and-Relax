@@ -51,10 +51,10 @@ extension TourStep {
 
         // MARK: Body
         TourStep(id: "bodymap.tapRegion", tabIndex: 1,
-                 title: "Tap a Sore Spot", message: "Tap anywhere that feels tense or sore — the body turns to face it.",
+                 title: "Tap a Sore Spot", message: "Tap anywhere that feels tense or sore — the body turns to face it and zooms in to the exact muscle.",
                  isInteractive: true),
         TourStep(id: "bodymap.findStretches",
-                 title: "Find Stretches", message: "Tap here for stretches that target it. Double-tap the body instead to pick an exact muscle.",
+                 title: "Find Stretches", message: "Pick the muscle, then tap here for stretches that target it. Tap outside the body anytime to zoom back out.",
                  isInteractive: true),
 
         // MARK: Exercises
