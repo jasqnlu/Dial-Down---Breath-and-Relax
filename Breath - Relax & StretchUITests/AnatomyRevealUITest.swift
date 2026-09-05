@@ -1,10 +1,10 @@
 import XCTest
 
-/// Drives the skin-covered Body Map's double-tap muscle picker and captures
+/// Drives the skin-covered Body Map's tap-to-open muscle picker and captures
 /// the key visual states for review: a clean skin-covered resting figure, a
-/// chest double-tap reveal (skin fades, candidates colorize, no arm), Cancel
-/// (skin fades back in), and a joint double-tap (hip) that resolves to its
-/// crossing muscles.
+/// chest tap reveal (skin fades, candidates colorize, no arm), Cancel (skin
+/// fades back in), and a joint tap (hip) that resolves to its crossing
+/// muscles.
 final class AnatomyRevealUITest: XCTestCase {
 
     func testSkinModelRendersAndReveals() {
@@ -28,11 +28,11 @@ final class AnatomyRevealUITest: XCTestCase {
         let scene = app.otherElements.firstMatch
         let disambiguationHint = app.staticTexts["Which area did you mean?"]
 
-        // Double tap the chest → skin fades, grayscale muscles appear,
-        // candidates colorize.
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.42)).doubleTap()
+        // Tap the chest → skin fades, grayscale muscles appear, candidates
+        // colorize.
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.42)).press(forDuration: 0.05)
         XCTAssertTrue(disambiguationHint.waitForExistence(timeout: 8),
-                      "A chest double-tap should reveal the muscle candidates")
+                      "A chest tap should reveal the muscle candidates")
         sleep(3)
         attach(app, "04-chest-reveal")
 
@@ -44,11 +44,11 @@ final class AnatomyRevealUITest: XCTestCase {
         waitForExpectations(timeout: 5)
         attach(app, "05-dismissed-skin-restored")
 
-        // Double tap near the hip (joint region, hitbox-only — no rendered
+        // Tap near the hip (joint region, hitbox-only — no rendered
         // geometry) → resolves to the joint's crossing muscles as candidates.
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.58, dy: 0.435)).doubleTap()
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.58, dy: 0.435)).press(forDuration: 0.05)
         XCTAssertTrue(disambiguationHint.waitForExistence(timeout: 8),
-                      "A hip double-tap should resolve to its crossing muscles")
+                      "A hip tap should resolve to its crossing muscles")
         sleep(3)
         attach(app, "07-hip-reveal")
     }
