@@ -256,11 +256,22 @@ struct CustomizeRoutineView: View {
 
             durationStepper(for: exercise)
 
-            TapAgainToConfirmButton {
-                let removedID = currentExercises[index].uuid
-                currentExercises.remove(at: index)
-                durationOverrides.removeValue(forKey: removedID)
-            } label: {
+            TapAgainToConfirmButton(
+                // Default .top alignment centers the caption over the
+                // button; since this remove button sits at the row's
+                // trailing edge, the caption's right half clipped past
+                // the card/screen edge. .topTrailing pins the caption's
+                // trailing corner to the button's, so it grows leftward
+                // and stays fully visible — mirrors SessionPlayerView's
+                // own .leading override for its leading-edge close button.
+                captionAlignment: .topTrailing,
+                captionAnchor: .topTrailing,
+                action: {
+                    let removedID = currentExercises[index].uuid
+                    currentExercises.remove(at: index)
+                    durationOverrides.removeValue(forKey: removedID)
+                }
+            ) {
                 Image(systemName: "minus.circle.fill")
             }
             .accessibilityLabel("Remove \(exercise.name)")
