@@ -591,8 +591,12 @@ struct SessionPlayerView: View {
                 .padding(.horizontal)
             }
             Spacer()
-            Button("Skip") { skipGetReady() }
-                .buttonStyle(LuminaPillButtonStyle(kind: .ghost))
+            // Not a button — the whole screen already skips on tap via the
+            // .onTapGesture below. This is just the hint telling the user
+            // that tapping does something, not a second way to trigger it.
+            Text("Tap anywhere to skip")
+                .font(.luminaCaption)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
         }
         // Without this, the VStack sizes to its widest child (usually an
         // instruction line or the name text) rather than the full screen —
@@ -604,7 +608,7 @@ struct SessionPlayerView: View {
         .background(Color.luminaSurface.ignoresSafeArea())
         .contentShape(Rectangle())
         .onTapGesture { skipGetReady() }
-        .accessibilityLabel("Get ready for \(name), starting in \(getReadyCount)")
+        .accessibilityLabel("Get ready for \(name), starting in \(getReadyCount). Tap anywhere to skip.")
         .accessibilityAddTraits(.updatesFrequently)
     }
 
