@@ -1,7 +1,7 @@
 import XCTest
 
-/// Simulator verification for the head fan-out: double-tapping the head
-/// should surface the four evidence-based face zones (Forehead + one side's
+/// Simulator verification for the head fan-out: tapping the head should
+/// surface the four evidence-based face zones (Forehead + one side's
 /// Eye, Temple, Jaw) as pins, with the side inferred from the tapped x.
 /// Asserts the fan-out is functionally correct and attaches screenshots.
 ///
@@ -40,16 +40,16 @@ final class HeadZoneVerificationUITests: XCTestCase {
         let scene = app.otherElements.firstMatch
         attach(app, "00-body-initial")
 
-        // Double tap the head, slightly right-of-centre. (Offset retuned for
-        // the skin-covered pivot's BodySkinMuscle model, which renders the
-        // body smaller/lower in frame than the old BodyAnatomy model — a
-        // naive dy: 0.16 lands above the head in empty space.)
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.56, dy: 0.29)).doubleTap()
-        attach(app, "01-head-double-tapped")
+        // Tap the head, slightly right-of-centre. (Offset retuned for the
+        // skin-covered pivot's BodySkinMuscle model, which renders the body
+        // smaller/lower in frame than the old BodyAnatomy model — a naive
+        // dy: 0.16 lands above the head in empty space.)
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.56, dy: 0.29)).press(forDuration: 0.05)
+        attach(app, "01-head-tapped")
 
         let hint = app.staticTexts["Which area did you mean?"]
         XCTAssertTrue(hint.waitForExistence(timeout: 8),
-                      "Double-tapping the head should fan into the face-zone disambiguation")
+                      "Tapping the head should fan into the face-zone disambiguation")
         sleep(1) // let the candidate-label fade-in animation settle before enumerating buttons —
                  // without this, allElementsBoundByIndex can race a still-animating button count.
         attach(app, "02-head-zones-fanned")
