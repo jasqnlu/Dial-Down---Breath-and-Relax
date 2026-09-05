@@ -237,11 +237,17 @@ struct RoutineBuilderView: View {
 
             durationStepper(for: exercise)
 
-            TapAgainToConfirmButton {
-                let removedID = selectedIDs[index]
-                selectedIDs.remove(at: index)
-                durationOverrides.removeValue(forKey: removedID)
-            } label: {
+            TapAgainToConfirmButton(
+                // Same trailing-edge clipping fix as CustomizeRoutineView's
+                // identical remove button — see its comment for why.
+                captionAlignment: .topTrailing,
+                captionAnchor: .topTrailing,
+                action: {
+                    let removedID = selectedIDs[index]
+                    selectedIDs.remove(at: index)
+                    durationOverrides.removeValue(forKey: removedID)
+                }
+            ) {
                 Image(systemName: "minus.circle.fill")
             }
             .accessibilityLabel("Remove \(exercise.name)")
