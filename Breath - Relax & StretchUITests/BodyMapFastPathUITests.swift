@@ -1,9 +1,11 @@
 import XCTest
 
-/// Simulator verification for the fast tap-to-stretch path: a single tap
-/// names a region and raises the action bar straight to its stretches, a tap
-/// that resolves nothing clears the bar, and a drag still rotates the body
-/// rather than being swallowed as a tap.
+/// Simulator verification for the zoomed "region resting state": reached by
+/// tapping the body (which opens the muscle picker) and then tapping off the
+/// picker to collapse it — landing on a dot + the "Stretches for…" action
+/// bar, still zoomed in, rather than a full reset. Also covers a tap that
+/// resolves nothing, a tap-off-body reset from full rest, and drag-still-
+/// rotates.
 final class BodyMapFastPathUITests: XCTestCase {
 
     override func setUpWithError() throws {
@@ -37,9 +39,12 @@ final class BodyMapFastPathUITests: XCTestCase {
         add(shot)
     }
 
-    /// Fast path: one tap names a region, one more reaches its stretches.
+    /// A tap opens the muscle picker; closing it (Cancel — functionally the
+    /// same as tapping off it, see `BodyMapView.cancelDisambiguation`)
+    /// collapses back to the zoomed region's action bar; tapping the bar
+    /// reaches its stretch list.
     @MainActor
-    func testSingleTapRaisesActionBarAndReachesStretches() throws {
+    func testTappingOffThePickerRaisesActionBarAndReachesStretches() throws {
         let app = launchBodyTab(extraArgs: [])
         attach(app, "01-body-at-rest")
 
@@ -47,11 +52,21 @@ final class BodyMapFastPathUITests: XCTestCase {
         // model renders smaller/lower in frame than a naive centre guess).
         let scene = app.otherElements.firstMatch
         scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).press(forDuration: 0.05)
+        XCTAssertTrue(app.staticTexts["Which area did you mean?"].waitForExistence(timeout: 8),
+                      "A tap on the body should open the muscle picker")
+        attach(app, "02-picker-open")
+
+        // Close the picker. Cancel rather than an off-body scene coordinate:
+        // the candidate rail renders on whichever screen edge is emptier for
+        // THIS region's candidates (left or right, `CandidateRailOverlay.layout`,
+        // which side varies by region), so a fixed coordinate can land on a
+        // label instead of empty space depending on what was tapped.
+        app.buttons["Cancel"].tap()
 
         let bar = app.buttons["bodymap.regionActionBar"]
         XCTAssertTrue(bar.waitForExistence(timeout: 5),
-                      "A single tap on the body should raise the region action bar")
-        attach(app, "02-bar-raised")
+                      "Tapping off the picker should land on the zoomed region's action bar")
+        attach(app, "03-bar-raised")
 
         let barLabel = bar.label
         XCTAssertTrue(barLabel.hasPrefix("Find stretches for "),
@@ -62,26 +77,7 @@ final class BodyMapFastPathUITests: XCTestCase {
         let region = String(barLabel.dropFirst("Find stretches for ".count))
         XCTAssertTrue(app.navigationBars[region].waitForExistence(timeout: 5),
                       "Tapping the bar should push the stretch list for '\(region)'")
-        attach(app, "03-stretch-list")
-    }
-
-    /// A tap that resolves no region clears the selection rather than leaving
-    /// a stale bar pointing at the wrong body part.
-    @MainActor
-    func testTappingOffTheBodyClearsTheBar() throws {
-        let app = launchBodyTab(extraArgs: [])
-        let scene = app.otherElements.firstMatch
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).press(forDuration: 0.05)
-
-        let bar = app.buttons["bodymap.regionActionBar"]
-        XCTAssertTrue(bar.waitForExistence(timeout: 5))
-
-        // Far left edge, clear of the silhouette.
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.5)).press(forDuration: 0.05)
-        let gone = NSPredicate(format: "exists == false")
-        expectation(for: gone, evaluatedWith: bar)
-        waitForExpectations(timeout: 5)
-        attach(app, "04-bar-cleared")
+        attach(app, "04-stretch-list")
     }
 
     /// Drag must still rotate — tap-to-face shares the same surface and the
@@ -96,87 +92,58 @@ final class BodyMapFastPathUITests: XCTestCase {
                    thenDragTo: scene.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5)))
         sleep(1)
         attach(app, "06-after-drag")
-        // No bar: a drag is not a tap.
+        // No picker, no bar: a drag is not a tap.
+        XCTAssertFalse(app.staticTexts["Which area did you mean?"].exists,
+                       "A drag should rotate without opening the muscle picker")
         XCTAssertFalse(app.buttons["bodymap.regionActionBar"].exists,
                        "A drag should rotate without selecting a region")
     }
 
-    /// A DELIBERATE double tap off the body clears the bar too — same as a
-    /// single tap-off-body (`testTappingOffTheBodyClearsTheBar` above), but
-    /// this one also zooms the camera back out to the free-explore framing,
-    /// so the whole body is visible again regardless of any prior pinch.
-    /// This is `BodySceneView.handleOutsideDoubleTap`, distinct from
-    /// `handleDoubleTap`'s silent miss (used only when the OTHER, always-on
-    /// double-tap-to-drill recogniser happens to land off the mesh — a
-    /// fumbled double tap, which must NOT wipe a selection either).
+    /// A tap outside the body resets the camera even fully at rest — no
+    /// selection, no picker — as a quick "undo my pinch" gesture. There's no
+    /// accessibility-visible signal for camera distance, so this pinches in
+    /// first (a visibly bigger body) and screenshots before/after the
+    /// outside tap for manual visual confirmation; the hard assertions guard
+    /// against a crash or an accidental navigation.
     @MainActor
-    func testDoubleTappingOffTheBodyClearsTheBarAndZoomsOut() throws {
-        let app = launchBodyTab(extraArgs: [])
-        let scene = app.otherElements.firstMatch
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).press(forDuration: 0.05)
-
-        let bar = app.buttons["bodymap.regionActionBar"]
-        XCTAssertTrue(bar.waitForExistence(timeout: 5))
-        attach(app, "07-bar-before-outside-doubletap")
-
-        // Same clear-of-silhouette coordinate as the single-tap-miss test.
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.5)).doubleTap()
-        let gone = NSPredicate(format: "exists == false")
-        expectation(for: gone, evaluatedWith: bar)
-        waitForExpectations(timeout: 5)
-        attach(app, "08-bar-cleared-by-outside-doubletap")
-
-        // Must STAY cleared, not just disappear momentarily.
-        for _ in 0..<6 {
-            usleep(200_000)
-            XCTAssertFalse(bar.exists, "The bar should not reappear after being cleared")
-        }
-    }
-
-    /// A double tap outside the body resets the camera even fully at rest —
-    /// no selection, no picker — as a quick "undo my pinch" gesture. There's
-    /// no accessibility-visible signal for camera distance, so this pinches
-    /// in first (a visibly bigger body) and screenshots before/after the
-    /// outside double-tap for manual visual confirmation; the hard
-    /// assertions guard against a crash or an accidental navigation.
-    @MainActor
-    func testDoubleTappingOffTheBodyAtRestResetsTheZoom() throws {
+    func testTappingOffTheBodyAtRestResetsTheZoom() throws {
         let app = launchBodyTab(extraArgs: [])
         let scene = app.otherElements.firstMatch
 
         // Pinch in (scale > 1 zooms in) around the body's center.
         scene.pinch(withScale: 2.5, velocity: 2)
         sleep(1)
-        attach(app, "09-pinched-in-at-rest")
+        attach(app, "07-pinched-in-at-rest")
 
         XCTAssertFalse(app.buttons["bodymap.regionActionBar"].exists,
                        "A pinch should zoom without selecting a region")
 
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.5)).doubleTap()
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.5)).press(forDuration: 0.05)
         sleep(1)
-        attach(app, "10-after-outside-doubletap-at-rest")
+        attach(app, "08-after-outside-tap-at-rest")
 
         XCTAssertTrue(app.navigationBars["Body Map"].exists,
-                      "Should still be on Body Map — an outside double tap at rest must not navigate")
+                      "Should still be on Body Map — an outside tap at rest must not navigate")
         XCTAssertFalse(app.buttons["bodymap.regionActionBar"].exists,
-                       "Still no selection — the outside double tap must not have hit the body")
+                       "Still no selection — the outside tap must not have hit the body")
     }
 
     /// The figure faces the viewer, so a tap on the VIEWER'S LEFT must
-    /// resolve to the figure's own RIGHT side, and vice versa. Restores
-    /// coverage dropped from the deleted `BodyMapMarking3DUITests` at
-    /// e5c06e3 (`testViewerLeftTapMapsToFigureRight` /
-    /// `testViewerRightTapMapsToFigureLeft`), adapted to the new bar-label
-    /// flow: asserting on the action bar's "Find stretches for <region>"
-    /// label directly is more robust than porting the old `sideVisible`
-    /// scan, since the bar's label is the single source of truth for what
-    /// the tap resolved to.
+    /// resolve to the figure's own RIGHT side, and vice versa. Taps the body
+    /// (opening the picker), backs out to the region's action bar, and
+    /// asserts on the bar's "Find stretches for <region>" label — the single
+    /// source of truth for what the original tap resolved to.
     @MainActor
     func testViewerLeftTapMapsToFigureRight() throws {
         let app = launchBodyTab(extraArgs: [])
         let scene = app.otherElements.firstMatch
         scene.coordinate(withNormalizedOffset: CGVector(dx: 0.42, dy: 0.40)).press(forDuration: 0.05)
+        XCTAssertTrue(app.staticTexts["Which area did you mean?"].waitForExistence(timeout: 8))
 
+        // Close the picker (Cancel — see the comment in
+        // `testTappingOffThePickerRaisesActionBarAndReachesStretches` on why
+        // this uses the button rather than a scene coordinate).
+        app.buttons["Cancel"].tap()
         let bar = app.buttons["bodymap.regionActionBar"]
         XCTAssertTrue(bar.waitForExistence(timeout: 5))
         attach(app, "09-viewer-left-tap")
@@ -189,7 +156,12 @@ final class BodyMapFastPathUITests: XCTestCase {
         let app = launchBodyTab(extraArgs: [])
         let scene = app.otherElements.firstMatch
         scene.coordinate(withNormalizedOffset: CGVector(dx: 0.58, dy: 0.62)).press(forDuration: 0.05)
+        XCTAssertTrue(app.staticTexts["Which area did you mean?"].waitForExistence(timeout: 8))
 
+        // Close the picker (Cancel — see the comment in
+        // `testTappingOffThePickerRaisesActionBarAndReachesStretches` on why
+        // this uses the button rather than a scene coordinate).
+        app.buttons["Cancel"].tap()
         let bar = app.buttons["bodymap.regionActionBar"]
         XCTAssertTrue(bar.waitForExistence(timeout: 5))
         attach(app, "10-viewer-right-tap")

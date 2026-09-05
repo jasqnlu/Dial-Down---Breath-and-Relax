@@ -1,11 +1,11 @@
 import XCTest
 
-/// Drives the Body Map's double-tap muscle picker directly and captures the
+/// Drives the Body Map's tap-to-open muscle picker directly and captures the
 /// muscle-layer reveal for visual review against
 /// docs/mockups/bodymap-muscle-reveal.html.
 final class MuscleRevealUITest: XCTestCase {
 
-    func testMuscleLayerRevealOnDoubleTap() {
+    func testMuscleLayerRevealOnTap() {
         let app = XCUIApplication()
         app.launchArguments += [
             "-hasCompletedOnboarding", "YES",
@@ -22,13 +22,13 @@ final class MuscleRevealUITest: XCTestCase {
         sleep(6) // 3D model loads off-main
         attach(app, "01-body-map")
 
-        // Double tap the chest — reliably yields several muscle candidates
+        // Tap the chest — reliably yields several muscle candidates
         // (Left/Right Chest + Upper/Lower Chest heads).
         let scene = app.otherElements.firstMatch
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.42)).doubleTap()
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.42)).press(forDuration: 0.05)
 
         XCTAssertTrue(app.staticTexts["Which area did you mean?"].waitForExistence(timeout: 8),
-                      "A chest double-tap should open the muscle-selection overlay")
+                      "A chest tap should open the muscle-selection overlay")
         sleep(3) // first-load: 13MB muscle OBJ parse (~2.7s) + fade (0.5s)
         attach(app, "04-muscle-reveal")
 
