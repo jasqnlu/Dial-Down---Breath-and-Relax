@@ -1,9 +1,10 @@
 import XCTest
 
-/// Simulator verification for the precise path: a double tap opens the
+/// Simulator verification for the muscle picker: a tap opens the
 /// muscle-selection overlay directly (camera dolly, skin fade, ≤4 candidate
 /// muscles on a labelled rail) — no Mark mode, no colour, no checkmark — and
-/// Cancel returns to the plain body without navigating.
+/// Cancel closes it without navigating, staying zoomed on the region rather
+/// than resetting to the plain body.
 final class BodyMapMusclePickerUITests: XCTestCase {
 
     override func setUpWithError() throws {
@@ -32,32 +33,33 @@ final class BodyMapMusclePickerUITests: XCTestCase {
         add(shot)
     }
 
-    /// Precise path: a double tap opens the muscle picker directly — no Mark
-    /// mode, no colour, no checkmark.
+    /// A tap opens the muscle picker directly — no Mark mode, no colour, no
+    /// checkmark.
     @MainActor
-    func testDoubleTapOpensTheMusclePicker() throws {
+    func testTapOpensTheMusclePicker() throws {
         let app = launchBodyTab(extraArgs: [])
         attach(app, "01-body-at-rest")
 
         let scene = app.otherElements.firstMatch
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).doubleTap()
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).press(forDuration: 0.05)
 
         // The picker replaces the facing toggle with a Cancel affordance and
         // the "Which area did you mean?" prompt.
         XCTAssertTrue(app.staticTexts["Which area did you mean?"].waitForExistence(timeout: 8),
-                      "A double tap should open the muscle-selection overlay")
+                      "A tap should open the muscle-selection overlay")
         attach(app, "02-muscle-picker")
 
         XCTAssertTrue(app.buttons["Cancel"].exists,
                       "The picker should offer a way out")
     }
 
-    /// Cancelling the picker returns to the plain body without navigating.
+    /// Cancelling the picker closes it (and lands on the zoomed region's
+    /// "Stretches for…" bar) without navigating.
     @MainActor
-    func testCancellingThePickerReturnsToTheBody() throws {
+    func testCancellingThePickerClosesItWithoutNavigating() throws {
         let app = launchBodyTab(extraArgs: [])
         let scene = app.otherElements.firstMatch
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).doubleTap()
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).press(forDuration: 0.05)
         XCTAssertTrue(app.staticTexts["Which area did you mean?"].waitForExistence(timeout: 8))
 
         app.buttons["Cancel"].tap()
@@ -65,9 +67,14 @@ final class BodyMapMusclePickerUITests: XCTestCase {
         expectation(for: gone, evaluatedWith: app.staticTexts["Which area did you mean?"])
         waitForExpectations(timeout: 5)
         attach(app, "03-back-to-body")
+
+        XCTAssertTrue(app.buttons["bodymap.regionActionBar"].waitForExistence(timeout: 5),
+                      "Cancel should land back on the zoomed region's action bar, not a full reset")
+        XCTAssertTrue(app.navigationBars["Body Map"].exists,
+                      "Cancel should not navigate anywhere")
     }
 
-    /// Follows the double-tap path all the way to a candidate: focus an
+    /// Follows the tap-to-picker path all the way to a candidate: focus an
     /// unfocused rail label, confirm its accessibility label flips from
     /// "— highlight region" to "— view exercises", then tap it again to
     /// drill into its stretch list. Deliberately targets an UNFOCUSED
@@ -79,7 +86,7 @@ final class BodyMapMusclePickerUITests: XCTestCase {
     func testTappingACandidateFocusesThenSelectsIt() throws {
         let app = launchBodyTab(extraArgs: [])
         let scene = app.otherElements.firstMatch
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).doubleTap()
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).press(forDuration: 0.05)
         XCTAssertTrue(app.staticTexts["Which area did you mean?"].waitForExistence(timeout: 8))
         attach(app, "04-picker-open")
 
@@ -105,22 +112,25 @@ final class BodyMapMusclePickerUITests: XCTestCase {
         attach(app, "06-candidate-stretch-list")
     }
 
-    /// Double-tapping empty space outside the body's silhouette, while the
-    /// muscle picker is open, must behave like tapping Cancel: the picker
-    /// goes away and the camera zooms back out — without navigating to a
-    /// stretch list.
+    /// Tapping empty space outside the body's silhouette, while the muscle
+    /// picker is open, behaves like tapping Cancel: the picker goes away —
+    /// without navigating to a stretch list — but the camera STAYS on the
+    /// zoomed region (landing on the action bar), one level back rather than
+    /// a full reset. A SECOND outside tap, from that now-unfocused zoomed
+    /// state, is what actually zooms the camera back out.
     @MainActor
-    func testDoubleTapOutsideBodyCancelsThePickerAndZoomsOut() throws {
+    func testTapOutsideBodyClosesThePickerThenZoomsOutOnASecondTap() throws {
         let app = launchBodyTab(extraArgs: [])
         let scene = app.otherElements.firstMatch
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).doubleTap()
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.42)).press(forDuration: 0.05)
         XCTAssertTrue(app.staticTexts["Which area did you mean?"].waitForExistence(timeout: 8))
         attach(app, "07-picker-open")
 
-        // Double-tap empty space inside the scene view, off to the side of
-        // the (zoomed-in, centered) body.
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.08, dy: 0.45)).doubleTap()
-        attach(app, "08-after-outside-double-tap")
+        // Tap empty space inside the scene view, off to the side of the
+        // (zoomed-in, centered) body.
+        let outside = scene.coordinate(withNormalizedOffset: CGVector(dx: 0.08, dy: 0.45))
+        outside.press(forDuration: 0.05)
+        attach(app, "08-after-outside-tap")
 
         let gone = NSPredicate(format: "exists == false")
         expectation(for: gone, evaluatedWith: app.staticTexts["Which area did you mean?"])
@@ -134,7 +144,20 @@ final class BodyMapMusclePickerUITests: XCTestCase {
         for _ in 0..<6 {
             usleep(200_000)
             XCTAssertFalse(app.staticTexts["Which area did you mean?"].exists,
-                           "The picker should not reappear after being cancelled")
+                           "The picker should not reappear after this tap")
         }
+
+        // Landed one level back, not a full reset: the region's action bar
+        // is still up.
+        XCTAssertTrue(app.buttons["bodymap.regionActionBar"].waitForExistence(timeout: 5),
+                      "Closing the picker with an outside tap should land on the zoomed region's action bar")
+
+        // A second outside tap, from this resting state, fully backs out —
+        // clearing the bar too.
+        outside.press(forDuration: 0.05)
+        let barGone = NSPredicate(format: "exists == false")
+        expectation(for: barGone, evaluatedWith: app.buttons["bodymap.regionActionBar"])
+        waitForExpectations(timeout: 5)
+        attach(app, "09-after-second-outside-tap")
     }
 }
