@@ -56,6 +56,23 @@ struct RoutineListView: View {
                             .tint(.blue)
                         }
                     }
+                    .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                        // Toggles instantly, no confirmation — same as
+                        // flipping a switch. Newly pinned routines are
+                        // appended to the end of the priority order rather
+                        // than jumping to the front; the reorder sheet on
+                        // Today (once 2+ are pinned) is where the user
+                        // actually arranges priority.
+                        Button {
+                            togglePin(routine)
+                        } label: {
+                            Label(
+                                routine.isPinnedToToday ? "Unpin" : "Pin to Today",
+                                systemImage: routine.isPinnedToToday ? "pin.slash.fill" : "pin.fill"
+                            )
+                        }
+                        .tint(Color.luminaPrimary)
+                    }
                 }
             }
             .listStyle(.plain)
@@ -95,7 +112,30 @@ struct RoutineListView: View {
                 }
             }
             .sheet(isPresented: $showingBuilder) {
-                RoutineBuilderView()
+                // "+ New Routine" now opens the same customize-and-reorder
+                // screen Today's Customize button and the mini-routine
+                // review's "Create New Routine" use — RoutineBuilderView
+                // remains only for *editing* an already-saved routine
+                // (below), whose Save/Update toolbar semantics don't apply
+                // to a from-scratch creation flow.
+                CustomizeRoutineView(
+                    title: "New Routine",
+                    exercises: [],
+                    isPinned: false,
+                    showsNameField: true,
+                    showsPinToggle: false,
+                    primaryActionLabel: "Save Routine",
+                    primaryActionIcon: "checkmark",
+                    pickingOriginTab: 4 // Routines tab
+                ) { name, exercises, _, durationOverrides in
+                    let routine = Routine(
+                        name: name,
+                        exerciseIDs: exercises.map(\.uuid),
+                        exerciseDurationOverrides: durationOverrides
+                    )
+                    modelContext.insert(routine)
+                    try? modelContext.save()
+                }
             }
             .sheet(item: $routineToEdit) { routine in
                 RoutineBuilderView(routineToEdit: routine)
@@ -169,6 +209,23 @@ struct RoutineListView: View {
         return routine.exerciseIDs.compactMap { byID[$0] }
     }
 
+    /// Pins/unpins a routine as a Today launch candidate. A newly-pinned
+    /// routine is appended to the end of the current priority order — same
+    /// "don't jump the queue" rule Customize's own pin toggle follows (see
+    /// `TodayView.nextPinnedOrder()`), so pinning several routines in a row
+    /// from here lands them in the order you pinned them, still reorderable
+    /// afterward from Today.
+    private func togglePin(_ routine: Routine) {
+        if routine.isPinnedToToday {
+            routine.isPinnedToToday = false
+        } else {
+            let maxOrder = routines.filter(\.isPinnedToToday).map(\.pinnedOrder).max() ?? -1
+            routine.isPinnedToToday = true
+            routine.pinnedOrder = maxOrder + 1
+        }
+        try? modelContext.save()
+    }
+
     private func shareURL(for routine: Routine) -> URL? {
         let names = resolvedExercises(for: routine).map { $0.name }
         guard !names.isEmpty else { return nil }
@@ -210,6 +267,12 @@ struct RoutineRow: View {
                 HStack(spacing: 6) {
                     Text(routine.name)
                         .font(.luminaCardTitle)
+                    if routine.isPinnedToToday {
+                        Image(systemName: "pin.fill")
+                            .font(.caption2)
+                            .foregroundStyle(Color.luminaPrimary)
+                            .accessibilityLabel("Pinned to Today")
+                    }
                     if routine.borrowedFromID != nil {
                         Label("Borrowed", systemImage: "arrow.triangle.branch")
                             .font(.caption2)

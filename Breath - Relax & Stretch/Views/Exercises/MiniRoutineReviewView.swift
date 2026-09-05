@@ -15,9 +15,22 @@ struct MiniRoutineReviewView: View {
     let onFinished: () -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @State private var showingNewRoutineBuilder = false
+    @Environment(\.modelContext) private var modelContext
+    // "Create New Routine" and "Start Mini-Routine" both route through the
+    // same customize-and-reorder screen Today's Customize button opens
+    // (CustomizeRoutineView) instead of each having their own separate
+    // review UI — see that view's doc comment for the shared-screen design.
+    @State private var showingCustomizeForNewRoutine = false
+    @State private var showingCustomizeForMiniSession = false
     @State private var showingRoutineChooser = false
     @State private var showingMiniSession = false
+    /// What Customize returned for "Start Mini-Routine" — stashed here
+    /// because the mini-session sheet can only be presented after
+    /// Customize's own sheet has fully dismissed (two sibling
+    /// `.sheet(isPresented:)`s can't both flip true in the same tick; see
+    /// TodayView's identical `pendingShowSessionAfterCustomize` pattern).
+    @State private var pendingMiniSessionExercises: [Exercise] = []
+    @State private var pendingMiniSessionDurationOverrides: [UUID: Int] = [:]
 
     private var totalSeconds: Int { pickedExercises.reduce(0) { $0 + $1.durationSeconds } }
     private var totalMinutes: Int { max(1, Int((Double(totalSeconds) / 60).rounded())) }
@@ -37,7 +50,7 @@ struct MiniRoutineReviewView: View {
                             title: "Create New Routine",
                             subtitle: "Name it and save these as a routine",
                             systemImage: "plus.circle.fill"
-                        ) { showingNewRoutineBuilder = true }
+                        ) { showingCustomizeForNewRoutine = true }
 
                         destinationRow(
                             title: "Add to Existing Routine",
@@ -49,7 +62,7 @@ struct MiniRoutineReviewView: View {
                             title: "Start Mini-Routine",
                             subtitle: "Play these now — nothing is saved",
                             systemImage: "play.fill"
-                        ) { showingMiniSession = true }
+                        ) { showingCustomizeForMiniSession = true }
                     }
                 }
                 .padding()
@@ -66,17 +79,54 @@ struct MiniRoutineReviewView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showingNewRoutineBuilder) {
-                RoutineBuilderView(initialExerciseIDs: pickedExercises.map(\.uuid), allowsCrossTabAddExercise: false) {
+            .sheet(isPresented: $showingCustomizeForNewRoutine) {
+                CustomizeRoutineView(
+                    title: "New Routine",
+                    exercises: pickedExercises,
+                    isPinned: false,
+                    showsNameField: true,
+                    showsPinToggle: false,
+                    primaryActionLabel: "Save Routine",
+                    primaryActionIcon: "checkmark",
+                    pickingOriginTab: 2, // Exercises tab, where this pick started
+                    showsAddExercisesButton: false
+                ) { name, exercises, _, durationOverrides in
+                    let routine = Routine(
+                        name: name,
+                        exerciseIDs: exercises.map(\.uuid),
+                        exerciseDurationOverrides: durationOverrides
+                    )
+                    modelContext.insert(routine)
+                    try? modelContext.save()
                     onFinished()
                     dismiss()
                 }
-                .environmentObject(AuthManager.shared)
             }
             .sheet(isPresented: $showingRoutineChooser) {
                 RoutineChooserView(pickedExercises: pickedExercises) {
                     onFinished()
                     dismiss()
+                }
+            }
+            // Same "Customize sheet, then the real session sheet" chaining
+            // TodayView uses (pendingShowSessionAfterCustomize) — Customize
+            // must fully dismiss before SessionPlayerView's own sheet can
+            // present, so the follow-up session is presented from here
+            // (onDismiss), not from Customize's own onDone.
+            .sheet(isPresented: $showingCustomizeForMiniSession, onDismiss: {
+                if !pendingMiniSessionExercises.isEmpty { showingMiniSession = true }
+            }) {
+                CustomizeRoutineView(
+                    title: "Start Mini-Routine",
+                    exercises: pickedExercises,
+                    isPinned: false,
+                    showsPinToggle: false,
+                    primaryActionLabel: "Start",
+                    pickingOriginTab: 2,
+                    showsAddExercisesButton: false
+                ) { _, exercises, _, durationOverrides in
+                    pendingMiniSessionExercises = exercises
+                    pendingMiniSessionDurationOverrides = durationOverrides
                 }
             }
             // Unlike the routine-builder destinations (which distinguish
@@ -87,7 +137,7 @@ struct MiniRoutineReviewView: View {
                 onFinished()
                 dismiss()
             }) {
-                SessionPlayerView(exercises: pickedExercises)
+                SessionPlayerView(exercises: pendingMiniSessionExercises, durationOverrides: pendingMiniSessionDurationOverrides)
             }
         }
     }
