@@ -1,8 +1,8 @@
 import XCTest
 
-/// Focused check: double-tapping a joint region (hip) — hitbox-only, no
-/// rendered geometry — resolves to its crossing muscles as candidates, same
-/// as a muscle-group double-tap.
+/// Focused check: tapping a joint region (hip) — hitbox-only, no rendered
+/// geometry — resolves to its crossing muscles as candidates, same as a
+/// muscle-group tap.
 final class AnatomyJointRevealUITest: XCTestCase {
 
     func testHipTapResolvesToCrossingMuscles() {
@@ -23,11 +23,11 @@ final class AnatomyJointRevealUITest: XCTestCase {
         // Hip joint hitbox (real Z-Anatomy capsule geometry) is a small box
         // right at waist height.
         let scene = app.otherElements.firstMatch
-        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.58, dy: 0.435)).doubleTap()
+        scene.coordinate(withNormalizedOffset: CGVector(dx: 0.58, dy: 0.435)).press(forDuration: 0.05)
         attach(app, "01-hip-pending")
 
         XCTAssertTrue(app.staticTexts["Which area did you mean?"].waitForExistence(timeout: 8),
-                      "A hip double-tap should resolve to its crossing muscles")
+                      "A hip tap should resolve to its crossing muscles")
         sleep(2)
         attach(app, "02-hip-reveal")
     }
