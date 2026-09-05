@@ -3,10 +3,10 @@ import SwiftData
 
 // MARK: - Region action bar
 //
-// Rises when a single tap selects a region. One tap from here to that
-// region's stretches — the visible counterpart to the double-tap shortcut
-// into the muscle picker, so the exercise path is never hidden behind a
-// gesture a user has to guess.
+// Rises once the muscle picker collapses back to its zoomed region view
+// (tapping off the picker, or Cancel) — or, rarely, when a tap resolves a
+// region with no hit-volume candidates at all. One tap from here to that
+// region's stretches.
 
 struct RegionActionBar: View {
     let regionName: String
