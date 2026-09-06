@@ -462,7 +462,7 @@ struct TodayView: View {
         return GlassEffectContainer {
         ZStack(alignment: .topTrailing) {
             RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
-                .glassEffect(.regular.tint(Color.luminaPrimary.opacity(0.16)),
+                .glassEffect(.clear.tint(Color.luminaPrimary.opacity(0.16)),
                              in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
 
             // The breathing halo — same cadence as the sign-in screen. The
@@ -519,7 +519,7 @@ struct TodayView: View {
                             .foregroundStyle(.white.opacity(0.85))
                             .padding(.horizontal, 16)
                             .frame(height: 40)
-                            .glassEffect(.regular, in: Capsule())
+                            .glassEffect(.clear, in: Capsule())
                     }
                     .buttonStyle(.plain)
 
@@ -551,7 +551,7 @@ struct TodayView: View {
                         .foregroundStyle(Color.luminaOnPrimary)
                         .padding(.horizontal, 24)
                         .frame(height: 48)
-                        .glassEffect(.regular.tint(Color.luminaPrimary), in: Capsule())
+                        .glassEffect(.clear.tint(Color.luminaPrimary), in: Capsule())
                         .shadow(color: .black.opacity(0.35), radius: 10, y: 5)
                     }
                     .buttonStyle(.plain)

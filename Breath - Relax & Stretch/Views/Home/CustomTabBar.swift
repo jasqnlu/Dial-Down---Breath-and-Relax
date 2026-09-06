@@ -51,7 +51,7 @@ struct CustomTabBar: View {
             .padding(.vertical, 6)
             .background {
                 RoundedRectangle(cornerRadius: 30)
-                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 30))
+                    .glassEffect(.clear, in: RoundedRectangle(cornerRadius: 30))
                     .shadow(color: Color.luminaPrimary.opacity(0.14), radius: 22, x: 0, y: 6)
             }
         }
@@ -94,7 +94,7 @@ struct CustomTabBar: View {
             .background {
                 if isActive {
                     Capsule()
-                        .glassEffect(.regular, in: Capsule())
+                        .glassEffect(.clear, in: Capsule())
                         .glassEffectID("activePill", in: ns)
                         .matchedGeometryEffect(id: "activePill", in: ns)
                 }
