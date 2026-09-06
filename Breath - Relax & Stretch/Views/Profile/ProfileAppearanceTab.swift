@@ -3,10 +3,6 @@ import SwiftUI
 // MARK: - Appearance Tab
 
 struct ProfileAppearanceTab: View {
-    // Keep this default in sync with BreathRelaxStretchApp's colorSchemeOverride
-    // default (2 = Dark) so the picker's initial selection always matches what
-    // the app is actually rendering for a fresh install.
-    @AppStorage("colorSchemeOverride") private var colorSchemeOverride = 2
     @AppStorage("accentColorName")     private var accentColorName = "Blue"
     @AppStorage("compactListMode")     private var compactListMode = false
     @AppStorage("showStreakEmoji")     private var showStreakEmoji = true
@@ -22,19 +18,6 @@ struct ProfileAppearanceTab: View {
 
     var body: some View {
         Group {
-            // Theme
-            Section("Theme") {
-                Picker(selection: $colorSchemeOverride) {
-                    Text("System").tag(0)
-                    Text("Light").tag(1)
-                    Text("Dark").tag(2)
-                } label: {
-                    Label("Color Scheme", systemImage: "circle.lefthalf.filled")
-                }
-                .pickerStyle(.segmented)
-                .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
-            }
-
             // Accent color
             Section("Accent Color") {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6),
