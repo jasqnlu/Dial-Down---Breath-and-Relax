@@ -37,6 +37,13 @@ struct CustomTabBar: View {
     ]
 
     var body: some View {
+        // Deliberately NOT wrapped in a GlassEffectContainer: that groups
+        // every descendant — icons and labels included, not just the glass
+        // shapes — into the same blurred rendering pass, which read as the
+        // tab labels themselves going soft-focus rather than just sitting
+        // on translucent glass. Two independent .glassEffect() calls (here
+        // and on the active pill below) don't visually merge/morph into
+        // each other, but that's a small cosmetic loss next to blurred text.
         HStack(spacing: 0) {
             ForEach(tabs.indices, id: \.self) { i in
                 tabButton(index: i)
@@ -46,11 +53,7 @@ struct CustomTabBar: View {
         .padding(.vertical, 6)
         .background {
             RoundedRectangle(cornerRadius: 30)
-                .fill(.regularMaterial)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 30)
-                        .strokeBorder(Color(.systemGray5).opacity(0.8), lineWidth: 0.5)
-                }
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 30))
                 .shadow(color: Color.luminaPrimary.opacity(0.14), radius: 22, x: 0, y: 6)
         }
         .padding(.horizontal, 18)
@@ -92,7 +95,8 @@ struct CustomTabBar: View {
             .background {
                 if isActive {
                     Capsule()
-                        .fill(Color.luminaMintTint)
+                        .glassEffect(.regular, in: Capsule())
+                        .glassEffectID("activePill", in: ns)
                         .matchedGeometryEffect(id: "activePill", in: ns)
                 }
             }

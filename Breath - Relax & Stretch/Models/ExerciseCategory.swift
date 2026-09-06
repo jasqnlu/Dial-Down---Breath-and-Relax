@@ -16,7 +16,7 @@
 
                     var accentColor: Color {
                         switch self {
-                        case .neck:       return .teal
+                        case .neck:       return .brown
                         case .shoulders:  return .orange
                         case .chest:      return .pink
                         case .back:       return .indigo

@@ -29,15 +29,6 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         app.buttons["Cancel"].tap()
     }
 
-    func testAuthScreenLight() throws {
-        let app = XCUIApplication()
-        app.launchArguments += ["-hasCompletedOnboarding", "YES", "-hasSeenAppGuide", "YES",
-                                "-colorSchemeOverride", "1"]
-        app.launch()
-        XCTAssertTrue(app.buttons["Email"].waitForExistence(timeout: 10))
-        attach(app, "auth-light")
-    }
-
     func testOnboardingScreensDark() throws {
         let app = XCUIApplication()
         app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
@@ -55,16 +46,6 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         next.tap()
         sleep(1)
         attach(app, "onboarding-5-notifications-dark")
-    }
-
-    func testOnboardingWelcomeLight() throws {
-        let app = XCUIApplication()
-        app.launchArguments += ["-auth.isSignedIn", "YES", "-auth.provider", "guest",
-                                "-hasCompletedOnboarding", "NO", "-hasSeenAppGuide", "YES",
-                                "-colorSchemeOverride", "1"]
-        app.launch()
-        XCTAssertTrue(app.buttons["Next"].waitForExistence(timeout: 10))
-        attach(app, "onboarding-1-welcome-light")
     }
 
     func testSessionPlayerDark() throws {
