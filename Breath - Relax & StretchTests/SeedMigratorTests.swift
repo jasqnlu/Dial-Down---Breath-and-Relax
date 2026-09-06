@@ -551,4 +551,76 @@ struct SeedMigratorTests {
         let all = try context.fetch(FetchDescriptor<Exercise>())
         #expect(all[0].breathPattern.isEmpty)
     }
+
+    // MARK: - v12: animationCallout backfill
+
+    private func rawCallout(startTime: Double = 1.0) -> [String: Any] {
+        [
+            "text": "Rotate your wrists in a circle",
+            "shape": "rotate",
+            "anchor": [0.15, 0.32],
+            "angle": 0,
+            "startTime": startTime,
+            "duration": 2.0,
+        ]
+    }
+
+    @Test func v12BackfillsAnimationCalloutBySeedID() throws {
+        let context = makeContext()
+        let exercise = Exercise(
+            name: "Wrist Circles", type: .stretch,
+            targetBodyParts: ["Left Forearm"], durationSeconds: 30,
+            difficulty: 1, instructions: ["a", "b", "c"]
+        )
+        exercise.seedID = "wrist-circles-id"
+        #expect(exercise.animationCallout == nil)
+        context.insert(exercise)
+        try context.save()
+
+        var raw = rawExercise(id: "wrist-circles-id", name: "Wrist Circles")
+        raw["animationCallout"] = rawCallout()
+        let changed = SeedMigrator.migrateV12(context: context, rawExercises: [raw])
+        #expect(changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all[0].animationCallout?.text == "Rotate your wrists in a circle")
+        #expect(all[0].animationCallout?.shape == .rotate)
+    }
+
+    @Test func v12IsNoOpWhenBundleCalloutMatchesAlready() throws {
+        let context = makeContext()
+        let exercise = Exercise(
+            name: "Wrist Circles", type: .stretch,
+            targetBodyParts: ["Left Forearm"], durationSeconds: 30,
+            difficulty: 1, instructions: ["a", "b", "c"]
+        )
+        exercise.seedID = "wrist-circles-id"
+        exercise.animationCallout = AnimationCallout.parse(fromRawExercise: ["animationCallout": rawCallout()])
+        context.insert(exercise)
+        try context.save()
+
+        var raw = rawExercise(id: "wrist-circles-id", name: "Wrist Circles")
+        raw["animationCallout"] = rawCallout()
+        let changed = SeedMigrator.migrateV12(context: context, rawExercises: [raw])
+        #expect(!changed)
+    }
+
+    @Test func v12NeverTouchesUserCreatedExercises() throws {
+        let context = makeContext()
+        let custom = Exercise(
+            name: "My Custom Move", type: .stretch,
+            targetBodyParts: ["Left Quadriceps"], durationSeconds: 30,
+            difficulty: 1, instructions: ["x", "y", "z"]
+        )
+        context.insert(custom)   // no seedID
+        try context.save()
+
+        var raw = rawExercise(id: "seed-1", name: "Some Seed")
+        raw["animationCallout"] = rawCallout()
+        let changed = SeedMigrator.migrateV12(context: context, rawExercises: [raw])
+        #expect(!changed)
+
+        let all = try context.fetch(FetchDescriptor<Exercise>())
+        #expect(all[0].animationCallout == nil)
+    }
 }

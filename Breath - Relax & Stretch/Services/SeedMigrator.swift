@@ -298,6 +298,7 @@ enum SeedMigrator {
             exercise.localVideoName = raw["localVideoName"] as? String
             exercise.animationName = raw["animationName"] as? String
             exercise.animationIsApproximate = raw["animationIsApproximate"] as? Bool ?? false
+            exercise.animationCallout = AnimationCallout.parse(fromRawExercise: raw)
             if let posesRaw = raw["poses"],
                let posesData = try? JSONSerialization.data(withJSONObject: posesRaw) {
                 exercise.posesData = posesData
@@ -371,6 +372,35 @@ enum SeedMigrator {
                   let pattern = patternBySeedID[seedID],
                   exercise.breathPattern != pattern else { continue }
             exercise.breathPattern = pattern
+            changed = true
+        }
+        return changed
+    }
+
+    /// v12 — backfills `Exercise.animationCallout` onto already-seeded rows,
+    /// matched by `seedID`. Like `migrateV7`/`migrateV9`/`migrateV10`, NOT
+    /// gated behind a one-time version bump: callouts are authored
+    /// incrementally, batch by batch (see the animation-callout instruction
+    /// spec), so a gated migration would only ever pick up whatever was
+    /// authored as of the version-bump launch. Syncs in both directions
+    /// (matches the bundle exactly, including clearing a callout the bundle
+    /// removed) since this is authored content, not user data — same
+    /// rationale as `migrateV8`/`migrateV10`.
+    @discardableResult
+    static func migrateV12(context: ModelContext, rawExercises: [[String: Any]]) -> Bool {
+        var calloutBySeedID: [String: AnimationCallout?] = [:]
+        for raw in rawExercises {
+            guard let id = raw["id"] as? String else { continue }
+            calloutBySeedID[id] = AnimationCallout.parse(fromRawExercise: raw)
+        }
+
+        let existing = (try? context.fetch(FetchDescriptor<Exercise>())) ?? []
+        var changed = false
+        for exercise in existing {
+            guard let seedID = exercise.seedID,
+                  let callout = calloutBySeedID[seedID],
+                  exercise.animationCallout != callout else { continue }
+            exercise.animationCallout = callout
             changed = true
         }
         return changed
