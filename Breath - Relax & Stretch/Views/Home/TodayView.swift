@@ -456,11 +456,15 @@ struct TodayView: View {
         // of always flooring to "1m" regardless of how much over a minute it is.
         let mins = totalSecs > 0 ? max(1, Int((Double(totalSecs) / 60).rounded())) : 0
 
-        // GlassEffectContainer wraps the whole card so the background, the
-        // Begin pill, and the Customize pill sample and blend as one
-        // coherent glass cluster rather than three independent surfaces.
-        return GlassEffectContainer {
-        ZStack(alignment: .topTrailing) {
+        // Deliberately NOT wrapped in a GlassEffectContainer: that groups
+        // every descendant — title, subtitle, and the roadmap wave included,
+        // not just the glass shapes — into the same blurred rendering pass,
+        // which read as the hero's own text and icons going soft-focus
+        // rather than just sitting on translucent glass. Three independent
+        // .glassEffect() calls (here, Begin, and Customize below) don't
+        // visually merge into each other, but that's a small cosmetic loss
+        // next to blurred content.
+        return ZStack(alignment: .topTrailing) {
             RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
                 .glassEffect(.regular.tint(Color.luminaPrimary.opacity(0.16)),
                              in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
@@ -564,7 +568,6 @@ struct TodayView: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
         .tourAnchor("today.heroCard")
-        }
     }
 
     // MARK: - Section headers

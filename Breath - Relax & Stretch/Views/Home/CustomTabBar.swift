@@ -37,23 +37,24 @@ struct CustomTabBar: View {
     ]
 
     var body: some View {
-        // GlassEffectContainer wraps the entire bar — both the bar's own
-        // background glass and each active tab's pill glass — so they're
-        // descendants of the same container and actually sample/merge as one
-        // coherent glass cluster instead of two independent surfaces.
-        GlassEffectContainer {
-            HStack(spacing: 0) {
-                ForEach(tabs.indices, id: \.self) { i in
-                    tabButton(index: i)
-                }
+        // Deliberately NOT wrapped in a GlassEffectContainer: that groups
+        // every descendant — icons and labels included, not just the glass
+        // shapes — into the same blurred rendering pass, which read as the
+        // tab labels themselves going soft-focus rather than just sitting
+        // on translucent glass. Two independent .glassEffect() calls (here
+        // and on the active pill below) don't visually merge/morph into
+        // each other, but that's a small cosmetic loss next to blurred text.
+        HStack(spacing: 0) {
+            ForEach(tabs.indices, id: \.self) { i in
+                tabButton(index: i)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background {
-                RoundedRectangle(cornerRadius: 30)
-                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 30))
-                    .shadow(color: Color.luminaPrimary.opacity(0.14), radius: 22, x: 0, y: 6)
-            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background {
+            RoundedRectangle(cornerRadius: 30)
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 30))
+                .shadow(color: Color.luminaPrimary.opacity(0.14), radius: 22, x: 0, y: 6)
         }
         .padding(.horizontal, 18)
         // The floating pill's height is a fixed assumption baked into
