@@ -190,7 +190,10 @@ struct RoadmapWaveCurve: View {
         Canvas { context, _ in
             guard count > 1 else { return }
             let stepsPerSegment = 16
-            let gradient = Gradient(colors: [Color.luminaGradientStart, Color.luminaGradientEnd])
+            // Color now lives on the nodes (see nodeView), not the
+            // connecting line — a neutral gradient here keeps the curve
+            // from competing with each node's category color.
+            let gradient = Gradient(colors: [Color.white.opacity(0.45), Color.white.opacity(0.2)])
 
             for segment in 0..<(count - 1) {
                 var path = Path()
@@ -315,6 +318,11 @@ struct RoadmapWave: View {
                 // *behind* the focused node's glyph rather than a wash over
                 // it. Fixed to the viewport, like the vignette.
                 focusGlow
+                    // Smooths the glow's color transition when the focused
+                    // node changes category — without this, the color
+                    // snapped instantly at the moment focus crossed from one
+                    // exercise to the next instead of crossfading.
+                    .animation(.easeInOut(duration: 0.25), value: focusedCategoryColor)
                     .onAppear { viewportWidth = geo.size.width }
                     .onChange(of: geo.size.width) { _, newWidth in viewportWidth = newWidth }
             }
@@ -349,7 +357,7 @@ struct RoadmapWave: View {
                     .font(.system(size: 9, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                     .frame(width: RoadmapWaveGeometry.orderBadgeSize, height: RoadmapWaveGeometry.orderBadgeSize)
-                    .background(Color.luminaPrimary, in: Circle())
+                    .background(category.accentColor, in: Circle())
                     // Continuous ramp, not a binary cut: the badge fades in
                     // smoothly as a node approaches focus (and stays legible
                     // on the near neighbours, which matters on the numbered
@@ -361,9 +369,9 @@ struct RoadmapWave: View {
             // A fixed dark scrim behind the label (rather than
             // luminaOnSurfaceVariant straight on the background) so it stays
             // legible at a fixed contrast regardless of what's behind it —
-            // TodayView's saturated hero gradient in particular, where plain
-            // text was hard to read wherever the halo/vignette didn't happen
-            // to darken it.
+            // TodayView's glass hero card in particular, where plain text
+            // was hard to read wherever the halo/vignette didn't happen to
+            // darken it.
             Text(durationFormatted(for: exercise))
                 .font(.luminaCaption)
                 .fontWeight(.semibold)
@@ -387,15 +395,31 @@ struct RoadmapWave: View {
         .zIndex(Double(scale))
     }
 
+    /// The category color of whichever exercise is nearest the viewport
+    /// center right now — feeds `focusGlow` so the ambient glow always
+    /// matches the category color of the node it's actually glowing
+    /// behind, instead of a fixed color regardless of which node is
+    /// focused.
+    private var focusedCategoryColor: Color {
+        guard !exercises.isEmpty else { return .luminaPrimary }
+        let nearestIndex = exercises.indices.min { lhs, rhs in
+            let lhsDistance = abs(RoadmapWaveGeometry.x(at: lhs, padding: padding) - focusCenterX)
+            let rhsDistance = abs(RoadmapWaveGeometry.x(at: rhs, padding: padding) - focusCenterX)
+            return lhsDistance < rhsDistance
+        }!
+        return ExerciseCategory.primary(for: exercises[nearestIndex].targetBodyParts).accentColor
+    }
+
     /// A soft halo behind whichever node is centered (the spec's "soft glow
     /// behind the centered node", distinct from the page-wide vignette).
     /// Centered on the viewport center — the same point the vignette is
     /// centered on, and where the focused node always renders.
     private var focusGlow: some View {
-        RadialGradient(
+        let color = focusedCategoryColor
+        return RadialGradient(
             gradient: Gradient(colors: [
-                Color.luminaPrimary.opacity(0.28),
-                Color.luminaPrimary.opacity(0.12),
+                color.opacity(0.28),
+                color.opacity(0.12),
                 Color.clear,
             ]),
             center: .center,
@@ -413,8 +437,8 @@ struct RoadmapWave: View {
         //
         // Deliberately a neutral multiply rather than a fade to an absolute
         // colour: this renders over both a plain `luminaSurface` background
-        // (CustomizeRoutineView) and TodayView's saturated hero gradient, and
-        // any fixed colour that suits one paints an obviously wrong haze over
+        // (CustomizeRoutineView) and TodayView's glass hero card, and any
+        // fixed colour that suits one paints an obviously wrong haze over
         // the other. Multiplying black-at-opacity just darkens whatever is
         // actually behind it.
         RadialGradient(
