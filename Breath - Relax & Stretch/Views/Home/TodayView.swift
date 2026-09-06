@@ -456,12 +456,14 @@ struct TodayView: View {
         // of always flooring to "1m" regardless of how much over a minute it is.
         let mins = totalSecs > 0 ? max(1, Int((Double(totalSecs) / 60).rounded())) : 0
 
-        return ZStack(alignment: .topTrailing) {
-            LinearGradient(
-                colors: [Color.luminaGradientStart, Color.luminaGradientEnd],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+        // GlassEffectContainer wraps the whole card so the background, the
+        // Begin pill, and the Customize pill sample and blend as one
+        // coherent glass cluster rather than three independent surfaces.
+        return GlassEffectContainer {
+        ZStack(alignment: .topTrailing) {
+            RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
+                .glassEffect(.regular.tint(Color.luminaPrimary.opacity(0.16)),
+                             in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
 
             // The breathing halo — same cadence as the sign-in screen. The
             // animation is scoped to these circles via .animation(value:);
@@ -503,10 +505,10 @@ struct TodayView: View {
                 RoadmapWave(exercises: sessionExercises, durationOverrides: overrides)
 
                 HStack {
-                    // Demoted to a plain text link — a second pill here
-                    // read as competing with Begin for the primary action.
-                    // A Spacer (rather than a fixed gap) pins it to the
-                    // leading edge and Begin to the trailing edge, so the
+                    // A quieter untinted glass pill (vs. Begin's tinted one)
+                    // so it doesn't compete with Begin for the primary
+                    // action. A Spacer (rather than a fixed gap) pins it to
+                    // the leading edge and Begin to the trailing edge, so the
                     // pair spans the card's full width instead of both
                     // bunching on the left.
                     Button {
@@ -514,8 +516,10 @@ struct TodayView: View {
                     } label: {
                         Text("Customize")
                             .font(.luminaLabel)
-                            .foregroundStyle(.white.opacity(0.8))
-                            .underline()
+                            .foregroundStyle(.white.opacity(0.85))
+                            .padding(.horizontal, 16)
+                            .frame(height: 40)
+                            .glassEffect(.regular, in: Capsule())
                     }
                     .buttonStyle(.plain)
 
@@ -533,15 +537,22 @@ struct TodayView: View {
                                     .fontWeight(.semibold)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 3)
-                                    .background(Color.luminaOnPrimary.opacity(0.18), in: Capsule())
+                                    .background(.white.opacity(0.14), in: Capsule())
                             }
                         }
                         .font(.luminaCardTitle)
+                        // luminaOnPrimary (not luminaPrimary) — this label
+                        // sits on a luminaPrimary-tinted glass background, so
+                        // it needs the theme's dedicated "text on primary"
+                        // token for contrast. Verified in the simulator:
+                        // amber-on-amber (both luminaPrimary) washed the
+                        // "Begin"/"9 min" text out to a faint luminance-only
+                        // difference from the button's own fill.
                         .foregroundStyle(Color.luminaOnPrimary)
                         .padding(.horizontal, 24)
                         .frame(height: 48)
-                        .background(Color.luminaPrimary, in: Capsule())
-                        .shadow(color: Color.luminaPrimary.opacity(0.35), radius: 10, y: 5)
+                        .glassEffect(.regular.tint(Color.luminaPrimary), in: Capsule())
+                        .shadow(color: .black.opacity(0.35), radius: 10, y: 5)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Begin today's session: \(sessionExercises.count) exercises, \(mins) minutes")
@@ -553,6 +564,7 @@ struct TodayView: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
         .tourAnchor("today.heroCard")
+        }
     }
 
     // MARK: - Section headers
