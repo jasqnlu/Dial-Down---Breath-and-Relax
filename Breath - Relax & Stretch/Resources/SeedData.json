@@ -249,7 +249,15 @@
       ],
       "id": "c6908bca-ba39-5c3c-988d-1a88c7f3444d",
       "animationName": "eye_palming.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Rest your warm palms gently over your closed eyes",
+        "shape": "pulse",
+        "anchor": [0.53, 0.19],
+        "angle": 0,
+        "startTime": 0.5,
+        "duration": 2.5
+      }
     },
     {
       "name": "Chin Tuck (Forward Head Reset)",
@@ -465,7 +473,15 @@
       ],
       "id": "3751fbd0-f483-527e-aa28-9857095d7a51",
       "animationName": "shoulder_roll.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Roll your shoulders back in a circle",
+        "shape": "rotate",
+        "anchor": [0.65, 0.27],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Left Cross-Body Rear Delt Stretch",
@@ -1481,7 +1497,15 @@
       ],
       "id": "b1d30153-3e92-5934-bca8-19a6a28ed83d",
       "animationName": "wrist_circles.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Rotate your wrists in a circle",
+        "shape": "rotate",
+        "anchor": [0.16, 0.32],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Left Seated Figure-Four Stretch",
@@ -2141,7 +2165,15 @@
       "caution": "Bend the knees generously if your hamstrings are tight - a flat back matters more than straight legs.",
       "id": "ce42d033-68ee-5f06-b552-96235237c751",
       "animationName": "downward_facing_dog.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Press your hips up and back",
+        "shape": "pushPull",
+        "anchor": [0.52, 0.40],
+        "angle": 60,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Legs Up the Wall",
@@ -2349,7 +2381,15 @@
       ],
       "id": "fe4dea3b-f897-5d26-bd98-456d2a9f96ca",
       "animationName": "ankle_alphabet.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Trace letters with your toes",
+        "shape": "swingArc",
+        "anchor": [0.35, 0.85],
+        "angle": -30,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Wrist & Forearm Release",
