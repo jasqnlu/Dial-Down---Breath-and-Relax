@@ -3491,7 +3491,15 @@
       "caution": "Use a folded towel under the back knee if the floor is hard, and ease off if you feel pinching at the front of the ankle rather than a stretch.",
       "id": "cc6dcec1-c54f-48c3-b8c6-a64741a29faf",
       "animationName": "left_half_kneeling_rear_foot_instep_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Sink your hips down and forward",
+        "shape": "pushPull",
+        "anchor": [0.40, 0.42],
+        "angle": -160,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Right Half-Kneeling Rear-Foot Instep Stretch",
@@ -3512,7 +3520,15 @@
       "caution": "Use a folded towel under the back knee if the floor is hard, and ease off if you feel pinching at the front of the ankle rather than a stretch.",
       "id": "6bd1e797-c0f0-4d8b-9024-7b40bacaea85",
       "animationName": "right_half_kneeling_rear_foot_instep_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Sink your hips down and forward",
+        "shape": "pushPull",
+        "anchor": [0.40, 0.42],
+        "angle": -160,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Left Seated Behind-Hip Bicep Stretch",
@@ -3609,7 +3625,15 @@
       "caution": "Hold a railing or wall the whole time and move slowly — don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
       "id": "ca88ac04-f55d-45c9-9693-19f6829c6283",
       "animationName": "left_step_edge_calf_drop_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Let your heel drop below the step",
+        "shape": "pushPull",
+        "anchor": [0.53, 0.85],
+        "angle": -90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Right Step-Edge Calf Drop Stretch",
@@ -3630,7 +3654,15 @@
       "caution": "Hold a railing or wall the whole time and move slowly — don't bounce or drop suddenly. Skip this one if you have ankle instability or balance concerns.",
       "id": "2fc19eb8-63ab-4f73-859b-b5b6fad04ac8",
       "animationName": "right_step_edge_calf_drop_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Let your heel drop below the step",
+        "shape": "pushPull",
+        "anchor": [0.53, 0.85],
+        "angle": -90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Left Scalene Neck Stretch",
@@ -3771,7 +3803,15 @@
       ],
       "id": "8193d6e7-e24e-4c4c-bb03-3bdaa2be18d5",
       "animationName": "left_plantar_fascia_stretch_toe_raise.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull your toes back toward your shin",
+        "shape": "pushPull",
+        "anchor": [0.30, 0.68],
+        "angle": 100,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Right Plantar Fascia Stretch (Toe Raise)",
@@ -3791,7 +3831,15 @@
       ],
       "id": "3966e57e-0f8d-42a8-bbb3-0eed3813ddf3",
       "animationName": "right_plantar_fascia_stretch_toe_raise.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull your toes back toward your shin",
+        "shape": "pushPull",
+        "anchor": [0.68, 0.68],
+        "angle": 80,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Left Standing Crescent Moon Side Stretch",
@@ -3933,7 +3981,15 @@
       "caution": "Use only mild, steady pressure — this is a gentle isometric hold, not a maximal push.",
       "id": "b7721974-7206-4913-b9d2-8d4f41db1034",
       "animationName": "left_isometric_neck_side_press.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Press your head into your hand without moving it",
+        "shape": "pulse",
+        "anchor": [0.55, 0.15],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Right Isometric Neck Side Press",
@@ -3955,7 +4011,15 @@
       "caution": "Use only mild, steady pressure — this is a gentle isometric hold, not a maximal push.",
       "id": "4a1b7329-be46-4b36-a2b5-4d0f06c15b78",
       "animationName": "right_isometric_neck_side_press.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Press your head into your hand without moving it",
+        "shape": "pulse",
+        "anchor": [0.45, 0.15],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Standing Chest Expansion Stretch",
@@ -4104,7 +4168,15 @@
       "caution": "Skip if you have neck or lower-back issues — keep the neck neutral and avoid turning your head while lifted.",
       "id": "abe45c7a-3b15-412e-856e-bc76e65d4eb2",
       "animationName": "bridge_pose.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Press your hips up toward the ceiling",
+        "shape": "pushPull",
+        "anchor": [0.5, 0.45],
+        "angle": 90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Standing Split Prep Stretch",
@@ -4125,7 +4197,15 @@
       "caution": "Only lift as high as you can while keeping the standing leg straight and controlled — use a wall for balance.",
       "id": "1bed1844-6818-410c-a8b3-e1079f857bbd",
       "animationName": "standing_split_prep_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Lift your back leg higher, straight behind you",
+        "shape": "pushPull",
+        "anchor": [0.60, 0.70],
+        "angle": 20,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Extended Exhale Breathing",
@@ -4283,7 +4363,15 @@
       ],
       "id": "a345946b-9db3-47f8-a748-0d3373745993",
       "animationName": "standing_it_band_side_stretch_left.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Push your hip out to the side",
+        "shape": "pushPull",
+        "anchor": [0.58, 0.55],
+        "angle": 0,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Standing IT Band Side Stretch (Right)",
@@ -4304,7 +4392,15 @@
       ],
       "id": "6f1b97a9-e7f2-418b-a622-0501e6c3cb13",
       "animationName": "standing_it_band_side_stretch_right.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Push your hip out to the side",
+        "shape": "pushPull",
+        "anchor": [0.42, 0.55],
+        "angle": 180,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Dynamic Standing Leg Swings",
@@ -4352,7 +4448,15 @@
       ],
       "id": "0510c366-18e8-4ff1-a341-6a19976e50a4",
       "animationName": "standing_hip_circles.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Circle your hips in a wide loop",
+        "shape": "rotate",
+        "anchor": [0.5, 0.52],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Runner's Lunge with Rotation (Left)",
@@ -4417,7 +4521,15 @@
       ],
       "id": "bab80254-c9e0-472a-9dfd-f369a0b4232e",
       "animationName": "standing_ankle_dorsiflexion_stretch_left.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Ease your knee forward toward the wall",
+        "shape": "pushPull",
+        "anchor": [0.40, 0.62],
+        "angle": 180,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Standing Ankle Dorsiflexion Stretch (Right)",
@@ -4438,7 +4550,15 @@
       ],
       "id": "ab2582db-e52c-4820-baed-89ef91592ede",
       "animationName": "standing_ankle_dorsiflexion_stretch_right.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Ease your knee forward toward the wall",
+        "shape": "pushPull",
+        "anchor": [0.40, 0.62],
+        "angle": 180,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "20-20-20 Focus Shift",
@@ -4795,7 +4915,15 @@
       ],
       "id": "37492316-8e25-4f91-a06a-de0b59895bf9",
       "animationName": "standing_tibialis_raise_toe_lifts.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Lift your toes up off the floor",
+        "shape": "pushPull",
+        "anchor": [0.58, 0.88],
+        "angle": 90,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Thumb Extension Stretch (Left)",
@@ -4815,7 +4943,15 @@
       ],
       "id": "64941e54-41c1-43a9-9653-810487052788",
       "animationName": "thumb_extension_stretch_left.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Bend your thumb back and down",
+        "shape": "pushPull",
+        "anchor": [0.60, 0.15],
+        "angle": -90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Thumb Extension Stretch (Right)",
@@ -4835,7 +4971,15 @@
       ],
       "id": "97a8371e-87ca-4634-b1d2-26ecfe061fee",
       "animationName": "thumb_extension_stretch_right.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Bend your thumb back and down",
+        "shape": "pushPull",
+        "anchor": [0.40, 0.15],
+        "angle": -90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Hook Fist Tendon Glide",
