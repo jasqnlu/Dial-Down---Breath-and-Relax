@@ -176,7 +176,7 @@ struct ExerciseListView: View {
     private var searchBar: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
-                .foregroundStyle(Color.cyan.opacity(0.95))
+                .foregroundStyle(Color.luminaPrimary.opacity(0.95))
 
             TextField("Search exercises", text: $searchText)
                 .font(.luminaLabel)
@@ -205,9 +205,9 @@ struct ExerciseListView: View {
                 .strokeBorder(
                     LinearGradient(
                         colors: [
-                            Color.cyan.opacity(0.58),
-                            Color.mint.opacity(0.34),
-                            Color.cyan.opacity(0.50)
+                            Color.luminaPrimary.opacity(0.58),
+                            Color.luminaFlameLit.opacity(0.34),
+                            Color.luminaPrimary.opacity(0.50)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -215,8 +215,8 @@ struct ExerciseListView: View {
                     lineWidth: 1.0
                 )
         )
-        .shadow(color: Color.cyan.opacity(0.18), radius: 7, x: 0, y: 0)
-        .shadow(color: Color.mint.opacity(0.10), radius: 11, x: 0, y: 0)
+        .shadow(color: Color.luminaPrimary.opacity(0.18), radius: 7, x: 0, y: 0)
+        .shadow(color: Color.luminaFlameLit.opacity(0.10), radius: 11, x: 0, y: 0)
         .accessibilityElement(children: .contain)
     }
 }

@@ -129,7 +129,7 @@ private struct PoseGlyphPath: Shape {
 #Preview {
     LazyVGrid(columns: [GridItem(.adaptive(minimum: 96))]) {
         ForEach(PoseArchetypeID.allCases, id: \.self) { id in
-            PoseGlyphIcon(archetype: PoseArchetypeLibrary.all[id]!, mirrored: false, color: .teal, size: 96)
+            PoseGlyphIcon(archetype: PoseArchetypeLibrary.all[id]!, mirrored: false, color: .brown, size: 96)
         }
     }
     .padding()

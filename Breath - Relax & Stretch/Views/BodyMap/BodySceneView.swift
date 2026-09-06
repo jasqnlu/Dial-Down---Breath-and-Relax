@@ -647,7 +647,7 @@ struct MarkCandidate: Equatable, Identifiable {
 enum CandidatePalette {
     static let colors: [Color] = [
         Color(red: 0.23, green: 0.51, blue: 0.84),   // blue
-        Color(red: 0.17, green: 0.71, blue: 0.79),   // cyan
+        Color(red: 0.36, green: 0.68, blue: 0.44),   // green (was cyan)
         Color(red: 0.48, green: 0.42, blue: 0.94),   // indigo
         Color(red: 0.88, green: 0.54, blue: 0.29),   // amber (neighbour muscle)
     ]
