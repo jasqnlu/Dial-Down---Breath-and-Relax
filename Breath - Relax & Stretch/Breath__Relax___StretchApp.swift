@@ -45,17 +45,11 @@ struct BreathRelaxStretchApp: App {
         }
     }()
 
-    // 0 = System, 1 = Light, 2 = Dark (set in Profile > Appearance). New
-    // installs default to Dark for a sleeker first impression; the picker
-    // there lets users opt back to System or Light.
-    @AppStorage("colorSchemeOverride") private var colorSchemeOverride = 2
-    private var resolvedColorScheme: ColorScheme? {
-        switch colorSchemeOverride {
-        case 1:  return .light
-        case 2:  return .dark
-        default: return nil
-        }
-    }
+    // The app is dark-only (Liquid Glass redesign, 2026-09-05) — there is no
+    // user-facing light mode or system-follow option anymore. This used to
+    // read a Profile > Appearance picker; that picker is gone (see
+    // ProfileAppearanceTab.swift), so this always resolves to dark.
+    private var resolvedColorScheme: ColorScheme? { .dark }
 
     /// Gates the splash (`AppLoadingView`) until the anatomy mesh is warm and
     /// a minimum readable duration has elapsed. See `minimumSplashDuration`.
