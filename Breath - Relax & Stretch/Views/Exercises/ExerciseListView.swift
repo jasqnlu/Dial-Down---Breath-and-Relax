@@ -5,6 +5,9 @@ struct ExerciseListView: View {
     @Query private var exercises: [Exercise]
     @State private var searchText = ""
     @State private var selectedType: ExerciseType? = nil
+    @State private var selectedDifficulties: Set<Int> = []
+    @State private var durationBucket: ExerciseDurationBucket = .any
+    @State private var showingFilterSheet = false
     @State private var selectedExercise: Exercise?
     @State private var visibleSearchCount = ExerciseSearchResults.pageSize
     @FocusState private var isSearchFocused: Bool
@@ -14,12 +17,18 @@ struct ExerciseListView: View {
         searchText.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    private var hasActiveFilters: Bool {
+        selectedType != nil || !selectedDifficulties.isEmpty || durationBucket != .any
+    }
+
     private var searchResults: ExerciseSearchResults {
         ExerciseSearchResults(
             exercises: exercises,
             searchText: normalizedSearchText,
             selectedType: selectedType,
-            visibleCount: visibleSearchCount
+            visibleCount: visibleSearchCount,
+            selectedDifficulties: selectedDifficulties,
+            durationBucket: durationBucket
         )
     }
 
@@ -55,10 +64,23 @@ struct ExerciseListView: View {
             .onChange(of: selectedType) { _, _ in
                 resetSearchPage()
             }
+            .onChange(of: selectedDifficulties) { _, _ in
+                resetSearchPage()
+            }
+            .onChange(of: durationBucket) { _, _ in
+                resetSearchPage()
+            }
             .navigationDestination(isPresented: isShowingDetail) {
                 if let selectedExercise {
                     ExerciseDetailView(exercise: selectedExercise)
                 }
+            }
+            .sheet(isPresented: $showingFilterSheet) {
+                ExerciseFilterSheet(
+                    selectedType: $selectedType,
+                    selectedDifficulties: $selectedDifficulties,
+                    durationBucket: $durationBucket
+                )
             }
             .overlay {
                 if exercises.isEmpty {
@@ -72,11 +94,25 @@ struct ExerciseListView: View {
         }
     }
 
+    /// Difficulty/duration applied ahead of the graph-browse vs. search-grid
+    /// split below: `ExerciseGraphView` only understands a type filter today
+    /// (its zoom/pan node layout is keyed off category, not an arbitrary
+    /// predicate), so pre-filtering here is what makes Difficulty/Duration
+    /// apply while browsing by category, not just once text is typed into
+    /// search. `ExerciseSearchResults` re-derives the same two filters
+    /// independently for the search-grid path (see `searchResults` below).
+    private var difficultyAndDurationFilteredExercises: [Exercise] {
+        exercises.filter { exercise in
+            (selectedDifficulties.isEmpty || selectedDifficulties.contains(exercise.difficulty))
+                && durationBucket.matches(exercise.durationSeconds)
+        }
+    }
+
     @ViewBuilder
     private var content: some View {
         Group {
             if normalizedSearchText.isEmpty {
-                ExerciseGraphView(exercises: exercises, typeFilter: selectedType) { exercise in
+                ExerciseGraphView(exercises: difficultyAndDurationFilteredExercises, typeFilter: selectedType) { exercise in
                     selectedExercise = exercise
                 }
             } else {
@@ -128,51 +164,64 @@ struct ExerciseListView: View {
         visibleSearchCount = ExerciseSearchResults.pageSize
     }
 
+    /// The whole header row lives inside one `GlassEffectContainer` so the
+    /// search bar, filter button, and select button read as one continuous
+    /// glass surface (per Apple's intended Liquid Glass compositing) rather
+    /// than three separately-lit panes — the same convention the Today hero
+    /// buttons and `CustomTabBar` already established
+    /// (docs/superpowers/specs/2026-09-05-liquid-glass-today-redesign-design.md).
     private var header: some View {
-        HStack(spacing: 10) {
-            searchBar
-                .tourAnchor("exercises.search")
+        GlassEffectContainer(spacing: 10) {
+            HStack(spacing: 10) {
+                searchBar
+                    .tourAnchor("exercises.search")
 
-            Menu {
-                Button("All Types") { selectedType = nil }
-                Divider()
-                ForEach(ExerciseType.allCases, id: \.self) { type in
-                    Button(type.rawValue) { selectedType = type }
+                Button {
+                    showingFilterSheet = true
+                } label: {
+                    Label("Filter", systemImage: hasActiveFilters
+                          ? "line.3.horizontal.decrease.circle.fill"
+                          : "line.3.horizontal.decrease.circle")
+                        .labelStyle(.iconOnly)
+                        .font(.title3)
+                        .foregroundStyle(hasActiveFilters ? Color.luminaPrimary : Color.luminaOnSurfaceVariant)
+                        .frame(width: 36, height: 36)
                 }
-            } label: {
-                Label("Filter", systemImage: selectedType == nil
-                      ? "line.3.horizontal.decrease.circle"
-                      : "line.3.horizontal.decrease.circle.fill")
-                    .labelStyle(.iconOnly)
-                    .font(.title3)
-                    .foregroundStyle(Color.luminaOnSurfaceVariant)
-            }
+                .glassEffect(hasActiveFilters ? .regular.tint(Color.luminaPrimary.opacity(0.16)) : .regular, in: Circle())
+                .accessibilityIdentifier("exerciseFilterButton")
 
-            // Standalone entry into picking mode — no Customize context, so
-            // `PickingBar`'s action button reads "Continue" and opens
-            // `MiniRoutineReviewView` instead of merging into a routine.
-            // Toggling while already active cancels the picks, mirroring
-            // how tapping "Select" again is expected to back out.
-            Button {
-                if pickingSession.isActive {
-                    pickingSession.cancel()
-                } else {
-                    pickingSession.begin()
+                // Standalone entry into picking mode — no Customize context, so
+                // `PickingBar`'s action button reads "Continue" and opens
+                // `MiniRoutineReviewView` instead of merging into a routine.
+                // Toggling while already active cancels the picks, mirroring
+                // how tapping "Select" again is expected to back out.
+                Button {
+                    if pickingSession.isActive {
+                        pickingSession.cancel()
+                    } else {
+                        pickingSession.begin()
+                    }
+                } label: {
+                    Label(pickingSession.isActive ? "Cancel" : "Select",
+                          systemImage: pickingSession.isActive ? "xmark.circle" : "checkmark.circle")
+                        .labelStyle(.iconOnly)
+                        .font(.title3)
+                        .foregroundStyle(pickingSession.isActive ? Color.luminaPrimary : Color.luminaOnSurfaceVariant)
+                        .frame(width: 36, height: 36)
                 }
-            } label: {
-                Label(pickingSession.isActive ? "Cancel" : "Select",
-                      systemImage: pickingSession.isActive ? "xmark.circle" : "checkmark.circle")
-                    .labelStyle(.iconOnly)
-                    .font(.title3)
-                    .foregroundStyle(pickingSession.isActive ? Color.luminaPrimary : Color.luminaOnSurfaceVariant)
+                .glassEffect(pickingSession.isActive ? .regular.tint(Color.luminaPrimary.opacity(0.16)) : .regular, in: Circle())
+                .accessibilityIdentifier("exerciseSelectToggle")
             }
-            .accessibilityIdentifier("exerciseSelectToggle")
         }
         .padding(.horizontal)
         .padding(.top, 8)
         .padding(.bottom, 4)
     }
 
+    /// Real Liquid Glass (`.glassEffect`), replacing the previous hand-rolled
+    /// approximation (an opaque capsule fill + a gradient `strokeBorder` +
+    /// two colored shadows). The deployment target is iOS 26.5, so the actual
+    /// API is available — no need to keep faking the look.
     private var searchBar: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
@@ -199,24 +248,7 @@ struct ExerciseListView: View {
         .frame(maxWidth: .infinity)
         .frame(height: 36)
         .padding(.horizontal, 12)
-        .background(Color.luminaCardFill.opacity(0.96), in: Capsule())
-        .overlay(
-            Capsule()
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [
-                            Color.luminaPrimary.opacity(0.58),
-                            Color.luminaFlameLit.opacity(0.34),
-                            Color.luminaPrimary.opacity(0.50)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.0
-                )
-        )
-        .shadow(color: Color.luminaPrimary.opacity(0.18), radius: 7, x: 0, y: 0)
-        .shadow(color: Color.luminaFlameLit.opacity(0.10), radius: 11, x: 0, y: 0)
+        .glassEffect(.regular.tint(Color.luminaPrimary.opacity(0.12)), in: Capsule())
         .accessibilityElement(children: .contain)
     }
 }
