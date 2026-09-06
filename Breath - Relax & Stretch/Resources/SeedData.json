@@ -2376,8 +2376,8 @@
       "animationCallout": {
         "text": "Pull your toes back toward your shin",
         "shape": "pushPull",
-        "anchor": [0.08, 0.70],
-        "angle": 60,
+        "anchor": [0.92, 0.70],
+        "angle": 120,
         "startTime": 1.5,
         "duration": 2.0
       }
@@ -6448,8 +6448,8 @@
       "animationCallout": {
         "text": "Pull the strap to point your toes away",
         "shape": "pushPull",
-        "anchor": [0.94, 0.62],
-        "angle": -20,
+        "anchor": [0.06, 0.62],
+        "angle": 200,
         "startTime": 1.5,
         "duration": 2.0
       }
@@ -6523,7 +6523,7 @@
       "animationCallout": {
         "text": "Circle your ankle slowly in both directions",
         "shape": "rotate",
-        "anchor": [0.90, 0.62],
+        "anchor": [0.10, 0.62],
         "angle": 0,
         "startTime": 1.0,
         "duration": 2.0
