@@ -7370,7 +7370,15 @@
       ],
       "id": "1661f631-41d7-4b34-8717-3037b7e7b062",
       "animationName": "cross_legged_foot_massage_and_arch_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Knead the arch and pull your toes back",
+        "shape": "pushPull",
+        "anchor": [0.30, 0.68],
+        "angle": 90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Wall-Assisted Toe Extension Stretch (Left)",
@@ -7390,7 +7398,15 @@
       "isBilateral": false,
       "id": "dd883650-6972-4a6d-8a61-209f70944f5a",
       "animationName": "wall_assisted_toe_extension_stretch_left.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Press your toes up against the wall",
+        "shape": "pushPull",
+        "anchor": [0.50, 0.90],
+        "angle": 90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Wall-Assisted Toe Extension Stretch (Right)",
@@ -7410,7 +7426,15 @@
       "isBilateral": false,
       "id": "8b2274a2-ba96-4ab2-8048-4aac782bedce",
       "animationName": "wall_assisted_toe_extension_stretch_right.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Press your toes up against the wall",
+        "shape": "pushPull",
+        "anchor": [0.50, 0.90],
+        "angle": 90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Kneeling Arch Stretch, Toes Curled Under (Left)",
@@ -7431,7 +7455,15 @@
       "isBilateral": false,
       "id": "93b8faf7-cfbb-4c5d-a662-703a8bc6b86c",
       "animationName": "kneeling_arch_stretch_toes_curled_under_left.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Sit back toward your heel",
+        "shape": "pushPull",
+        "anchor": [0.35, 0.45],
+        "angle": -90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Kneeling Arch Stretch, Toes Curled Under (Right)",
@@ -7452,7 +7484,15 @@
       "isBilateral": false,
       "id": "532b7274-1d5e-408d-9398-8d38c30cd15b",
       "animationName": "kneeling_arch_stretch_toes_curled_under_right.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Sit back toward your heel",
+        "shape": "pushPull",
+        "anchor": [0.35, 0.45],
+        "angle": -90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Doorway Side Stretch with Overhead Reach (Left)",
@@ -7760,7 +7800,15 @@
       "caution": "Move gently and stop if you feel any pinching in the hips or groin.",
       "id": "52f1fe18-61a4-483f-9013-a2910c83029d",
       "animationName": "frog_rock_kneeling_glute_mobility_flow.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Rock your hips back toward your heels, then forward",
+        "shape": "swingArc",
+        "anchor": [0.58, 0.32],
+        "angle": 180,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Supine Cross-Body Double Knee Pull (Bilateral Glute Release)",
@@ -8009,7 +8057,15 @@
       ],
       "id": "53280dcd-00e0-41f5-81e8-0afdbb83a59b",
       "animationName": "standing_shoulder_blade_squeeze_scapular_retraction_flow.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Squeeze your shoulder blades together",
+        "shape": "pulse",
+        "anchor": [0.5, 0.20],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Prone Y-T-W Raise (Upper Back Activation Flow)",
@@ -8029,7 +8085,15 @@
       ],
       "id": "08c70d7c-b656-49a6-8113-74f9af4be374",
       "animationName": "prone_y_t_w_raise_upper_back_activation_flow.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Lift your arms slightly off the floor",
+        "shape": "pulse",
+        "anchor": [0.5, 0.35],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Seated Chair Neck Traction Stretch (Both Sides)",
