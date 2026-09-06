@@ -1,7 +1,72 @@
 # Exercise Animation — Handoff for a New Session
 
-**Last updated:** 2026-08-27 (breathing batch — 46 breathing techniques via
-a new chest-expansion composition, plus Bridge Pose + Frog Rock retried)
+**Last updated:** 2026-09-05 (accuracy re-audit of all 137
+`animationIsApproximate` exercises — 3 real no-op bugs found and fixed)
+
+## Accuracy re-audit (2026-09-05)
+
+User asked to scan every exercise flagged `animationIsApproximate` (137 of
+355 animated exercises) for animations that don't actually match what
+they're supposed to look like, and to try alternate motions/cameras to fix
+any that are genuinely broken (vs. leaving deliberate rig-limitation
+approximations alone).
+
+**Method:** for each flagged exercise's shipped mp4, extracted grayscale
+stills at 4 points around the loop (2%/25%/50%/75%) and computed a
+pairwise pixel-diff score — a cheap proxy for "does this clip actually show
+visible motion." Sorted ascending and visually reviewed every clip scoring
+low, cross-referencing this doc's existing catalogue of accepted rig
+limitations (no independent ankle/toe joints, no scapula, the breathing
+chest-scale composition) before treating anything as a bug.
+
+**3 exercises were genuine no-op renders, not accepted approximations —
+fixed and re-rendered:**
+
+- **`shoulder_pendulum_swing_left` / `_right`** — the working arm's swing
+  (20-35deg pitch off a straight-down rest) was invisible: `CAMERA_AZIMUTH =
+  90` (side view) put the swinging arm behind the torso silhouette while the
+  static, more-extended support arm (raised -70deg toward camera) dominated
+  the frame. A rest/mid/peak contact sheet showed 3 visually identical
+  frames despite different keyframe data. Fixed by roughly doubling the
+  swing amplitude (see each script for exact values) and moving the camera
+  to a 3/4 oblique (azimuth 40 for `_left`, mirrored to 320 for `_right` so
+  the working arm stays on the open-background side rather than swapping
+  which arm it hides behind). Confirmed real motion afterward via pixel diff
+  and by eye.
+- **`standing_lumbar_side_glide_lateral_shift`** — a 10deg `spine` local-Z
+  side-bend (the documented proxy for a lateral pelvis shift this rig can't
+  translate) was too small to read in the rendered clip; front-camera
+  rest/peak stills were visually indistinguishable. Bumped to 20deg, within
+  `left_standing_side_bend.py`'s already-proven visible range (12-28deg) for
+  this exact bone/axis. Confirmed visible lean afterward.
+
+**Everything else scoring low on the pixel-diff triage was reviewed and
+left alone as a legitimate accepted approximation, not a bug:** the whole
+foot/ankle/toe family (Ankle Alphabet, both Ankle Circles for Tibialis
+Release, Shin & Ankle Mobiliser, both Kneeling Arch Stretch Toes Curled
+Under, both Toe Spread & Stretch, both Plantar Fascia Stretch, both Big Toe
+Extension, Towel Scrunch, Standing Tibialis Raise, Standing Toe Curl Towel
+Grip, Seated Foot Flex-and-Point Flow, both Step-Edge Calf Drop / Stair-Edge
+Calf Stretch — calf/heel drop is fundamentally an ankle motion this rig
+doesn't model) and the no-scapula family (both Active Shoulder Shrug &
+Release, Standing Shoulder Blade Squeeze) match limitations already
+catalogued elsewhere in this doc. `Neck Isometric Front-and-Back Press` and
+`Downward-Facing Dog Calf Pump` scored low only because a naive 50%-duration
+sample happens to land exactly on a rest keyframe (both have real peaks at
+25%/75%) — false positives from the triage method, not bugs; confirmed by
+sampling the actual peak frames. The 46 breathing exercises all score
+identically (~3.46) since they share one composition — expected, not
+reviewed individually again (already audited in the 2026-08-27 entry
+below). The wrist family (Wrist Circles, both Wrist Extensor/Flexor
+Stretch, both Assisted Wrist Flexion/Extension, Wrist & Forearm Release)
+showed real rest-to-reach motion on inspection despite low scores — the
+diff metric under-weights thin limb geometry at the render's resolution.
+
+**Lesson for the triage method itself:** a single mid-loop sample can
+alias onto a keyframe that happens to equal rest (most compositions here
+are rest→peak→rest→peak→rest across frames 0/30/60/90/120, so 50% duration
+= frame 60 = rest for every one of them). Sample at least 25%/75% as well,
+not just start/middle/end.
 
 ## Breathing batch (2026-08-27)
 
