@@ -413,18 +413,21 @@ struct RoadmapWave: View {
     /// A soft halo behind whichever node is centered (the spec's "soft glow
     /// behind the centered node", distinct from the page-wide vignette).
     /// Centered on the viewport center — the same point the vignette is
-    /// centered on, and where the focused node always renders.
+    /// centered on, and where the focused node always renders. Kept subtle
+    /// (low opacity, no hard-edged clear stop) so it reads as the same
+    /// glass surface catching a bit of color, not a separate colored patch
+    /// sitting on top of the hero card.
     private var focusGlow: some View {
         let color = focusedCategoryColor
         return RadialGradient(
             gradient: Gradient(colors: [
-                color.opacity(0.28),
-                color.opacity(0.12),
+                color.opacity(0.14),
+                color.opacity(0.05),
                 Color.clear,
             ]),
             center: .center,
             startRadius: 0,
-            endRadius: RoadmapWaveGeometry.maxNodeSize * 1.1
+            endRadius: RoadmapWaveGeometry.maxNodeSize * 1.3
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .allowsHitTesting(false)
