@@ -502,7 +502,15 @@
       "caution": "Stop if you feel shoulder pinching. Avoid if you have a rotator-cuff injury.",
       "id": "a09b5916-2d18-5fa1-a685-1345fa11cd8d",
       "animationName": "left_cross_body_rear_delt_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull your arm in across your chest",
+        "shape": "pushPull",
+        "anchor": [0.60, 0.24],
+        "angle": 180,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Right Cross-Body Rear Delt Stretch",
@@ -523,7 +531,15 @@
       "caution": "Stop if you feel shoulder pinching. Avoid if you have a rotator-cuff injury.",
       "id": "736ec882-9876-5494-95ee-545d895e0448",
       "animationName": "right_cross_body_rear_delt_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull your arm in across your chest",
+        "shape": "pushPull",
+        "anchor": [0.39, 0.24],
+        "angle": 0,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Doorway Shoulder & Chest Opener",
@@ -1373,7 +1389,15 @@
       ],
       "id": "29fe7232-d133-5233-a529-6ea1d5e04a42",
       "animationName": "left_wrist_flexor_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull your fingers back toward you",
+        "shape": "pushPull",
+        "anchor": [0.13, 0.29],
+        "angle": 60,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Right Wrist Flexor Stretch",
@@ -1393,7 +1417,15 @@
       ],
       "id": "903e096a-0223-58c2-aff3-7354990aaf00",
       "animationName": "right_wrist_flexor_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull your fingers back toward you",
+        "shape": "pushPull",
+        "anchor": [0.13, 0.29],
+        "angle": 60,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Left Wrist Extensor Stretch",
@@ -1413,7 +1445,15 @@
       ],
       "id": "7b84ffe1-cc90-5ad2-b55b-5a06910ae77f",
       "animationName": "left_wrist_extensor_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Press your hand down and curl fingers under",
+        "shape": "pushPull",
+        "anchor": [0.13, 0.29],
+        "angle": -60,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Right Wrist Extensor Stretch",
@@ -1433,7 +1473,15 @@
       ],
       "id": "06398809-c1ec-5875-a3f6-f97910bfe209",
       "animationName": "right_wrist_extensor_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Press your hand down and curl fingers under",
+        "shape": "pushPull",
+        "anchor": [0.13, 0.29],
+        "angle": -60,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Reverse Prayer Stretch",
@@ -1457,7 +1505,15 @@
       "caution": "Skip if this is uncomfortable on the wrists or shoulders; a partial version is fine.",
       "id": "a90c1d0f-c3df-5b41-bc2d-f9782fe50f25",
       "animationName": "reverse_prayer_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Slide your hands up your back",
+        "shape": "pushPull",
+        "anchor": [0.62, 0.52],
+        "angle": 90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Prayer Stretch (Palms Together, Lower)",
@@ -1527,7 +1583,15 @@
       "caution": "Keep the crossed ankle relaxed rather than pressing on the knee joint itself.",
       "id": "38945874-9c94-5816-a744-ec46b2db827d",
       "animationName": "left_seated_figure_four_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Lean your torso forward from the hips",
+        "shape": "pushPull",
+        "anchor": [0.48, 0.30],
+        "angle": -70,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Right Seated Figure-Four Stretch",
@@ -1549,7 +1613,15 @@
       "caution": "Keep the crossed ankle relaxed rather than pressing on the knee joint itself.",
       "id": "d0a86d1b-6c0c-59c6-9793-7e9537723f71",
       "animationName": "right_seated_figure_four_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Lean your torso forward from the hips",
+        "shape": "pushPull",
+        "anchor": [0.48, 0.30],
+        "angle": -70,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Left Supine Figure-4 Stretch",
@@ -1611,7 +1683,15 @@
       "caution": "Hold onto a wall or chair for balance to avoid falling.",
       "id": "ff6ca2a1-778f-5c6a-b6bb-90f0c0750f42",
       "animationName": "left_standing_figure_4_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Hinge forward at your hips",
+        "shape": "pushPull",
+        "anchor": [0.48, 0.32],
+        "angle": -70,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Right Standing Figure-4 Stretch",
@@ -1633,7 +1713,15 @@
       "caution": "Hold onto a wall or chair for balance to avoid falling.",
       "id": "c7f6c0e7-2b40-54c1-afd3-c2ce51578d79",
       "animationName": "right_standing_figure_4_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Hinge forward at your hips",
+        "shape": "pushPull",
+        "anchor": [0.48, 0.32],
+        "angle": -70,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Pigeon Pose (Right Leg Forward)",
@@ -2255,7 +2343,15 @@
       ],
       "id": "448bf1d9-1284-5c54-b151-6f75290d4df1",
       "animationName": "left_seated_calf_stretch_with_towel.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull your toes back toward your shin",
+        "shape": "pushPull",
+        "anchor": [0.08, 0.70],
+        "angle": 60,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Right Seated Calf Stretch with Towel",
@@ -2276,7 +2372,15 @@
       ],
       "id": "7b5db71f-b938-5df5-b8b3-b6877b7f7e2d",
       "animationName": "right_seated_calf_stretch_with_towel.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull your toes back toward your shin",
+        "shape": "pushPull",
+        "anchor": [0.08, 0.70],
+        "angle": 60,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Kneeling Tibialis Stretch",
@@ -2360,7 +2464,15 @@
       ],
       "id": "3d2d6f07-2542-5d17-ab93-cb3691c274bf",
       "animationName": "shin_and_ankle_mobiliser.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Trace letters in the air with your toes",
+        "shape": "swingArc",
+        "anchor": [0.48, 0.86],
+        "angle": -30,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Ankle Alphabet",
@@ -2412,7 +2524,15 @@
       ],
       "animationName": "wrist_and_forearm_release.mp4",
       "animationIsApproximate": true,
-      "id": "9dd35509-f45a-590a-9e55-ba9d96dfd7f0"
+      "id": "9dd35509-f45a-590a-9e55-ba9d96dfd7f0",
+      "animationCallout": {
+        "text": "Flex and extend your wrist through its range",
+        "shape": "swingArc",
+        "anchor": [0.90, 0.27],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Sun Salutation Warm-Up",
@@ -2709,7 +2829,15 @@
       "caution": "A gentler alternative to Cobra - stop if you feel sharp lower-back pain.",
       "id": "d7bd7336-fad3-53af-a962-e206b7471206",
       "animationName": "sphinx_pose.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Lengthen your lower back, don't crunch it",
+        "shape": "pulse",
+        "anchor": [0.62, 0.50],
+        "angle": 0,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Standing Forward Fold (Ragdoll)",
@@ -2835,7 +2963,15 @@
       ],
       "id": "7aef75e2-2df9-5488-b33f-5d97d2b82aed",
       "animationName": "left_extended_fingers_bicep_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Point your fingers down toward the floor behind you",
+        "shape": "pushPull",
+        "anchor": [0.90, 0.30],
+        "angle": -70,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Right Extended-Fingers Bicep Stretch",
@@ -2856,7 +2992,15 @@
       ],
       "id": "faed889c-53e1-5fb2-9c03-5d63636a3f45",
       "animationName": "right_extended_fingers_bicep_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Point your fingers down toward the floor behind you",
+        "shape": "pushPull",
+        "anchor": [0.08, 0.30],
+        "angle": -110,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Left Behind-Head Strap-Assisted Triceps Stretch",
@@ -2938,7 +3082,15 @@
       "caution": "Keep a soft bend in the knees and hold a wall nearby if you feel unsteady.",
       "id": "fa99dc94-30de-5a86-b422-b9916b19bf85",
       "animationName": "left_standing_crossed_leg_fold.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Reach your hands down toward the floor",
+        "shape": "pushPull",
+        "anchor": [0.5, 0.63],
+        "angle": -90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Right Standing Crossed-Leg Fold",
@@ -2959,7 +3111,15 @@
       "caution": "Keep a soft bend in the knees and hold a wall nearby if you feel unsteady.",
       "id": "ec5ce892-d678-5390-8867-dcf61650f0a3",
       "animationName": "right_standing_crossed_leg_fold.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Reach your hands down toward the floor",
+        "shape": "pushPull",
+        "anchor": [0.5, 0.63],
+        "angle": -90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Left Couch Stretch",
@@ -3165,7 +3325,15 @@
       ],
       "id": "891263c8-0017-5c26-a760-61393090b126",
       "animationName": "left_toe_spread_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Spread your toes apart with your fingers",
+        "shape": "swingArc",
+        "anchor": [0.30, 0.68],
+        "angle": -90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Right Toe Spread & Stretch",
@@ -3185,7 +3353,15 @@
       ],
       "id": "a0bd2dc1-a47f-5dd0-9ce0-e9b11c4ca920",
       "animationName": "right_toe_spread_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Spread your toes apart with your fingers",
+        "shape": "swingArc",
+        "anchor": [0.68, 0.68],
+        "angle": -90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Left Finger Extension Stretch",
@@ -3205,7 +3381,15 @@
       ],
       "id": "aec08e3f-882e-5265-8cf9-fe10dcd6a338",
       "animationName": "left_finger_extension_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull each finger back toward your wrist",
+        "shape": "pushPull",
+        "anchor": [0.78, 0.35],
+        "angle": 150,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Right Finger Extension Stretch",
@@ -3225,7 +3409,15 @@
       ],
       "id": "d685fa43-7816-5d33-8e90-6559bcb7ba9e",
       "animationName": "right_finger_extension_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull each finger back toward your wrist",
+        "shape": "pushPull",
+        "anchor": [0.22, 0.35],
+        "angle": 30,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Equal Breathing (Sama Vritti)",
