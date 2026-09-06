@@ -8,6 +8,12 @@ small `spine` local-Z side-bend, the closest available proxy, alternating
 left and right. Flagged `animationIsApproximate` since the real motion is
 a shift, not a bend.
 
+**Re-audited (2026-09-05): 10deg was imperceptible in the rendered clip** — a
+rest/peak contact sheet showed visually identical frames despite the
+keyframes being genuinely different. Bumped to 20deg, in line with
+`left_standing_side_bend.py`'s proven visible range (12-28deg) for this same
+bone/axis. Confirmed real motion via a rest/peak pixel diff after the fix.
+
 Highlight: Spinal Erectors + Lower Back.
 """
 import sys
@@ -30,9 +36,9 @@ WORKED_KEYWORDS = (['spinal erector', 'lower back'])
 
 POSES = {
     0:   {},
-    30:  {"spine": (0, 0, r(10))},
+    30:  {"spine": (0, 0, r(20))},
     60:  {},
-    90:  {"spine": (0, 0, r(-10))},
+    90:  {"spine": (0, 0, r(-20))},
     120: {},
 }
 
