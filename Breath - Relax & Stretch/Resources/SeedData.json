@@ -6491,7 +6491,15 @@
       ],
       "id": "f1764e04-7d0c-4a45-a1f3-7d8aac82c6e8",
       "animationName": "ankle_circles_for_tibialis_release_left.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Circle your ankle slowly in both directions",
+        "shape": "rotate",
+        "anchor": [0.10, 0.62],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Ankle Circles for Tibialis Release (Right)",
@@ -6511,7 +6519,15 @@
       ],
       "id": "fa2a73fa-772d-4af3-b5c6-0b7fd2767a4b",
       "animationName": "ankle_circles_for_tibialis_release_right.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Circle your ankle slowly in both directions",
+        "shape": "rotate",
+        "anchor": [0.90, 0.62],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Cross-Legged Shin Pull (Left)",
@@ -6531,7 +6547,15 @@
       ],
       "id": "b5956057-9f8d-4ef4-8df0-7defebfe920f",
       "animationName": "cross_legged_shin_pull_left.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull the top of your foot toward your shin",
+        "shape": "pushPull",
+        "anchor": [0.62, 0.68],
+        "angle": 100,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Cross-Legged Shin Pull (Right)",
@@ -6551,7 +6575,15 @@
       ],
       "id": "838d0e43-8479-4b0f-b21d-ab6da41ad164",
       "animationName": "cross_legged_shin_pull_right.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull the top of your foot toward your shin",
+        "shape": "pushPull",
+        "anchor": [0.38, 0.68],
+        "angle": 80,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Standing Quad Stretch Against Wall (Left)",
@@ -7086,7 +7118,15 @@
       ],
       "animationName": "overhead_finger_interlace_stretch.mp4",
       "animationIsApproximate": true,
-      "id": "7b0c0069-1994-4562-8704-6a28008f789f"
+      "id": "7b0c0069-1994-4562-8704-6a28008f789f",
+      "animationCallout": {
+        "text": "Press your palms up toward the ceiling",
+        "shape": "pushPull",
+        "anchor": [0.5, 0.06],
+        "angle": 90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Table-Supported Wrist Extensor Stretch",
@@ -7106,7 +7146,15 @@
       ],
       "animationName": "table_supported_wrist_extensor_stretch.mp4",
       "animationIsApproximate": true,
-      "id": "43aeb83b-46d5-45bc-955e-b2bec4e23244"
+      "id": "43aeb83b-46d5-45bc-955e-b2bec4e23244",
+      "animationCallout": {
+        "text": "Lean your body weight back",
+        "shape": "pushPull",
+        "anchor": [0.55, 0.30],
+        "angle": 30,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Rubber Band Finger Abduction Stretch",
@@ -7126,7 +7174,15 @@
       ],
       "id": "80ef5cdf-2024-40e3-9a10-c5afa7b6c12f",
       "animationName": "rubber_band_finger_abduction_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Spread your fingers against the band's resistance",
+        "shape": "swingArc",
+        "anchor": [0.72, 0.12],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Assisted Wrist Flexion Stretch (Left)",
@@ -7146,7 +7202,15 @@
       "isBilateral": false,
       "animationName": "assisted_wrist_flexion_stretch_left.mp4",
       "animationIsApproximate": true,
-      "id": "12a549c5-01dc-4d7a-88eb-bdc0df8bef88"
+      "id": "12a549c5-01dc-4d7a-88eb-bdc0df8bef88",
+      "animationCallout": {
+        "text": "Press the back of your hand down",
+        "shape": "pushPull",
+        "anchor": [0.13, 0.29],
+        "angle": -60,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Assisted Wrist Flexion Stretch (Right)",
@@ -7166,7 +7230,15 @@
       "isBilateral": false,
       "animationName": "assisted_wrist_flexion_stretch_right.mp4",
       "animationIsApproximate": true,
-      "id": "4a177c16-9ce0-421c-bcbf-7591e295a71f"
+      "id": "4a177c16-9ce0-421c-bcbf-7591e295a71f",
+      "animationCallout": {
+        "text": "Press the back of your hand down",
+        "shape": "pushPull",
+        "anchor": [0.13, 0.29],
+        "angle": -60,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Assisted Wrist Extension Stretch (Left)",
@@ -7186,7 +7258,15 @@
       "isBilateral": false,
       "animationName": "assisted_wrist_extension_stretch_left.mp4",
       "animationIsApproximate": true,
-      "id": "90d6cd17-c285-4a0a-86d7-50f365535b3c"
+      "id": "90d6cd17-c285-4a0a-86d7-50f365535b3c",
+      "animationCallout": {
+        "text": "Curl your fingers back toward your body",
+        "shape": "pushPull",
+        "anchor": [0.13, 0.29],
+        "angle": 60,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Assisted Wrist Extension Stretch (Right)",
@@ -7206,7 +7286,15 @@
       "isBilateral": false,
       "animationName": "assisted_wrist_extension_stretch_right.mp4",
       "animationIsApproximate": true,
-      "id": "bc436b00-944f-416b-bc60-9570a03acba6"
+      "id": "bc436b00-944f-416b-bc60-9570a03acba6",
+      "animationCallout": {
+        "text": "Curl your fingers back toward your body",
+        "shape": "pushPull",
+        "anchor": [0.13, 0.29],
+        "angle": 60,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Seated Foot Flex-and-Point Flow",
@@ -7226,7 +7314,15 @@
       ],
       "id": "37ffc022-5591-4aab-a374-4cba77a70c1b",
       "animationName": "seated_foot_flex_and_point_flow.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Flex your feet back, then point your toes away",
+        "shape": "swingArc",
+        "anchor": [0.06, 0.72],
+        "angle": 180,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Standing Toe Curl Towel Grip (Both Feet)",
@@ -7246,7 +7342,15 @@
       ],
       "id": "533ebef1-f9dc-48a8-a5d4-49fca1e7596a",
       "animationName": "standing_toe_curl_towel_grip_both_feet.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Curl your toes to gather the towel",
+        "shape": "swingArc",
+        "anchor": [0.5, 0.88],
+        "angle": -90,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Cross-Legged Foot Massage & Arch Stretch",
