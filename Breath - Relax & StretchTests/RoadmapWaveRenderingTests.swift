@@ -66,4 +66,17 @@ struct RoadmapWaveRenderingTests {
         let renderer = ImageRenderer(content: RoadmapWave(exercises: exercises, numbered: true).frame(width: 320, height: 260))
         #expect(renderer.cgImage != nil)
     }
+
+    @Test func rendersWithMixedCategoryExercisesWithoutCrashing() {
+        let exercises = [
+            Exercise(name: "Seated Neck Rolls", type: .stretch, targetBodyParts: ["Head"],
+                     durationSeconds: 35, difficulty: 1, instructions: [], cueStyle: .hold),
+            Exercise(name: "Shoulder Roll", type: .stretch, targetBodyParts: ["Left Shoulder"],
+                     durationSeconds: 60, difficulty: 1, instructions: [], cueStyle: .hold),
+            Exercise(name: "Cobra Stretch", type: .stretch, targetBodyParts: ["Left Chest"],
+                     durationSeconds: 45, difficulty: 1, instructions: [], cueStyle: .hold),
+        ]
+        let renderer = ImageRenderer(content: RoadmapWave(exercises: exercises, numbered: true).frame(width: 360, height: 140))
+        #expect(renderer.cgImage != nil)
+    }
 }
