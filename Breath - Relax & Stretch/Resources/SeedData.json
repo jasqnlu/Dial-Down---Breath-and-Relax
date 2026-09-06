@@ -4999,7 +4999,15 @@
       ],
       "animationName": "hook_fist_tendon_glide.mp4",
       "animationIsApproximate": true,
-      "id": "04f2b6d3-2066-4c07-bc0f-e9f5afa6ac2d"
+      "id": "04f2b6d3-2066-4c07-bc0f-e9f5afa6ac2d",
+      "animationCallout": {
+        "text": "Curl your fingertips into a hook, knuckles straight",
+        "shape": "swingArc",
+        "anchor": [0.78, 0.15],
+        "angle": -90,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Fist-to-Fan Tendon Gliding Flow",
@@ -5019,7 +5027,15 @@
       ],
       "id": "168c6d5a-9dd7-422f-9fe7-bcd2a73068da",
       "animationName": "fist_to_fan_tendon_gliding_flow.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Spread your fingers wide, then curl into a fist",
+        "shape": "swingArc",
+        "anchor": [0.78, 0.15],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Towel Scrunch (Toe Flexor Stretch)",
@@ -5039,7 +5055,15 @@
       ],
       "id": "5c343cb3-10dc-489f-bc94-d22db7a17016",
       "animationName": "towel_scrunch_toe_flexor_stretch.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Curl your toes to scrunch the towel toward you",
+        "shape": "swingArc",
+        "anchor": [0.48, 0.88],
+        "angle": -90,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Big Toe Extension Stretch (Left)",
@@ -5059,7 +5083,15 @@
       ],
       "id": "51a6b355-8262-4d33-b825-04e6ae6739aa",
       "animationName": "big_toe_extension_stretch_left.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull your big toe up toward your shin",
+        "shape": "pushPull",
+        "anchor": [0.30, 0.68],
+        "angle": 100,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Big Toe Extension Stretch (Right)",
@@ -5079,7 +5111,15 @@
       ],
       "id": "3b1a68c7-5bd4-4b2f-b141-4d0f58285fb6",
       "animationName": "big_toe_extension_stretch_right.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull your big toe up toward your shin",
+        "shape": "pushPull",
+        "anchor": [0.68, 0.68],
+        "angle": 80,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Seated Toe-to-Shin Stretch (Left)",
@@ -5099,7 +5139,15 @@
       ],
       "id": "b0fad07e-df19-42e4-83db-a9995fd00628",
       "animationName": "seated_toe_to_shin_stretch_left.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull your toes back toward your shin",
+        "shape": "pushPull",
+        "anchor": [0.08, 0.70],
+        "angle": 80,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Seated Toe-to-Shin Stretch (Right)",
@@ -5119,7 +5167,15 @@
       ],
       "id": "f11229f1-5862-4760-89c6-3ea24b9a39dc",
       "animationName": "seated_toe_to_shin_stretch_right.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Pull your toes back toward your shin",
+        "shape": "pushPull",
+        "anchor": [0.08, 0.70],
+        "angle": 80,
+        "startTime": 1.5,
+        "duration": 2.0
+      }
     },
     {
       "name": "Jaw Relaxation Drop",
@@ -5159,7 +5215,15 @@
       "caution": "Use gentle pressure only. Skip if you have a headache disorder that worsens with touch or any scalp or skin condition.",
       "id": "3c39622e-34d2-4f29-b9f0-7bff63b3fc83",
       "animationName": "circular_temple_self_massage.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Massage your temples in small circles",
+        "shape": "rotate",
+        "anchor": [0.64, 0.20],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Figure-8 Eye Tracking",
@@ -5198,7 +5262,15 @@
       "caution": "Use gentle pressure only. Skip if you have a headache disorder that worsens with touch or any scalp or skin condition.",
       "id": "18d4481a-41bf-4d9e-a20b-e752a534946d",
       "animationName": "full_scalp_massage_tension_release.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Massage your scalp in small circles",
+        "shape": "rotate",
+        "anchor": [0.50, 0.10],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "90/90 Hip Switch (Rotation Flow)",
@@ -5242,7 +5314,15 @@
       ],
       "id": "690a7968-ce26-4eda-a09e-b9719a88c178",
       "animationName": "shoulder_pendulum_swing_left.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Let your arm hang and swing gently in circles",
+        "shape": "rotate",
+        "anchor": [0.58, 0.28],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Shoulder Pendulum Swing (Right)",
@@ -5263,7 +5343,15 @@
       ],
       "id": "1e71e0b5-ec20-468e-9f18-775749bf1264",
       "animationName": "shoulder_pendulum_swing_right.mp4",
-      "animationIsApproximate": true
+      "animationIsApproximate": true,
+      "animationCallout": {
+        "text": "Let your arm hang and swing gently in circles",
+        "shape": "rotate",
+        "anchor": [0.42, 0.28],
+        "angle": 0,
+        "startTime": 1.0,
+        "duration": 2.0
+      }
     },
     {
       "name": "Standing Lumbar Side Glide (Lateral Shift)",
