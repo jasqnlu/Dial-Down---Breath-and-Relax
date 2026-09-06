@@ -20,10 +20,9 @@ private extension UIColor {
 }
 
 extension Color {
-    static let luminaPrimary          = Color(UIColor.lumina(light: 0x00685B, dark: 0x6ED8C5))
-    static let luminaOnPrimary        = Color(UIColor.lumina(light: 0xFFFFFF, dark: 0x00382F))
-    static let luminaPrimaryContainer = Color(UIColor.lumina(light: 0x008374, dark: 0x005046))
-    static let luminaMintTint         = Color(UIColor.lumina(light: 0xD7F2EA, dark: 0x17332E))
+    static let luminaPrimary          = Color(UIColor.lumina(light: 0xB5540A, dark: 0xFFB454))
+    static let luminaOnPrimary        = Color(UIColor.lumina(light: 0xFFFFFF, dark: 0x2B1400))
+    static let luminaMintTint         = Color(UIColor.lumina(light: 0xFFE9D2, dark: 0x33230F))
     static let luminaOrange           = Color(UIColor.lumina(light: 0xFF9651, dark: 0x994701))
     static let luminaOnOrange         = Color(UIColor.lumina(light: 0x6F3200, dark: 0xFFDBC8))
     /// A brighter variant of `luminaOrange`, same hue — used only for the
@@ -38,8 +37,8 @@ extension Color {
     static let luminaOnSurface        = Color(UIColor.lumina(light: 0x191C1D, dark: 0xEFF1F2))
     static let luminaOnSurfaceVariant = Color(UIColor.lumina(light: 0x3D4946, dark: 0xBCC9C5))
     static let luminaOutline          = Color(UIColor.lumina(light: 0xE1E3E4, dark: 0x2E3835))
-    static let luminaGradientStart    = Color(UIColor.lumina(light: 0x4AC4C4, dark: 0x2E7D7D))
-    static let luminaGradientEnd      = Color(UIColor.lumina(light: 0x7663F1, dark: 0x4A3D99))
+    static let luminaGradientStart    = Color(UIColor.lumina(light: 0xFFCB84, dark: 0xC97A2E))
+    static let luminaGradientEnd      = Color(UIColor.lumina(light: 0xD9701A, dark: 0x8A4008))
 }
 
 // MARK: - Corner radius scale
