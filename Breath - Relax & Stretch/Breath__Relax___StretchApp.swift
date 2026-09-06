@@ -199,6 +199,7 @@ struct BreathRelaxStretchApp: App {
             exercise.seedID = raw["id"] as? String
             exercise.localVideoName = raw["localVideoName"] as? String
             exercise.animationIsApproximate = raw["animationIsApproximate"] as? Bool ?? false
+            exercise.animationCallout = AnimationCallout.parse(fromRawExercise: raw)
             if let posesRaw = raw["poses"],
                let posesData = try? JSONSerialization.data(withJSONObject: posesRaw) {
                 exercise.posesData = posesData
@@ -233,6 +234,7 @@ struct BreathRelaxStretchApp: App {
         migrateSeedToV9IfNeeded()
         migrateSeedToV10IfNeeded()
         migrateSeedToV11IfNeeded()
+        migrateSeedToV12IfNeeded()
         removeRetiredBodyMapStorage()
     }
 
@@ -371,6 +373,20 @@ struct BreathRelaxStretchApp: App {
             }
         }
         seedDataVersion = max(seedDataVersion, 11)
+    }
+
+    /// Like `migrateSeedToV10IfNeeded`, NOT gated behind a one-time version
+    /// bump: `animationCallout`s are authored incrementally, batch by batch,
+    /// so a gated migration would only ever pick up whatever was authored as
+    /// of the version-bump launch.
+    private func migrateSeedToV12IfNeeded() {
+        if let rawExercises = loadSeedExercises() {
+            let context = sharedModelContainer.mainContext
+            if SeedMigrator.migrateV12(context: context, rawExercises: rawExercises) {
+                try? context.save()
+            }
+        }
+        seedDataVersion = max(seedDataVersion, 12)
     }
 
     /// One-line cleanup of retired body-map marking storage. Unlike the

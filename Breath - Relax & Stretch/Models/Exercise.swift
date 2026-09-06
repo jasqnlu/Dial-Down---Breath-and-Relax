@@ -100,6 +100,38 @@ final class Exercise {
     /// accurate; the seed JSON only needs to mark the known exceptions.
     var animationIsApproximate: Bool = false
 
+    /// Raw JSON-encoded storage for `animationCallout` — a primitive `Data`
+    /// property, not `AnimationCallout?` directly, for the same reason
+    /// `posesData`/`breathPatternData` are: SwiftData's lightweight migration
+    /// cannot safely decode a newly-added non-primitive property (here, a
+    /// struct containing an enum and a `CGPoint`) on pre-existing on-disk
+    /// rows. Empty `Data()` (the default) means "no callout authored" and
+    /// decodes to `nil`.
+    var animationCalloutData: Data = Data()
+
+    /// An authored flash-an-arrow-and-instruction overlay for this exercise's
+    /// animation, shown by `AnimationCalloutOverlay` when set. Takes priority
+    /// over the generic `animationIsApproximate` disclaimer — see
+    /// `showsApproximateAnimationNote`. `nil` for every exercise until
+    /// authored (see SeedData.json's "animationCallout" key) and for any
+    /// unparseable raw storage, same defensive treatment `poses`/`breathPattern` get.
+    var animationCallout: AnimationCallout? {
+        get { try? JSONDecoder().decode(AnimationCallout.self, from: animationCalloutData) }
+        set {
+            guard let newValue else { animationCalloutData = Data(); return }
+            animationCalloutData = (try? JSONEncoder().encode(newValue)) ?? Data()
+        }
+    }
+
+    /// Whether the media card should show the static "may not be 100%
+    /// accurate" disclaimer (`AnimationAccuracyNote`). Implements the
+    /// resolution order from the animation-callout spec: an authored
+    /// `animationCallout` replaces this note entirely (no double messaging);
+    /// otherwise it shows exactly when the legacy bool flag is set.
+    var showsApproximateAnimationNote: Bool {
+        animationCallout == nil && animationIsApproximate
+    }
+
     /// Resolves a bundle-relative clip name to its URL — nil when the name is
     /// unset/empty OR the file isn't bundled, so the UI can always fall back to
     /// the placeholder card instead of a broken player.
