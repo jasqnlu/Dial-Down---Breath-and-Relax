@@ -462,7 +462,7 @@ struct TodayView: View {
         return GlassEffectContainer {
         ZStack(alignment: .topTrailing) {
             RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous)
-                .glassEffect(.clear.tint(Color.luminaPrimary.opacity(0.16)),
+                .glassEffect(.regular.tint(Color.luminaPrimary.opacity(0.16)),
                              in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
 
             // The breathing halo — same cadence as the sign-in screen. The
