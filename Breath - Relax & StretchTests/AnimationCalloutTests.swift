@@ -56,6 +56,26 @@ struct AnimationCalloutTests {
         #expect(c.opacity(atLoopTime: 3.5) == 0)
     }
 
+    @Test func opacityFadesOutCorrectlyEvenPastTheAuthoredClipLength() {
+        // opacity(atLoopTime:) is a pure function of (startTime, duration) —
+        // it has no notion of the video's 4s clip length. If a callout's
+        // window (startTime + duration) is ever authored to run past the
+        // clip's end, the player's own loop-restart (seek to .zero) would
+        // cut the fade off before this function ever reaches its fade-out
+        // branch — a authoring mistake, not a bug in this function. This
+        // test pins down that the math itself still behaves correctly for
+        // a window like that, so a future change to the fade math can't
+        // silently break the "still fades out gracefully if given the
+        // chance" guarantee, even though no shipped callout hits this case
+        // today (see SeedData.json's authored samples, all ending <= 3.5s).
+        let c = makeCallout(startTime: 3.0, duration: 2.0) // end = 5.0, past a 4s clip
+        #expect(c.opacity(atLoopTime: 3.0) == 0)
+        #expect(c.opacity(atLoopTime: 3.15) > 0 && c.opacity(atLoopTime: 3.15) < 1)
+        #expect(c.opacity(atLoopTime: 4.0) == 1) // holding, well past the clip's own 4s length
+        #expect(c.opacity(atLoopTime: 4.85) > 0 && c.opacity(atLoopTime: 4.85) < 1)
+        #expect(c.opacity(atLoopTime: 5.0) == 0)
+    }
+
     @Test func opacityHandlesShortDurationWithoutOvershoot() {
         // A callout shorter than 2x the fade duration should never exceed 1
         // or go negative — fade-in/out portions get clamped to duration/2.

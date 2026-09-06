@@ -26,7 +26,11 @@ struct ExerciseMediaCard: View {
                     .clipShape(RoundedRectangle(cornerRadius: LuminaRadius.panel))
                     .padding(.horizontal)
                     .overlay(alignment: .topLeading) {
-                        if let callout = exercise.animationCallout {
+                        // Callouts are authored against the generated
+                        // animation's timing/anchor — gated the same way as
+                        // the legacy disclaimer below so one can never render
+                        // over a filmed clip it wasn't positioned for.
+                        if exercise.demoIsAnimation, let callout = exercise.animationCallout {
                             GeometryReader { proxy in
                                 // Clamp inward from the raw anchor fraction so
                                 // an anchor authored near an edge (e.g. a hand

@@ -17,21 +17,27 @@ struct AnimationCalloutOverlay: View {
     private let arrowSize: CGFloat = 44
 
     var body: some View {
-        // Center-aligned so the arrow — usually the wider pill's caption is
-        // what pushes the VStack's width — stays centered on `anchor`
-        // (positioned by the caller) instead of drifting to whichever side
-        // `.leading` would pin it to.
-        VStack(alignment: .center, spacing: 6) {
-            arrow
-                .frame(width: arrowSize, height: arrowSize)
-                .accessibilityHidden(true)
-            textPill
-                .accessibilityHidden(true)
+        // The accessibility element lives on this outer, never-faded
+        // container — SwiftUI drops a view from the accessibility tree once
+        // its OWN opacity hits 0, so the fade below must be scoped to the
+        // purely visual VStack, not to anything carrying the label. Without
+        // this split, VoiceOver would only see the instruction during the
+        // ~2-of-4-second visible window instead of "regardless of playback
+        // position" as intended.
+        ZStack {
+            // Center-aligned so the arrow — usually the wider pill's caption
+            // is what pushes the VStack's width — stays centered on `anchor`
+            // (positioned by the caller) instead of drifting to whichever
+            // side `.leading` would pin it to.
+            VStack(alignment: .center, spacing: 6) {
+                arrow
+                    .frame(width: arrowSize, height: arrowSize)
+                textPill
+            }
+            .opacity(opacity)
+            .accessibilityHidden(true)
         }
-        .opacity(opacity)
         .accessibilityElement(children: .ignore)
-        // Exposed regardless of the fade's current opacity — VoiceOver users
-        // get the instruction independent of playback position.
         .accessibilityLabel(callout.text)
     }
 
