@@ -22,12 +22,14 @@ struct PoseGlyphIcon: View {
 
     /// Resolves the archetype + mirror flag from the exercise itself —
     /// the call site only needs to know the exercise and its category.
+    /// Colored per-exercise (not by category) so exercises sharing a
+    /// category don't render as identical glyphs — see `Color.forExercise`.
     init(exercise: Exercise, category: ExerciseCategory, size: CGFloat = 96) {
         let (id, mirrored) = PoseArchetypeMapping.resolve(for: exercise)
         self.init(
             archetype: PoseArchetypeLibrary.all[id] ?? PoseArchetypeLibrary.all[.standingNeutral]!,
             mirrored: mirrored,
-            color: category.accentColor,
+            color: .forExercise(named: exercise.name),
             size: size,
             motion: MotionAccent.resolve(for: exercise)
         )
