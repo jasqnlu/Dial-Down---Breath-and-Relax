@@ -8,6 +8,13 @@ import SwiftData
 /// instead of Customize's single "Begin".
 struct MiniRoutineReviewView: View {
     let pickedExercises: [Exercise]
+    /// Which HomeView tab this picking session started from — threaded into
+    /// the Customize sheets below so their own "Add Exercises" cross-tab
+    /// round trip (see `ExercisePickingSession.Context.originTab`) returns
+    /// to the tab that actually opened this screen, not always Exercises.
+    /// Defaults to 2 (Exercises) since that tab's own "Select" button was
+    /// this view's original and, for a while, only entry point.
+    var originTab: Int = 2
     /// Called once one of the three destinations actually completes (a
     /// routine was saved, or the mini-routine session was dismissed) so the
     /// caller can clear the picking session. Not called if the user just
@@ -88,7 +95,7 @@ struct MiniRoutineReviewView: View {
                     showsPinToggle: false,
                     primaryActionLabel: "Save Routine",
                     primaryActionIcon: "checkmark",
-                    pickingOriginTab: 2, // Exercises tab, where this pick started
+                    pickingOriginTab: originTab,
                     showsAddExercisesButton: false
                 ) { name, exercises, _, durationOverrides in
                     let routine = Routine(
@@ -122,7 +129,7 @@ struct MiniRoutineReviewView: View {
                     isPinned: false,
                     showsPinToggle: false,
                     primaryActionLabel: "Start",
-                    pickingOriginTab: 2,
+                    pickingOriginTab: originTab,
                     showsAddExercisesButton: false
                 ) { _, exercises, _, durationOverrides in
                     pendingMiniSessionExercises = exercises
