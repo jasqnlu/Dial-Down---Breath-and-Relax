@@ -110,43 +110,18 @@ struct RegionExerciseResolver {
 
 // MARK: - Filtered exercise list for one or more body parts
 
-/// What the "Next" → Customize → "Start" hand-off carries forward into the
-/// session sheet. `Identifiable` so it can drive `.sheet(item:)`, which
-/// hands this value to the sheet's content closure as a parameter rather
-/// than having that closure read `@State` from `self` — the latter was
-/// observed to sometimes present against a stale, pre-update snapshot of
-/// that state (an empty exercise list, even after the state had already
-/// been set correctly).
-private struct MiniRoutineSessionPayload: Identifiable {
-    let id = UUID()
-    let exercises: [Exercise]
-    let durationOverrides: [UUID: Int]
-}
-
 struct BodyPartExercisesView: View {
     let bodyParts: [String]
     @Query private var allExercises: [Exercise]
-    @StateObject private var miniRoutine = MiniRoutineState()
+    // Same cross-tab picking session the Exercises tab's own "Select" mode
+    // uses (see `ExerciseListView`) — this screen used to keep its own
+    // standalone `MiniRoutineState` and could only ever build a throwaway
+    // mini routine. Sharing `ExercisePickingSession` instead gets Body Map
+    // the exact same Select/Cancel toggle, picking bar, and three-way
+    // "Create New Routine / Add to Existing Routine / Start Mini-Routine"
+    // review screen the Exercises tab has, for free.
+    @EnvironmentObject private var pickingSession: ExercisePickingSession
     @State private var selectedExercise: Exercise?
-    // "Next" opens the same customize-and-reorder screen Today's Customize
-    // and the standalone mini-routine review's "Start Mini-Routine" use
-    // (CustomizeRoutineView) — see that view's doc comment — instead of
-    // jumping straight into SessionPlayerView the way this used to.
-    @State private var showingCustomizeForMiniRoutine = false
-    /// What Customize returned, carried forward to the session sheet once
-    /// Customize has fully dismissed (two sibling sheet-presentation
-    /// triggers can't both flip in the same tick). Driving the session
-    /// sheet via `.sheet(item:)` — rather than a separate Bool plus this
-    /// array read inside the content closure — matters here: a `.sheet
-    /// (isPresented:)` content closure that reads `@State` via `self`
-    /// was observed (logged) to sometimes evaluate against a stale
-    /// pre-update snapshot of that state, presenting with an empty
-    /// exercise list even though the state had already been set
-    /// correctly by this point. `.sheet(item:)` hands the payload to the
-    /// closure as a parameter instead, so it can't go stale.
-    @State private var pendingMiniRoutineSession: MiniRoutineSessionPayload?
-    /// Drives the session sheet itself via `.sheet(item:)`.
-    @State private var miniRoutineSession: MiniRoutineSessionPayload?
 
     private var isShowingDetail: Binding<Bool> {
         Binding(get: { selectedExercise != nil }, set: { if !$0 { selectedExercise = nil } })
@@ -193,16 +168,36 @@ struct BodyPartExercisesView: View {
         }
         .navigationTitle(navTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            // Mirrors ExerciseListView's own Select/Cancel toggle exactly —
+            // same environment object, same "toggling while already active
+            // cancels the picks" behavior. Placed in the nav bar here since
+            // this screen (reached only after a region is picked) has no
+            // header row of its own to host it in.
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    if pickingSession.isActive {
+                        pickingSession.cancel()
+                    } else {
+                        pickingSession.begin()
+                    }
+                } label: {
+                    Label(pickingSession.isActive ? "Cancel" : "Select",
+                          systemImage: pickingSession.isActive ? "xmark.circle" : "checkmark.circle")
+                }
+                .accessibilityIdentifier("bodyMapSelectToggle")
+            }
+        }
         // `.safeAreaInset` stacks bottom-up in application order: the LAST
         // one applied claims the outermost slot, right at the screen edge —
         // exactly the 80pt zone the real floating `CustomTabBar` overlay
-        // occupies. `miniRoutineBar` must be applied BEFORE
+        // occupies. `PickingBar` must be applied BEFORE
         // `.floatingTabBarClearance()` so it lands just above that reserved
         // zone instead of underneath the tab bar (where its taps would be
         // swallowed by the tab bar sitting on top of it).
         .safeAreaInset(edge: .bottom) {
-            if !miniRoutine.exercises.isEmpty {
-                miniRoutineBar
+            if pickingSession.isActive {
+                PickingBar(originTab: 1) // Body tab
             }
         }
         .floatingTabBarClearance()
@@ -210,32 +205,6 @@ struct BodyPartExercisesView: View {
             if let selectedExercise {
                 ExerciseDetailView(exercise: selectedExercise)
             }
-        }
-        .sheet(isPresented: $showingCustomizeForMiniRoutine, onDismiss: {
-            // Customize has now fully dismissed — safe to present the
-            // session sheet. Handing it the payload as a value (not
-            // re-reading `@State` from inside its own content closure)
-            // is what makes `.sheet(item:)` reliable here; see
-            // `pendingMiniRoutineSession`'s doc comment.
-            if let payload = pendingMiniRoutineSession {
-                miniRoutineSession = payload
-                pendingMiniRoutineSession = nil
-            }
-        }) {
-            CustomizeRoutineView(
-                title: "Mini Routine",
-                exercises: miniRoutine.exercises,
-                isPinned: false,
-                showsPinToggle: false,
-                primaryActionLabel: "Start",
-                pickingOriginTab: 1, // Body tab
-                showsAddExercisesButton: false
-            ) { _, exercises, _, durationOverrides in
-                pendingMiniRoutineSession = MiniRoutineSessionPayload(exercises: exercises, durationOverrides: durationOverrides)
-            }
-        }
-        .sheet(item: $miniRoutineSession) { payload in
-            SessionPlayerView(exercises: payload.exercises, durationOverrides: payload.durationOverrides)
         }
     }
 
@@ -250,11 +219,15 @@ struct BodyPartExercisesView: View {
                 ForEach(exercises, id: \.uuid) { exercise in
                     ExerciseGridTile(
                         exercise: exercise,
-                        badge: .add(isSelected: miniRoutine.contains(exercise))
+                        badge: pickingSession.isActive ? .add(isSelected: pickingSession.isPicked(exercise)) : .none
                     ) {
-                        selectedExercise = exercise
+                        if pickingSession.isActive {
+                            pickingSession.toggle(exercise)
+                        } else {
+                            selectedExercise = exercise
+                        }
                     } onBadgeTap: {
-                        miniRoutine.toggle(exercise)
+                        if pickingSession.isActive { pickingSession.toggle(exercise) }
                     }
                 }
             }
@@ -265,33 +238,6 @@ struct BodyPartExercisesView: View {
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
         }
-    }
-
-    private var miniRoutineBar: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text("\(miniRoutine.exercises.count) selected")
-                    .font(.luminaCardTitle)
-                let m = miniRoutine.totalSeconds / 60, s = miniRoutine.totalSeconds % 60
-                Text("\(m):\(String(format: "%02d", s)) mini routine")
-                    .font(.luminaCaption)
-                    .foregroundStyle(Color.luminaOnSurfaceVariant)
-            }
-            Spacer(minLength: 8)
-            Button {
-                showingCustomizeForMiniRoutine = true
-            } label: {
-                HStack(spacing: 6) {
-                    Text("Next")
-                    Image(systemName: "chevron.right")
-                }
-            }
-            .buttonStyle(LuminaPillButtonStyle(kind: .prominent, compact: true))
-        }
-        .padding(14)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: LuminaRadius.card, style: .continuous))
-        .padding(.horizontal)
-        .padding(.bottom, 8)
     }
 
     // A single tapped region is named directly ("Spinal Erectors") rather
