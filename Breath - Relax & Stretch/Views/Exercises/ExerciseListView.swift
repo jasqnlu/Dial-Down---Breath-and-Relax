@@ -268,6 +268,12 @@ struct ExerciseListView: View {
 /// action button stay separate elements so "Done" remains individually
 /// focusable and actionable for VoiceOver.
 struct PickingBar: View {
+    /// Which HomeView tab hosts the screen this bar is attached to —
+    /// forwarded to `MiniRoutineReviewView` so its own Customize sheets
+    /// route "Add Exercises" back to the right tab. Defaults to 2
+    /// (Exercises), this bar's original home; `BodyPartExercisesView`
+    /// passes 1 (Body) since it hosts the same bar.
+    var originTab: Int = 2
     @EnvironmentObject private var pickingSession: ExercisePickingSession
     @State private var showingReview = false
 
@@ -308,7 +314,7 @@ struct PickingBar: View {
         .padding(.vertical, 12)
         .background(.regularMaterial)
         .sheet(isPresented: $showingReview) {
-            MiniRoutineReviewView(pickedExercises: pickingSession.picked) {
+            MiniRoutineReviewView(pickedExercises: pickingSession.picked, originTab: originTab) {
                 pickingSession.cancel()
             }
         }
