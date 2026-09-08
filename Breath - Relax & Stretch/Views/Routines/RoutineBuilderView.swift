@@ -97,68 +97,83 @@ struct RoutineBuilderView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section {
-                    TextField("e.g. Morning Wake-Up", text: $routineName)
-                        .font(.luminaBody)
-                } header: {
-                    Text("Routine Name")
-                        .font(.luminaLabel)
-                        .foregroundStyle(Color.luminaOnSurfaceVariant)
-                }
-
-                Section {
-                    ForEach(selectedIDs.indices, id: \.self) { index in
-                        if let exercise = exercises.first(where: { $0.uuid == selectedIDs[index] }) {
-                            exerciseRow(index: index, exercise: exercise)
-                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                                .reorderableByBorder(index: index, state: reorderState) {
-                                    selectedIDs.move(fromOffsets: $0, toOffset: $1)
-                                }
-                        }
-                    }
-
-                    if allowsCrossTabAddExercise {
-                        Button {
-                            pickingSession.begin(context: .init(
-                                title: routineName,
-                                isPinned: false,
-                                baseExercises: selectedExercises,
-                                originTab: pickingOriginTab,
-                                editingRoutineID: routineToEdit?.uuid,
-                                durationOverrides: durationOverrides
-                            ))
-                            dismiss()
-                            // Same "dismiss + switch to Exercises tab" need
-                            // CustomizeRoutineView's own Add Exercises button
-                            // has — reusing the existing notification rather
-                            // than adding a second one.
-                            NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
-                        } label: {
-                            Label("Add Exercise", systemImage: "plus.circle")
-                                .font(.luminaBody)
-                                .foregroundStyle(Color.luminaPrimary)
-                        }
-                    }
-                } header: {
-                    HStack {
-                        Text("Exercises")
+            // ZStack, not Form directly — see CustomizeRoutineView's
+            // matching comment: the dragged row's floating ghost needs to
+            // be a true sibling of the list, not a `.overlay()` attached
+            // to it, since Form/List host each row in its own UIKit-backed
+            // cell that composites above a same-list overlay regardless
+            // of z-order.
+            ZStack {
+                Form {
+                    Section {
+                        TextField("e.g. Morning Wake-Up", text: $routineName)
+                            .font(.luminaBody)
+                    } header: {
+                        Text("Routine Name")
                             .font(.luminaLabel)
                             .foregroundStyle(Color.luminaOnSurfaceVariant)
-                        Spacer()
-                        if !selectedIDs.isEmpty {
-                            Text(totalDuration < 60 ? "\(totalDuration)s total" : "\(totalDuration / 60)m total")
-                                .font(.luminaCaption)
-                                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                    }
+
+                    Section {
+                        ForEach(selectedIDs.indices, id: \.self) { index in
+                            if let exercise = exercises.first(where: { $0.uuid == selectedIDs[index] }) {
+                                exerciseRow(index: index, exercise: exercise)
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                                    .listRowBackground(Color.clear)
+                                    .listRowSeparator(.hidden)
+                                    .reorderableByBorder(index: index, state: reorderState) {
+                                        selectedIDs.move(fromOffsets: $0, toOffset: $1)
+                                    }
+                            }
                         }
+
+                        if allowsCrossTabAddExercise {
+                            Button {
+                                pickingSession.begin(context: .init(
+                                    title: routineName,
+                                    isPinned: false,
+                                    baseExercises: selectedExercises,
+                                    originTab: pickingOriginTab,
+                                    editingRoutineID: routineToEdit?.uuid,
+                                    durationOverrides: durationOverrides
+                                ))
+                                dismiss()
+                                // Same "dismiss + switch to Exercises tab" need
+                                // CustomizeRoutineView's own Add Exercises button
+                                // has — reusing the existing notification rather
+                                // than adding a second one.
+                                NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
+                            } label: {
+                                Label("Add Exercise", systemImage: "plus.circle")
+                                    .font(.luminaBody)
+                                    .foregroundStyle(Color.luminaPrimary)
+                            }
+                        }
+                    } header: {
+                        HStack {
+                            Text("Exercises")
+                                .font(.luminaLabel)
+                                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                            Spacer()
+                            if !selectedIDs.isEmpty {
+                                Text(totalDuration < 60 ? "\(totalDuration)s total" : "\(totalDuration / 60)m total")
+                                    .font(.luminaCaption)
+                                    .foregroundStyle(Color.luminaOnSurfaceVariant)
+                            }
+                        }
+                    }
+                }
+                .scrollContentBackground(.hidden)
+                .background(Color.luminaSurface)
+                .listRowBackground(Color.luminaCardFill)
+
+                ReorderDragOverlay(state: reorderState) { index in
+                    if selectedIDs.indices.contains(index),
+                       let exercise = exercises.first(where: { $0.uuid == selectedIDs[index] }) {
+                        exerciseRow(index: index, exercise: exercise)
                     }
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(Color.luminaSurface)
-            .listRowBackground(Color.luminaCardFill)
             .navigationTitle(isEditing ? "Edit Routine" : "New Routine")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
