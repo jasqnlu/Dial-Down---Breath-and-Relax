@@ -277,10 +277,20 @@ private struct ReorderableByBorder: ViewModifier {
             // edge), a plain DragGesture here would compete with the
             // List's own scroll gesture on every scroll swipe. Requiring
             // `longPressMinimumDuration` of stillness first means a scroll
-            // (touch moving right away) never satisfies the long press,
-            // so the touch falls through to the List's scroll gesture
-            // untouched — reordering only engages once the hold succeeds.
-            .gesture(
+            // (touch moving right away) never satisfies the long press, so
+            // by the time it fails the touch is free for the List's own
+            // scroll gesture to take over.
+            //
+            // `.simultaneousGesture`, not `.gesture` — a plain `.gesture`
+            // claims the touch exclusively over ANCESTOR gestures (the
+            // List's own scroll pan) the instant it starts trying to
+            // recognize, which blocked scrolling entirely: swiping over a
+            // row never scrolled the list, even though the long press
+            // itself correctly failed and no reorder-drag ever started.
+            // `.simultaneousGesture` lets both recognize concurrently, so
+            // the List's scroll respond immediately to a swipe exactly as
+            // it would with no gesture on the row at all.
+            .simultaneousGesture(
                 LongPressGesture(minimumDuration: longPressMinimumDuration)
                     .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .global))
                     .onChanged { value in
