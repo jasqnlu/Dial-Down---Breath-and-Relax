@@ -55,9 +55,6 @@ struct CustomizeRoutineView: View {
     @State private var durationOverrides: [UUID: Int] = [:]
     @State private var routineName: String
     @EnvironmentObject private var pickingSession: ExercisePickingSession
-    /// Shared drag state for the exercise list's border-only drag handle
-    /// (see `reorderableByBorder`/`RowReorderState`).
-    @StateObject private var reorderState = RowReorderState()
 
     init(
         title: String, exercises: [Exercise], isPinned: Bool,
@@ -109,77 +106,66 @@ struct CustomizeRoutineView: View {
 
     var body: some View {
         NavigationStack {
-            // ZStack, not the List directly: the dragged row's floating
-            // ghost (ReorderDragOverlay) needs to be a true sibling of the
-            // List, not a `.overlay()` attached to it — List hosts each
-            // row in its own UIKit-backed cell, and those cells composite
-            // above a same-list overlay regardless of its z-order, so the
-            // ghost rendered (confirmed correct position via logging) but
-            // stayed invisible behind the rows. A ZStack sibling is a
-            // separate layer stacked on top, outside the List's own
-            // compositing.
-            ZStack {
-                // A List (rather than the old plain ScrollView+VStack) so
-                // the exercise section can host drag-to-reorder rows (via
-                // .reorderableByBorder, not List's own .onMove — see
-                // LuminaTheme.swift) — same mechanism RoutineBuilderView's
-                // own exercise list already uses. The summary/roadmap/
-                // pin-toggle block above it rides along as a second,
-                // non-reorderable section.
-                List {
-                    Section {
-                        if showsNameField {
-                            TextField("Routine name", text: $routineName)
-                                .font(.luminaBody)
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                        }
-
-                        Text("\(currentExercises.count) EXERCISE\(currentExercises.count == 1 ? "" : "S") · \(totalMinutes) MIN")
-                            .font(.luminaCaption)
-                            .foregroundStyle(Color.luminaOnSurfaceVariant)
+            // A List (rather than the old plain ScrollView+VStack) so the
+            // exercise section can use List's own native `.onMove`
+            // drag-to-reorder — same mechanism RoutineBuilderView's own
+            // exercise list already uses. That's a deliberate choice over
+            // a hand-built drag gesture: a custom LongPressGesture+
+            // DragGesture combo (tried first, to support picking a row up
+            // from anywhere rather than just an edge) kept fighting the
+            // List's own scroll gesture — `.simultaneousGesture` didn't
+            // reliably extend simultaneous recognition to List's internal
+            // scroll pan, so swiping over a row to scroll silently stopped
+            // working. `.onMove` is Apple's own mechanism, engineered to
+            // coexist with scrolling correctly (the same one Reminders/
+            // Notes/Mail use) — a swipe scrolls, a brief hold lifts the
+            // row, and the lifted row is drawn on top correctly, all for
+            // free. The summary/roadmap/pin-toggle block above it rides
+            // along as a second, non-reorderable section.
+            List {
+                Section {
+                    if showsNameField {
+                        TextField("Routine name", text: $routineName)
+                            .font(.luminaBody)
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
-
-                        RoadmapWave(exercises: currentExercises, numbered: true, durationOverrides: durationOverrides)
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-
-                        if showsPinToggle {
-                            saveToggleRow
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                        }
                     }
 
-                    Section {
-                        ForEach(Array(currentExercises.enumerated()), id: \.element.uuid) { index, exercise in
-                            exerciseRow(index: index, exercise: exercise)
-                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                                // Stable, index-based (not name-based) hook
-                                // for UI tests to drag-reorder by — a
-                                // name-based query would break once two
-                                // rows swap places.
-                                .accessibilityIdentifier("customizeExerciseRow-\(index)")
-                                .reorderableByBorder(index: index, state: reorderState) {
-                                    currentExercises.move(fromOffsets: $0, toOffset: $1)
-                                }
-                        }
+                    Text("\(currentExercises.count) EXERCISE\(currentExercises.count == 1 ? "" : "S") · \(totalMinutes) MIN")
+                        .font(.luminaCaption)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+
+                    RoadmapWave(exercises: currentExercises, numbered: true, durationOverrides: durationOverrides)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+
+                    if showsPinToggle {
+                        saveToggleRow
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     }
                 }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
-                .background(Color.luminaSurface)
 
-                ReorderDragOverlay(state: reorderState) { index in
-                    if currentExercises.indices.contains(index) {
-                        exerciseRow(index: index, exercise: currentExercises[index])
+                Section {
+                    ForEach(Array(currentExercises.enumerated()), id: \.element.uuid) { index, exercise in
+                        exerciseRow(index: index, exercise: exercise)
+                            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            // Stable, index-based (not name-based) hook for
+                            // UI tests to drag-reorder by — a name-based
+                            // query would break once two rows swap places.
+                            .accessibilityIdentifier("customizeExerciseRow-\(index)")
                     }
+                    .onMove { currentExercises.move(fromOffsets: $0, toOffset: $1) }
                 }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(Color.luminaSurface)
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
