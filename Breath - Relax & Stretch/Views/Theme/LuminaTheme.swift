@@ -112,14 +112,7 @@ extension View {
     }
 }
 
-// MARK: - Border-only drag-to-reorder handle
-//
-// SwiftUI's List `.onMove` makes a row's entire content the long-press
-// drag target, which competes with interactive content inside a
-// `.luminaCard` row (duration stepper, remove button) and picks up on
-// any incidental long-press. This restricts the drag *pickup* gesture to
-// a thin band around the card's rounded-rect edge — via `.contentShape`
-// on a stroked outline.
+// MARK: - Drag-to-reorder handle
 //
 // Deliberately NOT built on any system drag session (`.onDrag`/`.onDrop`,
 // nor `.draggable`/`.dropDestination`) — both were tried first and, on
@@ -127,10 +120,25 @@ extension View {
 // state indefinitely with no reorder ever applying, evidenced by
 // file-based logging (the drag itself started fine each time; the
 // session's drop/completion side never fired reliably). This is a plain
-// `DragGesture` instead: it directly offsets the row under the finger and
-// calls `move` the moment the touch crosses into another row's laid-out
-// frame — no OS-level drag/drop lifecycle involved, so there's nothing to
-// get stuck.
+// `DragGesture` instead: it hides the row in place and calls `move` the
+// moment the touch crosses into another row's laid-out frame — no OS-level
+// drag/drop lifecycle involved, so there's nothing to get stuck.
+//
+// The dragged row can be picked up from anywhere in its content (not just
+// an edge) — a `minimumDistance` of a few points is enough to keep simple
+// taps on the row's own buttons (duration stepper, remove) from being
+// swallowed as drag starts, since those resolve as taps before any
+// meaningful movement occurs.
+//
+// The floating copy that follows the finger is rendered via
+// `ReorderDragOverlay`, placed as a ZStack sibling of the List (see call
+// sites) rather than via `.zIndex` on the row itself — `.zIndex` doesn't
+// reliably win across List row boundaries, since each row is its own
+// UIKit-hosted cell and the List's own cell ordering decides on-screen
+// stacking, not SwiftUI's declarative z-order. Rendering the dragged
+// row's copy in a sibling overlay above the whole List sidesteps that
+// entirely: it's guaranteed to be topmost because nothing in the List can
+// draw above its container's overlay.
 
 /// Shared drag state for one reorderable list — one `@StateObject` per
 /// screen, referenced (not copied) by every row's `reorderableByBorder`
@@ -148,12 +156,11 @@ final class RowReorderState: ObservableObject {
 }
 
 extension View {
-    /// Makes this `.luminaCard`-styled row draggable to reorder, but only
-    /// from a band around its rounded-rect edge rather than anywhere in
-    /// its interior. `move` takes the same `(IndexSet, Int) -> Void`
-    /// signature List's own `.onMove` uses, so an existing
-    /// `.onMove { array.move(fromOffsets: $0, toOffset: $1) }` closure
-    /// can be reused as-is.
+    /// Makes this `.luminaCard`-styled row draggable to reorder, picked up
+    /// from anywhere in its content. `move` takes the same
+    /// `(IndexSet, Int) -> Void` signature List's own `.onMove` uses, so
+    /// an existing `.onMove { array.move(fromOffsets: $0, toOffset: $1) }`
+    /// closure can be reused as-is.
     func reorderableByBorder(
         index: Int,
         state: RowReorderState,
@@ -161,6 +168,64 @@ extension View {
         move: @escaping (IndexSet, Int) -> Void
     ) -> some View {
         modifier(ReorderableByBorder(index: index, state: state, cornerRadius: cornerRadius, move: move))
+    }
+
+}
+
+/// Draws the row currently being dragged (if any) as a floating copy that
+/// tracks the touch, always on top of the whole list. `rowContent` builds
+/// that row FRESH, live, each time — the same row-building function/
+/// closure the caller already uses inside its `List`/`Form` — rather than
+/// handing this a pre-captured copy of the row. Two ways of pre-capturing
+/// a copy were tried and both failed to render once moved outside the
+/// List: an `AnyView` snapshot of the row's `content` rendered as nothing
+/// at all (not even its own background/border showed, while a plain
+/// `Circle()` in the identical position rendered fine — isolating the
+/// failure to the relocated view itself), and `ImageRenderer(content:)`
+/// consistently returned `nil` for `.uiImage`. A fresh live call sidesteps
+/// both: it's just the same view-building code invoked again, in a place
+/// that already has full access to whatever environment it needs, with no
+/// view identity or snapshot to carry across.
+///
+/// Place this as a ZStack SIBLING of the `List`/`Form` — not a
+/// `.overlay()` modifier attached to it — sharing the same
+/// `RowReorderState` passed to each row's `reorderableByBorder`.
+/// `.overlay()` on the List itself doesn't work: List hosts each row in
+/// its own UIKit-backed cell, and those cells composite above a same-list
+/// `.overlay()` regardless of the overlay's own z-order, so content
+/// rendered there stays invisible behind the row cells (confirmed via
+/// logging — the view's `body` was evaluating with correct content/
+/// position every time, it just never appeared on screen). A ZStack
+/// sibling is a wholly separate layer stacked on top, outside the List's
+/// own compositing.
+///
+/// This is also why it's a dedicated `View` struct rather than an inline
+/// closure built inside a `View` extension function: only a real `View`
+/// conformer's own `@ObservedObject` subscribes to `state`'s `@Published`
+/// changes — a `GeometryReader { }` closure captured directly inside an
+/// extension function's `some View` never re-evaluates when `state`
+/// changes elsewhere, since nothing established that subscription.
+struct ReorderDragOverlay<RowContent: View>: View {
+    @ObservedObject var state: RowReorderState
+    @ViewBuilder var rowContent: (Int) -> RowContent
+
+    var body: some View {
+        GeometryReader { proxy in
+            if let index = state.draggingIndex,
+               let frame = state.rowFrames[index] {
+                let origin = proxy.frame(in: .global).origin
+                rowContent(index)
+                    .frame(width: frame.width, height: frame.height)
+                    .shadow(color: Color.black.opacity(0.25), radius: 16, y: 8)
+                    .scaleEffect(1.04)
+                    .position(
+                        x: frame.midX - origin.x,
+                        y: (state.dragLocationY ?? frame.midY) - origin.y
+                    )
+                    .allowsHitTesting(false)
+            }
+        }
+        .allowsHitTesting(false)
     }
 }
 
@@ -170,21 +235,7 @@ private struct ReorderableByBorder: ViewModifier {
     var cornerRadius: CGFloat
     let move: (IndexSet, Int) -> Void
 
-    /// Touch band width around the edge — wider than the visible stroke
-    /// so the grab target stays comfortable without looking heavy.
-    private let bandWidth: CGFloat = 14
-
     private var isDragging: Bool { state.draggingIndex == index }
-
-    /// How far to visually offset this row while it's the one being
-    /// carried — the gap between the finger's current position and this
-    /// row's own last-measured center. Recomputed from live layout each
-    /// time, so it stays correct across the live reorders below shifting
-    /// this row (and its siblings) to new positions mid-drag.
-    private var dragOffsetY: CGFloat {
-        guard isDragging, let dragLocationY = state.dragLocationY, let frame = state.rowFrames[index] else { return 0 }
-        return dragLocationY - frame.midY
-    }
 
     func body(content: Content) -> some View {
         content
@@ -192,10 +243,12 @@ private struct ReorderableByBorder: ViewModifier {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .strokeBorder(Color.luminaOutline, lineWidth: 1.5)
             )
-            .shadow(color: Color.black.opacity(isDragging ? 0.18 : 0), radius: 12, y: 6)
-            .scaleEffect(isDragging ? 1.03 : 1)
-            .zIndex(isDragging ? 1 : 0)
-            .offset(y: dragOffsetY)
+            // The row itself goes invisible (not removed — its layout
+            // space still reserves the slot) while its floating copy
+            // (`reorderDragOverlay`) does the visible following-the-
+            // finger. Opacity, unlike `.hidden()`, doesn't interrupt the
+            // gesture already recognized on this view.
+            .opacity(isDragging ? 0 : 1)
             .animation(.interactiveSpring(response: 0.3, dampingFraction: 0.75), value: state.draggingIndex)
             .onGeometryChange(for: CGRect.self) { proxy in
                 // `.global`, not a named space anchored to the List —
@@ -214,35 +267,28 @@ private struct ReorderableByBorder: ViewModifier {
             } action: { newFrame in
                 state.rowFrames[index] = newFrame
             }
-            .overlay(
-                // Separate layer, its own `.contentShape`: only touches
-                // starting within `bandWidth` of the edge can pick this
-                // row up.
-                Color.clear
-                    .contentShape(
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .stroke(style: StrokeStyle(lineWidth: bandWidth))
-                    )
-                    .gesture(
-                        DragGesture(minimumDistance: 2, coordinateSpace: .global)
-                            .onChanged { value in
-                                if state.draggingIndex == nil { state.draggingIndex = index }
-                                state.dragLocationY = value.location.y
-                                guard let dragging = state.draggingIndex else { return }
-                                // Which row's frame currently contains the
-                                // finger — that's the live reorder target.
-                                if let target = state.rowFrames.first(where: {
-                                    value.location.y >= $0.value.minY && value.location.y < $0.value.maxY
-                                })?.key, target != dragging {
-                                    move(IndexSet(integer: dragging), target > dragging ? target + 1 : target)
-                                    state.draggingIndex = target
-                                }
-                            }
-                            .onEnded { _ in
-                                state.draggingIndex = nil
-                                state.dragLocationY = nil
-                            }
-                    )
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 2, coordinateSpace: .global)
+                    .onChanged { value in
+                        if state.draggingIndex == nil {
+                            state.draggingIndex = index
+                        }
+                        state.dragLocationY = value.location.y
+                        guard let dragging = state.draggingIndex else { return }
+                        // Which row's frame currently contains the
+                        // finger — that's the live reorder target.
+                        if let target = state.rowFrames.first(where: {
+                            value.location.y >= $0.value.minY && value.location.y < $0.value.maxY
+                        })?.key, target != dragging {
+                            move(IndexSet(integer: dragging), target > dragging ? target + 1 : target)
+                            state.draggingIndex = target
+                        }
+                    }
+                    .onEnded { _ in
+                        state.draggingIndex = nil
+                        state.dragLocationY = nil
+                    }
             )
     }
 }
