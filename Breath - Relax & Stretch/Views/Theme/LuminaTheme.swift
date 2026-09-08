@@ -235,6 +235,10 @@ private struct ReorderableByBorder: ViewModifier {
     var cornerRadius: CGFloat
     let move: (IndexSet, Int) -> Void
 
+    /// How long a touch must hold still before it's treated as a
+    /// reorder-drag rather than the start of a scroll.
+    private let longPressMinimumDuration: Double = 0.5
+
     private var isDragging: Bool { state.draggingIndex == index }
 
     func body(content: Content) -> some View {
@@ -268,18 +272,34 @@ private struct ReorderableByBorder: ViewModifier {
                 state.rowFrames[index] = newFrame
             }
             .contentShape(Rectangle())
+            // A brief hold, not an immediate drag: since the row is now
+            // pickup-able from anywhere in its content (not just an
+            // edge), a plain DragGesture here would compete with the
+            // List's own scroll gesture on every scroll swipe. Requiring
+            // `longPressMinimumDuration` of stillness first means a scroll
+            // (touch moving right away) never satisfies the long press,
+            // so the touch falls through to the List's scroll gesture
+            // untouched — reordering only engages once the hold succeeds.
             .gesture(
-                DragGesture(minimumDistance: 2, coordinateSpace: .global)
+                LongPressGesture(minimumDuration: longPressMinimumDuration)
+                    .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .global))
                     .onChanged { value in
+                        // `.second(true, let drag)` is the only state that
+                        // means "the hold succeeded and a drag is now in
+                        // progress" — `.first` is the hold still pending,
+                        // and `drag` is nil for the single instant the
+                        // gesture transitions before the first drag value
+                        // arrives.
+                        guard case .second(true, let drag) = value, let drag else { return }
                         if state.draggingIndex == nil {
                             state.draggingIndex = index
                         }
-                        state.dragLocationY = value.location.y
+                        state.dragLocationY = drag.location.y
                         guard let dragging = state.draggingIndex else { return }
                         // Which row's frame currently contains the
                         // finger — that's the live reorder target.
                         if let target = state.rowFrames.first(where: {
-                            value.location.y >= $0.value.minY && value.location.y < $0.value.maxY
+                            drag.location.y >= $0.value.minY && drag.location.y < $0.value.maxY
                         })?.key, target != dragging {
                             move(IndexSet(integer: dragging), target > dragging ? target + 1 : target)
                             state.draggingIndex = target
