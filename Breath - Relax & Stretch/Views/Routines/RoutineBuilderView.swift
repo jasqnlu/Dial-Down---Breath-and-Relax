@@ -58,9 +58,6 @@ struct RoutineBuilderView: View {
     /// Absent key means "use the exercise's own durationSeconds." Persisted
     /// onto `Routine.exerciseDurationOverrides` on save.
     @State private var durationOverrides: [UUID: Int] = [:]
-    /// Shared drag state for the exercise list's border-only drag handle
-    /// (see `reorderableByBorder`/`RowReorderState`).
-    @StateObject private var reorderState = RowReorderState()
     /// Guards the "creating new" onAppear branch so initialExerciseIDs/
     /// initialName are only seeded once, even if onAppear re-fires for
     /// this same sheet instance. (A cross-tab exercise pick re-presents via
@@ -97,6 +94,11 @@ struct RoutineBuilderView: View {
 
     var body: some View {
         NavigationStack {
+            // Form's own native `.onMove` drag-to-reorder — see
+            // CustomizeRoutineView's matching comment for why this uses
+            // List's/Form's built-in mechanism rather than a hand-built
+            // gesture: a custom drag kept fighting the scroll gesture,
+            // silently breaking swipe-to-scroll over the rows.
             Form {
                 Section {
                     TextField("e.g. Morning Wake-Up", text: $routineName)
@@ -114,11 +116,9 @@ struct RoutineBuilderView: View {
                                 .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
-                                .reorderableByBorder(index: index, state: reorderState) {
-                                    selectedIDs.move(fromOffsets: $0, toOffset: $1)
-                                }
                         }
                     }
+                    .onMove { selectedIDs.move(fromOffsets: $0, toOffset: $1) }
 
                     if allowsCrossTabAddExercise {
                         Button {
