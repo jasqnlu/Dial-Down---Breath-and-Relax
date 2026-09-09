@@ -112,8 +112,8 @@ struct DataExportView: View {
             if let url = exportURL {
                 ShareLink(
                     item: url,
-                    subject: Text("My Breath & Stretch Data"),
-                    message: Text("Exported from Breath: Relax & Stretch"),
+                    subject: Text("My Dial Down Data"),
+                    message: Text("Exported from Dial Down"),
                     preview: SharePreview(
                         url.lastPathComponent,
                         image: Image(systemName: "doc.text.fill")
