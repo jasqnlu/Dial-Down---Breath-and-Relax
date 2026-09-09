@@ -12,6 +12,7 @@ struct ProfileSettingsTab: View {
     @AppStorage("voiceCuesEnabled")     private var voiceCuesEnabled = false
     @AppStorage("autoSkipGetReadyCountdown") private var autoSkipGetReadyCountdown = false
     @AppStorage("calendarSyncEnabled")  private var calendarSyncEnabled = false
+    @State private var legalDocument: LegalDocument?
 
     private let allGoals: [(id: String, label: String, icon: String)] = [
         ("flexibility",      "Flexibility",       "figure.flexibility"),
@@ -288,9 +289,17 @@ struct ProfileSettingsTab: View {
                 Link(destination: URL(string: "https://github.com/jasqnlu/Breath-Relax-Stretch")!) {
                     Label("View on GitHub", systemImage: "curlybraces")
                 }
+                Button {
+                    legalDocument = .credits
+                } label: {
+                    Label("Credits", systemImage: "text.book.closed")
+                }
             }
         }
         .listRowBackground(Color.luminaCardFill)
+        .sheet(item: $legalDocument) { document in
+            LegalDocumentView(document: document)
+        }
         .task {
             // Reconcile against the real OS permission — e.g. if the user
             // revoked notification access from iOS Settings directly, the
