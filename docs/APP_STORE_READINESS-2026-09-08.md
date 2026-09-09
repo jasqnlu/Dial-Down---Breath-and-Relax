@@ -29,11 +29,11 @@ doc says; a couple are new discoveries.
    Inert until the real Widget/Watch targets are created in Xcode with a shared App Group.
    Not a rejection risk if those targets don't ship yet, but non-functional until resolved.
 
-3. **StoreKit Configuration scheme step** — `Configuration.storekit` has real prices
-   ($1.99/$4.99/$9.99) but `StoreManager.loadProducts()` returns empty unless the scheme's
-   Run → Options → StoreKit Configuration points at it locally, **and** the equivalent real
-   in-app-purchase products must exist in App Store Connect for TestFlight/production (the
-   local `.storekit` file is sandbox-only).
+3. ~~StoreKit Configuration scheme step~~ **Moot as of 2026-09-09.** The donation "tip jar"
+   (`StoreManager.swift`, `TipJarView.swift`, `Configuration.storekit`, and the scheme's
+   StoreKit Configuration references) was removed entirely — the App has no purchases,
+   subscriptions, or donation mechanism of any kind. Terms of Use and Privacy Policy were
+   updated to say so explicitly.
 
 4. ~~Body-map anatomy assets carry a CC BY-SA 4.0 obligation that isn't visible to users yet.~~
    **Fixed 2026-09-08.** `ASSET_CREDITS.md` (already in the repo) correctly documents that the 3D
@@ -82,8 +82,7 @@ doc says; a couple are new discoveries.
 ## ✅ Confirmed done since the old TODO (no action needed)
 
 - `PrivacyInfo.xcprivacy` exists in the main app target with correct reason codes.
-- Paywall StoreKit-price display, restore-purchase failure handling, and Terms/Privacy links
-  are wired correctly.
+- Terms/Privacy links are wired correctly.
 - Google Sign-In client ID is real (not a placeholder) — `GoogleAuthService.swift:23` has an
   actual `apps.googleusercontent.com` ID.
 - Demo videos are now largely wired: 355/372 exercises have `animationName` set (previous
