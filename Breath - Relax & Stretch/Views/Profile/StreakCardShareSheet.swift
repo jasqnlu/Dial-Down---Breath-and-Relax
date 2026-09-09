@@ -39,7 +39,7 @@ struct StreakCardView: View {
 
             Spacer(minLength: 0)
 
-            Text("Breath: Relax & Stretch")
+            Text("Dial Down - Breath and Relax")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.white.opacity(0.7))
         }
