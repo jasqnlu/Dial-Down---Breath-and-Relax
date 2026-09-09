@@ -26,7 +26,7 @@ struct RemoteExercise: Codable, Sendable {
 }
 
 struct RemoteProfile: Codable, Sendable, Identifiable {
-    let id: String              // stable identifier — the user's auth email
+    let id: String              // stable identifier — AuthManager.backendID (anonymous UUID), never an email
     let displayName: String
     let totalPoints: Int
     let streak: Int
