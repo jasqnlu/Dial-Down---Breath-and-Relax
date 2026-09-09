@@ -77,16 +77,19 @@ Today "offline-first" only covers the seed catalog (pull-only refresh). Sessions
 - [ ] **Placeholder IDs still in tree** — `group.REPLACE_WITH_YOUR_BUNDLE_ID` (`WidgetDataService.swift:15` + widget/watch files), Google Client ID (inert until those features go live)
 
 **Jason-only (capabilities, accounts, content — step-by-step guides in the archived TODO):**
-- [ ] Xcode: Widget extension target + App Group, `breath://` URL scheme, Watch app + complication targets, StoreKit Configuration scheme step. *(iCloud/CloudKit entitlement no longer needed — superseded by the Supabase sync decision.)*
+- [ ] Xcode: Widget extension target + App Group, `breath://` URL scheme, Watch app + complication targets. *(iCloud/CloudKit entitlement no longer needed — superseded by the Supabase sync decision.)*
 - [ ] Supabase dashboard: schema + Apple provider (same as §3.1)
 - [ ] Blender: per-muscle hitbox re-export ([docs/BLENDER_MUSCLE_EXPORT.md](docs/BLENDER_MUSCLE_EXPORT.md)); female body mesh (unblocks the honest body-type picker)
 - [ ] Content: film exercise demo videos, hosted Terms/Privacy URLs, native-speaker localization pass
-- [ ] App Store Connect: create the three **consumable** tip products (`tip_small`, `tip_medium`, `tip_large`) — IDs must match `StoreManager.ProductID`. The paid tier was removed 2026-08-09; everything is free and tips unlock nothing
 
 **Done since the old list (recorded so nothing looks dropped):**
 - [x] Body-map 3-layer removal — landed on `feature/lumina-restyle` (skin-only map, muscle proxy hit-testing)
 - [x] Legal documents bundled (`LegalDocumentView`) — AuthView linking still open (§2)
 - [x] `isBilateral` seeding/migration (v5) + side-switch cues in the session player
+- [x] Donation tip jar removed entirely (2026-09-09) — `StoreManager.swift`, `TipJarView.swift`,
+      `Configuration.storekit`, the scheme's StoreKit Configuration references, and the "Support
+      Development" entry in Profile are all gone. Terms of Use and Privacy Policy updated to say
+      the App has no purchases or transactions of any kind.
 
 ---
 
