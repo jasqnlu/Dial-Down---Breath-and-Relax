@@ -33,7 +33,7 @@ struct WelcomePage: View {
                     .foregroundStyle(Color.luminaPrimary)
                     .padding(.bottom, 28)
 
-                Text("Breath: Relax & Stretch")
+                Text("Dial Down - Breath and Relax")
                     .font(.luminaDisplay)
                     .foregroundStyle(Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
