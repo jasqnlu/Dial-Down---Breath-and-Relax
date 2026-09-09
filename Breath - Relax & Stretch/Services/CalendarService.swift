@@ -31,7 +31,7 @@ final class CalendarService {
         event.startDate = start
         event.endDate = max(end, start.addingTimeInterval(60))
         event.calendar = store.defaultCalendarForNewEvents
-        event.notes = "Logged by Breath: Relax & Stretch"
+        event.notes = "Logged by Dial Down"
         try? store.save(event, span: .thisEvent)
     }
 
