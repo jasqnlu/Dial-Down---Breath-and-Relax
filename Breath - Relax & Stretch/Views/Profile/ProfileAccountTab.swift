@@ -7,26 +7,12 @@ struct ProfileAccountTab: View {
     let profile: UserProfile?
     @EnvironmentObject private var auth: AuthManager
     @Binding var showSignOutConfirm: Bool
-    @ObservedObject private var store = StoreManager.shared
     @State private var appLockOn = false
-    @State private var showingTipJar = false
     @State private var showingSignIn = false
     @State private var showDeleteConfirm = false
 
     var body: some View {
         Group {
-            // Support development. Everything in the app is free; this is
-            // an optional tip, and unlocks nothing.
-            Section {
-                Button {
-                    showingTipJar = true
-                } label: {
-                    Label(store.hasTipped ? "Send Another Tip" : "Support Development",
-                          systemImage: "heart")
-                        .foregroundStyle(Color.accentColor)
-                }
-            }
-
             // Stats
             if let profile {
                 Section("Your Stats") {
@@ -113,9 +99,6 @@ struct ProfileAccountTab: View {
         }
         .listRowBackground(Color.luminaCardFill)
         .onAppear { appLockOn = auth.appLockEnabled }
-        .sheet(isPresented: $showingTipJar) {
-            TipJarView()
-        }
         .sheet(isPresented: $showingSignIn) {
             AuthView()
                 .environmentObject(auth)
