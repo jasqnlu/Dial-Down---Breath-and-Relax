@@ -4,11 +4,11 @@ import WebKit
 // MARK: - LegalDocument
 
 /// Bundled documents shown in-app via a WKWebView sheet. `termsOfUse` and
-/// `privacyPolicy` are the two required for auto-renewing subscriptions
-/// (App Store Guideline 3.1.2); `credits` fulfills the CC BY-SA 4.0
-/// attribution requirement on the body-map anatomy assets (see
-/// `ASSET_CREDITS.md` at the repo root). HTML sources live in the "Legal"
-/// folder.
+/// `privacyPolicy` are standard App Store legal requirements — the App has
+/// no purchases of any kind, so neither document covers subscriptions or
+/// IAP. `credits` fulfills the CC BY-SA 4.0 attribution requirement on the
+/// body-map anatomy assets (see `ASSET_CREDITS.md` at the repo root). HTML
+/// sources live in the "Legal" folder.
 enum LegalDocument: String, Identifiable {
     case termsOfUse
     case privacyPolicy
