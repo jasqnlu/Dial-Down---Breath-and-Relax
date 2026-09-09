@@ -22,7 +22,7 @@ struct AppLoadingView: View {
                         .foregroundStyle(Color.luminaPrimary)
                 }
 
-                Text("Breath: Relax & Stretch")
+                Text("Dial Down - Breath and Relax")
                     .font(.luminaDisplay)
                     .foregroundStyle(Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
