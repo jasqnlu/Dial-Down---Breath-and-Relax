@@ -3,12 +3,16 @@ import WebKit
 
 // MARK: - LegalDocument
 
-/// The two bundled legal documents required for auto-renewing subscriptions
-/// (App Store Guideline 3.1.2). HTML sources live in the "Legal" folder and
-/// are placeholders — see the comment at the top of each file.
+/// Bundled documents shown in-app via a WKWebView sheet. `termsOfUse` and
+/// `privacyPolicy` are the two required for auto-renewing subscriptions
+/// (App Store Guideline 3.1.2); `credits` fulfills the CC BY-SA 4.0
+/// attribution requirement on the body-map anatomy assets (see
+/// `ASSET_CREDITS.md` at the repo root). HTML sources live in the "Legal"
+/// folder.
 enum LegalDocument: String, Identifiable {
     case termsOfUse
     case privacyPolicy
+    case credits
 
     var id: String { rawValue }
 
@@ -16,6 +20,7 @@ enum LegalDocument: String, Identifiable {
         switch self {
         case .termsOfUse: return "Terms of Use"
         case .privacyPolicy: return "Privacy Policy"
+        case .credits: return "Credits"
         }
     }
 
@@ -23,6 +28,7 @@ enum LegalDocument: String, Identifiable {
         switch self {
         case .termsOfUse: return "TermsOfUse"
         case .privacyPolicy: return "PrivacyPolicy"
+        case .credits: return "Credits"
         }
     }
 }
