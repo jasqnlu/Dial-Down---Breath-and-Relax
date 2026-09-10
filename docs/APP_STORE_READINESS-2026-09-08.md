@@ -57,11 +57,11 @@ doc says; a couple are new discoveries.
 
 ## ⚠️ High-priority, ship-quality risk (not auto-rejected, but will hurt reviews/ratings)
 
-5. **Localization is only ~28% complete** (109/390 strings translated for es/fr/zh-Hans,
-   counted directly from `Localizable.xcstrings`) — worse than the 36% the old TODO cited.
-   Users with those locales set will see a mixed-language UI. Either finish translation
-   coverage + get a native-speaker review, or remove those languages from the declared
-   regions until ready.
+5. ~~Localization is only ~28% complete~~ **Fixed 2026-09-09.** All 369 string-catalog keys now
+   have es/fr/zh-Hans translations (100% coverage, up from 109/390). Machine-translated by
+   Claude in this pass, not reviewed by a native speaker — that review is still worth doing
+   before shipping, especially for the medical-disclaimer and body-map copy, but there is no
+   longer any untranslated English text falling through to those locales.
 
 6. **Migration still matches exercises by name, just hashed.**
    `Exercise.stableSeedUUID(forName:)` (`Exercise.swift:211`) derives a UUID as
