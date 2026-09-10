@@ -71,24 +71,37 @@ create table if not exists routines (
 
 alter table routines enable row level security;
 
-create policy "public routines are readable by anyone"
-  on routines for select
-  using (is_public = true);
-
 drop policy if exists "anyone can upsert routines" on routines;
 drop policy if exists "anyone can update routines" on routines;
 drop policy if exists "authors can insert their routines" on routines;
 drop policy if exists "authors can update their routines" on routines;
 drop policy if exists "authors can delete their routines" on routines;
 
--- "authors can insert/update their routines" policies removed (2026-07-07):
--- they existed only to support SupabaseService.uploadRoutine(), which was
--- dead code (no in-app caller) and has been deleted. The `drop policy if
--- exists` lines above already retire them on databases that had them.
+-- Reconciled 2026-09-10 against the live project: the policies below (named
+-- to match what's actually on the project) restore write access with
+-- auth.uid() scoping. Client callers (SupabaseService.uploadRoutine() etc.)
+-- do not exist yet — see TODO.md §3 "Restore write paths" — but the RLS
+-- side is ready for when they're added.
 
-create policy "authors can delete their routines"
+create policy "public routines are readable by anyone"
+  on routines for select
+  using (is_public = true);
+
+create policy "Users can read public routines or their own"
+  on routines for select
+  using (is_public = true or auth.uid()::text = author_id);
+
+create policy "Users can insert their own routines"
+  on routines for insert
+  with check (auth.uid()::text = author_id);
+
+create policy "Users can update their own routines"
+  on routines for update
+  using (auth.uid()::text = author_id);
+
+create policy "Users can delete their own routines"
   on routines for delete
-  using (auth.uid() is not null and author_id = auth.uid()::text);
+  using (auth.uid()::text = author_id);
 
 -- ───────────────────────── sessions ─────────────────────────
 -- Completed session history, one row per session, uploaded best-effort.
@@ -108,14 +121,25 @@ alter table sessions enable row level security;
 drop policy if exists "anyone can insert sessions" on sessions;
 drop policy if exists "users can insert their sessions" on sessions;
 
--- "users can insert their sessions" policy removed (2026-07-07): it existed
--- only to support SupabaseService.uploadSession(), which was dead code (no
--- in-app caller) and has been deleted. The `drop policy if exists` lines
--- above already retire it on databases that had it.
+-- Reconciled 2026-09-10 against the live project: write/read policies below
+-- (named to match the live project) are already applied server-side, ahead
+-- of the client write path — see TODO.md §3 "Restore write paths".
 
--- No public select policy — session history isn't read back from Supabase
--- today (SwiftData is the source of truth on-device). Add one later if you
--- build cross-device session sync.
+create policy "Users can insert their own sessions"
+  on sessions for insert
+  with check (auth.uid()::text = user_id);
+
+create policy "Users can read their own sessions"
+  on sessions for select
+  using (auth.uid()::text = user_id);
+
+create policy "Users can update their own sessions"
+  on sessions for update
+  using (auth.uid()::text = user_id);
+
+create policy "Users can delete their own sessions"
+  on sessions for delete
+  using (auth.uid()::text = user_id);
 
 -- ───────────────────────── profiles ─────────────────────────
 -- Public leaderboard rows — only points/streak/minutes/display name.
