@@ -7,7 +7,6 @@ struct ProfileSettingsTab: View {
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
     @AppStorage("reminderHour")         private var reminderHour = 8
     @AppStorage("reminderWeekdays")     private var weekdaysStr = "2,3,4,5,6" // Mon–Fri default
-    @AppStorage("bodyMapSex")           private var bodyMapSex = "male"
     @AppStorage("onboardingGoals")      private var goalsStr = ""
     @AppStorage("voiceCuesEnabled")     private var voiceCuesEnabled = false
     @AppStorage("autoSkipGetReadyCountdown") private var autoSkipGetReadyCountdown = false
@@ -102,21 +101,6 @@ struct ProfileSettingsTab: View {
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
             } footer: {
                 Text("Shapes the \"For You\" exercises in the Exercises tab.")
-            }
-
-            // Body Map
-            Section {
-                Picker("Body Type", selection: $bodyMapSex) {
-                    Text("Male").tag("male")
-                    Text("Female (coming soon)").tag("female")
-                }
-                .pickerStyle(.segmented)
-            } header: {
-                Text("Body Map")
-                    .font(.luminaLabel)
-                    .foregroundStyle(Color.luminaOnSurfaceVariant)
-            } footer: {
-                Text("Female body model currently uses the same anatomy as male for muscle targeting—dedicated female model is coming soon.")
             }
 
             // Session
