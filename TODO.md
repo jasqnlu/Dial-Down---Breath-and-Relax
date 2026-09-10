@@ -99,6 +99,13 @@ Today "offline-first" only covers the seed catalog (pull-only refresh). Sessions
 - [x] Localization brought to 100% coverage (2026-09-09) — all 369 `Localizable.xcstrings` keys
       now have es/fr/zh-Hans translations (up from 109/390). Machine-translated; still wants a
       native-speaker review before ship, see §Compliance above.
+- [x] Fixed name-derived Exercise.uuid at seed time (2026-09-09) — `seedIfNeeded()` now parses
+      `SeedData.json`'s own permanent `"id"` as the row's `uuid` instead of hashing `name`, so
+      renaming a seed exercise no longer changes the cross-device identity a fresh install gets
+      for it. Added `SeedDataTests.everyExerciseHasAValidUniqueID` to guard the invariant.
+- [x] Trimmed `BodySkinMuscle.obj` vertex/normal precision to 4 decimals (2026-09-09) —
+      12 MB → ~11.6 MB, max vertex drift 0.00005 units (imperceptible). `.usdz`/`.scn`
+      conversion for the bigger win is still open — see §7 (Compliance) in the readiness doc.
 
 ---
 
