@@ -104,7 +104,10 @@ doc says; a couple are new discoveries.
 
 ## Still-pending manual Xcode/account setup (Jason-only, unverifiable from the repo)
 
-- iCloud/CloudKit capability + container
+- ~~iCloud/CloudKit capability + container~~ **Not needed — doc error, corrected 2026-09-09.**
+  TODO.md already recorded the 2026-07-10 decision to use Supabase for sync instead of
+  CloudKit; this doc's own list just hadn't been updated to drop it. `ModelConfiguration`
+  is already `cloudKitDatabase: .none`. No action here.
 - Widget Extension target creation
 - `breath://` URL scheme registration
 - Apple Watch app target + complication target
