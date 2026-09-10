@@ -73,7 +73,7 @@ Today "offline-first" only covers the seed catalog (pull-only refresh). Sessions
 - [ ] **Live Activity / Dynamic Island** for active sessions — needs the Widget extension target to exist first
 
 **Compliance (before TestFlight):**
-- [ ] **Localization decision** — ~36% coverage across es/fr/zh-Hans gives mixed-language UI; finish coverage (+ native-speaker pass) or remove the languages from `knownRegions`
+- [ ] **Localization native-speaker review** — es/fr/zh-Hans now at 100% string coverage (2026-09-09, machine-translated), but nobody who speaks those languages has reviewed the text yet, especially the medical-disclaimer and body-map copy
 - [ ] **Placeholder IDs still in tree** — `group.REPLACE_WITH_YOUR_BUNDLE_ID` (`WidgetDataService.swift:15` + widget/watch files), Google Client ID (inert until those features go live)
 
 **Jason-only (capabilities, accounts, content — step-by-step guides in the archived TODO):**
@@ -96,6 +96,9 @@ Today "offline-first" only covers the seed catalog (pull-only refresh). Sessions
       `FemaleSilhouetteShape` geometry was removed from `HumanFigureView.swift`. The body map
       always used the same single anatomy model regardless of the picker's selection, so this is
       a UI-only change.
+- [x] Localization brought to 100% coverage (2026-09-09) — all 369 `Localizable.xcstrings` keys
+      now have es/fr/zh-Hans translations (up from 109/390). Machine-translated; still wants a
+      native-speaker review before ship, see §Compliance above.
 
 ---
 
