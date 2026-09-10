@@ -74,10 +74,11 @@ doc says; a couple are new discoveries.
    now merged into one file) with **no `.scn`/`.usdz` conversion done anywhere in the repo.
    Bigger bundle-size and cold-load-time problem than before, not smaller.
 
-8. **"Female" body-type picker still says "coming soon"** in both `ProfileSettingsTab.swift`
-   and `GenderPickerPage.swift` — confirmed intentionally deferred (needs a Blender export
-   from Jason), not a bug, but still user-facing unfinished functionality worth a ship/hide
-   decision before launch.
+8. ~~"Female" body-type picker still says "coming soon"~~ **Resolved 2026-09-09.** The gender/
+   body-type picker was removed entirely rather than deferred — `GenderPickerPage.swift` is
+   deleted, onboarding is now 5 pages, and the "Body Type" picker in Profile → Settings is
+   gone. The app always used a single (male) anatomy model regardless of the picker's
+   selection, so no behavior changed.
 
 ## ✅ Confirmed done since the old TODO (no action needed)
 
