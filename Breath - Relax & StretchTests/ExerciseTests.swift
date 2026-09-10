@@ -1,11 +1,16 @@
 import Testing
 @testable import BreathRelaxStretch
 
-// Exercise.stableSeedUUID(forName:) is what keeps bundled seed exercises'
-// UUIDs stable across installs — without it Session/Routine exerciseIDs and
-// Supabase's RemoteExercise.id would compare UUIDs that mean nothing between
-// two devices, since Exercise.init's default uuid parameter generates a fresh
-// random one each time.
+// Bundled seed exercises need a UUID that means the same thing across
+// installs and devices — Session/Routine exerciseIDs and Supabase's
+// RemoteExercise.id all compare it directly, since Exercise.init's default
+// uuid parameter would otherwise generate a fresh random one each time.
+//
+// seedIfNeeded() (Breath__Relax___StretchApp.swift) now parses SeedData.json's
+// own permanent "id" field as that uuid — independent of `name`, so renaming
+// an exercise in the catalog doesn't change the uuid a fresh install gets for
+// it. Exercise.stableSeedUUID(forName:) only remains as a fallback for a seed
+// entry with a missing/malformed id.
 struct ExerciseTests {
 
     @Test func stableSeedUUIDIsDeterministicForSameName() {
