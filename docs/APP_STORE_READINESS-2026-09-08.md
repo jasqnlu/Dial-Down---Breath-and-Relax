@@ -63,16 +63,27 @@ doc says; a couple are new discoveries.
    before shipping, especially for the medical-disclaimer and body-map copy, but there is no
    longer any untranslated English text falling through to those locales.
 
-6. **Migration still matches exercises by name, just hashed.**
-   `Exercise.stableSeedUUID(forName:)` (`Exercise.swift:211`) derives a UUID as
-   `SHA256("breathapp.seed-exercise:\(name)")` — it *looks* like a stable UUID scheme but is
-   still 100% name-keyed. Renaming a seed exercise in `SeedData.json` still silently breaks
-   migration/progress-tracking for that exercise.
+6. ~~Migration still matches exercises by name, just hashed.~~ **Fixed 2026-09-09, narrower
+   than it looked.** `SeedMigrator.swift` had already matched by the stable `seedID` (the
+   JSON `"id"` field) since v6 — the remaining gap was one line: `seedIfNeeded()`
+   (`Breath__Relax___StretchApp.swift`) still set the *actual* `Exercise.uuid` (what
+   `Session.exerciseIDs`, `Routine.exerciseIDs`, and Supabase's `RemoteExercise.id` compare
+   across devices) from `Exercise.stableSeedUUID(forName:)` — name-derived — instead of the
+   seed catalog's own permanent `"id"`. Now it parses that id directly as the uuid, falling
+   back to the name-hash only if a seed entry is somehow missing one. Added
+   `SeedDataTests.everyExerciseHasAValidUniqueID` to guard the invariant this now depends on
+   (every `SeedData.json` entry has a valid, unique `"id"` — verified: all 372 do).
 
-7. **Bundle size regression on the 3D model.** The old TODO said "~7 MB of OBJs, convert to
-   `.scn`/`.usdz`." Today there's a single `BodySkinMuscle.obj` at **12 MB** (up from 7 MB,
-   now merged into one file) with **no `.scn`/`.usdz` conversion done anywhere in the repo.
-   Bigger bundle-size and cold-load-time problem than before, not smaller.
+7. **Bundle size on the 3D model — partially improved, not solved.** `BodySkinMuscle.obj` was
+   12 MB of full-precision (6-decimal) ASCII floats with no materials/UVs. Trimmed vertex/
+   normal precision to 4 decimals (max resulting vertex drift: 0.00005 units on a model 2
+   units tall — imperceptible, confirmed against `MuscleNodeNamesTests` and the muscle-hit-
+   resolver suite, all still passing) — **~11.6 MB, down from 12 MB**. The bigger win is still
+   open: converting to a binary format (`.scn`/`.usdz`) would cut this several times further,
+   but requires rewriting `BodyMeshLoader.parseAnatomyOBJ`'s hand-rolled OBJ-text parser to
+   load via SceneKit's native scene loader while preserving the 269 named sub-objects
+   `MuscleNodeNames.swift` keys hit-testing off — real work, not a mechanical conversion, and
+   risks the kind of marking-alignment drift this codebase has hit before.
 
 8. ~~"Female" body-type picker still says "coming soon"~~ **Resolved 2026-09-09.** The gender/
    body-type picker was removed entirely rather than deferred — `GenderPickerPage.swift` is
