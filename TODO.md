@@ -79,7 +79,7 @@ Today "offline-first" only covers the seed catalog (pull-only refresh). Sessions
 **Jason-only (capabilities, accounts, content — step-by-step guides in the archived TODO):**
 - [ ] Xcode: Widget extension target + App Group, `breath://` URL scheme, Watch app + complication targets. *(iCloud/CloudKit entitlement no longer needed — superseded by the Supabase sync decision.)*
 - [ ] Supabase dashboard: schema + Apple provider (same as §3.1)
-- [ ] Blender: per-muscle hitbox re-export ([docs/BLENDER_MUSCLE_EXPORT.md](docs/BLENDER_MUSCLE_EXPORT.md)); female body mesh (unblocks the honest body-type picker)
+- [ ] Blender: per-muscle hitbox re-export ([docs/BLENDER_MUSCLE_EXPORT.md](docs/BLENDER_MUSCLE_EXPORT.md))
 - [ ] Content: film exercise demo videos, hosted Terms/Privacy URLs, native-speaker localization pass
 
 **Done since the old list (recorded so nothing looks dropped):**
@@ -90,6 +90,12 @@ Today "offline-first" only covers the seed catalog (pull-only refresh). Sessions
       `Configuration.storekit`, the scheme's StoreKit Configuration references, and the "Support
       Development" entry in Profile are all gone. Terms of Use and Privacy Policy updated to say
       the App has no purchases or transactions of any kind.
+- [x] Gender/body-type picker removed entirely (2026-09-09) — `GenderPickerPage.swift` deleted,
+      onboarding is now 5 pages (Welcome→Goals→Focus areas→Body map intro→Notifications), the
+      "Body Type" picker in Profile → Settings is gone, and the unused `MaleSilhouetteShape` /
+      `FemaleSilhouetteShape` geometry was removed from `HumanFigureView.swift`. The body map
+      always used the same single anatomy model regardless of the picker's selection, so this is
+      a UI-only change.
 
 ---
 
