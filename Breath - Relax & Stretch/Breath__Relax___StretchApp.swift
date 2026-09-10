@@ -189,14 +189,24 @@ struct BreathRelaxStretchApp: App {
             // inline default — every seed entry has a real value (Task 2),
             // this only guards a malformed bundle.
             let cueStyle = (raw["cueStyle"] as? String).flatMap { ExerciseCueStyle(rawValue: $0.capitalized) } ?? .hold
+            let seedID = raw["id"] as? String
+            // The seed catalog's own "id" is a permanent UUID independent of
+            // `name` — use it directly as the row's identity so two installs
+            // seeded at different points in the catalog's naming history (one
+            // before an exercise is renamed in SeedData.json, one after) still
+            // agree on its uuid. Session.exerciseIDs, Routine.exerciseIDs, and
+            // Supabase's RemoteExercise.id all compare these across devices,
+            // so a name-derived uuid would silently desync them for any
+            // renamed exercise. Falls back to the old name-hash only if the
+            // seed entry is somehow missing/malformed a valid id.
             let exercise = Exercise(
-                uuid: Exercise.stableSeedUUID(forName: name),
+                uuid: seedID.flatMap(UUID.init) ?? Exercise.stableSeedUUID(forName: name),
                 name: name, type: type, targetBodyParts: parts,
                 durationSeconds: duration, difficulty: difficulty,
                 instructions: instructions, mediaURL: mediaURL, caution: caution,
                 isBilateral: isBilateral, cueStyle: cueStyle
             )
-            exercise.seedID = raw["id"] as? String
+            exercise.seedID = seedID
             exercise.localVideoName = raw["localVideoName"] as? String
             exercise.animationIsApproximate = raw["animationIsApproximate"] as? Bool ?? false
             exercise.animationCallout = AnimationCallout.parse(fromRawExercise: raw)
