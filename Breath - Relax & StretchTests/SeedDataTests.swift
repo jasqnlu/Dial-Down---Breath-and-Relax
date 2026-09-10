@@ -77,6 +77,21 @@ struct SeedDataTests {
         #expect(names.count == Set(names).count)
     }
 
+    /// `seedIfNeeded()` (Breath__Relax___StretchApp.swift) parses this "id"
+    /// directly as the Exercise's uuid — the identifier Session/Routine
+    /// exerciseIDs and Supabase's RemoteExercise.id compare across devices —
+    /// so it must be a valid, unique UUID string for every entry, or a fresh
+    /// install silently falls back to the name-derived uuid for that row.
+    @Test func everyExerciseHasAValidUniqueID() throws {
+        let all = try Self.loadExercises()
+        let ids = all.compactMap { $0["id"] as? String }
+        #expect(ids.count == all.count, "Every seed exercise must have an \"id\"")
+        for id in ids {
+            #expect(UUID(uuidString: id) != nil, "\"\(id)\" is not a valid UUID")
+        }
+        #expect(ids.count == Set(ids).count, "Seed exercise ids must be unique")
+    }
+
     @Test func everyExerciseIsComplete() throws {
         for raw in try Self.loadExercises() {
             #expect((raw["instructions"] as? [String] ?? []).count >= 3)
