@@ -38,7 +38,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         XCTAssertTrue(next.waitForExistence(timeout: 10))
         attach(app, "onboarding-1-welcome-dark")
 
-        for name in ["2-gender", "3-goals", "4-bodymap"] {
+        for name in ["2-goals", "3-focus-areas", "4-bodymap"] {
             next.tap()
             sleep(1)
             attach(app, "onboarding-\(name)-dark")
@@ -115,7 +115,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         }
     }
 
-    // Task A: the new focus-area onboarding step (Welcome→Gender→Goals→Focus).
+    // Task A: the new focus-area onboarding step (Welcome→Goals→Focus).
     func testFocusAreaOnboardingScreenshot() throws {
         continueAfterFailure = true
         let app = XCUIApplication()
@@ -124,7 +124,7 @@ final class LuminaRestyleScreenshotTests: XCTestCase {
         app.launch()
         let next = app.buttons["Next"]
         XCTAssertTrue(next.waitForExistence(timeout: 10))
-        for _ in 0..<3 { next.tap(); sleep(1) }   // Welcome→Gender→Goals→Focus areas
+        for _ in 0..<2 { next.tap(); sleep(1) }   // Welcome→Goals→Focus areas
         attach(app, "A-focus-area-onboarding")
         // Select a couple of areas for good measure.
         for label in ["Chest", "Legs"] where app.buttons[label].exists {
