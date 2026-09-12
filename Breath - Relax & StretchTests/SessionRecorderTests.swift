@@ -5,8 +5,8 @@ import Foundation
 
 // Covers the persistence/rewards pipeline SessionPlayerView and BreathingView
 // both delegate to. calendarSyncEnabled is always passed false here so tests
-// don't touch EventKit; HealthKit/Widget calls are safe no-ops in the test
-// runner (unauthorized/no app group), same as they are in SwiftUI previews.
+// don't touch EventKit; HealthKit calls are safe no-ops in the test runner
+// (unauthorized), same as they are in SwiftUI previews.
 @MainActor
 struct SessionRecorderTests {
 
@@ -43,7 +43,7 @@ struct SessionRecorderTests {
         let routineID = UUID()
         let input = baseInput(routineID: routineID, pointsEarned: 15)
 
-        SessionRecorder.record(input, modelContext: context, calendarSyncEnabled: false, totalSessionsCompleted: 1)
+        SessionRecorder.record(input, modelContext: context, calendarSyncEnabled: false)
 
         let sessions = try! context.fetch(FetchDescriptor<Session>())
         #expect(sessions.count == 1)
@@ -60,7 +60,7 @@ struct SessionRecorderTests {
 
         let outcome = SessionRecorder.record(
             baseInput(pointsEarned: 20), modelContext: context,
-            calendarSyncEnabled: false, totalSessionsCompleted: 1)
+            calendarSyncEnabled: false)
 
         #expect(profile.totalPoints == 20)
         #expect(profile.totalMinutes >= 1)
@@ -77,10 +77,10 @@ struct SessionRecorderTests {
 
         SessionRecorder.record(
             baseInput(), modelContext: context,
-            calendarSyncEnabled: false, totalSessionsCompleted: 1)
+            calendarSyncEnabled: false)
         let outcome = SessionRecorder.record(
             baseInput(), modelContext: context,
-            calendarSyncEnabled: false, totalSessionsCompleted: 2)
+            calendarSyncEnabled: false)
 
         #expect(profile.streak == 1)
         #expect(outcome.streak == 1)
@@ -94,7 +94,7 @@ struct SessionRecorderTests {
 
         SessionRecorder.record(
             baseInput(isBorrowedRoutine: true), modelContext: context,
-            calendarSyncEnabled: false, totalSessionsCompleted: 1)
+            calendarSyncEnabled: false)
 
         #expect(profile.badges.contains("Borrowed & Built"))
     }
@@ -107,7 +107,7 @@ struct SessionRecorderTests {
         let groups: Set<String> = ["Neck", "Shoulders", "Chest", "Back", "Core"]
         SessionRecorder.record(
             baseInput(bodyPartsCovered: groups), modelContext: context,
-            calendarSyncEnabled: false, totalSessionsCompleted: 1)
+            calendarSyncEnabled: false)
 
         #expect(profile.badges.contains("Full Body"))
     }
@@ -116,7 +116,7 @@ struct SessionRecorderTests {
         let context = makeContext()
         let outcome = SessionRecorder.record(
             baseInput(), modelContext: context,
-            calendarSyncEnabled: false, totalSessionsCompleted: 1)
+            calendarSyncEnabled: false)
 
         #expect(outcome.streak == 0)
         #expect(outcome.streakIncreased == false)
@@ -130,7 +130,7 @@ struct SessionRecorderTests {
         input.sessionLabel = "Box"
         input.roundsCompleted = 5
 
-        SessionRecorder.record(input, modelContext: context, calendarSyncEnabled: false, totalSessionsCompleted: 1)
+        SessionRecorder.record(input, modelContext: context, calendarSyncEnabled: false)
 
         let session = try! context.fetch(FetchDescriptor<Session>()).first
         #expect(session?.sessionLabel == "Box")
