@@ -1,5 +1,6 @@
 import SwiftUI
 import UserNotifications
+import UIKit
 
 // MARK: - Notifications Page
 
@@ -70,6 +71,9 @@ struct NotificationsPage: View {
                 // Schedule Mon–Fri at 8 am (matches ProfileSettingsTab defaults)
                 NotificationService.shared.scheduleReminders(
                     hour: 8, weekdays: [2, 3, 4, 5, 6])
+                if shouldRegisterForRemotePush() {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
             }
             await MainActor.run {
                 // Keep the persisted flag in sync with what actually happened —
