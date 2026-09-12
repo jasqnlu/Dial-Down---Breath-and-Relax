@@ -12,16 +12,12 @@
 	      tracking (e.g. AuthManager.swift, HomeView.swift, BodyMapView.swift,
 	      VoiceCueService.swift, BreathingModels.swift). Reason CA92.1 covers
 	      this (read/write info accessible only to the app itself).
-	    - UserDefaults(suiteName: groupID) in Services/WidgetDataService.swift,
-	      written to share streak/session data with the (not-yet-added) Widget
-	      and Watch complication targets via an App Group container. Reason
-	      1C8F.1 covers this (read/write info accessible to apps/extensions/App
-	      Clips in the same App Group). NOTE: the App Group entitlement itself
-	      is not yet configured in Breath - Relax & Stretch.entitlements (the
-	      groupID is still the "REPLACE_WITH_YOUR_BUNDLE_ID" placeholder), so
-	      this call currently falls back to .standard at runtime — but the
-	      suiteName API is present in source, so the reason is declared
-	      defensively ahead of that setup work.
+
+	  Previously also declared reason 1C8F.1 (App Group UserDefaults) for
+	  Services/WidgetDataService.swift, which shared streak/session data with
+	  a planned Widget/Watch complication target. That service and the
+	  widget/watch idea were dropped entirely 2026-09-10 — removed here too,
+	  since the app no longer touches App Group UserDefaults at all.
 
 	  No other required-reason API categories are used:
 	    - File Timestamp APIs: FileManager is only used to look up
@@ -81,7 +77,6 @@
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
 				<string>CA92.1</string>
-				<string>1C8F.1</string>
 			</array>
 		</dict>
 	</array>
