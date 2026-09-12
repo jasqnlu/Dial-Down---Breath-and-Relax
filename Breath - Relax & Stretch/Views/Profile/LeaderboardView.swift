@@ -103,7 +103,8 @@ struct LeaderboardView: View {
                 displayName: local.displayName,
                 totalPoints: local.totalPoints,
                 streak: local.streak,
-                totalMinutes: local.totalMinutes
+                totalMinutes: local.totalMinutes,
+                lastSessionAt: nil
             )
             try? await SupabaseService.shared.uploadProfile(remote)
         }
