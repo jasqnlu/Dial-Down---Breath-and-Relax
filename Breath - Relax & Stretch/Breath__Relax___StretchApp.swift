@@ -8,6 +8,7 @@ struct BreathRelaxStretchApp: App {
     @StateObject private var deepLinkRouter = DeepLinkRouter()
     @StateObject private var pickingSession = ExercisePickingSession()
     @StateObject private var tourCoordinator = TourCoordinator()
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     /// Set (once, before any UI appears) when `sharedModelContainer` had to
     /// fall back to an in-memory store below. Read from `body`'s `.onAppear`
@@ -110,7 +111,12 @@ struct BreathRelaxStretchApp: App {
                     } message: {
                         Text("Your saved data couldn't be opened, so this session is running in a temporary mode — anything you do now will be lost when you close the app. Reopening the app again may restore normal saving.")
                     }
-                    .task { await syncRemoteCatalog() }
+                    .task {
+                        await syncRemoteCatalog()
+                        if shouldRegisterForRemotePush() {
+                            UIApplication.shared.registerForRemoteNotifications()
+                        }
+                    }
                 }
             }
             // Mounted unconditionally (not inside the `else` branch above) so a
