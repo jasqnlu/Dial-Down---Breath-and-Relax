@@ -222,11 +222,12 @@ once.
   REST API. Only the Edge Function's service-role connection can read it.
 - The APNs `.p8` key content lives only as a Supabase Edge Function secret,
   never in the repo, never in the client binary.
-- The Edge Function verifies the JWT of any *inbound* request against the
-  Supabase project's expected signing key (default Edge Function behavior)
-  for the client-facing upsert path (if the client calls a function rather
-  than hitting `push_tokens` directly via PostgREST — see open question
-  below); the cron-triggered send path is never client-reachable at all.
+- There is no client-facing Edge Function for the write path — see
+  "Decision: `push_tokens` writes go through direct PostgREST" below — so
+  the RLS policies above are the only enforcement point for reads/writes
+  to `push_tokens`. The one Edge Function this feature does add
+  (`send-streak-warnings`) is cron-triggered only and is never
+  client-reachable at all.
 
 ## Testing plan
 
@@ -244,13 +245,29 @@ once.
    confirm the notification arrives, then confirm `last_warned_date`
    stamped and a second cron tick doesn't double-send.
 
-## Open question to resolve before/during implementation
+## Decision: `push_tokens` writes go through direct PostgREST, not a function
 
-Should the client upsert `push_tokens` directly via PostgREST (like every
-other table today), or through a small dedicated Edge Function? Direct
-PostgREST is simpler and consistent with the rest of this codebase's
-"no custom backend, just RLS-scoped REST calls" style; a function only
-becomes necessary if we want server-side validation beyond what RLS can
-express. Recommendation: direct PostgREST upsert, no function needed for
-this write — reserve the Edge Function for the send-side logic only, which
-is the piece that actually requires a secret key and can't run client-side.
+Resolved in favor of direct PostgREST upsert — confirmed against the
+current codebase, which has no `supabase/functions/` directory at all yet;
+every existing table (`profiles`, the leaderboard tables, etc.) is written
+by the client the same way, straight through PostgREST under RLS. Adding a
+function for this one write would be the first exception to that pattern,
+and there's no requirement driving it: the RLS policies above already
+express the entire access rule ("a user may only write their own row"),
+which is exactly what RLS is for. A function only earns its place when
+logic can't be expressed as an RLS predicate — the send-side path is that
+case (it needs the APNs secret key and a cron trigger), the write-side path
+isn't.
+
+Concretely, this means:
+- The client-side "Token upload" / "Token removal" steps in **Client
+  changes** above are plain Supabase client calls
+  (`.upsert(_:onConflict:)` / `.delete()`) against `push_tokens`, the same
+  shape as every other `SupabaseService` write in this codebase — no new
+  endpoint, no new request type.
+- `send-streak-warnings` remains the only Edge Function this feature adds.
+- The **Security considerations** note about verifying an inbound client
+  JWT "if the client calls a function rather than hitting `push_tokens`
+  directly via PostgREST" no longer applies — there is no such function,
+  so that path is moot and RLS is the only enforcement point for the write
+  side.
