@@ -4,7 +4,7 @@ import os
 
 /// Everything a completed session (stretch routine or breathing pattern) needs
 /// recorded: the SwiftData `Session` row, `UserProfile` stats/streak/badges,
-/// HealthKit, Calendar, and the widget snapshot. `SessionPlayerView` and
+/// HealthKit, and Calendar. `SessionPlayerView` and
 /// `BreathingView` each drove this pipeline independently and had already
 /// drifted once (breathing passed no `bodyPartsCovered`) — this is the single
 /// place it happens now.
@@ -41,15 +41,14 @@ enum SessionRecorder {
     }
 
     /// Persists the session, updates profile stats/streak/badges, and fans out
-    /// to HealthKit/Calendar/Widget. Returns the profile's streak state after
+    /// to HealthKit/Calendar. Returns the profile's streak state after
     /// the update (zero/unchanged if no profile exists yet) so callers can
     /// use it without a second fetch.
     @discardableResult
     static func record(
         _ input: Input,
         modelContext: ModelContext,
-        calendarSyncEnabled: Bool,
-        totalSessionsCompleted: Int
+        calendarSyncEnabled: Bool
     ) -> Outcome {
         let session = Session(
             routineID: input.routineID,
@@ -100,13 +99,6 @@ enum SessionRecorder {
             CalendarService.shared.logCompletedSession(
                 title: input.calendarTitle, start: input.startedAt, end: input.completedAt)
         }
-
-        // Widget — update shared data so home screen widgets refresh
-        WidgetDataService.write(
-            streak: outcome.streak,
-            totalSessions: totalSessionsCompleted,
-            lastSessionDate: input.completedAt
-        )
 
         return outcome
     }
