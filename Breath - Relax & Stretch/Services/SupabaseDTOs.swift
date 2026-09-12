@@ -31,6 +31,10 @@ struct RemoteProfile: Codable, Sendable, Identifiable {
     let totalPoints: Int
     let streak: Int
     let totalMinutes: Int
+    /// Local wall-clock time of the most recent completed session, used
+    /// server-side (via get_streak_warning_candidates) to tell whether a
+    /// user has already practiced today in their own timezone.
+    let lastSessionAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -38,6 +42,20 @@ struct RemoteProfile: Codable, Sendable, Identifiable {
         case totalPoints  = "total_points"
         case streak
         case totalMinutes = "total_minutes"
+        case lastSessionAt = "last_session_at"
+    }
+}
+
+/// Upsert body for `push_tokens`. `user_id` is never included here — it's
+/// implied by the authenticated request (RLS's `auth.uid()`), matching how
+/// every other insert in this codebase omits the owner column from its body.
+struct RemotePushToken: Codable, Sendable {
+    let deviceToken: String
+    let timezone: String
+
+    enum CodingKeys: String, CodingKey {
+        case deviceToken = "device_token"
+        case timezone
     }
 }
 
