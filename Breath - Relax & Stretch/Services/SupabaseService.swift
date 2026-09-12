@@ -132,6 +132,30 @@ actor SupabaseService {
         try await delete(path: "/rest/v1/profiles?id=eq.\(encoded)")
     }
 
+    // MARK: - Push tokens (streak-about-to-break notifications)
+
+    /// Upserts this device's APNs token + IANA timezone. Requires a Supabase
+    /// Auth session (`AuthManager.isBackendAuthenticated`) — RLS rejects the
+    /// write otherwise, which is fine: this call is always best-effort
+    /// (`try?`) at every call site, exactly like `uploadProfile`.
+    ///
+    /// Expected Supabase table `push_tokens` — see supabase_schema.sql.
+    func registerPushToken(deviceToken: String, timezone: String) async throws {
+        let payload = RemotePushToken(deviceToken: deviceToken, timezone: timezone)
+        let data = try await MainActor.run { try JSONEncoder().encode(payload) }
+        try await post(path: "/rest/v1/push_tokens", body: data, upsert: true)
+    }
+
+    /// Deletes this user's push_tokens row (e.g. the notifications toggle
+    /// was switched off). Deletes by the currently authenticated user's own
+    /// row — the RLS delete policy only ever lets a session remove
+    /// `auth.uid()`'s own row, so no id needs to be passed.
+    func deletePushToken() async throws {
+        guard let userID = supabaseUserID else { return }
+        let encoded = userID.addingPercentEncoding(withAllowedCharacters: .alphanumerics.union(.init(charactersIn: "-._~"))) ?? ""
+        try await delete(path: "/rest/v1/push_tokens?user_id=eq.\(encoded)")
+    }
+
     /// Fetches the top profiles by points for the leaderboard.
     func fetchLeaderboard(limit: Int = 50) async throws -> [RemoteProfile] {
         let data = try await get(path: "/rest/v1/profiles?select=*&order=total_points.desc&limit=\(limit)")
