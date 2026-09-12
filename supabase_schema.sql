@@ -181,3 +181,76 @@ create policy "users can update their profile"
 create policy "users can delete their profile"
   on profiles for delete
   using (auth.uid() is not null and id = auth.uid()::text);
+
+-- ───────────────────────── profiles (additions) ─────────────────────────
+-- Added 2026-09-12 for streak-about-to-break push notifications. Best-effort
+-- upload from SessionRecorder.record() on every completed session.
+alter table profiles add column if not exists last_session_at timestamptz;
+
+-- ───────────────────────── push_tokens ─────────────────────────
+-- One row per signed-in device. Not publicly readable — only the service
+-- role (used exclusively by the send-streak-warnings Edge Function) ever
+-- reads this table; RLS still lets an owner manage their own row directly
+-- for register/unregister, matching every other write path in this file.
+
+create table if not exists push_tokens (
+  user_id         text primary key check (char_length(user_id) <= 40), -- auth.uid(), matches profiles.id
+  device_token    text not null check (char_length(device_token) <= 200),
+  timezone        text not null default 'UTC' check (char_length(timezone) <= 64), -- IANA name, e.g. "America/Los_Angeles"
+  last_warned_date date, -- last local calendar date this user was sent a streak-risk push; prevents double-send
+  updated_at      timestamptz not null default now()
+);
+
+alter table push_tokens enable row level security;
+
+create policy "users can upsert their own push token"
+  on push_tokens for insert
+  with check (auth.uid()::text = user_id);
+
+create policy "users can update their own push token"
+  on push_tokens for update
+  using (auth.uid()::text = user_id)
+  with check (auth.uid()::text = user_id);
+
+create policy "users can delete their own push token"
+  on push_tokens for delete
+  using (auth.uid()::text = user_id);
+
+-- No select policy: nobody needs to read this back through the client API.
+-- The Edge Function reads it via the service role, which bypasses RLS.
+
+-- ───────────────────────── get_streak_warning_candidates() ─────────────────────────
+-- Per-row IANA-timezone math lives here (not in the Edge Function) because
+-- Postgres's `at time zone` handles DST correctly and PostgREST filters
+-- can't express "local hour is 20" across arbitrary timezones in one call.
+-- security definer + a locked-down search_path so it's safe to run with the
+-- privileges of whoever created it (the migration, effectively postgres);
+-- execute is revoked from everyone except service_role below, so only the
+-- Edge Function (which authenticates as service_role) can call it.
+create or replace function get_streak_warning_candidates()
+returns table (
+  user_id      text,
+  device_token text,
+  timezone     text
+)
+language sql
+security definer
+set search_path = public
+as $$
+  select pt.user_id, pt.device_token, pt.timezone
+  from push_tokens pt
+  join profiles pr on pr.id = pt.user_id
+  where pr.streak >= 2
+    and extract(hour from (now() at time zone pt.timezone)) = 20
+    and (
+      pr.last_session_at is null
+      or pr.last_session_at < date_trunc('day', now() at time zone pt.timezone) at time zone pt.timezone
+    )
+    and (
+      pt.last_warned_date is null
+      or pt.last_warned_date <> (now() at time zone pt.timezone)::date
+    )
+$$;
+
+revoke all on function get_streak_warning_candidates() from public;
+grant execute on function get_streak_warning_candidates() to service_role;
