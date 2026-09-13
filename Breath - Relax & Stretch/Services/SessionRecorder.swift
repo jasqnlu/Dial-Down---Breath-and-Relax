@@ -94,6 +94,25 @@ enum SessionRecorder {
             }
         }
 
+        // Community — best-effort upload of last_session_at so the
+        // streak-warning server job knows this user already practiced
+        // today. Snapshot scalar fields now; `profile` is a SwiftData
+        // @Model and shouldn't be captured into the Task below.
+        if let profile = try? modelContext.fetch(FetchDescriptor<UserProfile>()).first {
+            let snapshot = RemoteProfile(
+                id: AuthManager.shared.backendID,
+                displayName: profile.displayName,
+                totalPoints: profile.totalPoints,
+                streak: profile.streak,
+                totalMinutes: profile.totalMinutes,
+                lastSessionAt: input.completedAt
+            )
+            Task {
+                guard SupabaseService.isConfigured, AuthManager.shared.isBackendAuthenticated else { return }
+                try? await SupabaseService.shared.uploadProfile(snapshot)
+            }
+        }
+
         // Calendar — opt-in, mirrors the session as an event
         if calendarSyncEnabled {
             CalendarService.shared.logCompletedSession(
