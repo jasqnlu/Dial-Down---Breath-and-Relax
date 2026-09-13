@@ -46,14 +46,18 @@ struct RemoteProfile: Codable, Sendable, Identifiable {
     }
 }
 
-/// Upsert body for `push_tokens`. `user_id` is never included here — it's
-/// implied by the authenticated request (RLS's `auth.uid()`), matching how
-/// every other insert in this codebase omits the owner column from its body.
+/// Upsert body for `push_tokens`. `user_id` *must* be sent explicitly: it's
+/// the table's primary key, `not null` with no default (see
+/// supabase_schema.sql), so PostgREST rejects a body without it. RLS still
+/// enforces that it matches `auth.uid()` — sending it is how the row gets
+/// addressed, not how it gets authorized.
 struct RemotePushToken: Codable, Sendable {
+    let userID: String
     let deviceToken: String
     let timezone: String
 
     enum CodingKeys: String, CodingKey {
+        case userID      = "user_id"
         case deviceToken = "device_token"
         case timezone
     }

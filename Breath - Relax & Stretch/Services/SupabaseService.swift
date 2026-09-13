@@ -40,6 +40,54 @@ actor SupabaseService {
         URL(string: urlString)?.host?.hasSuffix(".supabase.co") == true
     }
 
+    // MARK: - JSON coders (PostgREST wire format)
+    //
+    // Every PostgREST request/response in this file goes through these two,
+    // so a `Date` field added to any DTO in future is handled correctly by
+    // default. Swift's out-of-the-box strategy is `.deferredToDate` — a bare
+    // epoch-seconds `Double` — which Postgres `timestamptz` columns reject on
+    // write and which can't parse the ISO-8601 strings PostgREST sends back.
+    //
+    // Deliberately NOT used for the keychain session blob (storeSession /
+    // loadSessionIfNeeded): that's a private local round-trip whose already
+    // written-to-disk values are epoch doubles, and switching its strategy
+    // would make every existing signed-in user's stored session undecodable.
+
+    /// Encoder for anything sent to PostgREST. `.iso8601` emits
+    /// `2026-09-04T15:33:20Z`, which Postgres accepts for `timestamptz`.
+    nonisolated static func makeEncoder() -> JSONEncoder {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        return encoder
+    }
+
+    /// Decoder for anything read back from PostgREST.
+    ///
+    /// Not plain `.iso8601`: Postgres renders `timestamptz` with microsecond
+    /// precision (`2026-09-04T15:33:20.123456+00:00`), and
+    /// `ISO8601DateFormatter` only parses fractional seconds when explicitly
+    /// configured with `.withFractionalSeconds` — which then *stops* parsing
+    /// whole-second timestamps (`2026-09-04T15:33:20+00:00`), which Postgres
+    /// emits whenever the stored value happens to have no sub-second part.
+    /// Both shapes are real server output, so both must decode.
+    nonisolated static func makeDecoder() -> JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let raw = try decoder.singleValueContainer().decode(String.self)
+            let fractional = ISO8601DateFormatter()
+            fractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let date = fractional.date(from: raw) { return date }
+            let whole = ISO8601DateFormatter()
+            whole.formatOptions = [.withInternetDateTime]
+            if let date = whole.date(from: raw) { return date }
+            throw DecodingError.dataCorrupted(.init(
+                codingPath: decoder.codingPath,
+                debugDescription: "Expected an ISO-8601 timestamp, got \"\(raw)\"."
+            ))
+        }
+        return decoder
+    }
+
     // MARK: - Session state
     // A SupabaseSession exists only for users who signed in with Apple (the
     // id_token exchange below). Guests / local email accounts have none —
@@ -52,6 +100,9 @@ actor SupabaseService {
     private var session: SupabaseSession?
     private var didLoadSession = false
 
+    // Note: these two use plain JSONEncoder/JSONDecoder, *not* makeEncoder/
+    // makeDecoder — see the comment on those. This blob never leaves the
+    // device, and its already-persisted `expiresAt` values are epoch doubles.
     private func loadSessionIfNeeded() {
         guard !didLoadSession else { return }
         didLoadSession = true
@@ -96,7 +147,7 @@ actor SupabaseService {
     /// Enable RLS with a "read for all" select policy so the anon key can fetch.
     func fetchExercises() async throws -> [RemoteExercise] {
         let data = try await get(path: "/rest/v1/exercises?select=*&order=name")
-        return try JSONDecoder().decode([RemoteExercise].self, from: data)
+        return try Self.makeDecoder().decode([RemoteExercise].self, from: data)
     }
 
     // MARK: - Community (leaderboard / public profile)
@@ -116,7 +167,7 @@ actor SupabaseService {
     func uploadProfile(_ profile: RemoteProfile) async throws {
         // RemoteProfile.encode(to:) is @MainActor-isolated (Swift 6 inference);
         // hop to main actor for the encode, then continue in the actor.
-        let data = try await MainActor.run { try JSONEncoder().encode(profile) }
+        let data = try await MainActor.run { try Self.makeEncoder().encode(profile) }
         try await post(path: "/rest/v1/profiles", body: data, upsert: true)
     }
 
@@ -140,9 +191,21 @@ actor SupabaseService {
     /// (`try?`) at every call site, exactly like `uploadProfile`.
     ///
     /// Expected Supabase table `push_tokens` — see supabase_schema.sql.
+    ///
+    /// `user_id` is read from `AuthManager.backendID` — the same identity
+    /// `uploadProfile`'s callers key `profiles.id` on, which is exactly what
+    /// `push_tokens.user_id` joins against server-side. It's read inside the
+    /// `MainActor.run` hop this method already needs for encoding (AuthManager
+    /// is `@MainActor`), so no actor isolation is crossed unsafely.
     func registerPushToken(deviceToken: String, timezone: String) async throws {
-        let payload = RemotePushToken(deviceToken: deviceToken, timezone: timezone)
-        let data = try await MainActor.run { try JSONEncoder().encode(payload) }
+        let data = try await MainActor.run {
+            let payload = RemotePushToken(
+                userID: AuthManager.shared.backendID,
+                deviceToken: deviceToken,
+                timezone: timezone
+            )
+            return try Self.makeEncoder().encode(payload)
+        }
         try await post(path: "/rest/v1/push_tokens", body: data, upsert: true)
     }
 
@@ -159,7 +222,7 @@ actor SupabaseService {
     /// Fetches the top profiles by points for the leaderboard.
     func fetchLeaderboard(limit: Int = 50) async throws -> [RemoteProfile] {
         let data = try await get(path: "/rest/v1/profiles?select=*&order=total_points.desc&limit=\(limit)")
-        return try JSONDecoder().decode([RemoteProfile].self, from: data)
+        return try Self.makeDecoder().decode([RemoteProfile].self, from: data)
     }
 
     // Note: sessions had a write path (uploadSession) that was removed as

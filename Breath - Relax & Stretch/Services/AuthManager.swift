@@ -368,7 +368,16 @@ final class AuthManager: ObservableObject {
     private func endSupabaseSession() {
         UserDefaults.standard.removeObject(forKey: kSupabaseUserID)
         guard SupabaseService.isConfigured else { return }
-        Task.detached { await SupabaseService.shared.signOut() }
+        Task.detached {
+            // Best-effort, and ordered *before* the revoke for the same reason
+            // deleteAccount orders deleteProfile first: the push_tokens delete
+            // policy is `auth.uid()::text = user_id`, so the row can only be
+            // removed while the session that owns it is still valid. Left
+            // behind, a token nothing can ever address again keeps receiving
+            // streak pushes for an account that signed out.
+            try? await SupabaseService.shared.deletePushToken()
+            await SupabaseService.shared.signOut()
+        }
     }
 
     // MARK: - Delete account
@@ -390,6 +399,12 @@ final class AuthManager: ObservableObject {
         if SupabaseService.isConfigured {
             let departingID = backendID
             Task.detached {
+                // Same ordering rule as deleteProfile below: push_tokens'
+                // delete policy is `auth.uid()::text = user_id`, so the row
+                // must go before the session is revoked — afterwards nothing
+                // can ever authorize removing it, and a deleted account's
+                // device would keep receiving streak pushes.
+                try? await SupabaseService.shared.deletePushToken()
                 try? await SupabaseService.shared.deleteProfile(id: departingID)
                 await SupabaseService.shared.signOut()
             }
