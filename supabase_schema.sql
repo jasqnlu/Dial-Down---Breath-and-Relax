@@ -280,3 +280,43 @@ select cron.schedule(
   );
   $$
 );
+
+-- ──────────────── streak-warning cron (revised 2026-09-12) ────────────────
+-- Re-registers the same job name; cron.schedule upserts by name, so this
+-- supersedes the block above rather than adding a second job (kept as a
+-- separate block, in this file's usual append-only style, so the history of
+-- why each change happened stays readable). Two changes:
+--
+--   1. Sends the x-cron-secret shared secret the Edge Function now requires.
+--      The function is deployed with verify_jwt = true, which already blocks
+--      anonymous callers, but any signed-in user of the app holds a valid
+--      project JWT — this second factor is what makes the endpoint genuinely
+--      cron-only, as the spec's security section states.
+--   2. timeout_milliseconds := 60000. net.http_post defaults to 5000ms, and
+--      the function walks its candidates sequentially (one APNs round trip
+--      plus a DB update each), so 5s starts truncating the batch as soon as
+--      there are more than a handful of due users.
+--
+-- Like service_role_key, the secret itself is never in this file. One-time,
+-- run manually via the Dashboard SQL editor with a freshly generated random
+-- value, then set the SAME value as the function's CRON_SHARED_SECRET secret:
+--   select vault.create_secret('<random-secret>', 'cron_shared_secret');
+--   supabase secrets set CRON_SHARED_SECRET='<random-secret>' --project-ref wmsutfittuxrvcwuywrk
+-- Until both exist the job posts an empty secret and the function answers 401
+-- — failing closed, which is the intended behaviour for a missing secret.
+select cron.schedule(
+  'streak-warning-check',
+  '*/15 * * * *', -- every 15 minutes
+  $$
+  select net.http_post(
+    url := 'https://wmsutfittuxrvcwuywrk.supabase.co/functions/v1/send-streak-warnings',
+    headers := jsonb_build_object(
+      'Authorization',
+      'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key'),
+      'x-cron-secret',
+      coalesce((select decrypted_secret from vault.decrypted_secrets where name = 'cron_shared_secret'), '')
+    ),
+    timeout_milliseconds := 60000
+  );
+  $$
+);
