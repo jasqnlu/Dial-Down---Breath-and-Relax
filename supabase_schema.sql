@@ -254,3 +254,29 @@ $$;
 
 revoke all on function get_streak_warning_candidates() from public;
 grant execute on function get_streak_warning_candidates() to service_role;
+
+-- ───────────────────────── streak-warning cron ─────────────────────────
+-- pg_cron/pg_net are available on this plan but not enabled by default.
+-- supabase_vault is already enabled — the service-role key must live there,
+-- never inlined as a literal in this file, since cron.job definitions are
+-- visible to anyone with sufficient database privileges.
+create extension if not exists pg_cron;
+create extension if not exists pg_net;
+
+-- One-time, run manually via the Dashboard SQL editor (not part of this
+-- file, since it's a secret):
+--   select vault.create_secret('<service-role-key>', 'service_role_key');
+
+select cron.schedule(
+  'streak-warning-check',
+  '*/15 * * * *', -- every 15 minutes
+  $$
+  select net.http_post(
+    url := 'https://wmsutfittuxrvcwuywrk.supabase.co/functions/v1/send-streak-warnings',
+    headers := jsonb_build_object(
+      'Authorization',
+      'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key')
+    )
+  );
+  $$
+);
