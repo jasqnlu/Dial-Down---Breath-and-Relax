@@ -320,3 +320,76 @@ select cron.schedule(
   );
   $$
 );
+
+-- ───────────── RLS perf + correctness fixes (2026-09-15) ─────────────
+-- Prompted by `supabase get_advisors` ahead of launch. Two categories:
+--
+--   1. PERF (auth_rls_initplan, 11 findings across routines/sessions/
+--      push_tokens): a bare `auth.uid()` in USING/WITH CHECK is re-evaluated
+--      per row scanned; `(select auth.uid())` lets Postgres cache it once per
+--      query as an InitPlan instead. No behavior change.
+--   2. PERF (multiple_permissive_policies): exercises and routines each had
+--      two SELECT policies doing overlapping work (a broad "public" policy
+--      and a narrower duplicate) — every extra permissive policy is
+--      evaluated on every matching query. Dropped the narrower one in each
+--      case since the remaining policy is already a superset.
+--
+-- Also fixed in the same pass, found while rewriting these: "Users can
+-- update their own routines" and "...sessions" had a USING clause but no
+-- WITH CHECK. USING only gates which existing rows an UPDATE can target —
+-- without WITH CHECK a user could update a row they own and reassign its
+-- author_id/user_id to someone else's id, and RLS would not stop the write.
+-- Both now carry matching USING/WITH CHECK clauses.
+--
+-- NOT fixed here: the advisor's `extension_in_public` finding for pg_net.
+-- pg_net is not relocatable (`alter extension pg_net set schema` errors with
+-- "does not support SET SCHEMA" — same restriction Postgres applies to
+-- PostGIS). The real fix is `drop extension pg_net cascade` + recreate in
+-- `extensions`, which would drop `net.http_post` out from under the
+-- streak-warning-check cron job above until recreated. Confirmed via
+-- pg_proc that `net.http_post` already lives in the fixed `net` schema, not
+-- `public` — the finding is about the extension's own catalog entry, not an
+-- actually-exposed function — so this was left alone as not worth the
+-- coordinated downtime pre-launch.
+--
+-- Applied to the live project as migration rls_perf_and_security_fixes;
+-- `supabase get_advisors` (performance) returns zero findings afterward.
+
+drop policy "Anyone can read exercises" on public.exercises;
+drop policy "public routines are readable by anyone" on public.routines;
+
+alter policy "Users can read public routines or their own" on public.routines
+  using (is_public = true or (select auth.uid())::text = author_id);
+
+alter policy "Users can insert their own routines" on public.routines
+  with check ((select auth.uid())::text = author_id);
+
+alter policy "Users can update their own routines" on public.routines
+  using ((select auth.uid())::text = author_id)
+  with check ((select auth.uid())::text = author_id);
+
+alter policy "Users can delete their own routines" on public.routines
+  using ((select auth.uid())::text = author_id);
+
+alter policy "Users can read their own sessions" on public.sessions
+  using ((select auth.uid())::text = user_id);
+
+alter policy "Users can insert their own sessions" on public.sessions
+  with check ((select auth.uid())::text = user_id);
+
+alter policy "Users can update their own sessions" on public.sessions
+  using ((select auth.uid())::text = user_id)
+  with check ((select auth.uid())::text = user_id);
+
+alter policy "Users can delete their own sessions" on public.sessions
+  using ((select auth.uid())::text = user_id);
+
+alter policy "users can upsert their own push token" on public.push_tokens
+  with check ((select auth.uid())::text = user_id);
+
+alter policy "users can update their own push token" on public.push_tokens
+  using ((select auth.uid())::text = user_id)
+  with check ((select auth.uid())::text = user_id);
+
+alter policy "users can delete their own push token" on public.push_tokens
+  using ((select auth.uid())::text = user_id);
