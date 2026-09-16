@@ -1,5 +1,14 @@
 import Foundation
 
+// MARK: - HTTP seam
+// Lets tests inject a fake session instead of hitting the real network —
+// mirrors the KeychainStore seam already used for session persistence.
+protocol SupabaseHTTPSession: Sendable {
+    func data(for request: URLRequest) async throws -> (Data, URLResponse)
+}
+
+extension URLSession: SupabaseHTTPSession {}
+
 // MARK: - SupabaseService
 
 actor SupabaseService {
@@ -8,8 +17,12 @@ actor SupabaseService {
     /// `internal` (not `private`) for the same reason as AuthManager.init —
     /// tests construct instances with a FakeKeychainStore; production code
     /// should still go through `.shared`.
-    init(keychain: KeychainStore = SecItemKeychainStore(service: "com.breathapp.supabase")) {
+    init(
+        keychain: KeychainStore = SecItemKeychainStore(service: "com.breathapp.supabase"),
+        urlSession: SupabaseHTTPSession = URLSession.shared
+    ) {
         self.keychain = keychain
+        self.urlSession = urlSession
     }
 
     // The API base URL (https://<project-ref>.supabase.co) — NOT the dashboard
@@ -95,6 +108,7 @@ actor SupabaseService {
     // once the auth.uid() RLS policies in supabase_schema.sql are applied.
 
     private let keychain: KeychainStore
+    private let urlSession: SupabaseHTTPSession
     private static let sessionAccount = "supabase.session"
 
     private var session: SupabaseSession?
@@ -239,22 +253,36 @@ actor SupabaseService {
         let user: User
     }
 
-    /// Exchanges a Sign in with Apple identity token for a Supabase Auth
-    /// session and returns the Supabase user id (`auth.uid()`), which becomes
-    /// the app's backend identity (AuthManager.backendID). `nonce` is the raw
-    /// nonce whose SHA-256 was set on the ASAuthorization request. Requires
-    /// the Apple provider enabled in Supabase Dashboard → Authentication →
-    /// Providers with this app's bundle ID.
-    @discardableResult
-    func signInWithApple(identityToken: String, nonce: String? = nil) async throws -> String {
+    /// Exchanges an OIDC id_token (Apple or Google) for a Supabase Auth
+    /// session and returns the Supabase user id (`auth.uid()`). `nonce` is
+    /// the raw nonce whose hash was sent to the provider — Supabase verifies
+    /// the pair when the provider's id_token includes a nonce claim.
+    private func signInWithIdToken(provider: String, idToken: String, nonce: String?) async throws -> String {
         struct Body: Encodable {
-            let provider = "apple"
+            let provider: String
             let id_token: String
             let nonce: String?
         }
-        let body = try JSONEncoder().encode(Body(id_token: identityToken, nonce: nonce))
+        let body = try JSONEncoder().encode(Body(provider: provider, id_token: idToken, nonce: nonce))
         let grant = try await tokenRequest(grantType: "id_token", body: body)
         return grant.user.id
+    }
+
+    /// Exchanges a Sign in with Apple identity token for a Supabase Auth
+    /// session. Requires the Apple provider enabled in Supabase Dashboard →
+    /// Authentication → Providers with this app's bundle ID.
+    @discardableResult
+    func signInWithApple(identityToken: String, nonce: String? = nil) async throws -> String {
+        try await signInWithIdToken(provider: "apple", idToken: identityToken, nonce: nonce)
+    }
+
+    /// Exchanges a Google id_token for a Supabase Auth session. Requires the
+    /// Google provider enabled in Supabase Dashboard → Authentication →
+    /// Providers, with both the iOS and Web OAuth Client IDs listed (Web
+    /// first) under Client IDs — see Task 6.
+    @discardableResult
+    func signInWithGoogle(idToken: String, nonce: String? = nil) async throws -> String {
+        try await signInWithIdToken(provider: "google", idToken: idToken, nonce: nonce)
     }
 
     /// Best-effort server-side revocation of the refresh token, then clears
@@ -264,7 +292,7 @@ actor SupabaseService {
         if let token = session?.accessToken {
             var request = bareRequest(path: "/auth/v1/logout", method: "POST")
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-            _ = try? await URLSession.shared.data(for: request)
+            _ = try? await urlSession.data(for: request)
         }
         storeSession(nil)
     }
@@ -290,7 +318,7 @@ actor SupabaseService {
     private func tokenRequest(grantType: String, body: Data) async throws -> TokenGrant {
         var request = bareRequest(path: "/auth/v1/token?grant_type=\(grantType)", method: "POST")
         request.httpBody = body
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         try validate(response)
         let grant = try JSONDecoder().decode(TokenGrant.self, from: data)
         storeSession(SupabaseSession(
@@ -318,20 +346,20 @@ actor SupabaseService {
         var request = await makeRequest(path: path, method: "POST")
         request.httpBody = body
         if upsert { request.setValue("resolution=merge-duplicates", forHTTPHeaderField: "Prefer") }
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         try validate(response)
         return data
     }
 
     private func delete(path: String) async throws {
         let request = await makeRequest(path: path, method: "DELETE")
-        let (_, response) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await urlSession.data(for: request)
         try validate(response)
     }
 
     private func get(path: String) async throws -> Data {
         let request = await makeRequest(path: path, method: "GET")
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         try validate(response)
         return data
     }
