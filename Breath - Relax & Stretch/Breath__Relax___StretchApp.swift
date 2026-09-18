@@ -87,6 +87,7 @@ struct BreathRelaxStretchApp: App {
                     .onAppear {
                         let freshInstall = seedIfNeeded()
                         migrateSeedIfNeeded()
+                        claimOwnerlessRoutines()
                         if freshInstall {
                             // A first-ever launch already has all the content — don't
                             // greet new users with a "New Content Added" alert.
@@ -410,6 +411,16 @@ struct BreathRelaxStretchApp: App {
     /// idempotent and touches only UserDefaults.
     private func removeRetiredBodyMapStorage() {
         SeedMigrator.removeRetiredBodyMapMarkStorage()
+    }
+
+    /// Claims any pre-existing `Routine` rows with no owner (created before
+    /// `Routine.ownerID` existed) for whoever is using the device the first
+    /// time this runs post-update. See `SeedMigrator.claimOwnerlessRoutines`.
+    private func claimOwnerlessRoutines() {
+        let context = sharedModelContainer.mainContext
+        if SeedMigrator.claimOwnerlessRoutines(context: context, claimant: auth.backendID) {
+            try? context.save()
+        }
     }
 
     // MARK: - Remote catalog sync (best-effort, offline-first)
