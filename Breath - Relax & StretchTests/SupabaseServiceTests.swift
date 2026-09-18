@@ -58,6 +58,62 @@ struct SupabaseServiceTests {
         }
     }
 
+    @Test func signUpWithPasswordReturnsTheUserIDFromASuccessfulGrant() async throws {
+        let session = FakeHTTPSession(responses: [
+            .success(status: 200, body: Self.tokenGrantJSON(userID: "new-user-1"))
+        ])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        let uid = try await service.signUpWithPassword(email: "ada@example.com", password: "password123", name: "Ada")
+        #expect(uid == "new-user-1")
+    }
+
+    @Test func signUpWithPasswordMapsUserAlreadyExistsToAReadableMessage() async throws {
+        let session = FakeHTTPSession(responses: [
+            .success(status: 422, body: Data("""
+            {"code":422,"error_code":"user_already_exists","msg":"User already registered"}
+            """.utf8))
+        ])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        do {
+            _ = try await service.signUpWithPassword(email: "ada@example.com", password: "password123", name: "Ada")
+            Issue.record("Expected signUpWithPassword to throw")
+        } catch {
+            #expect((error as? LocalizedError)?.errorDescription == "An account with that email already exists.")
+        }
+    }
+
+    @Test func signInWithPasswordReturnsUserIDAndNameFromMetadata() async throws {
+        let session = FakeHTTPSession(responses: [
+            .success(status: 200, body: Data("""
+            {
+              "access_token": "fake-access-token",
+              "refresh_token": "fake-refresh-token",
+              "expires_in": 3600,
+              "user": { "id": "existing-user-1", "user_metadata": { "name": "Ada Lovelace" } }
+            }
+            """.utf8))
+        ])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        let result = try await service.signInWithPassword(email: "ada@example.com", password: "password123")
+        #expect(result.userID == "existing-user-1")
+        #expect(result.name == "Ada Lovelace")
+    }
+
+    @Test func signInWithPasswordMapsInvalidCredentialsToAReadableMessage() async throws {
+        let session = FakeHTTPSession(responses: [
+            .success(status: 400, body: Data("""
+            {"error_code":"invalid_credentials","msg":"Invalid login credentials"}
+            """.utf8))
+        ])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        do {
+            _ = try await service.signInWithPassword(email: "ada@example.com", password: "wrong")
+            Issue.record("Expected signInWithPassword to throw")
+        } catch {
+            #expect((error as? LocalizedError)?.errorDescription == "Incorrect email or password.")
+        }
+    }
+
     private static func tokenGrantJSON(userID: String) -> Data {
         Data("""
         {
