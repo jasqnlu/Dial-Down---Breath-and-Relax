@@ -133,6 +133,7 @@ final class AuthManager: ObservableObject {
 
     private let keychain: KeychainStore
     private let hashPassword: PasswordHasher
+    private let supabase: SupabaseAuthenticating
 
     /// Raw nonce for the in-flight Sign in with Apple request; its SHA-256 is
     /// embedded in the Apple identity token, and Supabase verifies the pair.
@@ -143,10 +144,12 @@ final class AuthManager: ObservableObject {
     /// go through `.shared`.
     init(
         keychain: KeychainStore = SecItemKeychainStore(service: "com.breathapp.auth"),
-        hasher: @escaping PasswordHasher = AuthManager.pbkdf2
+        hasher: @escaping PasswordHasher = AuthManager.pbkdf2,
+        supabase: SupabaseAuthenticating = SupabaseService.shared
     ) {
         self.keychain = keychain
         self.hashPassword = hasher
+        self.supabase = supabase
         loadPersistedState()
     }
 
@@ -294,8 +297,25 @@ final class AuthManager: ObservableObject {
 
     // MARK: - Sign in with Google
 
-    func handleGoogleSignIn(name: String, email: String) {
-        persist(name: name, email: email, providerVal: .google)
+    /// Exchanges the Google id_token for a real Supabase Auth session before
+    /// persisting local sign-in state, so a failed exchange (offline,
+    /// provider misconfigured, revoked token) surfaces as an error instead
+    /// of silently creating a cosmetic-only local account. Returns nil on
+    /// success, error string on failure — same convention as signUp/signIn.
+    func handleGoogleSignIn(idToken: String, nonce: String, name: String, email: String) async -> String? {
+        guard SupabaseService.isConfigured else {
+            return "Google sign-in isn't available right now. Please try again later."
+        }
+        do {
+            let uid = try await supabase.signInWithGoogle(idToken: idToken, nonce: nonce)
+            UserDefaults.standard.set(uid, forKey: kSupabaseUserID)
+            objectWillChange.send() // backendID/isBackendAuthenticated changed
+            persist(name: name, email: email, providerVal: .google)
+            return nil
+        } catch {
+            return (error as? LocalizedError)?.errorDescription
+                ?? "Couldn't sign in with Google. Please try again."
+        }
     }
 
     // MARK: - Email / Password

@@ -26,8 +26,11 @@ struct AuthManagerTests {
         for key in Self.keysToReset { d.removeObject(forKey: key) }
     }
 
-    private func makeManager(hasher: @escaping PasswordHasher = AuthManager.pbkdf2) -> AuthManager {
-        AuthManager(keychain: FakeKeychainStore(), hasher: hasher)
+    private func makeManager(
+        hasher: @escaping PasswordHasher = AuthManager.pbkdf2,
+        supabase: SupabaseAuthenticating = FakeSupabaseAuthenticating()
+    ) -> AuthManager {
+        AuthManager(keychain: FakeKeychainStore(), hasher: hasher, supabase: supabase)
     }
 
     // MARK: - signUp
@@ -162,6 +165,41 @@ struct AuthManagerTests {
         hasher.shouldFail = true
         #expect(manager.signIn(email: "ada@example.com", password: "password123") == "Incorrect password.")
     }
+
+    // MARK: - Google sign-in (real Supabase account)
+
+    @Test func handleGoogleSignInCreatesABackendSessionOnSuccess() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signInWithGoogleResult = .success("google-uid-1")
+        let manager = makeManager(supabase: fake)
+
+        let result = await manager.handleGoogleSignIn(
+            idToken: "fake-id-token", nonce: "fake-nonce",
+            name: "Ada", email: "ada@example.com"
+        )
+
+        #expect(result == nil)
+        #expect(manager.isSignedIn)
+        #expect(manager.provider == .google)
+        #expect(manager.displayName == "Ada")
+        #expect(manager.backendID == "google-uid-1")
+        #expect(manager.isBackendAuthenticated)
+    }
+
+    @Test func handleGoogleSignInSurfacesTheSupabaseErrorAndDoesNotSignIn() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signInWithGoogleResult = .failure(SupabaseAuthError(code: "invalid_grant", message: nil))
+        let manager = makeManager(supabase: fake)
+
+        let result = await manager.handleGoogleSignIn(
+            idToken: "fake-id-token", nonce: "fake-nonce",
+            name: "Ada", email: "ada@example.com"
+        )
+
+        #expect(result != nil)
+        #expect(!manager.isSignedIn)
+        #expect(!manager.isBackendAuthenticated)
+    }
 }
 
 // MARK: - Test doubles
@@ -179,5 +217,22 @@ private final class ToggleableHasher {
     var shouldFail = false
     func hash(_ password: String, _ salt: Data) -> String {
         shouldFail ? "" : AuthManager.pbkdf2(password, salt: salt)
+    }
+}
+
+private final class FakeSupabaseAuthenticating: SupabaseAuthenticating, @unchecked Sendable {
+    var signInWithGoogleResult: Result<String, Error> = .failure(SupabaseAuthError(code: nil, message: nil))
+    var signUpWithPasswordResult: Result<String, Error> = .failure(SupabaseAuthError(code: nil, message: nil))
+    var signInWithPasswordResult: Result<(userID: String, name: String?), Error> =
+        .failure(SupabaseAuthError(code: nil, message: nil))
+
+    func signInWithGoogle(idToken: String, nonce: String?) async throws -> String {
+        try signInWithGoogleResult.get()
+    }
+    func signUpWithPassword(email: String, password: String, name: String) async throws -> String {
+        try signUpWithPasswordResult.get()
+    }
+    func signInWithPassword(email: String, password: String) async throws -> (userID: String, name: String?) {
+        try signInWithPasswordResult.get()
     }
 }
