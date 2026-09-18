@@ -476,7 +476,7 @@ struct GoogleAuthServiceTests {
     @Test func sha256HexMatchesAKnownTestVector() {
         // SHA-256("") — a standard test vector, independent of any app logic.
         #expect(GoogleAuthService.sha256Hex("") ==
-                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b85")
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
     }
 
     @Test func sha256HexIsDeterministicForTheSameInput() {
