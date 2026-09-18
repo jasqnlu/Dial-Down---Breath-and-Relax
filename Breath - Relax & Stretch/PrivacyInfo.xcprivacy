@@ -28,15 +28,24 @@
 	    - System boot time APIs (systemUptime): not used anywhere.
 	    - Active keyboard APIs: not used anywhere.
 
-	  NSPrivacyCollectedDataTypes: the only data leaving the device is the
-	  community leaderboard upload in LeaderboardView.swift /
-	  SupabaseService.uploadProfile (RemoteProfile in Services/SupabaseDTOs.swift):
-	  a user-chosen display name plus points/streak/total-minutes stats, keyed
-	  by an anonymous per-install/auth UUID (auth.backendID) — per the code
-	  comments in SupabaseService.swift ("Only points/streak/minutes are
-	  shared — no email; id is the anonymous per-install UUID"), the user's
-	  email address is confirmed to never leave the device (email/password
-	  auth is Keychain-only, local to the device). Not used for tracking.
+	  NSPrivacyCollectedDataTypes: two categories of data leave the device.
+
+	    1. The community leaderboard upload in LeaderboardView.swift /
+	       SupabaseService.uploadProfile (RemoteProfile in
+	       Services/SupabaseDTOs.swift): a user-chosen display name plus
+	       points/streak/total-minutes stats, keyed by an anonymous
+	       per-install/auth UUID (auth.backendID) — per the code comments in
+	       SupabaseService.swift ("Only points/streak/minutes are shared —
+	       no email; id is the anonymous per-install UUID").
+
+	    2. Email address, sent to our authentication provider (Supabase) when
+	       creating or signing into an account via Sign in with Apple,
+	       Google, or email/password (SupabaseService.swift's
+	       signInWithApple/signInWithGoogle/signUpWithPassword/
+	       signInWithPassword). Used solely to verify identity on future
+	       sign-ins; never linked to the anonymous leaderboard data above.
+
+	  Neither category is used for tracking.
 	-->
 	<key>NSPrivacyTracking</key>
 	<false/>
@@ -59,6 +68,18 @@
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeOtherUsageData</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeEmailAddress</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
 			<true/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
