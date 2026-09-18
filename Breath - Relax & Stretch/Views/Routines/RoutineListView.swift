@@ -2,12 +2,19 @@ import SwiftUI
 import SwiftData
 
 struct RoutineListView: View {
-    @Query private var routines: [Routine]
+    @Query private var allRoutines: [Routine]
     @Query private var exercises: [Exercise]
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var pickingSession: ExercisePickingSession
+    @EnvironmentObject private var auth: AuthManager
 
-    @State private var showingBuilder  = false
+    /// Only the current account's routines — `allRoutines` holds every
+    /// routine ever created on this device, across every account that's
+    /// signed in on it. See `Routine.ownerID`.
+    private var routines: [Routine] {
+        allRoutines.filter { $0.ownerID == auth.backendID }
+    }
+
     @State private var routineToPlay: Routine?
     @State private var routineToEdit: Routine?
     @State private var routinePendingDelete: Routine?
@@ -86,7 +93,23 @@ struct RoutineListView: View {
             .floatingTabBarClearance()
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button { showingBuilder = true } label: {
+                    // "+ New Routine" now jumps straight into the Exercises
+                    // tab's picking flow — same pickingSession the old empty
+                    // CustomizeRoutineView screen's own "Add Exercises"
+                    // button used to require a second tap for. The
+                    // `.exercisePickingFinished` handler below still routes
+                    // the result into RoutineBuilderView for naming/saving.
+                    Button {
+                        pickingSession.begin(context: .init(
+                            title: "",
+                            isPinned: false,
+                            baseExercises: [],
+                            originTab: 4, // Routines tab
+                            editingRoutineID: nil,
+                            durationOverrides: [:]
+                        ))
+                        NotificationCenter.default.post(name: .browseExercisesRequested, object: nil)
+                    } label: {
                         Image(systemName: "plus")
                     }
                 }
@@ -109,32 +132,6 @@ struct RoutineListView: View {
                             .font(.luminaBody)
                             .foregroundStyle(Color.luminaOnSurfaceVariant)
                     }
-                }
-            }
-            .sheet(isPresented: $showingBuilder) {
-                // "+ New Routine" now opens the same customize-and-reorder
-                // screen Today's Customize button and the mini-routine
-                // review's "Create New Routine" use — RoutineBuilderView
-                // remains only for *editing* an already-saved routine
-                // (below), whose Save/Update toolbar semantics don't apply
-                // to a from-scratch creation flow.
-                CustomizeRoutineView(
-                    title: "New Routine",
-                    exercises: [],
-                    isPinned: false,
-                    showsNameField: true,
-                    showsPinToggle: false,
-                    primaryActionLabel: "Save Routine",
-                    primaryActionIcon: "checkmark",
-                    pickingOriginTab: 4 // Routines tab
-                ) { name, exercises, _, durationOverrides in
-                    let routine = Routine(
-                        name: name,
-                        exerciseIDs: exercises.map(\.uuid),
-                        exerciseDurationOverrides: durationOverrides
-                    )
-                    modelContext.insert(routine)
-                    try? modelContext.save()
                 }
             }
             .sheet(item: $routineToEdit) { routine in
@@ -306,4 +303,5 @@ struct RoutineRow: View {
 #Preview {
     RoutineListView()
         .modelContainer(for: [Routine.self, Exercise.self], inMemory: true)
+        .environmentObject(AuthManager.shared)
 }
