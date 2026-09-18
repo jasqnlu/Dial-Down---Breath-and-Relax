@@ -33,7 +33,15 @@
 
 - [ ] **Step 1: Write the failing test for the new seam + Google method**
 
-Add to `Breath - Relax & StretchTests/SupabaseServiceTests.swift` (below the existing `@Test` methods, inside the `struct SupabaseServiceTests`, and a new fake session type + JSON fixture below the struct):
+First add `import Foundation` to the top of `Breath - Relax & StretchTests/SupabaseServiceTests.swift` (it currently only has `import Testing` and `@testable import BreathRelaxStretch` — the new code below needs `Data`, `URLRequest`, `URLResponse`, `HTTPURLResponse`, `URLError`, and `NSLock`, none of which resolve without it):
+
+```swift
+import Testing
+import Foundation
+@testable import BreathRelaxStretch
+```
+
+Then add to `Breath - Relax & StretchTests/SupabaseServiceTests.swift` (below the existing `@Test` methods, inside the `struct SupabaseServiceTests`, and a new fake session type + JSON fixture below the struct):
 
 ```swift
     @Test func signInWithGoogleReturnsTheUserIDFromASuccessfulGrant() async throws {
@@ -118,7 +126,7 @@ Note: the closing `}` that used to end `struct SupabaseServiceTests` moves to ri
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16" -only-testing:BreathRelaxStretchTests/SupabaseServiceTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:"Breath - Relax & StretchTests/SupabaseServiceTests"`
 
 Expected: FAIL to compile — `SupabaseService` has no `urlSession:` init parameter, no `SupabaseHTTPSession` protocol, and no `signInWithGoogle` method yet.
 
@@ -196,7 +204,7 @@ Replace `signInWithApple` (the whole method, currently under `// MARK: - Auth`) 
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16" -only-testing:BreathRelaxStretchTests/SupabaseServiceTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:"Breath - Relax & StretchTests/SupabaseServiceTests"`
 
 Expected: PASS — all existing `SupabaseServiceTests` plus the two new ones.
 
@@ -285,7 +293,7 @@ Also add `import Testing` already present handles `Issue.record` — no new impo
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16" -only-testing:BreathRelaxStretchTests/SupabaseServiceTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:"Breath - Relax & StretchTests/SupabaseServiceTests"`
 
 Expected: FAIL to compile — `signUpWithPassword`/`signInWithPassword` don't exist yet.
 
@@ -427,7 +435,7 @@ extension SupabaseService: SupabaseAuthenticating {}
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16" -only-testing:BreathRelaxStretchTests/SupabaseServiceTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:"Breath - Relax & StretchTests/SupabaseServiceTests"`
 
 Expected: PASS — all `SupabaseServiceTests`, including the four new ones.
 
@@ -483,7 +491,7 @@ struct GoogleAuthServiceTests {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16" -only-testing:BreathRelaxStretchTests/GoogleAuthServiceTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:"Breath - Relax & StretchTests/GoogleAuthServiceTests"`
 
 Expected: FAIL to compile — `sha256Hex` doesn't exist, and the new test file isn't in the target yet (Xcode auto-syncs the Tests folder per this project's existing convention — no manual project.pbxproj edit needed, matching how other test files were added).
 
@@ -608,7 +616,7 @@ Replace `TokenResponse` and `exchangeCode`:
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16" -only-testing:BreathRelaxStretchTests/GoogleAuthServiceTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:"Breath - Relax & StretchTests/GoogleAuthServiceTests"`
 
 Expected: PASS — all four `GoogleAuthServiceTests`.
 
@@ -709,7 +717,7 @@ private final class FakeSupabaseAuthenticating: SupabaseAuthenticating, @uncheck
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16" -only-testing:BreathRelaxStretchTests/AuthManagerTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:"Breath - Relax & StretchTests/AuthManagerTests"`
 
 Expected: FAIL to compile — `AuthManager.init` has no `supabase:` parameter, and `handleGoogleSignIn` doesn't accept `idToken`/`nonce` or return a value.
 
@@ -788,11 +796,11 @@ In `Breath - Relax & Stretch/Views/Auth/AuthView.swift`, replace `signInWithGoog
 
 - [ ] **Step 5: Run the tests to verify they pass, then build the full app target**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16" -only-testing:BreathRelaxStretchTests/AuthManagerTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:"Breath - Relax & StretchTests/AuthManagerTests"`
 
 Expected: PASS — all `AuthManagerTests`, including the two new ones.
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16"`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17"`
 
 Expected: BUILD SUCCEEDED — confirms `AuthView`'s call site compiles against the new `GoogleSignInResult`/`handleGoogleSignIn` signatures (the project won't fully build until this step, since Task 3 alone left this call site broken).
 
@@ -952,7 +960,7 @@ The `FakeSupabaseAuthenticating` class from Task 4 stays as-is; no changes neede
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16" -only-testing:BreathRelaxStretchTests/AuthManagerTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:"Breath - Relax & StretchTests/AuthManagerTests"`
 
 Expected: FAIL to compile — `AuthManager.signUp`/`signIn` are still synchronous with the old PBKDF2 body, and `init` still requires `hasher:`.
 
@@ -1078,11 +1086,11 @@ In `Breath - Relax & Stretch/Views/Auth/EmailAuthView.swift`, replace `submit()`
 
 - [ ] **Step 5: Run the tests to verify they pass, then build the full app target**
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16" -only-testing:BreathRelaxStretchTests/AuthManagerTests`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17" -only-testing:"Breath - Relax & StretchTests/AuthManagerTests"`
 
 Expected: PASS — every `AuthManagerTests` test.
 
-Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16"`
+Run: `xcodebuild test -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17"`
 
 Expected: BUILD SUCCEEDED and full test suite PASS — confirms nothing else in the app still references `PasswordHasher`, `AuthManager.pbkdf2`, or the old synchronous `signUp`/`signIn`/`handleGoogleSignIn` signatures.
 
@@ -1121,7 +1129,7 @@ Same Providers page → **Email** → enable the provider → disable **"Confirm
 
 - [ ] **Step 4: Build and run in the simulator, verify all three providers**
 
-Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "Breath - Relax & Stretch" -destination "platform=iOS Simulator,name=iPhone 16"`
+Run: `xcodebuild build -project "Breath - Relax & Stretch.xcodeproj" -scheme "BreathRelaxStretch" -destination "platform=iOS Simulator,name=iPhone 17"`
 
 Then launch the app in the simulator (via Xcode or the project's `run`/`verify` skill if one is set up) and manually check:
 1. **Google**: tap "Google" on the welcome screen, complete the consent flow with a real Google account → should land signed in with no error banner.

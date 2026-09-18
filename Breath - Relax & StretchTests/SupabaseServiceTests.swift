@@ -1,4 +1,5 @@
 import Testing
+import Foundation
 @testable import BreathRelaxStretch
 
 // Regression coverage for the "looks configured, isn't" bug class: the
