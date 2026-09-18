@@ -23,6 +23,7 @@ struct MiniRoutineReviewView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var auth: AuthManager
     // "Create New Routine" and "Start Mini-Routine" both route through the
     // same customize-and-reorder screen Today's Customize button opens
     // (CustomizeRoutineView) instead of each having their own separate
@@ -101,7 +102,8 @@ struct MiniRoutineReviewView: View {
                     let routine = Routine(
                         name: name,
                         exerciseIDs: exercises.map(\.uuid),
-                        exerciseDurationOverrides: durationOverrides
+                        exerciseDurationOverrides: durationOverrides,
+                        ownerID: auth.backendID
                     )
                     modelContext.insert(routine)
                     try? modelContext.save()
@@ -196,8 +198,14 @@ private struct RoutineChooserView: View {
     let onSaved: () -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @Query private var routines: [Routine]
+    @Query private var allRoutines: [Routine]
+    @EnvironmentObject private var auth: AuthManager
     @State private var routineToAddTo: Routine?
+
+    /// Only the current account's routines — see `Routine.ownerID`.
+    private var routines: [Routine] {
+        allRoutines.filter { $0.ownerID == auth.backendID }
+    }
 
     var body: some View {
         NavigationStack {
