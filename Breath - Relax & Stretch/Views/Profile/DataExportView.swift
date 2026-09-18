@@ -6,8 +6,16 @@ import UniformTypeIdentifiers
 
 struct DataExportView: View {
     @Query(sort: \Session.startedAt) private var sessions: [Session]
-    @Query private var routines: [Routine]
+    @Query private var allRoutines: [Routine]
     @Query private var profiles: [UserProfile]
+    @EnvironmentObject private var auth: AuthManager
+
+    /// Only the current account's routines — see `Routine.ownerID`. A data
+    /// export should reflect what this account can see, not every routine
+    /// ever created on this device.
+    private var routines: [Routine] {
+        allRoutines.filter { $0.ownerID == auth.backendID }
+    }
 
     @State private var exportFormat: ExportFormat = .csv
     @State private var exportURL: URL?
@@ -398,5 +406,6 @@ private struct ProfileExportRow: Sendable {
     NavigationStack {
         DataExportView()
             .modelContainer(for: [Session.self, Routine.self, UserProfile.self], inMemory: true)
+            .environmentObject(AuthManager.shared)
     }
 }
