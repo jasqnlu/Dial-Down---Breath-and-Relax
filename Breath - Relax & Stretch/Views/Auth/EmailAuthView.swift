@@ -132,30 +132,32 @@ struct EmailAuthView: View {
         errorMsg = nil
         isLoading = true
         notifyFeedback.prepare()
-        if isSignUp {
-            guard password == confirmPwd else {
-                errorMsg = "Passwords do not match."
-                notifyFeedback.notificationOccurred(.error)
-                isLoading = false
-                return
-            }
-            if let err = auth.signUp(name: name, email: email, password: password) {
-                errorMsg = err
-                notifyFeedback.notificationOccurred(.error)
+        Task {
+            if isSignUp {
+                guard password == confirmPwd else {
+                    errorMsg = "Passwords do not match."
+                    notifyFeedback.notificationOccurred(.error)
+                    isLoading = false
+                    return
+                }
+                if let err = await auth.signUp(name: name, email: email, password: password) {
+                    errorMsg = err
+                    notifyFeedback.notificationOccurred(.error)
+                } else {
+                    notifyFeedback.notificationOccurred(.success)
+                    dismiss()
+                }
             } else {
-                notifyFeedback.notificationOccurred(.success)
-                dismiss()
+                if let err = await auth.signIn(email: email, password: password) {
+                    errorMsg = err
+                    notifyFeedback.notificationOccurred(.error)
+                } else {
+                    notifyFeedback.notificationOccurred(.success)
+                    dismiss()
+                }
             }
-        } else {
-            if let err = auth.signIn(email: email, password: password) {
-                errorMsg = err
-                notifyFeedback.notificationOccurred(.error)
-            } else {
-                notifyFeedback.notificationOccurred(.success)
-                dismiss()
-            }
+            isLoading = false
         }
-        isLoading = false
     }
 }
 
