@@ -212,7 +212,7 @@ struct AuthView: View {
         do {
             let user = try await GoogleAuthService.shared.signIn(presentationAnchor: anchor)
             authError = nil
-            auth.handleGoogleSignIn(name: user.name, email: user.email)
+            auth.handleGoogleSignIn(name: user.user.name, email: user.user.email)
         } catch GoogleAuthService.GoogleAuthError.cancelled {
             // User dismissed the sheet — not an error worth surfacing.
         } catch {
