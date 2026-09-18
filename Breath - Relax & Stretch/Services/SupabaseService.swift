@@ -246,7 +246,11 @@ actor SupabaseService {
     // MARK: - Auth
 
     private struct TokenGrant: Decodable {
-        struct User: Decodable { let id: String }
+        struct UserMetadata: Decodable { let name: String? }
+        struct User: Decodable {
+            let id: String
+            let user_metadata: UserMetadata?
+        }
         let access_token: String
         let refresh_token: String
         let expires_in: Double
@@ -283,6 +287,70 @@ actor SupabaseService {
     @discardableResult
     func signInWithGoogle(idToken: String, nonce: String? = nil) async throws -> String {
         try await signInWithIdToken(provider: "google", idToken: idToken, nonce: nonce)
+    }
+
+    /// Runs a POST against an auth endpoint that returns a full session
+    /// directly (signup with email confirmation disabled, or a token grant
+    /// with a query-string grant_type). Distinct from `tokenRequest`
+    /// (which always targets `/auth/v1/token`) so this can target
+    /// `/auth/v1/signup` too, and so its richer error-body mapping doesn't
+    /// change `tokenRequest`'s existing `SupabaseError.httpError` contract
+    /// that `refreshSession` pattern-matches on.
+    private func authRequest(path: String, grantQuery: String? = nil, body: Data) async throws -> TokenGrant {
+        let fullPath = grantQuery.map { "\(path)?grant_type=\($0)" } ?? path
+        var request = bareRequest(path: fullPath, method: "POST")
+        request.httpBody = body
+        let (data, response) = try await urlSession.data(for: request)
+        if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
+            let errorBody = try? JSONDecoder().decode(SupabaseAuthErrorBody.self, from: data)
+            throw SupabaseAuthError(
+                code: errorBody?.error_code ?? errorBody?.error,
+                message: errorBody?.msg ?? errorBody?.error_description
+            )
+        }
+        let grant = try JSONDecoder().decode(TokenGrant.self, from: data)
+        storeSession(SupabaseSession(
+            accessToken:  grant.access_token,
+            refreshToken: grant.refresh_token,
+            userID:       grant.user.id,
+            expiresAt:    Date().addingTimeInterval(grant.expires_in)
+        ))
+        return grant
+    }
+
+    /// Signs up a new Supabase Auth user with email/password. `name` is
+    /// stored as `data: {"name": name}`, landing in `raw_user_meta_data` —
+    /// used only to redisplay the name on a later sign-in, never for
+    /// authorization. Requires the Email provider enabled and "Confirm
+    /// email" disabled in Supabase Dashboard → Authentication → Providers
+    /// (see Task 6) — otherwise this returns a pending-confirmation user
+    /// with no session, and the throw path here won't fire since that's a
+    /// 200 response with a null session, which JSONDecoder would then fail
+    /// on decoding as TokenGrant (surfacing as a decode error, which is
+    /// correct: the app doesn't support the confirmation-pending state).
+    func signUpWithPassword(email: String, password: String, name: String) async throws -> String {
+        struct Body: Encodable {
+            let email: String
+            let password: String
+            let data: [String: String]
+        }
+        let body = try JSONEncoder().encode(Body(email: email, password: password, data: ["name": name]))
+        let grant = try await authRequest(path: "/auth/v1/signup", body: body)
+        return grant.user.id
+    }
+
+    /// Signs in an existing Supabase Auth user with email/password. Returns
+    /// the display name from `raw_user_meta_data` alongside the user id so
+    /// callers can restore it after a reinstall (there is no local Keychain
+    /// copy of it once email/password auth lives entirely in Supabase).
+    func signInWithPassword(email: String, password: String) async throws -> (userID: String, name: String?) {
+        struct Body: Encodable {
+            let email: String
+            let password: String
+        }
+        let body = try JSONEncoder().encode(Body(email: email, password: password))
+        let grant = try await authRequest(path: "/auth/v1/token", grantQuery: "password", body: body)
+        return (grant.user.id, grant.user.user_metadata?.name)
     }
 
     /// Best-effort server-side revocation of the refresh token, then clears
@@ -390,6 +458,33 @@ actor SupabaseService {
     }
 }
 
+// MARK: - Auth errors
+
+/// Maps GoTrue's error response body to a readable message. GoTrue has
+/// shipped two error body shapes across versions (`error_code`/`msg` and the
+/// older `error`/`error_description`), so both are read; whichever is
+/// present wins.
+struct SupabaseAuthError: LocalizedError {
+    let code: String?
+    let message: String?
+
+    var errorDescription: String? {
+        switch code {
+        case "user_already_exists":  return "An account with that email already exists."
+        case "invalid_credentials":  return "Incorrect email or password."
+        case "weak_password":        return message ?? "Password is too weak."
+        default:                     return "Something went wrong, please try again."
+        }
+    }
+}
+
+private struct SupabaseAuthErrorBody: Decodable {
+    let error_code: String?
+    let msg: String?
+    let error: String?
+    let error_description: String?
+}
+
 // MARK: - Errors
 
 enum SupabaseError: LocalizedError {
@@ -400,6 +495,18 @@ enum SupabaseError: LocalizedError {
         }
     }
 }
+
+// MARK: - Auth seam
+// Lets AuthManager depend on an abstraction instead of the concrete actor,
+// so tests can inject a fake instead of hitting the network — mirrors the
+// KeychainStore seam.
+protocol SupabaseAuthenticating: Sendable {
+    func signInWithGoogle(idToken: String, nonce: String?) async throws -> String
+    func signUpWithPassword(email: String, password: String, name: String) async throws -> String
+    func signInWithPassword(email: String, password: String) async throws -> (userID: String, name: String?)
+}
+
+extension SupabaseService: SupabaseAuthenticating {}
 
 // DTOs live in SupabaseDTOs.swift — kept separate so Swift 6 never
 // infers @MainActor isolation on their synthesised Codable conformances.
