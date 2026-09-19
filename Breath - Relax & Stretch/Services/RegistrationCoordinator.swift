@@ -19,15 +19,18 @@ final class RegistrationCoordinator: ObservableObject {
     private let store: SupabaseProfileStoring
     private let lookupTimeout: Duration
     private let sessionPollInterval: Duration
+    private let sessionWaitTimeout: Duration
 
     init(
         store: SupabaseProfileStoring = SupabaseService.shared,
         lookupTimeout: Duration = .seconds(6),
-        sessionPollInterval: Duration = .milliseconds(200)
+        sessionPollInterval: Duration = .milliseconds(200),
+        sessionWaitTimeout: Duration = .seconds(3)
     ) {
         self.store = store
         self.lookupTimeout = lookupTimeout
         self.sessionPollInterval = sessionPollInterval
+        self.sessionWaitTimeout = sessionWaitTimeout
     }
 
     /// Returns nil when cancelled, or when the name step is already showing
@@ -38,21 +41,27 @@ final class RegistrationCoordinator: ObservableObject {
         userID: String,
         local: PersonName,
         providerPrefill: PersonName,
-        hasBackendSession: () -> Bool
+        hasBackendSession: () -> Bool,
+        userIDProvider: (() -> String)? = nil
     ) async -> RegistrationOutcome? {
         if case .needsName = state { return nil }
         // Keep showing Home if we already resolved as registered; only a
         // first/unknown resolve shows the spinner.
         if state != .registered { state = .checking }
 
-        let lookup = await lookup(userID: userID, hasBackendSession: hasBackendSession)
-        guard !Task.isCancelled else { return nil }
+        let (lookup, resolvedID) = await lookup(userID: userID, hasBackendSession: hasBackendSession,
+                                                userIDProvider: userIDProvider)
+        guard !Task.isCancelled else {
+            // Don't leave the spinner state stuck for the next resolve.
+            if state == .checking { state = .idle }
+            return nil
+        }
 
         let outcome = RegistrationRouting.resolve(lookup: lookup, local: local, providerPrefill: providerPrefill)
         switch outcome {
         case .registered(let name, let backfill):
             state = .registered
-            if backfill { try? await store.upsertProfileName(id: userID, name: name) }
+            if backfill { try? await store.upsertProfileName(id: resolvedID, name: name) }
         case .needsName(let prefill):
             state = .needsName(prefill: prefill)
         }
@@ -79,16 +88,28 @@ final class RegistrationCoordinator: ObservableObject {
     /// with Apple arrives asynchronously after `isSignedIn` flips — until then
     /// `backendID` is the anonymous UUID and a lookup would falsely say "no
     /// row". So wait (bounded) for a session before querying.
-    private func lookup(userID: String, hasBackendSession: () -> Bool) async -> RemoteProfileLookup {
+    /// The session wait and the fetch share one overall `lookupTimeout`
+    /// deadline (the fetch keeps a 1s floor). The id is re-read from
+    /// `userIDProvider` after the wait, since it changes when the session lands.
+    private func lookup(userID: String, hasBackendSession: () -> Bool,
+                        userIDProvider: (() -> String)?) async -> (RemoteProfileLookup, String) {
         let clock = ContinuousClock()
-        let deadline = clock.now.advanced(by: lookupTimeout)
+        let start = clock.now
+        let overallDeadline = start.advanced(by: lookupTimeout)
+        let sessionDeadline = start.advanced(by: min(sessionWaitTimeout, lookupTimeout))
         while !hasBackendSession() {
-            if Task.isCancelled || clock.now >= deadline { return .unavailable }
+            if Task.isCancelled || clock.now >= sessionDeadline { return (.unavailable, userID) }
             try? await Task.sleep(for: sessionPollInterval)
         }
+        let userID = userIDProvider?() ?? userID
 
         let store = self.store
-        let timeout = lookupTimeout
+        let timeout = max(.seconds(1), clock.now.duration(to: overallDeadline))
+        return (await fetchLookup(store: store, userID: userID, timeout: timeout), userID)
+    }
+
+    private func fetchLookup(store: SupabaseProfileStoring, userID: String,
+                             timeout: Duration) async -> RemoteProfileLookup {
         let result: Result<RemoteProfile?, any Error> = await withTaskGroup(
             of: Result<RemoteProfile?, any Error>.self
         ) { group in

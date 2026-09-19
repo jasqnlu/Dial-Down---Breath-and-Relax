@@ -51,6 +51,18 @@ final class RegistrationFlowUITests: XCTestCase {
         attach(app, "2-home-tour-after-name")
     }
 
+    /// The name step is not a dead end: "Not you?" signs out to the sign-in screen.
+    func testNameStepOffersSignOutBackToSignIn() {
+        let app = launch(["-auth.displayName", "Ada Lovelace"])
+        XCTAssertTrue(app.textFields["First name"].waitForExistence(timeout: 20), "Name step should appear")
+        let notYou = app.buttons["Not you? Use a different account"]
+        XCTAssertTrue(notYou.waitForExistence(timeout: 5))
+        notYou.tap()
+        XCTAssertTrue(app.buttons["Start breathing"].waitForExistence(timeout: 15), "Sign-in screen should appear")
+        XCTAssertFalse(app.textFields["First name"].exists)
+        attach(app, "2b-signed-out")
+    }
+
     /// A complete stored name means registered: Home, no name step, and NO tour
     /// even though this account's tour flag is unseen (returning account).
     func testRegisteredAccountSkipsNameStepAndTour() {

@@ -6,6 +6,7 @@ import SwiftUI
 struct NameEntryView: View {
     let prefill: PersonName
     let onSubmit: (PersonName) -> Void
+    let onSignOut: () -> Void
 
     @State private var first = ""
     @State private var last = ""
@@ -47,6 +48,14 @@ struct NameEntryView: View {
                 }
                 .buttonStyle(LuminaPillButtonStyle())
                 .disabled(!candidate.isComplete)
+
+                Button(action: onSignOut) {
+                    Text("Not you? Use a different account")
+                        .font(.luminaLabel)
+                        .foregroundStyle(Color.luminaOnSurfaceVariant)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Not you? Use a different account")
             }
             .padding(.horizontal, 24)
         }
@@ -82,5 +91,6 @@ struct NameEntryView: View {
 }
 
 #Preview {
-    NameEntryView(prefill: PersonName(first: "Ada", last: "Lovelace")) { _ in }
+    NameEntryView(prefill: PersonName(first: "Ada", last: "Lovelace"),
+                  onSubmit: { _ in }, onSignOut: {})
 }
