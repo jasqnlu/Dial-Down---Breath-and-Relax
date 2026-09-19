@@ -87,11 +87,30 @@ final class AuthManager: ObservableObject {
     @Published private(set) var userEmail: String   = ""
     @Published private(set) var provider: AuthProvider = .email
 
+    @Published private(set) var firstName: String = ""
+    @Published private(set) var lastName: String  = ""
+
+    /// Complete only once the name step has run — provider-supplied names
+    /// (Apple/Google/email) deliberately never populate these.
+    var personName: PersonName { PersonName(first: firstName, last: lastName) }
+
+    /// What to prefill the name step with: the provider/legacy display name,
+    /// split. Placeholders ("Apple User", "Guest", "User") give `.empty`.
+    var providerPrefill: PersonName { PersonName.split(fullName: displayName) }
+
+    /// First name for greetings; empty for guests and placeholder names.
+    var greetingName: String {
+        guard !isGuest else { return "" }
+        return firstName.isEmpty ? PersonName.split(fullName: displayName).first : firstName
+    }
+
     var isGuest: Bool { isSignedIn && provider == .guest }
 
     // MARK: UserDefaults keys
     private let kIsSignedIn   = "auth.isSignedIn"
     private let kDisplayName  = "auth.displayName"
+    private let kFirstName    = "auth.firstName"
+    private let kLastName     = "auth.lastName"
     private let kEmail        = "auth.email"
     private let kProvider     = "auth.provider"
     private let kAppLockEnabled = "auth.appLockEnabled"
@@ -154,6 +173,8 @@ final class AuthManager: ObservableObject {
         migrateLegacyAppLockKeyIfNeeded(defaults: d)
         isSignedIn  = d.bool(forKey: kIsSignedIn)
         displayName = d.string(forKey: kDisplayName) ?? ""
+        firstName   = d.string(forKey: kFirstName) ?? ""
+        lastName    = d.string(forKey: kLastName) ?? ""
         userEmail   = d.string(forKey: kEmail) ?? ""
         if let raw = d.string(forKey: kProvider), let p = AuthProvider(rawValue: raw) {
             provider = p
@@ -176,6 +197,19 @@ final class AuthManager: ObservableObject {
         // Note: App Lock is deliberately NOT triggered here — the user just
         // completed an interactive sign-in. The lock gates cold launches only
         // (see loadPersistedState).
+    }
+
+    // MARK: - Name
+
+    /// Records the name from the name step (or restored from the server).
+    func setName(_ name: PersonName) {
+        let d = UserDefaults.standard
+        d.set(name.first,    forKey: kFirstName)
+        d.set(name.last,     forKey: kLastName)
+        d.set(name.fullName, forKey: kDisplayName)
+        firstName   = name.first
+        lastName    = name.last
+        displayName = name.fullName
     }
 
     // MARK: - Guest mode
@@ -322,19 +356,19 @@ final class AuthManager: ObservableObject {
 
     /// Returns nil on success, error string on failure. Delegates to
     /// Supabase Auth entirely — no local password storage.
-    func signUp(name: String, email: String, password: String) async -> String? {
+    func signUp(email: String, password: String) async -> String? {
         let email = normalizedEmail(email)
-        guard !name.isEmpty        else { return "Name is required." }
         guard email.contains("@") else { return "Enter a valid email address." }
         guard password.count >= 8 else { return "Password must be at least 8 characters." }
         guard SupabaseService.isConfigured else {
             return "Account creation isn't available right now. Please try again later."
         }
         do {
-            let uid = try await supabase.signUpWithPassword(email: email, password: password, name: name)
+            let uid = try await supabase.signUpWithPassword(email: email, password: password)
             UserDefaults.standard.set(uid, forKey: kSupabaseUserID)
             objectWillChange.send()
-            persist(name: name, email: email, providerVal: .email)
+            // Name is collected by the name step right after sign-up.
+            persist(name: "", email: email, providerVal: .email)
             return nil
         } catch {
             return (error as? LocalizedError)?.errorDescription
@@ -373,11 +407,15 @@ final class AuthManager: ObservableObject {
         let d = UserDefaults.standard
         d.removeObject(forKey: kIsSignedIn)
         d.removeObject(forKey: kDisplayName)
+        d.removeObject(forKey: kFirstName)
+        d.removeObject(forKey: kLastName)
         d.removeObject(forKey: kEmail)
         d.removeObject(forKey: kProvider)
         isSignedIn  = false
         needsUnlock = false
         displayName = ""
+        firstName   = ""
+        lastName    = ""
         userEmail   = ""
     }
 

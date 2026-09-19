@@ -239,6 +239,30 @@ actor SupabaseService {
         return try Self.makeDecoder().decode([RemoteProfile].self, from: data)
     }
 
+    // MARK: - Registration (name step)
+
+    /// Fetches this account's own `profiles` row, or nil when none exists.
+    /// `profiles` is publicly readable, so no session is needed to *read*;
+    /// callers still wait for one because the id is only meaningful once it is
+    /// the Supabase uid (see RegistrationCoordinator).
+    func fetchProfile(id: String) async throws -> RemoteProfile? {
+        let encoded = id.addingPercentEncoding(withAllowedCharacters: .alphanumerics.union(.init(charactersIn: "-._~"))) ?? ""
+        let data = try await get(path: "/rest/v1/profiles?id=eq.\(encoded)&select=*&limit=1")
+        return try Self.makeDecoder().decode([RemoteProfile].self, from: data).first
+    }
+
+    /// Upserts just the identity columns for this account. This write is what
+    /// makes the account "registered". Requires a Supabase session (RLS:
+    /// id = auth.uid()); callers treat failure as best-effort.
+    func upsertProfileName(id: String, name: PersonName) async throws {
+        let data = try await MainActor.run {
+            try Self.makeEncoder().encode(RemoteProfileName(
+                id: id, displayName: name.fullName,
+                firstName: name.first, lastName: name.last))
+        }
+        try await post(path: "/rest/v1/profiles", body: data, upsert: true)
+    }
+
     // Note: sessions had a write path (uploadSession) that was removed as
     // dead code — nothing in the app called it. See supabase_schema.sql for
     // the matching RLS policy removal.
@@ -318,31 +342,29 @@ actor SupabaseService {
         return grant
     }
 
-    /// Signs up a new Supabase Auth user with email/password. `name` is
-    /// stored as `data: {"name": name}`, landing in `raw_user_meta_data` —
-    /// used only to redisplay the name on a later sign-in, never for
-    /// authorization. Requires the Email provider enabled and "Confirm
+    /// Signs up a new Supabase Auth user with email and password only. No
+    /// name is sent: the user's name is collected by the post-sign-in name
+    /// step and stored in `profiles`, not in auth metadata. Requires the Email provider enabled and "Confirm
     /// email" disabled in Supabase Dashboard → Authentication → Providers
     /// (see Task 6) — otherwise this returns a pending-confirmation user
     /// with no session, and the throw path here won't fire since that's a
     /// 200 response with a null session, which JSONDecoder would then fail
     /// on decoding as TokenGrant (surfacing as a decode error, which is
     /// correct: the app doesn't support the confirmation-pending state).
-    func signUpWithPassword(email: String, password: String, name: String) async throws -> String {
+    func signUpWithPassword(email: String, password: String) async throws -> String {
         struct Body: Encodable {
             let email: String
             let password: String
-            let data: [String: String]
         }
-        let body = try JSONEncoder().encode(Body(email: email, password: password, data: ["name": name]))
+        let body = try JSONEncoder().encode(Body(email: email, password: password))
         let grant = try await authRequest(path: "/auth/v1/signup", body: body)
         return grant.user.id
     }
 
     /// Signs in an existing Supabase Auth user with email/password. Returns
-    /// the display name from `raw_user_meta_data` alongside the user id so
-    /// callers can restore it after a reinstall (there is no local Keychain
-    /// copy of it once email/password auth lives entirely in Supabase).
+    /// the legacy `name` from `raw_user_meta_data` (present only for accounts
+    /// created before sign-up stopped writing it; nil otherwise) alongside the
+    /// user id. New accounts get their name from the name step / `profiles`.
     func signInWithPassword(email: String, password: String) async throws -> (userID: String, name: String?) {
         struct Body: Encodable {
             let email: String
@@ -502,11 +524,20 @@ enum SupabaseError: LocalizedError {
 // KeychainStore seam.
 protocol SupabaseAuthenticating: Sendable {
     func signInWithGoogle(idToken: String, nonce: String?) async throws -> String
-    func signUpWithPassword(email: String, password: String, name: String) async throws -> String
+    func signUpWithPassword(email: String, password: String) async throws -> String
     func signInWithPassword(email: String, password: String) async throws -> (userID: String, name: String?)
 }
 
 extension SupabaseService: SupabaseAuthenticating {}
+
+/// Profile read/write seam for the registration flow, so
+/// `RegistrationCoordinator` can be tested without the network.
+protocol SupabaseProfileStoring: Sendable {
+    func fetchProfile(id: String) async throws -> RemoteProfile?
+    func upsertProfileName(id: String, name: PersonName) async throws
+}
+
+extension SupabaseService: SupabaseProfileStoring {}
 
 // DTOs live in SupabaseDTOs.swift — kept separate so Swift 6 never
 // infers @MainActor isolation on their synthesised Codable conformances.

@@ -488,7 +488,7 @@ struct RootView: View {
             } else if auth.needsUnlock {
                 AppLockView()
             } else {
-                HomeView()
+                RegistrationGate { HomeView() }
             }
         }
         .animation(.easeInOut(duration: 0.35), value: auth.isSignedIn)
@@ -496,8 +496,9 @@ struct RootView: View {
         .onChange(of: auth.isSignedIn) { _, signedIn in
             if signedIn { ensureUserProfile() }
         }
+        .onChange(of: auth.displayName) { _, _ in syncProfileDisplayName() }
         .onAppear {
-            if auth.isSignedIn { ensureUserProfile() }
+            if auth.isSignedIn { ensureUserProfile(); syncProfileDisplayName() }
         }
     }
 
@@ -517,6 +518,22 @@ struct RootView: View {
             try modelContext.save()
         } catch {
             Logger(subsystem: "com.jasonlu.breath", category: "profile").warning("Profile save failed: \(error)")
+        }
+    }
+
+    /// The local `UserProfile` is created at sign-in, before the name step runs
+    /// (so it starts as "User"/"Apple User"). Keep it in step with the name the
+    /// user entered or that was restored from Supabase — SessionRecorder uploads
+    /// `profile.displayName` to the leaderboard row.
+    private func syncProfileDisplayName() {
+        guard auth.isSignedIn, !auth.isGuest, !auth.displayName.isEmpty,
+              let profile = try? modelContext.fetch(FetchDescriptor<UserProfile>()).first,
+              profile.displayName != auth.displayName else { return }
+        profile.displayName = auth.displayName
+        do {
+            try modelContext.save()
+        } catch {
+            Logger(subsystem: "com.jasonlu.breath", category: "profile").warning("Profile name sync failed: \(error)")
         }
     }
 }
