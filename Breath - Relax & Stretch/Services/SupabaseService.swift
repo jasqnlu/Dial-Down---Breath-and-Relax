@@ -352,13 +352,12 @@ actor SupabaseService {
     /// 200 response with a null session, which JSONDecoder would then fail
     /// on decoding as TokenGrant (surfacing as a decode error, which is
     /// correct: the app doesn't support the confirmation-pending state).
-    func signUpWithPassword(email: String, password: String, name: String) async throws -> String {
+    func signUpWithPassword(email: String, password: String) async throws -> String {
         struct Body: Encodable {
             let email: String
             let password: String
-            let data: [String: String]
         }
-        let body = try JSONEncoder().encode(Body(email: email, password: password, data: ["name": name]))
+        let body = try JSONEncoder().encode(Body(email: email, password: password))
         let grant = try await authRequest(path: "/auth/v1/signup", body: body)
         return grant.user.id
     }
@@ -526,7 +525,7 @@ enum SupabaseError: LocalizedError {
 // KeychainStore seam.
 protocol SupabaseAuthenticating: Sendable {
     func signInWithGoogle(idToken: String, nonce: String?) async throws -> String
-    func signUpWithPassword(email: String, password: String, name: String) async throws -> String
+    func signUpWithPassword(email: String, password: String) async throws -> String
     func signInWithPassword(email: String, password: String) async throws -> (userID: String, name: String?)
 }
 
