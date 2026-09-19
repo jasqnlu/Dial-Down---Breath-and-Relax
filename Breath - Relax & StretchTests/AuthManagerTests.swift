@@ -246,6 +246,15 @@ struct AuthManagerTests {
         #expect(!manager.isSignedIn)
         #expect(!manager.isBackendAuthenticated)
     }
+
+    @Test func signOutDoesNotResetDeviceLevelOnboarding() {
+        UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+        let manager = makeManager()
+        manager.continueAsGuest()
+        manager.signOut()
+        #expect(UserDefaults.standard.bool(forKey: "hasCompletedOnboarding"))
+        UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
+    }
 }
 
 // MARK: - Test doubles
