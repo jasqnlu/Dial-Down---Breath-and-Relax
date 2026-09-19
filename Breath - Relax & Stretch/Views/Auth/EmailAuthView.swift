@@ -5,7 +5,6 @@ struct EmailAuthView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var isSignUp   = true
-    @State private var name       = ""
     @State private var email      = ""
     @State private var password   = ""
     @State private var confirmPwd = ""
@@ -36,11 +35,6 @@ struct EmailAuthView: View {
 
                     // Fields
                     VStack(spacing: 14) {
-                        if isSignUp {
-                            AuthField(label: "Full Name", text: $name,
-                                      icon: "person", contentType: .name)
-                        }
-
                         AuthField(label: "Email", text: $email,
                                   icon: "envelope", contentType: .emailAddress,
                                   keyboard: .emailAddress)

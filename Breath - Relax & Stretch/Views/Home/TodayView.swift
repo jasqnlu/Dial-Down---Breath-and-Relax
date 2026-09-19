@@ -375,9 +375,9 @@ struct TodayView: View {
     private var greetingHeader: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(auth.displayName.isEmpty || auth.isGuest
+                Text(auth.greetingName.isEmpty
                      ? greeting
-                     : "\(greeting), \(auth.displayName)")
+                     : "\(greeting), \(auth.greetingName)")
                     .font(.luminaHeadline)
                 Text(Date.now.formatted(.dateTime.weekday(.wide).month(.wide).day()))
                     .font(.luminaSubheadline)
