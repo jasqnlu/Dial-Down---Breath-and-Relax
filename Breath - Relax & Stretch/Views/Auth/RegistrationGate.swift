@@ -7,6 +7,12 @@ struct RegistrationGate<Content: View>: View {
     @EnvironmentObject private var auth: AuthManager
     @EnvironmentObject private var tourCoordinator: TourCoordinator
     @StateObject private var registration = RegistrationCoordinator()
+    // The tour is trigger-driven: only the name-step completion sets this.
+    // Starting it merely because `.registered` rendered is wrong, since
+    // `resolve` sets `.registered` and then awaits the backfill upload, so a
+    // returning account would render Home (and start the tour) before
+    // `markSeen` runs. A returning account never sets it.
+    @State private var pendingTour = false
     let content: Content
 
     init(@ViewBuilder content: () -> Content) {
@@ -24,7 +30,11 @@ struct RegistrationGate<Content: View>: View {
                 case .needsName(let prefill):
                     NameEntryView(prefill: prefill) { name in submit(name) }
                 case .registered:
-                    content.onAppear { startTourIfFirstTime() }
+                    content.onAppear {
+                        guard pendingTour else { return }
+                        pendingTour = false
+                        startTourIfFirstTime()
+                    }
                 }
             }
         }
@@ -53,6 +63,7 @@ struct RegistrationGate<Content: View>: View {
 
     private func submit(_ name: PersonName) {
         auth.setName(name)
+        pendingTour = true
         let uid = auth.backendID
         Task { await registration.completeName(name, userID: uid) }
     }
