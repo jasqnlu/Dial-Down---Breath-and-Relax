@@ -70,14 +70,14 @@ Today "offline-first" only covers the seed catalog (pull-only refresh). Sessions
 - [ ] **Finish breathing preview (Task 2)** — half-done wiring sits in worktree `.claude/worktrees/agent-ac2c9b9e789ee75c0`; plan: [docs/superpowers/plans/2026-07-04-4-breathing-preview.md](docs/superpowers/plans/2026-07-04-4-breathing-preview.md)
 - [ ] **Onboarding survey + facts (reconciled)** — the original plan ([docs/superpowers/plans/2026-07-04-3-onboarding-survey.md](docs/superpowers/plans/2026-07-04-3-onboarding-survey.md)) is **stale**: it pre-marks via `MuscleMarkStore` (removed with the 3-layer body map — marks now persist to the `bodymap.markedRegions` UserDefaults key) and says "delete `GoalPickerPage.swift`", but that file now also holds the new `FocusAreaPickerPage` (added 2026-07-12). Reconciled scope: **keep** the focus-area page as the "problem areas" capture (feed the chosen `ExerciseCategory`s → coarse region names → `bodymap.markedRegions` for pre-marking), and **add** the net-new parts — flexibility/frequency/preferred-time questions, ≥5 cited fact cards, and preferred-time→`NotificationsPage` reminder-hour. Build `SurveyModel` + tests first (Task 1 is conflict-free).
 - [ ] **Branch triage** — analyzed 2026-07-12 via `git cherry feature/lumina-restyle <branch>`. **Safe to delete (all commits already re-implemented on the branch):** `feature/exercise-video-tutorials` (−8), `feature/expanded-exercise-library-with-videos` (−9), `test/core-logic-unit-tests` (−9), and `fix/seed-exercise-stable-uuid` (superseded by `Exercise.seedID`, §4). **Keep/evaluate (unique patch not on branch — mostly single-commit fixes):** the remaining ~17 `fix/*` + `test/*` branches, plus `feature/breathing-preview` (§5 in-flight), `worktree-bodymap-3d-anatomy` (+4), `worktree-plan-checkoff-exercise-library`, `docs/update-todo-post-audit`. Note: "+1 unique" means the patch isn't identical — a few may already be re-implemented differently, so verify each small fix against current code before merging vs deleting. (deletes/merges left for Jason to run.)
-- [ ] **Live Activity / Dynamic Island** for active sessions — needs the Widget extension target to exist first
+- [x] ~~Live Activity / Dynamic Island for active sessions~~ — dropped 2026-09-10 along with the widget/watch idea entirely (see below)
 
 **Compliance (before TestFlight):**
 - [ ] **Localization native-speaker review** — es/fr/zh-Hans now at 100% string coverage (2026-09-09, machine-translated), but nobody who speaks those languages has reviewed the text yet, especially the medical-disclaimer and body-map copy
-- [ ] **Placeholder IDs still in tree** — `group.REPLACE_WITH_YOUR_BUNDLE_ID` (`WidgetDataService.swift:15` + widget/watch files), Google Client ID (inert until those features go live)
+- [ ] **Placeholder IDs still in tree** — Google Client ID (inert until that feature goes live)
 
 **Jason-only (capabilities, accounts, content — step-by-step guides in the archived TODO):**
-- [ ] Xcode: Widget extension target + App Group, `breath://` URL scheme, Watch app + complication targets. *(iCloud/CloudKit entitlement no longer needed — superseded by the Supabase sync decision.)*
+- [ ] Xcode: `breath://` URL scheme registration. *(iCloud/CloudKit entitlement no longer needed — superseded by the Supabase sync decision. Widget extension + App Group + Watch app dropped entirely 2026-09-10 — a home-screen body map isn't plausible at widget scale.)*
 - [ ] Supabase dashboard: schema + Apple provider (same as §3.1)
 - [ ] Blender: per-muscle hitbox re-export ([docs/BLENDER_MUSCLE_EXPORT.md](docs/BLENDER_MUSCLE_EXPORT.md))
 - [ ] Content: film exercise demo videos, hosted Terms/Privacy URLs, native-speaker localization pass
@@ -114,6 +114,7 @@ Today "offline-first" only covers the seed catalog (pull-only refresh). Sessions
 - Mac Catalyst / visionOS — after the iPhone app is solid
 - Exercise-instruction localization (152 exercises × 3 languages) — much larger than the UI-string catalog
 - `BorrowRoutineView` placeholder URL — resolves itself once Supabase is provisioned
+- Apple Sign-in server-to-server notifications — needs a Supabase Edge Function to receive + verify Apple's signed JWT; see [docs/APPLE_S2S_NOTIFICATIONS-2026-09-10.md](docs/APPLE_S2S_NOTIFICATIONS-2026-09-10.md)
 
 ---
 

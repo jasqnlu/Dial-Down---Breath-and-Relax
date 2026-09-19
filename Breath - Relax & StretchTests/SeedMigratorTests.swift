@@ -623,4 +623,43 @@ struct SeedMigratorTests {
         let all = try context.fetch(FetchDescriptor<Exercise>())
         #expect(all[0].animationCallout == nil)
     }
+
+    // MARK: - claimOwnerlessRoutines
+
+    private func makeRoutineContext() -> ModelContext {
+        let container = try! ModelContainer(
+            for: Routine.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        return ModelContext(container)
+    }
+
+    @Test func claimOwnerlessRoutinesAssignsTheClaimantToEmptyOwnerIDRows() throws {
+        let context = makeRoutineContext()
+        let routine = Routine(name: "Morning Wake-Up", exerciseIDs: [])
+        context.insert(routine)
+        try context.save()
+        #expect(routine.ownerID == "")
+
+        let changed = SeedMigrator.claimOwnerlessRoutines(context: context, claimant: "user-123")
+        #expect(changed)
+        #expect(routine.ownerID == "user-123")
+    }
+
+    @Test func claimOwnerlessRoutinesNeverTouchesAnAlreadyOwnedRoutine() throws {
+        let context = makeRoutineContext()
+        let routine = Routine(name: "Evening Unwind", exerciseIDs: [], ownerID: "someone-else")
+        context.insert(routine)
+        try context.save()
+
+        let changed = SeedMigrator.claimOwnerlessRoutines(context: context, claimant: "user-123")
+        #expect(!changed)
+        #expect(routine.ownerID == "someone-else")
+    }
+
+    @Test func claimOwnerlessRoutinesIsANoOpWhenNothingIsOwnerless() throws {
+        let context = makeRoutineContext()
+        let changed = SeedMigrator.claimOwnerlessRoutines(context: context, claimant: "user-123")
+        #expect(!changed)
+    }
 }

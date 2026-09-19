@@ -417,4 +417,22 @@ enum SeedMigrator {
     static func removeRetiredBodyMapMarkStorage(defaults: UserDefaults = .standard) {
         defaults.removeObject(forKey: "bodymap.markedSensations")
     }
+
+    /// Backfills `Routine.ownerID` for routines created before that field
+    /// existed (empty string). Claims them for `claimant` — there's no way
+    /// to know who really made them retroactively, and leaving them
+    /// ownerless would make them vanish from every account's routine list
+    /// once query sites filter on `ownerID`, which reads worse than a
+    /// guess. Not a versioned seed migration — idempotent by construction:
+    /// once claimed, a routine's `ownerID` is never empty again, so later
+    /// runs find nothing left to do.
+    @discardableResult
+    static func claimOwnerlessRoutines(context: ModelContext, claimant: String) -> Bool {
+        let descriptor = FetchDescriptor<Routine>(predicate: #Predicate { $0.ownerID == "" })
+        guard let ownerless = try? context.fetch(descriptor), !ownerless.isEmpty else { return false }
+        for routine in ownerless {
+            routine.ownerID = claimant
+        }
+        return true
+    }
 }

@@ -13,6 +13,7 @@ struct ImportRoutineView: View {
 
     @Query private var exercises: [Exercise]
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var auth: AuthManager
 
     private var matched: [Exercise] {
         let byName = Dictionary(uniqueKeysWithValues: exercises.map { ($0.name, $0) })
@@ -76,7 +77,7 @@ struct ImportRoutineView: View {
     }
 
     private func saveRoutine() {
-        let routine = Routine(name: payload.name, exerciseIDs: matched.map { $0.uuid })
+        let routine = Routine(name: payload.name, exerciseIDs: matched.map { $0.uuid }, ownerID: auth.backendID)
         modelContext.insert(routine)
         do {
             try modelContext.save()

@@ -8,6 +8,7 @@ struct BreathRelaxStretchApp: App {
     @StateObject private var deepLinkRouter = DeepLinkRouter()
     @StateObject private var pickingSession = ExercisePickingSession()
     @StateObject private var tourCoordinator = TourCoordinator()
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     /// Set (once, before any UI appears) when `sharedModelContainer` had to
     /// fall back to an in-memory store below. Read from `body`'s `.onAppear`
@@ -86,6 +87,7 @@ struct BreathRelaxStretchApp: App {
                     .onAppear {
                         let freshInstall = seedIfNeeded()
                         migrateSeedIfNeeded()
+                        claimOwnerlessRoutines()
                         if freshInstall {
                             // A first-ever launch already has all the content — don't
                             // greet new users with a "New Content Added" alert.
@@ -110,7 +112,12 @@ struct BreathRelaxStretchApp: App {
                     } message: {
                         Text("Your saved data couldn't be opened, so this session is running in a temporary mode — anything you do now will be lost when you close the app. Reopening the app again may restore normal saving.")
                     }
-                    .task { await syncRemoteCatalog() }
+                    .task {
+                        await syncRemoteCatalog()
+                        if shouldRegisterForRemotePush() {
+                            UIApplication.shared.registerForRemoteNotifications()
+                        }
+                    }
                 }
             }
             // Mounted unconditionally (not inside the `else` branch above) so a
@@ -404,6 +411,16 @@ struct BreathRelaxStretchApp: App {
     /// idempotent and touches only UserDefaults.
     private func removeRetiredBodyMapStorage() {
         SeedMigrator.removeRetiredBodyMapMarkStorage()
+    }
+
+    /// Claims any pre-existing `Routine` rows with no owner (created before
+    /// `Routine.ownerID` existed) for whoever is using the device the first
+    /// time this runs post-update. See `SeedMigrator.claimOwnerlessRoutines`.
+    private func claimOwnerlessRoutines() {
+        let context = sharedModelContainer.mainContext
+        if SeedMigrator.claimOwnerlessRoutines(context: context, claimant: auth.backendID) {
+            try? context.save()
+        }
     }
 
     // MARK: - Remote catalog sync (best-effort, offline-first)

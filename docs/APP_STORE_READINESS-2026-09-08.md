@@ -20,14 +20,11 @@ doc says; a couple are new discoveries.
    end-to-end and confirm the text matches actual behavior at ship time — that hasn't happened,
    only the mechanical de-placeholdering has.
 
-2. **Two placeholder App Group IDs still shipping**, confirmed still literally
-   `"group.REPLACE_WITH_YOUR_BUNDLE_ID"` in:
-   - `Breath - Relax & Stretch/Services/WidgetDataService.swift:15`
-   - `BreathWidget/BreathWidget.swift`
-   - `BreathWatchComplication/BreathWatchComplication.swift`
-
-   Inert until the real Widget/Watch targets are created in Xcode with a shared App Group.
-   Not a rejection risk if those targets don't ship yet, but non-functional until resolved.
+2. ~~Two placeholder App Group IDs still shipping~~ **Moot as of 2026-09-10.** The widget/watch
+   idea was dropped entirely — a full 3D body map isn't plausible at home-screen-widget or
+   watch-complication scale. `WidgetDataService.swift`, `BreathWidget/`, `BreathWatch/`, and
+   `BreathWatchComplication/` were deleted (none were ever wired into an Xcode target, so the
+   placeholder App Group ID never shipped anywhere real).
 
 3. ~~StoreKit Configuration scheme step~~ **Moot as of 2026-09-09.** The donation "tip jar"
    (`StoreManager.swift`, `TipJarView.swift`, `Configuration.storekit`, and the scheme's
@@ -108,9 +105,9 @@ doc says; a couple are new discoveries.
   TODO.md already recorded the 2026-07-10 decision to use Supabase for sync instead of
   CloudKit; this doc's own list just hadn't been updated to drop it. `ModelConfiguration`
   is already `cloudKitDatabase: .none`. No action here.
-- Widget Extension target creation
+- ~~Widget Extension target creation~~ / ~~Apple Watch app target + complication target~~
+  **Dropped 2026-09-10** — see blocker #2 above.
 - `breath://` URL scheme registration
-- Apple Watch app target + complication target
 - Running/re-running `supabase_schema.sql` for the Apple auth provider's tightened RLS
   policies
 

@@ -41,6 +41,14 @@ final class GoogleAuthService: NSObject {
         let name: String
     }
 
+    /// Everything a caller needs to complete a Supabase id_token exchange
+    /// after a successful Google sign-in.
+    struct GoogleSignInResult {
+        let idToken: String
+        let nonce: String
+        let user: GoogleUser
+    }
+
     enum GoogleAuthError: LocalizedError, Equatable {
         case notConfigured, cancelled, invalidResponse
 
@@ -54,13 +62,15 @@ final class GoogleAuthService: NSObject {
     }
 
     @MainActor
-    func signIn(presentationAnchor: ASPresentationAnchor) async throws -> GoogleUser {
+    func signIn(presentationAnchor: ASPresentationAnchor) async throws -> GoogleSignInResult {
         guard Self.isConfigured else { throw GoogleAuthError.notConfigured }
         self.presentationAnchor = presentationAnchor
 
         let verifier = Self.randomURLSafeString(length: 64)
         let challenge = Self.codeChallenge(for: verifier)
         let state = Self.randomURLSafeString(length: 16)
+        let rawNonce = Self.randomURLSafeString(length: 32)
+        let hashedNonce = Self.sha256Hex(rawNonce)
 
         var components = URLComponents(string: "https://accounts.google.com/o/oauth2/v2/auth")!
         components.queryItems = [
@@ -71,6 +81,7 @@ final class GoogleAuthService: NSObject {
             URLQueryItem(name: "code_challenge", value: challenge),
             URLQueryItem(name: "code_challenge_method", value: "S256"),
             URLQueryItem(name: "state", value: state),
+            URLQueryItem(name: "nonce", value: hashedNonce),
         ]
 
         let callbackURL = try await authenticate(url: components.url!, callbackScheme: redirectScheme)
@@ -82,8 +93,9 @@ final class GoogleAuthService: NSObject {
             let code = callbackComponents.queryItems?.first(where: { $0.name == "code" })?.value
         else { throw GoogleAuthError.invalidResponse }
 
-        let accessToken = try await exchangeCode(code: code, verifier: verifier)
-        return try await fetchUserInfo(accessToken: accessToken)
+        let tokens = try await exchangeCode(code: code, verifier: verifier)
+        let user = try await fetchUserInfo(accessToken: tokens.accessToken)
+        return GoogleSignInResult(idToken: tokens.idToken, nonce: rawNonce, user: user)
     }
 
     @MainActor
@@ -108,10 +120,14 @@ final class GoogleAuthService: NSObject {
 
     private struct TokenResponse: Decodable {
         let accessToken: String
-        enum CodingKeys: String, CodingKey { case accessToken = "access_token" }
+        let idToken: String
+        enum CodingKeys: String, CodingKey {
+            case accessToken = "access_token"
+            case idToken = "id_token"
+        }
     }
 
-    private func exchangeCode(code: String, verifier: String) async throws -> String {
+    private func exchangeCode(code: String, verifier: String) async throws -> (accessToken: String, idToken: String) {
         var request = URLRequest(url: URL(string: "https://oauth2.googleapis.com/token")!)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
@@ -131,7 +147,8 @@ final class GoogleAuthService: NSObject {
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
             throw GoogleAuthError.invalidResponse
         }
-        return try JSONDecoder().decode(TokenResponse.self, from: data).accessToken
+        let decoded = try JSONDecoder().decode(TokenResponse.self, from: data)
+        return (decoded.accessToken, decoded.idToken)
     }
 
     private struct UserInfoResponse: Decodable {
@@ -167,6 +184,21 @@ final class GoogleAuthService: NSObject {
             .replacingOccurrences(of: "+", with: "-")
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: "=", with: "")
+    }
+
+    /// Hex-digest SHA-256, for the OIDC nonce (Google/Supabase expect hex,
+    /// unlike the base64url PKCE code_challenge above). Not `private` so
+    /// GoogleAuthServiceTests can verify it against a known test vector —
+    /// same pattern as `SupabaseService.isValidAPIHost`.
+    static func sha256Hex(_ input: String) -> String {
+        let digest = SHA256.hash(data: Data(input.utf8))
+        var hexString = ""
+        withUnsafeBytes(of: digest) { bytes in
+            for byte in bytes {
+                hexString.append(String(format: "%02x", byte))
+            }
+        }
+        return hexString
     }
 }
 

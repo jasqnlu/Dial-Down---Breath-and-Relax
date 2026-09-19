@@ -6,6 +6,7 @@ struct RoutineBuilderView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var pickingSession: ExercisePickingSession
+    @EnvironmentObject private var auth: AuthManager
 
     @Query private var exercises: [Exercise]
 
@@ -199,7 +200,8 @@ struct RoutineBuilderView: View {
             let routine = Routine(
                 name: routineName,
                 exerciseIDs: selectedIDs,
-                exerciseDurationOverrides: durationOverrides
+                exerciseDurationOverrides: durationOverrides,
+                ownerID: auth.backendID
             )
             modelContext.insert(routine)
 

@@ -26,7 +26,7 @@ This one's fully self-documented in the repo:
    identity model (anonymous UUIDs, no emails) and what changed.
 2. Supabase Dashboard → **SQL Editor** → New query → paste the whole file → **Run**.
 3. Supabase Dashboard → **Authentication → Providers** → enable **Apple**, with the app's bundle
-   ID (`com.jasonlu.Breath--Relax---Stretch`) as the client ID. Skipping this makes every
+   ID (`com.jasonlu.Dial--Down--Breath--Stretch`) as the client ID. Skipping this makes every
    Sign-in-with-Apple token exchange fail with a 4xx — the app just silently stays in
    local/guest mode, so you won't get a crash, just no cross-device sync for Apple sign-ins.
 4. If this project ran an older version of the schema, the file's `drop policy if exists` lines
@@ -39,38 +39,11 @@ doesn't know to route them to your app yet.
 
 1. Xcode → select the **BreathRelaxStretch** target → **Info** tab.
 2. Scroll to **URL Types** → click **+**.
-3. **Identifier**: `com.jasonlu.Breath--Relax---Stretch` (or anything, it's just a label).
+3. **Identifier**: `com.jasonlu.Dial--Down--Breath--Stretch` (or anything, it's just a label).
    **URL Schemes**: `breath`. **Role**: Editor.
 4. Build and run once — Xcode registers it with the simulator/device automatically. Test by
    running `xcrun simctl openurl booted "breath://quick-session"` in Terminal while the app is
    running.
-
-## 5. Widget Extension target + App Group
-
-1. Xcode → **File → New → Target…** → **Widget Extension**. Name it `BreathWidget` (there's
-   already a `BreathWidget/BreathWidget.swift` file in the repo waiting for this target to
-   exist — when Xcode asks, point the target's source at that existing folder rather than
-   letting it generate new files, or just add the existing file to the new target's membership
-   afterward).
-2. Pick an App Group ID — convention is `group.` + your bundle ID, e.g.
-   `group.com.jasonlu.Breath--Relax---Stretch`.
-3. On **both** targets — main app (`BreathRelaxStretch`) and the new widget extension — go to
-   **Signing & Capabilities → + Capability → App Groups**, add that same group ID, check it on
-   in both.
-4. Replace the placeholder in all three places (once you've picked the real ID, ask Claude and
-   it can do this part — it's a one-line find/replace):
-   - `Breath - Relax & Stretch/Services/WidgetDataService.swift:15`
-   - `BreathWidget/BreathWidget.swift`
-   - `BreathWatchComplication/BreathWatchComplication.swift`
-
-## 6. Apple Watch app target + complication
-
-1. Xcode → **File → New → Target…** → **Watch App** (or **Watch Complication** if you only want
-   the complication, not a full watch app — `BreathWatchComplication/BreathWatchComplication.swift`
-   already exists for this).
-2. Same App Group ID as step 5, added to this target's Signing & Capabilities too — the watch
-   complication reads the same shared UserDefaults.
-3. Point the target at the existing `BreathWatchComplication` folder the same way as the widget.
 
 ## Not needed
 
@@ -78,6 +51,11 @@ doesn't know to route them to your app yet.
   Supabase for sync instead of CloudKit (see `TODO.md`). `ModelConfiguration` is already
   `cloudKitDatabase: .none`. No action here — this was a stale item in an earlier version of the
   readiness doc, corrected 2026-09-09.
+- ~~Widget Extension target + App Group~~ and ~~Apple Watch app target + complication~~ —
+  dropped entirely 2026-09-10: a full 3D body map doesn't work at home-screen-widget or
+  watch-complication scale. The `BreathWidget/`, `BreathWatch/`, `BreathWatchComplication/`
+  folders and `WidgetDataService.swift` have been deleted (none were ever wired into an Xcode
+  target, so this was a pure file removal, no project-file surgery needed).
 
 ## What's already done (code-side)
 
