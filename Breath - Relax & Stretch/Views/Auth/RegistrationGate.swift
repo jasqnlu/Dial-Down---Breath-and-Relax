@@ -28,7 +28,8 @@ struct RegistrationGate<Content: View>: View {
                 case .idle, .checking:
                     RegistrationCheckingView()
                 case .needsName(let prefill):
-                    NameEntryView(prefill: prefill) { name in submit(name) }
+                    NameEntryView(prefill: prefill, onSubmit: { name in submit(name) },
+                                  onSignOut: { auth.signOut() })
                 case .registered:
                     content.onAppear {
                         guard pendingTour else { return }
@@ -51,7 +52,8 @@ struct RegistrationGate<Content: View>: View {
             userID: auth.backendID,
             local: auth.personName,
             providerPrefill: auth.providerPrefill,
-            hasBackendSession: { auth.isBackendAuthenticated || !SupabaseService.isConfigured }
+            hasBackendSession: { auth.isBackendAuthenticated || !SupabaseService.isConfigured },
+            userIDProvider: { auth.backendID }
         )
         if case .registered(let name, _)? = outcome {
             // A returning registered account: restore the name locally and

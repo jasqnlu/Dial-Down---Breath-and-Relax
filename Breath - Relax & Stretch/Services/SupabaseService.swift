@@ -342,10 +342,9 @@ actor SupabaseService {
         return grant
     }
 
-    /// Signs up a new Supabase Auth user with email/password. `name` is
-    /// stored as `data: {"name": name}`, landing in `raw_user_meta_data` —
-    /// used only to redisplay the name on a later sign-in, never for
-    /// authorization. Requires the Email provider enabled and "Confirm
+    /// Signs up a new Supabase Auth user with email and password only. No
+    /// name is sent: the user's name is collected by the post-sign-in name
+    /// step and stored in `profiles`, not in auth metadata. Requires the Email provider enabled and "Confirm
     /// email" disabled in Supabase Dashboard → Authentication → Providers
     /// (see Task 6) — otherwise this returns a pending-confirmation user
     /// with no session, and the throw path here won't fire since that's a
@@ -363,9 +362,9 @@ actor SupabaseService {
     }
 
     /// Signs in an existing Supabase Auth user with email/password. Returns
-    /// the display name from `raw_user_meta_data` alongside the user id so
-    /// callers can restore it after a reinstall (there is no local Keychain
-    /// copy of it once email/password auth lives entirely in Supabase).
+    /// the legacy `name` from `raw_user_meta_data` (present only for accounts
+    /// created before sign-up stopped writing it; nil otherwise) alongside the
+    /// user id. New accounts get their name from the name step / `profiles`.
     func signInWithPassword(email: String, password: String) async throws -> (userID: String, name: String?) {
         struct Body: Encodable {
             let email: String

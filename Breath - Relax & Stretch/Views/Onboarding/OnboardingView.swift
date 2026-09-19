@@ -63,7 +63,7 @@ struct OnboardingView: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.easeInOut, value: currentPage)
 
-            // Bottom overlay: dots + Next button (pages 0-3);
+            // Bottom overlay: dots + Next button (every page except the last);
             // the last page provides its own action buttons.
             if currentPage < totalPages - 1 {
                 VStack(spacing: 20) {
