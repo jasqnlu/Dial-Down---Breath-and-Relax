@@ -31,6 +31,10 @@ struct RemoteProfile: Codable, Sendable, Identifiable {
     let totalPoints: Int
     let streak: Int
     let totalMinutes: Int
+    /// Local wall-clock time of the most recent completed session, used
+    /// server-side (via get_streak_warning_candidates) to tell whether a
+    /// user has already practiced today in their own timezone.
+    let lastSessionAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -38,6 +42,24 @@ struct RemoteProfile: Codable, Sendable, Identifiable {
         case totalPoints  = "total_points"
         case streak
         case totalMinutes = "total_minutes"
+        case lastSessionAt = "last_session_at"
+    }
+}
+
+/// Upsert body for `push_tokens`. `user_id` *must* be sent explicitly: it's
+/// the table's primary key, `not null` with no default (see
+/// supabase_schema.sql), so PostgREST rejects a body without it. RLS still
+/// enforces that it matches `auth.uid()` — sending it is how the row gets
+/// addressed, not how it gets authorized.
+struct RemotePushToken: Codable, Sendable {
+    let userID: String
+    let deviceToken: String
+    let timezone: String
+
+    enum CodingKeys: String, CodingKey {
+        case userID      = "user_id"
+        case deviceToken = "device_token"
+        case timezone
     }
 }
 

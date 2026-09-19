@@ -55,15 +55,16 @@
     to provide these features.
   </p>
   <p>
-    <strong>Note on Sign in with Apple:</strong> this sign-in method is verified through our
-    authentication provider (Supabase), not directly by us. If Apple shares an email address as
-    part of the sign-in process, that email is received and retained by our authentication
-    provider's own account records so it can verify your identity on future sign-ins. It is kept
-    separate from, and is not linked to, the workout/progress data described above, which is
-    always keyed to an anonymous identifier rather than your email. Signing in with Google, or
-    with an email address and password directly, does not go through this authentication
-    provider — that credential is stored only in your device's Keychain and is never sent to us
-    or to any backend at all.
+    <strong>Note on Sign in with Apple, Google, and Email/Password:</strong> all three sign-in
+    methods are verified through our authentication provider (Supabase), not directly by us. Your
+    email address — whether shared by Apple or Google as part of sign-in, or entered directly when
+    you create an account with an email and password — is received and retained by our
+    authentication provider's own account records so it can verify your identity on future
+    sign-ins. If you sign in with an email and password, that password is also verified and
+    stored by our authentication provider using industry-standard hashing; we never see or store
+    your password ourselves. Your email is kept separate from, and is not linked to, the
+    workout/progress data described above, which is always keyed to an anonymous identifier
+    rather than your email.
   </p>
 
   <h2>3. No Purchases</h2>

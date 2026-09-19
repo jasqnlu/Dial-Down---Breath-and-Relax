@@ -26,94 +26,94 @@ struct AuthManagerTests {
         for key in Self.keysToReset { d.removeObject(forKey: key) }
     }
 
-    private func makeManager(hasher: @escaping PasswordHasher = AuthManager.pbkdf2) -> AuthManager {
-        AuthManager(keychain: FakeKeychainStore(), hasher: hasher)
+    private func makeManager(supabase: SupabaseAuthenticating = FakeSupabaseAuthenticating()) -> AuthManager {
+        AuthManager(keychain: FakeKeychainStore(), supabase: supabase)
     }
 
     // MARK: - signUp
 
-    @Test func signUpSucceedsAndPersistsIdentity() {
-        let manager = makeManager()
-        let result = manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
+    @Test func signUpSucceedsAndPersistsIdentity() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signUpWithPasswordResult = .success("new-user-1")
+        let manager = makeManager(supabase: fake)
+
+        let result = await manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
+
         #expect(result == nil)
         #expect(manager.isSignedIn)
         #expect(manager.displayName == "Ada")
         #expect(manager.userEmail == "ada@example.com")
         #expect(manager.provider == .email)
+        #expect(manager.backendID == "new-user-1")
+        #expect(manager.isBackendAuthenticated)
     }
 
-    @Test func signUpRejectsEmptyName() {
+    @Test func signUpRejectsEmptyName() async {
         let manager = makeManager()
-        #expect(manager.signUp(name: "", email: "a@b.com", password: "password123") == "Name is required.")
+        let result = await manager.signUp(name: "", email: "a@b.com", password: "password123")
+        #expect(result == "Name is required.")
     }
 
-    @Test func signUpRejectsInvalidEmail() {
+    @Test func signUpRejectsInvalidEmail() async {
         let manager = makeManager()
-        #expect(manager.signUp(name: "Ada", email: "not-an-email", password: "password123") == "Enter a valid email address.")
+        let result = await manager.signUp(name: "Ada", email: "not-an-email", password: "password123")
+        #expect(result == "Enter a valid email address.")
     }
 
-    @Test func signUpRejectsShortPassword() {
+    @Test func signUpRejectsShortPassword() async {
         let manager = makeManager()
-        #expect(manager.signUp(name: "Ada", email: "a@b.com", password: "short") == "Password must be at least 8 characters.")
+        let result = await manager.signUp(name: "Ada", email: "a@b.com", password: "short")
+        #expect(result == "Password must be at least 8 characters.")
     }
 
-    @Test func signUpRejectsDuplicateEmail() {
-        let manager = makeManager()
-        _ = manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
-        let result = manager.signUp(name: "Ada Two", email: "ada@example.com", password: "password456")
+    @Test func signUpSurfacesTheSupabaseErrorAndDoesNotSignIn() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signUpWithPasswordResult = .failure(SupabaseAuthError(code: "user_already_exists", message: nil))
+        let manager = makeManager(supabase: fake)
+
+        let result = await manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
+
         #expect(result == "An account with that email already exists.")
-    }
-
-    @Test func signUpRefusesToStoreAnEmptyHash() {
-        // Simulates CommonCrypto failing inside pbkdf2 (it returns "" on error).
-        let manager = makeManager(hasher: { _, _ in "" })
-        let result = manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
-        #expect(result == "Could not secure your password. Please try again.")
         #expect(!manager.isSignedIn)
+        #expect(!manager.isBackendAuthenticated)
     }
 
     // MARK: - signIn
 
-    @Test func signInSucceedsWithCorrectPassword() {
-        let manager = makeManager()
-        _ = manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
-        manager.signOut()
+    @Test func signInSucceedsAndRestoresNameFromMetadata() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signInWithPasswordResult = .success((userID: "existing-user-1", name: "Ada Lovelace"))
+        let manager = makeManager(supabase: fake)
 
-        let result = manager.signIn(email: "ada@example.com", password: "password123")
+        let result = await manager.signIn(email: "ada@example.com", password: "password123")
+
         #expect(result == nil)
         #expect(manager.isSignedIn)
-        #expect(manager.displayName == "Ada")
+        #expect(manager.displayName == "Ada Lovelace")
+        #expect(manager.backendID == "existing-user-1")
+        #expect(manager.isBackendAuthenticated)
     }
 
-    @Test func signInRejectsUnknownEmail() {
-        let manager = makeManager()
-        #expect(manager.signIn(email: "nobody@example.com", password: "password123") == "No account found for this email.")
+    @Test func signInFallsBackToAGenericNameWhenMetadataHasNone() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signInWithPasswordResult = .success((userID: "existing-user-1", name: nil))
+        let manager = makeManager(supabase: fake)
+
+        _ = await manager.signIn(email: "ada@example.com", password: "password123")
+
+        #expect(manager.displayName == "User")
     }
 
-    @Test func signInRejectsWrongPassword() {
-        let manager = makeManager()
-        _ = manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
-        manager.signOut()
+    @Test func signInSurfacesTheSupabaseErrorAndDoesNotSignIn() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signInWithPasswordResult = .failure(SupabaseAuthError(code: "invalid_credentials", message: nil))
+        let manager = makeManager(supabase: fake)
 
-        #expect(manager.signIn(email: "ada@example.com", password: "wrongpassword") == "Incorrect password.")
-    }
+        let result = await manager.signIn(email: "ada@example.com", password: "wrongpassword")
 
-    @Test func signInRejectsCorruptedCredentialMissingSeparator() {
-        let keychain = FakeKeychainStore()
-        keychain.storage["ada@example.com"] = "not-a-valid-format"
-        let manager = AuthManager(keychain: keychain, hasher: AuthManager.pbkdf2)
-
-        #expect(manager.signIn(email: "ada@example.com", password: "password123")
-                == "Account data is corrupted. Please create a new account.")
-    }
-
-    @Test func signInRejectsCorruptedCredentialInvalidHexSalt() {
-        let keychain = FakeKeychainStore()
-        keychain.storage["ada@example.com"] = "zz:deadbeef" // "zz" isn't valid hex
-        let manager = AuthManager(keychain: keychain, hasher: AuthManager.pbkdf2)
-
-        #expect(manager.signIn(email: "ada@example.com", password: "password123")
-                == "Account data is corrupted. Please create a new account.")
+        #expect(result == "Incorrect email or password.")
+        #expect(!manager.isSignedIn)
+        #expect(!manager.isBackendAuthenticated)
     }
 
     // MARK: - backendID (Supabase auth.uid() vs anonymous fallback)
@@ -131,36 +131,61 @@ struct AuthManagerTests {
         #expect(manager.isBackendAuthenticated)
     }
 
-    @Test func signOutDropsTheSupabaseIdentity() {
-        let manager = makeManager()
-        _ = manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
-        UserDefaults.standard.set("supabase-uid-123", forKey: "auth.supabaseUserID")
+    @Test func signOutDropsTheSupabaseIdentity() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signUpWithPasswordResult = .success("supabase-uid-123")
+        let manager = makeManager(supabase: fake)
+        _ = await manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
 
         manager.signOut()
         #expect(!manager.isBackendAuthenticated)
         #expect(manager.backendID == manager.anonymousID)
     }
 
-    @Test func deleteAccountDropsTheSupabaseIdentity() {
-        let manager = makeManager()
-        _ = manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
-        UserDefaults.standard.set("supabase-uid-123", forKey: "auth.supabaseUserID")
+    @Test func deleteAccountDropsTheSupabaseIdentity() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signUpWithPasswordResult = .success("supabase-uid-123")
+        let manager = makeManager(supabase: fake)
+        _ = await manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
 
         manager.deleteAccount()
         #expect(!manager.isBackendAuthenticated)
         #expect(!manager.isSignedIn)
     }
 
-    @Test func signInRejectsWhenComputedHashIsEmpty() {
-        // Simulates CommonCrypto failing on the sign-in side specifically —
-        // a real credential exists, but re-deriving its hash comes back "".
-        let hasher = ToggleableHasher()
-        let manager = makeManager(hasher: hasher.hash)
-        _ = manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
-        manager.signOut()
+    // MARK: - Google sign-in (real Supabase account)
 
-        hasher.shouldFail = true
-        #expect(manager.signIn(email: "ada@example.com", password: "password123") == "Incorrect password.")
+    @Test func handleGoogleSignInCreatesABackendSessionOnSuccess() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signInWithGoogleResult = .success("google-uid-1")
+        let manager = makeManager(supabase: fake)
+
+        let result = await manager.handleGoogleSignIn(
+            idToken: "fake-id-token", nonce: "fake-nonce",
+            name: "Ada", email: "ada@example.com"
+        )
+
+        #expect(result == nil)
+        #expect(manager.isSignedIn)
+        #expect(manager.provider == .google)
+        #expect(manager.displayName == "Ada")
+        #expect(manager.backendID == "google-uid-1")
+        #expect(manager.isBackendAuthenticated)
+    }
+
+    @Test func handleGoogleSignInSurfacesTheSupabaseErrorAndDoesNotSignIn() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signInWithGoogleResult = .failure(SupabaseAuthError(code: "invalid_grant", message: nil))
+        let manager = makeManager(supabase: fake)
+
+        let result = await manager.handleGoogleSignIn(
+            idToken: "fake-id-token", nonce: "fake-nonce",
+            name: "Ada", email: "ada@example.com"
+        )
+
+        #expect(result != nil)
+        #expect(!manager.isSignedIn)
+        #expect(!manager.isBackendAuthenticated)
     }
 }
 
@@ -173,11 +198,19 @@ private final class FakeKeychainStore: KeychainStore {
     func loadCredential(account: String) -> String? { storage[account] }
 }
 
-/// Wraps the real PBKDF2 implementation but can be flipped to return "" on
-/// demand, so a test can simulate a CommonCrypto failure deterministically.
-private final class ToggleableHasher {
-    var shouldFail = false
-    func hash(_ password: String, _ salt: Data) -> String {
-        shouldFail ? "" : AuthManager.pbkdf2(password, salt: salt)
+private final class FakeSupabaseAuthenticating: SupabaseAuthenticating, @unchecked Sendable {
+    var signInWithGoogleResult: Result<String, Error> = .failure(SupabaseAuthError(code: nil, message: nil))
+    var signUpWithPasswordResult: Result<String, Error> = .failure(SupabaseAuthError(code: nil, message: nil))
+    var signInWithPasswordResult: Result<(userID: String, name: String?), Error> =
+        .failure(SupabaseAuthError(code: nil, message: nil))
+
+    func signInWithGoogle(idToken: String, nonce: String?) async throws -> String {
+        try signInWithGoogleResult.get()
+    }
+    func signUpWithPassword(email: String, password: String, name: String) async throws -> String {
+        try signUpWithPasswordResult.get()
+    }
+    func signInWithPassword(email: String, password: String) async throws -> (userID: String, name: String?) {
+        try signInWithPasswordResult.get()
     }
 }

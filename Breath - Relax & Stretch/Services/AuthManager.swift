@@ -3,7 +3,6 @@ import Combine
 import AuthenticationServices
 import Security
 import LocalAuthentication
-import CommonCrypto
 import CryptoKit
 import os
 
@@ -76,8 +75,6 @@ nonisolated struct SecItemKeychainStore: KeychainStore {
 
 // MARK: - AuthManager
 
-typealias PasswordHasher = (_ password: String, _ salt: Data) -> String
-
 @MainActor
 final class AuthManager: ObservableObject {
 
@@ -132,21 +129,21 @@ final class AuthManager: ObservableObject {
     }
 
     private let keychain: KeychainStore
-    private let hashPassword: PasswordHasher
+    private let supabase: SupabaseAuthenticating
 
     /// Raw nonce for the in-flight Sign in with Apple request; its SHA-256 is
     /// embedded in the Apple identity token, and Supabase verifies the pair.
     private var pendingAppleNonce: String?
 
     /// `internal` (not `private`) so `@testable import` can construct
-    /// instances with a fake keychain/hasher; production code should still
+    /// instances with a fake keychain/supabase; production code should still
     /// go through `.shared`.
     init(
         keychain: KeychainStore = SecItemKeychainStore(service: "com.breathapp.auth"),
-        hasher: @escaping PasswordHasher = AuthManager.pbkdf2
+        supabase: SupabaseAuthenticating = SupabaseService.shared
     ) {
         self.keychain = keychain
-        self.hashPassword = hasher
+        self.supabase = supabase
         loadPersistedState()
     }
 
@@ -294,54 +291,75 @@ final class AuthManager: ObservableObject {
 
     // MARK: - Sign in with Google
 
-    func handleGoogleSignIn(name: String, email: String) {
-        persist(name: name, email: email, providerVal: .google)
+    /// Exchanges the Google id_token for a real Supabase Auth session before
+    /// persisting local sign-in state, so a failed exchange (offline,
+    /// provider misconfigured, revoked token) surfaces as an error instead
+    /// of silently creating a cosmetic-only local account. Returns nil on
+    /// success, error string on failure — same convention as signUp/signIn.
+    func handleGoogleSignIn(idToken: String, nonce: String, name: String, email: String) async -> String? {
+        guard SupabaseService.isConfigured else {
+            return "Google sign-in isn't available right now. Please try again later."
+        }
+        do {
+            let uid = try await supabase.signInWithGoogle(idToken: idToken, nonce: nonce)
+            UserDefaults.standard.set(uid, forKey: kSupabaseUserID)
+            objectWillChange.send() // backendID/isBackendAuthenticated changed
+            persist(name: name, email: email, providerVal: .google)
+            return nil
+        } catch {
+            return (error as? LocalizedError)?.errorDescription
+                ?? "Couldn't sign in with Google. Please try again."
+        }
     }
 
     // MARK: - Email / Password
 
-    /// Lowercases and trims an email so it's stable as a Keychain account key
+    /// Lowercases and trims an email so it's stable as an identifier
     /// regardless of how the user capitalized it at sign-up vs. sign-in.
     private func normalizedEmail(_ email: String) -> String {
         email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 
-    /// Returns nil on success, error string on failure.
-    func signUp(name: String, email: String, password: String) -> String? {
+    /// Returns nil on success, error string on failure. Delegates to
+    /// Supabase Auth entirely — no local password storage.
+    func signUp(name: String, email: String, password: String) async -> String? {
         let email = normalizedEmail(email)
         guard !name.isEmpty        else { return "Name is required." }
         guard email.contains("@") else { return "Enter a valid email address." }
         guard password.count >= 8 else { return "Password must be at least 8 characters." }
-        if keychain.loadCredential(account: email) != nil {
-            return "An account with that email already exists."
+        guard SupabaseService.isConfigured else {
+            return "Account creation isn't available right now. Please try again later."
         }
-        let salt = generateSalt()
-        let hash = hashPassword(password, salt)
-        // pbkdf2 returns "" if CommonCrypto fails; storing "salt:" would let
-        // any future password match the empty hash. Refuse instead.
-        guard !hash.isEmpty else { return "Could not secure your password. Please try again." }
-        keychain.save(account: email, value: "\(salt.hexString):\(hash)")
-        keychain.save(account: "name:\(email)", value: name)
-        persist(name: name, email: email, providerVal: .email)
-        return nil
+        do {
+            let uid = try await supabase.signUpWithPassword(email: email, password: password, name: name)
+            UserDefaults.standard.set(uid, forKey: kSupabaseUserID)
+            objectWillChange.send()
+            persist(name: name, email: email, providerVal: .email)
+            return nil
+        } catch {
+            return (error as? LocalizedError)?.errorDescription
+                ?? "Couldn't create your account. Please try again."
+        }
     }
 
-    func signIn(email: String, password: String) -> String? {
+    /// Returns nil on success, error string on failure. `name` comes back
+    /// from Supabase's `raw_user_meta_data` (set at signup) since there is
+    /// no local copy of it once email/password auth lives entirely there.
+    func signIn(email: String, password: String) async -> String? {
         let email = normalizedEmail(email)
-        guard let stored = keychain.loadCredential(account: email) else {
-            return "No account found for this email."
+        guard SupabaseService.isConfigured else {
+            return "Sign-in isn't available right now. Please try again later."
         }
-        let parts = stored.split(separator: ":", maxSplits: 1).map(String.init)
-        guard parts.count == 2, let saltData = Data(hexString: parts[0]) else {
-            return "Account data is corrupted. Please create a new account."
+        do {
+            let (uid, name) = try await supabase.signInWithPassword(email: email, password: password)
+            UserDefaults.standard.set(uid, forKey: kSupabaseUserID)
+            objectWillChange.send()
+            persist(name: name ?? "User", email: email, providerVal: .email)
+            return nil
+        } catch {
+            return (error as? LocalizedError)?.errorDescription
+                ?? "Incorrect email or password."
         }
-        let computed = hashPassword(password, saltData)
-        guard !computed.isEmpty, computed == parts[1] else {
-            return "Incorrect password."
-        }
-        let name = keychain.loadCredential(account: "name:\(email)") ?? "User"
-        persist(name: name, email: email, providerVal: .email)
-        return nil
     }
 
     // MARK: - Sign out
@@ -368,7 +386,16 @@ final class AuthManager: ObservableObject {
     private func endSupabaseSession() {
         UserDefaults.standard.removeObject(forKey: kSupabaseUserID)
         guard SupabaseService.isConfigured else { return }
-        Task.detached { await SupabaseService.shared.signOut() }
+        Task.detached {
+            // Best-effort, and ordered *before* the revoke for the same reason
+            // deleteAccount orders deleteProfile first: the push_tokens delete
+            // policy is `auth.uid()::text = user_id`, so the row can only be
+            // removed while the session that owns it is still valid. Left
+            // behind, a token nothing can ever address again keeps receiving
+            // streak pushes for an account that signed out.
+            try? await SupabaseService.shared.deletePushToken()
+            await SupabaseService.shared.signOut()
+        }
     }
 
     // MARK: - Delete account
@@ -379,10 +406,6 @@ final class AuthManager: ObservableObject {
     // history (SwiftData) is untouched — it belongs to the device, not the account.
 
     func deleteAccount() {
-        if provider == .email, !userEmail.isEmpty {
-            keychain.delete(account: userEmail)
-            keychain.delete(account: "name:\(userEmail)")
-        }
         // Best-effort: remove the public leaderboard row before rotating the
         // identity — once rotated, nothing can ever address that row again.
         // Ordered inside one task: the profiles delete policy requires
@@ -390,6 +413,12 @@ final class AuthManager: ObservableObject {
         if SupabaseService.isConfigured {
             let departingID = backendID
             Task.detached {
+                // Same ordering rule as deleteProfile below: push_tokens'
+                // delete policy is `auth.uid()::text = user_id`, so the row
+                // must go before the session is revoked — afterwards nothing
+                // can ever authorize removing it, and a deleted account's
+                // device would keep receiving streak pushes.
+                try? await SupabaseService.shared.deletePushToken()
                 try? await SupabaseService.shared.deleteProfile(id: departingID)
                 await SupabaseService.shared.signOut()
             }
@@ -422,56 +451,4 @@ final class AuthManager: ObservableObject {
         }
     }
 
-    // MARK: - PBKDF2 (100k rounds, SHA-256, 16-byte random salt)
-
-    private func generateSalt() -> Data {
-        var salt = Data(repeating: 0, count: 16)
-        salt.withUnsafeMutableBytes {
-            _ = SecRandomCopyBytes(kSecRandomDefault, 16, $0.baseAddress!)
-        }
-        return salt
-    }
-
-    /// The production `PasswordHasher`. `static` (no `self`) so it can be
-    /// referenced as a default argument in `init`; `nonisolated` because it
-    /// touches no actor-isolated state, matching `PasswordHasher`'s plain
-    /// (non-`@MainActor`) function type.
-    nonisolated static func pbkdf2(_ password: String, salt: Data) -> String {
-        let passwordData = Data(password.utf8)
-        var derivedKey = Data(repeating: 0, count: 32)
-        var status = Int32(kCCSuccess)
-        derivedKey.withUnsafeMutableBytes { derivedPtr in
-            passwordData.withUnsafeBytes { passwordPtr in
-                salt.withUnsafeBytes { saltPtr in
-                    status = CCKeyDerivationPBKDF(
-                        CCPBKDFAlgorithm(kCCPBKDF2),
-                        passwordPtr.baseAddress?.assumingMemoryBound(to: Int8.self),
-                        passwordData.count,
-                        saltPtr.baseAddress?.assumingMemoryBound(to: UInt8.self),
-                        salt.count,
-                        CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
-                        UInt32(100_000),
-                        derivedPtr.baseAddress?.assumingMemoryBound(to: UInt8.self),
-                        32
-                    )
-                }
-            }
-        }
-        return status == kCCSuccess ? derivedKey.hexString : ""
-    }
-}
-
-// MARK: - Data hex helpers (file-private)
-
-nonisolated private extension Data {
-    init?(hexString: String) {
-        guard hexString.count.isMultiple(of: 2) else { return nil }
-        let bytes = stride(from: 0, to: hexString.count, by: 2).compactMap {
-            UInt8(hexString.dropFirst($0).prefix(2), radix: 16)
-        }
-        guard bytes.count == hexString.count / 2 else { return nil }
-        self.init(bytes)
-    }
-
-    var hexString: String { map { String(format: "%02x", $0) }.joined() }
 }

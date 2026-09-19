@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // MARK: - Settings Tab
 
@@ -130,11 +131,18 @@ struct ProfileSettingsTab: View {
                             let granted = await NotificationService.shared.requestPermission()
                             if granted {
                                 reschedule(weekdays: selectedWeekdays)
+                                if shouldRegisterForRemotePush() {
+                                    UIApplication.shared.registerForRemoteNotifications()
+                                }
                             } else {
                                 notificationsEnabled = false
                             }
                         } else {
                             NotificationService.shared.cancelReminders()
+                            UIApplication.shared.unregisterForRemoteNotifications()
+                            if SupabaseService.isConfigured {
+                                try? await SupabaseService.shared.deletePushToken()
+                            }
                         }
                     }
                 }

@@ -640,8 +640,7 @@ struct BreathingView: View {
                 healthKitKind: .breathing
             ),
             modelContext: modelContext,
-            calendarSyncEnabled: calendarSyncEnabled,
-            totalSessionsCompleted: totalSessionsCompleted
+            calendarSyncEnabled: calendarSyncEnabled
         )
 
         let reviewMilestones: Set<Int> = [10, 25]

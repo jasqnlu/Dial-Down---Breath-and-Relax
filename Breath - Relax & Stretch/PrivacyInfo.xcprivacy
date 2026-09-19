@@ -12,16 +12,12 @@
 	      tracking (e.g. AuthManager.swift, HomeView.swift, BodyMapView.swift,
 	      VoiceCueService.swift, BreathingModels.swift). Reason CA92.1 covers
 	      this (read/write info accessible only to the app itself).
-	    - UserDefaults(suiteName: groupID) in Services/WidgetDataService.swift,
-	      written to share streak/session data with the (not-yet-added) Widget
-	      and Watch complication targets via an App Group container. Reason
-	      1C8F.1 covers this (read/write info accessible to apps/extensions/App
-	      Clips in the same App Group). NOTE: the App Group entitlement itself
-	      is not yet configured in Breath - Relax & Stretch.entitlements (the
-	      groupID is still the "REPLACE_WITH_YOUR_BUNDLE_ID" placeholder), so
-	      this call currently falls back to .standard at runtime — but the
-	      suiteName API is present in source, so the reason is declared
-	      defensively ahead of that setup work.
+
+	  Previously also declared reason 1C8F.1 (App Group UserDefaults) for
+	  Services/WidgetDataService.swift, which shared streak/session data with
+	  a planned Widget/Watch complication target. That service and the
+	  widget/watch idea were dropped entirely 2026-09-10 — removed here too,
+	  since the app no longer touches App Group UserDefaults at all.
 
 	  No other required-reason API categories are used:
 	    - File Timestamp APIs: FileManager is only used to look up
@@ -32,15 +28,24 @@
 	    - System boot time APIs (systemUptime): not used anywhere.
 	    - Active keyboard APIs: not used anywhere.
 
-	  NSPrivacyCollectedDataTypes: the only data leaving the device is the
-	  community leaderboard upload in LeaderboardView.swift /
-	  SupabaseService.uploadProfile (RemoteProfile in Services/SupabaseDTOs.swift):
-	  a user-chosen display name plus points/streak/total-minutes stats, keyed
-	  by an anonymous per-install/auth UUID (auth.backendID) — per the code
-	  comments in SupabaseService.swift ("Only points/streak/minutes are
-	  shared — no email; id is the anonymous per-install UUID"), the user's
-	  email address is confirmed to never leave the device (email/password
-	  auth is Keychain-only, local to the device). Not used for tracking.
+	  NSPrivacyCollectedDataTypes: two categories of data leave the device.
+
+	    1. The community leaderboard upload in LeaderboardView.swift /
+	       SupabaseService.uploadProfile (RemoteProfile in
+	       Services/SupabaseDTOs.swift): a user-chosen display name plus
+	       points/streak/total-minutes stats, keyed by an anonymous
+	       per-install/auth UUID (auth.backendID) — per the code comments in
+	       SupabaseService.swift ("Only points/streak/minutes are shared —
+	       no email; id is the anonymous per-install UUID").
+
+	    2. Email address, sent to our authentication provider (Supabase) when
+	       creating or signing into an account via Sign in with Apple,
+	       Google, or email/password (SupabaseService.swift's
+	       signInWithApple/signInWithGoogle/signUpWithPassword/
+	       signInWithPassword). Used solely to verify identity on future
+	       sign-ins; never linked to the anonymous leaderboard data above.
+
+	  Neither category is used for tracking.
 	-->
 	<key>NSPrivacyTracking</key>
 	<false/>
@@ -72,6 +77,18 @@
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 			</array>
 		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeEmailAddress</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
 	</array>
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>
@@ -81,7 +98,6 @@
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
 				<string>CA92.1</string>
-				<string>1C8F.1</string>
 			</array>
 		</dict>
 	</array>

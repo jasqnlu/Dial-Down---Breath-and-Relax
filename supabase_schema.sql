@@ -181,3 +181,215 @@ create policy "users can update their profile"
 create policy "users can delete their profile"
   on profiles for delete
   using (auth.uid() is not null and id = auth.uid()::text);
+
+-- ───────────────────────── profiles (additions) ─────────────────────────
+-- Added 2026-09-12 for streak-about-to-break push notifications. Best-effort
+-- upload from SessionRecorder.record() on every completed session.
+alter table profiles add column if not exists last_session_at timestamptz;
+
+-- ───────────────────────── push_tokens ─────────────────────────
+-- One row per signed-in device. Not publicly readable — only the service
+-- role (used exclusively by the send-streak-warnings Edge Function) ever
+-- reads this table; RLS still lets an owner manage their own row directly
+-- for register/unregister, matching every other write path in this file.
+
+create table if not exists push_tokens (
+  user_id         text primary key check (char_length(user_id) <= 40), -- auth.uid(), matches profiles.id
+  device_token    text not null check (char_length(device_token) <= 200),
+  timezone        text not null default 'UTC' check (char_length(timezone) <= 64), -- IANA name, e.g. "America/Los_Angeles"
+  last_warned_date date, -- last local calendar date this user was sent a streak-risk push; prevents double-send
+  updated_at      timestamptz not null default now()
+);
+
+alter table push_tokens enable row level security;
+
+create policy "users can upsert their own push token"
+  on push_tokens for insert
+  with check (auth.uid()::text = user_id);
+
+create policy "users can update their own push token"
+  on push_tokens for update
+  using (auth.uid()::text = user_id)
+  with check (auth.uid()::text = user_id);
+
+create policy "users can delete their own push token"
+  on push_tokens for delete
+  using (auth.uid()::text = user_id);
+
+-- No select policy: nobody needs to read this back through the client API.
+-- The Edge Function reads it via the service role, which bypasses RLS.
+
+-- ───────────────────────── get_streak_warning_candidates() ─────────────────────────
+-- Per-row IANA-timezone math lives here (not in the Edge Function) because
+-- Postgres's `at time zone` handles DST correctly and PostgREST filters
+-- can't express "local hour is 20" across arbitrary timezones in one call.
+-- security definer + a locked-down search_path so it's safe to run with the
+-- privileges of whoever created it (the migration, effectively postgres);
+-- execute is revoked from everyone except service_role below, so only the
+-- Edge Function (which authenticates as service_role) can call it.
+create or replace function get_streak_warning_candidates()
+returns table (
+  user_id      text,
+  device_token text,
+  timezone     text
+)
+language sql
+security definer
+set search_path = public
+as $$
+  select pt.user_id, pt.device_token, pt.timezone
+  from push_tokens pt
+  join profiles pr on pr.id = pt.user_id
+  where pr.streak >= 2
+    and extract(hour from (now() at time zone pt.timezone)) = 20
+    and (
+      pr.last_session_at is null
+      or pr.last_session_at < date_trunc('day', now() at time zone pt.timezone) at time zone pt.timezone
+    )
+    and (
+      pt.last_warned_date is null
+      or pt.last_warned_date <> (now() at time zone pt.timezone)::date
+    )
+$$;
+
+revoke all on function get_streak_warning_candidates() from public;
+grant execute on function get_streak_warning_candidates() to service_role;
+
+-- ───────────────────────── streak-warning cron ─────────────────────────
+-- pg_cron/pg_net are available on this plan but not enabled by default.
+-- supabase_vault is already enabled — the service-role key must live there,
+-- never inlined as a literal in this file, since cron.job definitions are
+-- visible to anyone with sufficient database privileges.
+create extension if not exists pg_cron;
+create extension if not exists pg_net;
+
+-- One-time, run manually via the Dashboard SQL editor (not part of this
+-- file, since it's a secret):
+--   select vault.create_secret('<service-role-key>', 'service_role_key');
+
+select cron.schedule(
+  'streak-warning-check',
+  '*/15 * * * *', -- every 15 minutes
+  $$
+  select net.http_post(
+    url := 'https://wmsutfittuxrvcwuywrk.supabase.co/functions/v1/send-streak-warnings',
+    headers := jsonb_build_object(
+      'Authorization',
+      'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key')
+    )
+  );
+  $$
+);
+
+-- ──────────────── streak-warning cron (revised 2026-09-12) ────────────────
+-- Re-registers the same job name; cron.schedule upserts by name, so this
+-- supersedes the block above rather than adding a second job (kept as a
+-- separate block, in this file's usual append-only style, so the history of
+-- why each change happened stays readable). Two changes:
+--
+--   1. Sends the x-cron-secret shared secret the Edge Function now requires.
+--      The function is deployed with verify_jwt = true, which already blocks
+--      anonymous callers, but any signed-in user of the app holds a valid
+--      project JWT — this second factor is what makes the endpoint genuinely
+--      cron-only, as the spec's security section states.
+--   2. timeout_milliseconds := 60000. net.http_post defaults to 5000ms, and
+--      the function walks its candidates sequentially (one APNs round trip
+--      plus a DB update each), so 5s starts truncating the batch as soon as
+--      there are more than a handful of due users.
+--
+-- Like service_role_key, the secret itself is never in this file. One-time,
+-- run manually via the Dashboard SQL editor with a freshly generated random
+-- value, then set the SAME value as the function's CRON_SHARED_SECRET secret:
+--   select vault.create_secret('<random-secret>', 'cron_shared_secret');
+--   supabase secrets set CRON_SHARED_SECRET='<random-secret>' --project-ref wmsutfittuxrvcwuywrk
+-- Until both exist the job posts an empty secret and the function answers 401
+-- — failing closed, which is the intended behaviour for a missing secret.
+select cron.schedule(
+  'streak-warning-check',
+  '*/15 * * * *', -- every 15 minutes
+  $$
+  select net.http_post(
+    url := 'https://wmsutfittuxrvcwuywrk.supabase.co/functions/v1/send-streak-warnings',
+    headers := jsonb_build_object(
+      'Authorization',
+      'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key'),
+      'x-cron-secret',
+      coalesce((select decrypted_secret from vault.decrypted_secrets where name = 'cron_shared_secret'), '')
+    ),
+    timeout_milliseconds := 60000
+  );
+  $$
+);
+
+-- ───────────── RLS perf + correctness fixes (2026-09-15) ─────────────
+-- Prompted by `supabase get_advisors` ahead of launch. Two categories:
+--
+--   1. PERF (auth_rls_initplan, 11 findings across routines/sessions/
+--      push_tokens): a bare `auth.uid()` in USING/WITH CHECK is re-evaluated
+--      per row scanned; `(select auth.uid())` lets Postgres cache it once per
+--      query as an InitPlan instead. No behavior change.
+--   2. PERF (multiple_permissive_policies): exercises and routines each had
+--      two SELECT policies doing overlapping work (a broad "public" policy
+--      and a narrower duplicate) — every extra permissive policy is
+--      evaluated on every matching query. Dropped the narrower one in each
+--      case since the remaining policy is already a superset.
+--
+-- Also fixed in the same pass, found while rewriting these: "Users can
+-- update their own routines" and "...sessions" had a USING clause but no
+-- WITH CHECK. USING only gates which existing rows an UPDATE can target —
+-- without WITH CHECK a user could update a row they own and reassign its
+-- author_id/user_id to someone else's id, and RLS would not stop the write.
+-- Both now carry matching USING/WITH CHECK clauses.
+--
+-- NOT fixed here: the advisor's `extension_in_public` finding for pg_net.
+-- pg_net is not relocatable (`alter extension pg_net set schema` errors with
+-- "does not support SET SCHEMA" — same restriction Postgres applies to
+-- PostGIS). The real fix is `drop extension pg_net cascade` + recreate in
+-- `extensions`, which would drop `net.http_post` out from under the
+-- streak-warning-check cron job above until recreated. Confirmed via
+-- pg_proc that `net.http_post` already lives in the fixed `net` schema, not
+-- `public` — the finding is about the extension's own catalog entry, not an
+-- actually-exposed function — so this was left alone as not worth the
+-- coordinated downtime pre-launch.
+--
+-- Applied to the live project as migration rls_perf_and_security_fixes;
+-- `supabase get_advisors` (performance) returns zero findings afterward.
+
+drop policy "Anyone can read exercises" on public.exercises;
+drop policy "public routines are readable by anyone" on public.routines;
+
+alter policy "Users can read public routines or their own" on public.routines
+  using (is_public = true or (select auth.uid())::text = author_id);
+
+alter policy "Users can insert their own routines" on public.routines
+  with check ((select auth.uid())::text = author_id);
+
+alter policy "Users can update their own routines" on public.routines
+  using ((select auth.uid())::text = author_id)
+  with check ((select auth.uid())::text = author_id);
+
+alter policy "Users can delete their own routines" on public.routines
+  using ((select auth.uid())::text = author_id);
+
+alter policy "Users can read their own sessions" on public.sessions
+  using ((select auth.uid())::text = user_id);
+
+alter policy "Users can insert their own sessions" on public.sessions
+  with check ((select auth.uid())::text = user_id);
+
+alter policy "Users can update their own sessions" on public.sessions
+  using ((select auth.uid())::text = user_id)
+  with check ((select auth.uid())::text = user_id);
+
+alter policy "Users can delete their own sessions" on public.sessions
+  using ((select auth.uid())::text = user_id);
+
+alter policy "users can upsert their own push token" on public.push_tokens
+  with check ((select auth.uid())::text = user_id);
+
+alter policy "users can update their own push token" on public.push_tokens
+  using ((select auth.uid())::text = user_id)
+  with check ((select auth.uid())::text = user_id);
+
+alter policy "users can delete their own push token" on public.push_tokens
+  using ((select auth.uid())::text = user_id);

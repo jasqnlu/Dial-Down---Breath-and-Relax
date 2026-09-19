@@ -1,5 +1,14 @@
 import Foundation
 
+// MARK: - HTTP seam
+// Lets tests inject a fake session instead of hitting the real network —
+// mirrors the KeychainStore seam already used for session persistence.
+protocol SupabaseHTTPSession: Sendable {
+    func data(for request: URLRequest) async throws -> (Data, URLResponse)
+}
+
+extension URLSession: SupabaseHTTPSession {}
+
 // MARK: - SupabaseService
 
 actor SupabaseService {
@@ -8,8 +17,12 @@ actor SupabaseService {
     /// `internal` (not `private`) for the same reason as AuthManager.init —
     /// tests construct instances with a FakeKeychainStore; production code
     /// should still go through `.shared`.
-    init(keychain: KeychainStore = SecItemKeychainStore(service: "com.breathapp.supabase")) {
+    init(
+        keychain: KeychainStore = SecItemKeychainStore(service: "com.breathapp.supabase"),
+        urlSession: SupabaseHTTPSession = URLSession.shared
+    ) {
         self.keychain = keychain
+        self.urlSession = urlSession
     }
 
     // The API base URL (https://<project-ref>.supabase.co) — NOT the dashboard
@@ -40,6 +53,54 @@ actor SupabaseService {
         URL(string: urlString)?.host?.hasSuffix(".supabase.co") == true
     }
 
+    // MARK: - JSON coders (PostgREST wire format)
+    //
+    // Every PostgREST request/response in this file goes through these two,
+    // so a `Date` field added to any DTO in future is handled correctly by
+    // default. Swift's out-of-the-box strategy is `.deferredToDate` — a bare
+    // epoch-seconds `Double` — which Postgres `timestamptz` columns reject on
+    // write and which can't parse the ISO-8601 strings PostgREST sends back.
+    //
+    // Deliberately NOT used for the keychain session blob (storeSession /
+    // loadSessionIfNeeded): that's a private local round-trip whose already
+    // written-to-disk values are epoch doubles, and switching its strategy
+    // would make every existing signed-in user's stored session undecodable.
+
+    /// Encoder for anything sent to PostgREST. `.iso8601` emits
+    /// `2026-09-04T15:33:20Z`, which Postgres accepts for `timestamptz`.
+    nonisolated static func makeEncoder() -> JSONEncoder {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        return encoder
+    }
+
+    /// Decoder for anything read back from PostgREST.
+    ///
+    /// Not plain `.iso8601`: Postgres renders `timestamptz` with microsecond
+    /// precision (`2026-09-04T15:33:20.123456+00:00`), and
+    /// `ISO8601DateFormatter` only parses fractional seconds when explicitly
+    /// configured with `.withFractionalSeconds` — which then *stops* parsing
+    /// whole-second timestamps (`2026-09-04T15:33:20+00:00`), which Postgres
+    /// emits whenever the stored value happens to have no sub-second part.
+    /// Both shapes are real server output, so both must decode.
+    nonisolated static func makeDecoder() -> JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let raw = try decoder.singleValueContainer().decode(String.self)
+            let fractional = ISO8601DateFormatter()
+            fractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let date = fractional.date(from: raw) { return date }
+            let whole = ISO8601DateFormatter()
+            whole.formatOptions = [.withInternetDateTime]
+            if let date = whole.date(from: raw) { return date }
+            throw DecodingError.dataCorrupted(.init(
+                codingPath: decoder.codingPath,
+                debugDescription: "Expected an ISO-8601 timestamp, got \"\(raw)\"."
+            ))
+        }
+        return decoder
+    }
+
     // MARK: - Session state
     // A SupabaseSession exists only for users who signed in with Apple (the
     // id_token exchange below). Guests / local email accounts have none —
@@ -47,11 +108,15 @@ actor SupabaseService {
     // once the auth.uid() RLS policies in supabase_schema.sql are applied.
 
     private let keychain: KeychainStore
+    private let urlSession: SupabaseHTTPSession
     private static let sessionAccount = "supabase.session"
 
     private var session: SupabaseSession?
     private var didLoadSession = false
 
+    // Note: these two use plain JSONEncoder/JSONDecoder, *not* makeEncoder/
+    // makeDecoder — see the comment on those. This blob never leaves the
+    // device, and its already-persisted `expiresAt` values are epoch doubles.
     private func loadSessionIfNeeded() {
         guard !didLoadSession else { return }
         didLoadSession = true
@@ -96,7 +161,7 @@ actor SupabaseService {
     /// Enable RLS with a "read for all" select policy so the anon key can fetch.
     func fetchExercises() async throws -> [RemoteExercise] {
         let data = try await get(path: "/rest/v1/exercises?select=*&order=name")
-        return try JSONDecoder().decode([RemoteExercise].self, from: data)
+        return try Self.makeDecoder().decode([RemoteExercise].self, from: data)
     }
 
     // MARK: - Community (leaderboard / public profile)
@@ -116,7 +181,7 @@ actor SupabaseService {
     func uploadProfile(_ profile: RemoteProfile) async throws {
         // RemoteProfile.encode(to:) is @MainActor-isolated (Swift 6 inference);
         // hop to main actor for the encode, then continue in the actor.
-        let data = try await MainActor.run { try JSONEncoder().encode(profile) }
+        let data = try await MainActor.run { try Self.makeEncoder().encode(profile) }
         try await post(path: "/rest/v1/profiles", body: data, upsert: true)
     }
 
@@ -132,10 +197,46 @@ actor SupabaseService {
         try await delete(path: "/rest/v1/profiles?id=eq.\(encoded)")
     }
 
+    // MARK: - Push tokens (streak-about-to-break notifications)
+
+    /// Upserts this device's APNs token + IANA timezone. Requires a Supabase
+    /// Auth session (`AuthManager.isBackendAuthenticated`) — RLS rejects the
+    /// write otherwise, which is fine: this call is always best-effort
+    /// (`try?`) at every call site, exactly like `uploadProfile`.
+    ///
+    /// Expected Supabase table `push_tokens` — see supabase_schema.sql.
+    ///
+    /// `user_id` is read from `AuthManager.backendID` — the same identity
+    /// `uploadProfile`'s callers key `profiles.id` on, which is exactly what
+    /// `push_tokens.user_id` joins against server-side. It's read inside the
+    /// `MainActor.run` hop this method already needs for encoding (AuthManager
+    /// is `@MainActor`), so no actor isolation is crossed unsafely.
+    func registerPushToken(deviceToken: String, timezone: String) async throws {
+        let data = try await MainActor.run {
+            let payload = RemotePushToken(
+                userID: AuthManager.shared.backendID,
+                deviceToken: deviceToken,
+                timezone: timezone
+            )
+            return try Self.makeEncoder().encode(payload)
+        }
+        try await post(path: "/rest/v1/push_tokens", body: data, upsert: true)
+    }
+
+    /// Deletes this user's push_tokens row (e.g. the notifications toggle
+    /// was switched off). Deletes by the currently authenticated user's own
+    /// row — the RLS delete policy only ever lets a session remove
+    /// `auth.uid()`'s own row, so no id needs to be passed.
+    func deletePushToken() async throws {
+        guard let userID = supabaseUserID else { return }
+        let encoded = userID.addingPercentEncoding(withAllowedCharacters: .alphanumerics.union(.init(charactersIn: "-._~"))) ?? ""
+        try await delete(path: "/rest/v1/push_tokens?user_id=eq.\(encoded)")
+    }
+
     /// Fetches the top profiles by points for the leaderboard.
     func fetchLeaderboard(limit: Int = 50) async throws -> [RemoteProfile] {
         let data = try await get(path: "/rest/v1/profiles?select=*&order=total_points.desc&limit=\(limit)")
-        return try JSONDecoder().decode([RemoteProfile].self, from: data)
+        return try Self.makeDecoder().decode([RemoteProfile].self, from: data)
     }
 
     // Note: sessions had a write path (uploadSession) that was removed as
@@ -145,29 +246,111 @@ actor SupabaseService {
     // MARK: - Auth
 
     private struct TokenGrant: Decodable {
-        struct User: Decodable { let id: String }
+        struct UserMetadata: Decodable { let name: String? }
+        struct User: Decodable {
+            let id: String
+            let user_metadata: UserMetadata?
+        }
         let access_token: String
         let refresh_token: String
         let expires_in: Double
         let user: User
     }
 
-    /// Exchanges a Sign in with Apple identity token for a Supabase Auth
-    /// session and returns the Supabase user id (`auth.uid()`), which becomes
-    /// the app's backend identity (AuthManager.backendID). `nonce` is the raw
-    /// nonce whose SHA-256 was set on the ASAuthorization request. Requires
-    /// the Apple provider enabled in Supabase Dashboard → Authentication →
-    /// Providers with this app's bundle ID.
-    @discardableResult
-    func signInWithApple(identityToken: String, nonce: String? = nil) async throws -> String {
+    /// Exchanges an OIDC id_token (Apple or Google) for a Supabase Auth
+    /// session and returns the Supabase user id (`auth.uid()`). `nonce` is
+    /// the raw nonce whose hash was sent to the provider — Supabase verifies
+    /// the pair when the provider's id_token includes a nonce claim.
+    private func signInWithIdToken(provider: String, idToken: String, nonce: String?) async throws -> String {
         struct Body: Encodable {
-            let provider = "apple"
+            let provider: String
             let id_token: String
             let nonce: String?
         }
-        let body = try JSONEncoder().encode(Body(id_token: identityToken, nonce: nonce))
+        let body = try JSONEncoder().encode(Body(provider: provider, id_token: idToken, nonce: nonce))
         let grant = try await tokenRequest(grantType: "id_token", body: body)
         return grant.user.id
+    }
+
+    /// Exchanges a Sign in with Apple identity token for a Supabase Auth
+    /// session. Requires the Apple provider enabled in Supabase Dashboard →
+    /// Authentication → Providers with this app's bundle ID.
+    @discardableResult
+    func signInWithApple(identityToken: String, nonce: String? = nil) async throws -> String {
+        try await signInWithIdToken(provider: "apple", idToken: identityToken, nonce: nonce)
+    }
+
+    /// Exchanges a Google id_token for a Supabase Auth session. Requires the
+    /// Google provider enabled in Supabase Dashboard → Authentication →
+    /// Providers, with both the iOS and Web OAuth Client IDs listed (Web
+    /// first) under Client IDs — see Task 6.
+    @discardableResult
+    func signInWithGoogle(idToken: String, nonce: String? = nil) async throws -> String {
+        try await signInWithIdToken(provider: "google", idToken: idToken, nonce: nonce)
+    }
+
+    /// Runs a POST against an auth endpoint that returns a full session
+    /// directly (signup with email confirmation disabled, or a token grant
+    /// with a query-string grant_type). Distinct from `tokenRequest`
+    /// (which always targets `/auth/v1/token`) so this can target
+    /// `/auth/v1/signup` too, and so its richer error-body mapping doesn't
+    /// change `tokenRequest`'s existing `SupabaseError.httpError` contract
+    /// that `refreshSession` pattern-matches on.
+    private func authRequest(path: String, grantQuery: String? = nil, body: Data) async throws -> TokenGrant {
+        let fullPath = grantQuery.map { "\(path)?grant_type=\($0)" } ?? path
+        var request = bareRequest(path: fullPath, method: "POST")
+        request.httpBody = body
+        let (data, response) = try await urlSession.data(for: request)
+        if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
+            let errorBody = try? JSONDecoder().decode(SupabaseAuthErrorBody.self, from: data)
+            throw SupabaseAuthError(
+                code: errorBody?.error_code ?? errorBody?.error,
+                message: errorBody?.msg ?? errorBody?.error_description
+            )
+        }
+        let grant = try JSONDecoder().decode(TokenGrant.self, from: data)
+        storeSession(SupabaseSession(
+            accessToken:  grant.access_token,
+            refreshToken: grant.refresh_token,
+            userID:       grant.user.id,
+            expiresAt:    Date().addingTimeInterval(grant.expires_in)
+        ))
+        return grant
+    }
+
+    /// Signs up a new Supabase Auth user with email/password. `name` is
+    /// stored as `data: {"name": name}`, landing in `raw_user_meta_data` —
+    /// used only to redisplay the name on a later sign-in, never for
+    /// authorization. Requires the Email provider enabled and "Confirm
+    /// email" disabled in Supabase Dashboard → Authentication → Providers
+    /// (see Task 6) — otherwise this returns a pending-confirmation user
+    /// with no session, and the throw path here won't fire since that's a
+    /// 200 response with a null session, which JSONDecoder would then fail
+    /// on decoding as TokenGrant (surfacing as a decode error, which is
+    /// correct: the app doesn't support the confirmation-pending state).
+    func signUpWithPassword(email: String, password: String, name: String) async throws -> String {
+        struct Body: Encodable {
+            let email: String
+            let password: String
+            let data: [String: String]
+        }
+        let body = try JSONEncoder().encode(Body(email: email, password: password, data: ["name": name]))
+        let grant = try await authRequest(path: "/auth/v1/signup", body: body)
+        return grant.user.id
+    }
+
+    /// Signs in an existing Supabase Auth user with email/password. Returns
+    /// the display name from `raw_user_meta_data` alongside the user id so
+    /// callers can restore it after a reinstall (there is no local Keychain
+    /// copy of it once email/password auth lives entirely in Supabase).
+    func signInWithPassword(email: String, password: String) async throws -> (userID: String, name: String?) {
+        struct Body: Encodable {
+            let email: String
+            let password: String
+        }
+        let body = try JSONEncoder().encode(Body(email: email, password: password))
+        let grant = try await authRequest(path: "/auth/v1/token", grantQuery: "password", body: body)
+        return (grant.user.id, grant.user.user_metadata?.name)
     }
 
     /// Best-effort server-side revocation of the refresh token, then clears
@@ -177,7 +360,7 @@ actor SupabaseService {
         if let token = session?.accessToken {
             var request = bareRequest(path: "/auth/v1/logout", method: "POST")
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-            _ = try? await URLSession.shared.data(for: request)
+            _ = try? await urlSession.data(for: request)
         }
         storeSession(nil)
     }
@@ -203,7 +386,7 @@ actor SupabaseService {
     private func tokenRequest(grantType: String, body: Data) async throws -> TokenGrant {
         var request = bareRequest(path: "/auth/v1/token?grant_type=\(grantType)", method: "POST")
         request.httpBody = body
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         try validate(response)
         let grant = try JSONDecoder().decode(TokenGrant.self, from: data)
         storeSession(SupabaseSession(
@@ -231,20 +414,20 @@ actor SupabaseService {
         var request = await makeRequest(path: path, method: "POST")
         request.httpBody = body
         if upsert { request.setValue("resolution=merge-duplicates", forHTTPHeaderField: "Prefer") }
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         try validate(response)
         return data
     }
 
     private func delete(path: String) async throws {
         let request = await makeRequest(path: path, method: "DELETE")
-        let (_, response) = try await URLSession.shared.data(for: request)
+        let (_, response) = try await urlSession.data(for: request)
         try validate(response)
     }
 
     private func get(path: String) async throws -> Data {
         let request = await makeRequest(path: path, method: "GET")
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         try validate(response)
         return data
     }
@@ -275,6 +458,33 @@ actor SupabaseService {
     }
 }
 
+// MARK: - Auth errors
+
+/// Maps GoTrue's error response body to a readable message. GoTrue has
+/// shipped two error body shapes across versions (`error_code`/`msg` and the
+/// older `error`/`error_description`), so both are read; whichever is
+/// present wins.
+struct SupabaseAuthError: LocalizedError {
+    let code: String?
+    let message: String?
+
+    var errorDescription: String? {
+        switch code {
+        case "user_already_exists":  return "An account with that email already exists."
+        case "invalid_credentials":  return "Incorrect email or password."
+        case "weak_password":        return message ?? "Password is too weak."
+        default:                     return "Something went wrong, please try again."
+        }
+    }
+}
+
+private struct SupabaseAuthErrorBody: Decodable {
+    let error_code: String?
+    let msg: String?
+    let error: String?
+    let error_description: String?
+}
+
 // MARK: - Errors
 
 enum SupabaseError: LocalizedError {
@@ -285,6 +495,18 @@ enum SupabaseError: LocalizedError {
         }
     }
 }
+
+// MARK: - Auth seam
+// Lets AuthManager depend on an abstraction instead of the concrete actor,
+// so tests can inject a fake instead of hitting the network — mirrors the
+// KeychainStore seam.
+protocol SupabaseAuthenticating: Sendable {
+    func signInWithGoogle(idToken: String, nonce: String?) async throws -> String
+    func signUpWithPassword(email: String, password: String, name: String) async throws -> String
+    func signInWithPassword(email: String, password: String) async throws -> (userID: String, name: String?)
+}
+
+extension SupabaseService: SupabaseAuthenticating {}
 
 // DTOs live in SupabaseDTOs.swift — kept separate so Swift 6 never
 // infers @MainActor isolation on their synthesised Codable conformances.

@@ -16,7 +16,7 @@ description: How to build, launch, drive, and screenshot the Breath app in the i
 - Drop a test in `Breath - Relax & StretchUITests/`, run with `-only-testing:"Breath - Relax & StretchUITests/<ClassName>"` and `-resultBundlePath <dir>.xcresult`.
 - Skip onboarding/auth with launch arguments (every `@AppStorage`/UserDefaults key works this way):
   `app.launchArguments += ["-hasCompletedOnboarding","YES","-hasSeenAppGuide","YES","-auth.isSignedIn","YES","-auth.provider","guest"]`
-- `xcrun simctl uninstall "iPhone 17" com.jasonlu.Breath--Relax---Stretch` first when persisted SwiftData/UserDefaults from a previous run would mask the state under test.
+- `xcrun simctl uninstall "iPhone 17" com.jasonlu.Dial--Down--Breath--Stretch` first when persisted SwiftData/UserDefaults from a previous run would mask the state under test.
 
 ## Capturing evidence
 - In the test: `XCTAttachment(screenshot: app.screenshot())`, `lifetime = .keepAlways`, named per stage.

@@ -18,7 +18,12 @@ struct TodayView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var exercises: [Exercise]
     @Query private var profiles: [UserProfile]
-    @Query private var routines: [Routine]
+    @Query private var allRoutines: [Routine]
+
+    /// Only the current account's routines — see `Routine.ownerID`.
+    private var routines: [Routine] {
+        allRoutines.filter { $0.ownerID == auth.backendID }
+    }
     @AppStorage("onboardingGoals") private var goalsStr = ""
     @AppStorage("onboardingAreas") private var onboardingAreas = ""
     @AppStorage("showStreakEmoji") private var showStreakEmoji = true
@@ -247,7 +252,8 @@ struct TodayView: View {
                                 exerciseIDs: exercises.map(\.uuid),
                                 exerciseDurationOverrides: durationOverrides,
                                 isPinnedToToday: true,
-                                pinnedOrder: nextPinnedOrder()
+                                pinnedOrder: nextPinnedOrder(),
+                                ownerID: auth.backendID
                             )
                             modelContext.insert(routine)
                             customizeManagedRoutineIDString = routine.uuid.uuidString

@@ -26,6 +26,13 @@ final class Routine {
     /// whatever it last was) once unpinned, so re-pinning doesn't need to
     /// invent a fresh value from scratch.
     var pinnedOrder: Int = 0
+    /// `AuthManager.backendID` of whoever created this routine — Supabase
+    /// auth.uid() when signed in, the local anonymous UUID otherwise. Empty
+    /// string means "not yet claimed" (routines created before this field
+    /// existed); `Breath__Relax___StretchApp.claimOwnerlessRoutines()` backfills
+    /// those once at launch. Every query site filters on this so one
+    /// device's routines don't leak across different signed-in accounts.
+    var ownerID: String = ""
 
     init(
         uuid: UUID = UUID(),
@@ -34,7 +41,8 @@ final class Routine {
         borrowedFromID: UUID? = nil,
         exerciseDurationOverrides: [UUID: Int] = [:],
         isPinnedToToday: Bool = false,
-        pinnedOrder: Int = 0
+        pinnedOrder: Int = 0,
+        ownerID: String = ""
     ) {
         self.uuid = uuid
         self.name = name
@@ -44,5 +52,6 @@ final class Routine {
         self.exerciseDurationOverrides = exerciseDurationOverrides
         self.isPinnedToToday = isPinnedToToday
         self.pinnedOrder = pinnedOrder
+        self.ownerID = ownerID
     }
 }

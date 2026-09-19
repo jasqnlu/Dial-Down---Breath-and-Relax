@@ -384,6 +384,15 @@ deno_version = 2
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+# Cron-triggered only — the pg_cron job in supabase_schema.sql calls it with
+# the service-role key as its bearer token, so JWT verification costs nothing
+# there and keeps the endpoint from being an anonymous public URL. The function
+# additionally checks an x-cron-secret shared secret of its own; see
+# supabase/functions/send-streak-warnings/index.ts.
+[functions.send-streak-warnings]
+enabled = true
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327
