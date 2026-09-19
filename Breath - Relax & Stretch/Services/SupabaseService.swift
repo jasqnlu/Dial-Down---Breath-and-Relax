@@ -239,6 +239,30 @@ actor SupabaseService {
         return try Self.makeDecoder().decode([RemoteProfile].self, from: data)
     }
 
+    // MARK: - Registration (name step)
+
+    /// Fetches this account's own `profiles` row, or nil when none exists.
+    /// `profiles` is publicly readable, so no session is needed to *read*;
+    /// callers still wait for one because the id is only meaningful once it is
+    /// the Supabase uid (see RegistrationCoordinator).
+    func fetchProfile(id: String) async throws -> RemoteProfile? {
+        let encoded = id.addingPercentEncoding(withAllowedCharacters: .alphanumerics.union(.init(charactersIn: "-._~"))) ?? ""
+        let data = try await get(path: "/rest/v1/profiles?id=eq.\(encoded)&select=*&limit=1")
+        return try Self.makeDecoder().decode([RemoteProfile].self, from: data).first
+    }
+
+    /// Upserts just the identity columns for this account. This write is what
+    /// makes the account "registered". Requires a Supabase session (RLS:
+    /// id = auth.uid()); callers treat failure as best-effort.
+    func upsertProfileName(id: String, name: PersonName) async throws {
+        let data = try await MainActor.run {
+            try Self.makeEncoder().encode(RemoteProfileName(
+                id: id, displayName: name.fullName,
+                firstName: name.first, lastName: name.last))
+        }
+        try await post(path: "/rest/v1/profiles", body: data, upsert: true)
+    }
+
     // Note: sessions had a write path (uploadSession) that was removed as
     // dead code — nothing in the app called it. See supabase_schema.sql for
     // the matching RLS policy removal.
@@ -507,6 +531,15 @@ protocol SupabaseAuthenticating: Sendable {
 }
 
 extension SupabaseService: SupabaseAuthenticating {}
+
+/// Profile read/write seam for the registration flow, so
+/// `RegistrationCoordinator` can be tested without the network.
+protocol SupabaseProfileStoring: Sendable {
+    func fetchProfile(id: String) async throws -> RemoteProfile?
+    func upsertProfileName(id: String, name: PersonName) async throws
+}
+
+extension SupabaseService: SupabaseProfileStoring {}
 
 // DTOs live in SupabaseDTOs.swift — kept separate so Swift 6 never
 // infers @MainActor isolation on their synthesised Codable conformances.
