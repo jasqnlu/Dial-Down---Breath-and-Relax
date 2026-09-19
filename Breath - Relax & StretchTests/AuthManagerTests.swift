@@ -248,12 +248,17 @@ struct AuthManagerTests {
     }
 
     @Test func signOutDoesNotResetDeviceLevelOnboarding() {
-        UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+        let key = "hasCompletedOnboarding"
+        let previous = UserDefaults.standard.object(forKey: key)
+        defer {
+            if let previous { UserDefaults.standard.set(previous, forKey: key) }
+            else { UserDefaults.standard.removeObject(forKey: key) }
+        }
+        UserDefaults.standard.set(true, forKey: key)
         let manager = makeManager()
         manager.continueAsGuest()
         manager.signOut()
-        #expect(UserDefaults.standard.bool(forKey: "hasCompletedOnboarding"))
-        UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
+        #expect(UserDefaults.standard.bool(forKey: key))
     }
 }
 
