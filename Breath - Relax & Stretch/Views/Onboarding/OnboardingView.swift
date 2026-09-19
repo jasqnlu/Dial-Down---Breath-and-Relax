@@ -4,8 +4,6 @@ import SwiftUI
 
 struct OnboardingGate<Content: View>: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-    @AppStorage("hasSeenAppGuide") private var hasSeenAppGuide = false
-    @EnvironmentObject private var tourCoordinator: TourCoordinator
     let content: Content
 
     init(@ViewBuilder content: () -> Content) {
@@ -13,18 +11,11 @@ struct OnboardingGate<Content: View>: View {
     }
 
     var body: some View {
+        // The coach-mark tour used to auto-start here off a global flag. It is
+        // now per-account and started by RegistrationGate, so an unregistered
+        // account on an already-onboarded device replays it.
         if hasCompletedOnboarding {
             content
-                .onAppear {
-                    // The tour runs live, in HomeView's own ZStack — it can't
-                    // be a sheet, since it needs to switch real tabs
-                    // underneath itself. `hasSeenAppGuide` only gates whether
-                    // it *auto*-starts; TourCoordinator.finish() is what
-                    // actually ends it later.
-                    guard !hasSeenAppGuide else { return }
-                    hasSeenAppGuide = true
-                    tourCoordinator.restart()
-                }
         } else {
             OnboardingView()
         }
@@ -39,30 +30,40 @@ struct OnboardingView: View {
     @AppStorage("onboardingAreas")        private var onboardingAreas = ""
 
     @State private var currentPage = 0
-    private let totalPages = 5
+    private enum Page {
+        static let showcase = 1...3
+        static let goals = 4
+        static let total = 8
+    }
+    private var totalPages: Int { Page.total }
 
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $currentPage) {
-                WelcomePage()
-                    .tag(0)
+                WelcomePage().tag(0)
 
-                GoalPickerPage(selectedGoals: onboardingGoalsBinding)
+                ShowcasePage(imageName: "showcase-bodymap",
+                             title: "Tap a muscle, get the stretch",
+                             subtitle: "Explore the 3D Body Map to find exercises for exactly where you feel tight.")
                     .tag(1)
-
-                FocusAreaPickerPage(selectedAreas: onboardingAreasBinding)
+                ShowcasePage(imageName: "showcase-exercises",
+                             title: "200+ guided exercises",
+                             subtitle: "Browse animated demos with clear, step-by-step instructions.")
                     .tag(2)
-
-                BodyMapIntroPage()
+                ShowcasePage(imageName: "showcase-routines",
+                             title: "Build your routine",
+                             subtitle: "Save your favorites, keep your streak, and earn badges.")
                     .tag(3)
 
-                NotificationsPage(onComplete: completeOnboarding)
-                    .tag(4)
+                GoalPickerPage(selectedGoals: onboardingGoalsBinding).tag(Page.goals)
+                FocusAreaPickerPage(selectedAreas: onboardingAreasBinding).tag(5)
+                BodyMapIntroPage().tag(6)
+                NotificationsPage(onComplete: completeOnboarding).tag(7)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.easeInOut, value: currentPage)
 
-            // Bottom overlay: dots + Next button (pages 0-3);
+            // Bottom overlay: dots + Next button (every page except the last);
             // the last page provides its own action buttons.
             if currentPage < totalPages - 1 {
                 VStack(spacing: 20) {
@@ -93,6 +94,18 @@ struct OnboardingView: View {
         }
         .background(Color.luminaSurface.ignoresSafeArea())
         .ignoresSafeArea(edges: .bottom)
+        .overlay(alignment: .topTrailing) {
+            if Page.showcase.contains(currentPage) {
+                Button("Skip") {
+                    withAnimation { currentPage = Page.goals }
+                }
+                .font(.luminaLabel)
+                .foregroundStyle(Color.luminaOnSurfaceVariant)
+                .padding(.horizontal, 24)
+                .padding(.top, 12)
+                .transition(.opacity)
+            }
+        }
     }
 
     // MARK: Helpers

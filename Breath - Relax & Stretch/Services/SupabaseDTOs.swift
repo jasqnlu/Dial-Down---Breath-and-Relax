@@ -35,6 +35,11 @@ struct RemoteProfile: Codable, Sendable, Identifiable {
     /// server-side (via get_streak_warning_candidates) to tell whether a
     /// user has already practiced today in their own timezone.
     let lastSessionAt: Date?
+    /// Nullable in the database. `var … = nil` keeps existing memberwise call
+    /// sites compiling, and nil is omitted from the encoded body so a session
+    /// upload (which never sets names) can't overwrite the saved name.
+    var firstName: String? = nil
+    var lastName: String? = nil
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -43,6 +48,24 @@ struct RemoteProfile: Codable, Sendable, Identifiable {
         case streak
         case totalMinutes = "total_minutes"
         case lastSessionAt = "last_session_at"
+        case firstName    = "first_name"
+        case lastName     = "last_name"
+    }
+}
+
+/// Upsert body for the name step. Only identity columns are sent so
+/// `resolution=merge-duplicates` leaves points/streak/minutes untouched.
+struct RemoteProfileName: Codable, Sendable {
+    let id: String
+    let displayName: String
+    let firstName: String
+    let lastName: String
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case displayName = "display_name"
+        case firstName   = "first_name"
+        case lastName    = "last_name"
     }
 }
 

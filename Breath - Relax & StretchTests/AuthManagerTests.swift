@@ -18,7 +18,7 @@ struct AuthManagerTests {
     private static let keysToReset = [
         "auth.isSignedIn", "auth.displayName", "auth.email",
         "auth.provider", "auth.appLockEnabled", "auth.twoFAEnabled", "auth.anonymousID",
-        "auth.supabaseUserID"
+        "auth.supabaseUserID", "auth.firstName", "auth.lastName"
     ]
 
     init() {
@@ -37,32 +37,26 @@ struct AuthManagerTests {
         fake.signUpWithPasswordResult = .success("new-user-1")
         let manager = makeManager(supabase: fake)
 
-        let result = await manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
+        let result = await manager.signUp(email: "ada@example.com", password: "password123")
 
         #expect(result == nil)
         #expect(manager.isSignedIn)
-        #expect(manager.displayName == "Ada")
+        #expect(manager.displayName == "")
         #expect(manager.userEmail == "ada@example.com")
         #expect(manager.provider == .email)
         #expect(manager.backendID == "new-user-1")
         #expect(manager.isBackendAuthenticated)
     }
 
-    @Test func signUpRejectsEmptyName() async {
-        let manager = makeManager()
-        let result = await manager.signUp(name: "", email: "a@b.com", password: "password123")
-        #expect(result == "Name is required.")
-    }
-
     @Test func signUpRejectsInvalidEmail() async {
         let manager = makeManager()
-        let result = await manager.signUp(name: "Ada", email: "not-an-email", password: "password123")
+        let result = await manager.signUp(email: "not-an-email", password: "password123")
         #expect(result == "Enter a valid email address.")
     }
 
     @Test func signUpRejectsShortPassword() async {
         let manager = makeManager()
-        let result = await manager.signUp(name: "Ada", email: "a@b.com", password: "short")
+        let result = await manager.signUp(email: "a@b.com", password: "short")
         #expect(result == "Password must be at least 8 characters.")
     }
 
@@ -71,11 +65,76 @@ struct AuthManagerTests {
         fake.signUpWithPasswordResult = .failure(SupabaseAuthError(code: "user_already_exists", message: nil))
         let manager = makeManager(supabase: fake)
 
-        let result = await manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
+        let result = await manager.signUp(email: "ada@example.com", password: "password123")
 
         #expect(result == "An account with that email already exists.")
         #expect(!manager.isSignedIn)
         #expect(!manager.isBackendAuthenticated)
+    }
+
+    // MARK: - Name (first/last)
+
+    @Test func setNameStoresPartsAndComposesDisplayName() {
+        let manager = makeManager()
+        manager.setName(PersonName(first: " Ada ", last: "Lovelace"))
+        #expect(manager.firstName == "Ada")
+        #expect(manager.lastName == "Lovelace")
+        #expect(manager.displayName == "Ada Lovelace")
+        #expect(manager.personName.isComplete)
+    }
+
+    @Test func setNamePersistsAcrossInstances() {
+        makeManager().setName(PersonName(first: "Ada", last: "Lovelace"))
+        let reloaded = makeManager()
+        #expect(reloaded.firstName == "Ada")
+        #expect(reloaded.lastName == "Lovelace")
+        #expect(reloaded.displayName == "Ada Lovelace")
+    }
+
+    @Test func providerSuppliedNamesPrefillButNeverCountAsAStoredName() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signInWithGoogleResult = .success("g1")
+        let manager = makeManager(supabase: fake)
+        _ = await manager.handleGoogleSignIn(idToken: "t", nonce: "n", name: "Ada Lovelace", email: "a@b.com")
+        #expect(manager.providerPrefill == PersonName(first: "Ada", last: "Lovelace"))
+        #expect(!manager.personName.isComplete)   // must still go through the name step
+    }
+
+    @Test func providerPrefillIgnoresPlaceholderNames() {
+        let manager = makeManager()
+        manager.continueAsGuest()                 // displayName becomes "Guest"
+        #expect(manager.providerPrefill == .empty)
+    }
+
+    @Test func signOutClearsTheName() {
+        let manager = makeManager()
+        manager.setName(PersonName(first: "Ada", last: "Lovelace"))
+        manager.signOut()
+        #expect(manager.firstName.isEmpty)
+        #expect(manager.lastName.isEmpty)
+        #expect(manager.displayName.isEmpty)
+    }
+
+    @Test func greetingNameIsTheFirstNameAndEmptyForGuests() async {
+        let manager = makeManager()
+        manager.setName(PersonName(first: "Ada", last: "Lovelace"))
+        #expect(manager.greetingName == "Ada")
+
+        let guest = makeManager()
+        guest.continueAsGuest()
+        #expect(guest.greetingName == "")
+    }
+
+    @Test func greetingNameFallsBackToTheFirstWordOfADisplayNameAndSkipsPlaceholders() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signInWithGoogleResult = .success("g1")
+        let manager = makeManager(supabase: fake)
+        _ = await manager.handleGoogleSignIn(idToken: "t", nonce: "n", name: "Ada Lovelace", email: "a@b.com")
+        #expect(manager.greetingName == "Ada")
+
+        let apple = makeManager()
+        apple.continueAsGuest()
+        #expect(apple.greetingName == "")
     }
 
     // MARK: - signIn
@@ -135,7 +194,7 @@ struct AuthManagerTests {
         let fake = FakeSupabaseAuthenticating()
         fake.signUpWithPasswordResult = .success("supabase-uid-123")
         let manager = makeManager(supabase: fake)
-        _ = await manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
+        _ = await manager.signUp(email: "ada@example.com", password: "password123")
 
         manager.signOut()
         #expect(!manager.isBackendAuthenticated)
@@ -146,7 +205,7 @@ struct AuthManagerTests {
         let fake = FakeSupabaseAuthenticating()
         fake.signUpWithPasswordResult = .success("supabase-uid-123")
         let manager = makeManager(supabase: fake)
-        _ = await manager.signUp(name: "Ada", email: "ada@example.com", password: "password123")
+        _ = await manager.signUp(email: "ada@example.com", password: "password123")
 
         manager.deleteAccount()
         #expect(!manager.isBackendAuthenticated)
@@ -187,6 +246,20 @@ struct AuthManagerTests {
         #expect(!manager.isSignedIn)
         #expect(!manager.isBackendAuthenticated)
     }
+
+    @Test func signOutDoesNotResetDeviceLevelOnboarding() {
+        let key = "hasCompletedOnboarding"
+        let previous = UserDefaults.standard.object(forKey: key)
+        defer {
+            if let previous { UserDefaults.standard.set(previous, forKey: key) }
+            else { UserDefaults.standard.removeObject(forKey: key) }
+        }
+        UserDefaults.standard.set(true, forKey: key)
+        let manager = makeManager()
+        manager.continueAsGuest()
+        manager.signOut()
+        #expect(UserDefaults.standard.bool(forKey: key))
+    }
 }
 
 // MARK: - Test doubles
@@ -207,7 +280,7 @@ private final class FakeSupabaseAuthenticating: SupabaseAuthenticating, @uncheck
     func signInWithGoogle(idToken: String, nonce: String?) async throws -> String {
         try signInWithGoogleResult.get()
     }
-    func signUpWithPassword(email: String, password: String, name: String) async throws -> String {
+    func signUpWithPassword(email: String, password: String) async throws -> String {
         try signUpWithPasswordResult.get()
     }
     func signInWithPassword(email: String, password: String) async throws -> (userID: String, name: String?) {
