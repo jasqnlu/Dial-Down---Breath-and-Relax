@@ -192,7 +192,7 @@ struct RegistrationCoordinatorTests {
 
     @Test func aSessionThatNeverAppearsGivesUpAfterTheSessionWaitNotTheFullTimeout() async {
         let store = FakeProfileStore()
-        let coordinator = RegistrationCoordinator(store: store, lookupTimeout: .milliseconds(300),
+        let coordinator = RegistrationCoordinator(store: store, lookupTimeout: .seconds(5),
                                                   sessionPollInterval: .milliseconds(10),
                                                   sessionWaitTimeout: .milliseconds(150))
         let clock = ContinuousClock()
@@ -202,7 +202,8 @@ struct RegistrationCoordinatorTests {
 
         let elapsed = start.duration(to: clock.now)
         #expect(outcome == .needsName(prefill: grace))
-        #expect(elapsed < .milliseconds(600))
+        // the wait must end at the ~150ms session-wait cap, not run to the 5s overall timeout; 2.5s is far from both and tolerates a loaded machine
+        #expect(elapsed < .milliseconds(2500))
         #expect(store.fetchCount == 0)
     }
 
@@ -221,9 +222,8 @@ struct RegistrationCoordinatorTests {
                                                 hasBackendSession: { session })
 
         let elapsed = start.duration(to: clock.now)
-        // Remaining budget (~200ms) is floored to 1s, so ~1.1s total; a fresh
-        // full fetch timeout or the 5s fetch would blow well past 2s.
-        #expect(elapsed < .seconds(2))
+        // the remaining budget (~200ms) is floored to 1s so ~1.1s total; a fresh full fetch timeout or the 5s fetch delay would blow past 3s; 3s tolerates load
+        #expect(elapsed < .seconds(3))
         #expect(outcome == .needsName(prefill: grace))
     }
 }
