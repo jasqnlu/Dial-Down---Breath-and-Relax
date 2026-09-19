@@ -114,6 +114,85 @@ struct SupabaseServiceTests {
         }
     }
 
+    // MARK: - profiles name fields
+
+    @Test @MainActor func fetchProfileDecodesTheNameColumns() async throws {
+        let session = FakeHTTPSession(responses: [
+            .success(status: 200, body: Data("""
+            [{"id":"u1","display_name":"Ada Lovelace","total_points":10,"streak":2,"total_minutes":30,"first_name":"Ada","last_name":"Lovelace"}]
+            """.utf8))
+        ])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        let row = try await service.fetchProfile(id: "u1")
+        #expect(row?.firstName == "Ada")
+        #expect(row?.lastName == "Lovelace")
+        #expect(row?.displayName == "Ada Lovelace")
+    }
+
+    @Test @MainActor func fetchProfileToleratesRowsWithoutNameColumns() async throws {
+        let session = FakeHTTPSession(responses: [
+            .success(status: 200, body: Data("""
+            [{"id":"u1","display_name":"Old Name","total_points":0,"streak":0,"total_minutes":0}]
+            """.utf8))
+        ])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        let row = try await service.fetchProfile(id: "u1")
+        #expect(row?.firstName == nil)
+        #expect(row?.lastName == nil)
+    }
+
+    @Test @MainActor func fetchProfileReturnsNilWhenThereIsNoRow() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 200, body: Data("[]".utf8))])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        #expect(try await service.fetchProfile(id: "u1") == nil)
+    }
+
+    @Test @MainActor func fetchProfileFiltersByIdWithStrictEncoding() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 200, body: Data("[]".utf8))])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        _ = try await service.fetchProfile(id: "a&b=c")
+        let url = try #require(session.requests.first?.url?.absoluteString)
+        #expect(url.contains("/rest/v1/profiles?id=eq.a%26b%3Dc"))
+        #expect(url.contains("limit=1"))
+    }
+
+    @Test @MainActor func fetchProfileThrowsOnAnHTTPErrorStatus() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 500, body: Data("{}".utf8))])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        await #expect(throws: (any Error).self) {
+            _ = try await service.fetchProfile(id: "u1")
+        }
+    }
+
+    @Test @MainActor func upsertProfileNameSendsOnlyIdentityColumnsAsAMergeUpsert() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 201, body: Data())])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        try await service.upsertProfileName(id: "u1", name: PersonName(first: "Ada", last: "Lovelace"))
+
+        let request = try #require(session.requests.first)
+        #expect(request.httpMethod == "POST")
+        #expect(request.url?.path == "/rest/v1/profiles")
+        #expect(request.value(forHTTPHeaderField: "Prefer") == "resolution=merge-duplicates")
+        let body = try #require(request.httpBody)
+        let json = try #require(try JSONSerialization.jsonObject(with: body) as? [String: Any])
+        #expect(json["id"] as? String == "u1")
+        #expect(json["display_name"] as? String == "Ada Lovelace")
+        #expect(json["first_name"] as? String == "Ada")
+        #expect(json["last_name"] as? String == "Lovelace")
+        #expect(json["total_points"] == nil)   // merge-duplicates must not reset stats
+    }
+
+    @Test @MainActor func remoteProfileOmitsNameKeysWhenTheyAreNil() throws {
+        // SessionRecorder uploads RemoteProfile on every session; if nil names
+        // were encoded as null they would wipe the names the name step saved.
+        let profile = RemoteProfile(id: "u1", displayName: "Ada Lovelace", totalPoints: 1,
+                                    streak: 1, totalMinutes: 1, lastSessionAt: nil)
+        let data = try SupabaseService.makeEncoder().encode(profile)
+        let json = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        #expect(json["first_name"] == nil)
+        #expect(json["last_name"] == nil)
+    }
+
     private static func tokenGrantJSON(userID: String) -> Data {
         Data("""
         {
@@ -143,12 +222,19 @@ private final class FakeHTTPSession: SupabaseHTTPSession, @unchecked Sendable {
         case success(status: Int, body: Data)
     }
     private var responses: [Canned]
+    private var recorded: [URLRequest] = []
     private let lock = NSLock()
+
+    var requests: [URLRequest] {
+        lock.lock(); defer { lock.unlock() }
+        return recorded
+    }
 
     init(responses: [Canned]) { self.responses = responses }
 
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         lock.lock()
+        recorded.append(request)
         guard !responses.isEmpty else {
             lock.unlock()
             throw URLError(.unknown)
