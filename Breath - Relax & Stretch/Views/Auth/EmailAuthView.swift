@@ -140,7 +140,7 @@ struct EmailAuthView: View {
                     isLoading = false
                     return
                 }
-                if let err = await auth.signUp(name: name, email: email, password: password) {
+                if let err = await auth.signUp(email: email, password: password) {
                     errorMsg = err
                     notifyFeedback.notificationOccurred(.error)
                 } else {

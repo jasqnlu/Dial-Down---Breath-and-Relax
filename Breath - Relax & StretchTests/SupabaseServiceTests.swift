@@ -63,7 +63,7 @@ struct SupabaseServiceTests {
             .success(status: 200, body: Self.tokenGrantJSON(userID: "new-user-1"))
         ])
         let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
-        let uid = try await service.signUpWithPassword(email: "ada@example.com", password: "password123", name: "Ada")
+        let uid = try await service.signUpWithPassword(email: "ada@example.com", password: "password123")
         #expect(uid == "new-user-1")
     }
 
@@ -75,7 +75,7 @@ struct SupabaseServiceTests {
         ])
         let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
         do {
-            _ = try await service.signUpWithPassword(email: "ada@example.com", password: "password123", name: "Ada")
+            _ = try await service.signUpWithPassword(email: "ada@example.com", password: "password123")
             Issue.record("Expected signUpWithPassword to throw")
         } catch {
             #expect((error as? LocalizedError)?.errorDescription == "An account with that email already exists.")
