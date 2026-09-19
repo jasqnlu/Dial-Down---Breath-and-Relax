@@ -4,8 +4,6 @@ import SwiftUI
 
 struct OnboardingGate<Content: View>: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-    @AppStorage("hasSeenAppGuide") private var hasSeenAppGuide = false
-    @EnvironmentObject private var tourCoordinator: TourCoordinator
     let content: Content
 
     init(@ViewBuilder content: () -> Content) {
@@ -13,18 +11,11 @@ struct OnboardingGate<Content: View>: View {
     }
 
     var body: some View {
+        // The coach-mark tour used to auto-start here off a global flag. It is
+        // now per-account and started by RegistrationGate, so an unregistered
+        // account on an already-onboarded device replays it.
         if hasCompletedOnboarding {
             content
-                .onAppear {
-                    // The tour runs live, in HomeView's own ZStack — it can't
-                    // be a sheet, since it needs to switch real tabs
-                    // underneath itself. `hasSeenAppGuide` only gates whether
-                    // it *auto*-starts; TourCoordinator.finish() is what
-                    // actually ends it later.
-                    guard !hasSeenAppGuide else { return }
-                    hasSeenAppGuide = true
-                    tourCoordinator.restart()
-                }
         } else {
             OnboardingView()
         }
