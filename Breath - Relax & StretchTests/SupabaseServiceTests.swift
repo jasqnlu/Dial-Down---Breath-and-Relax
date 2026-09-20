@@ -251,3 +251,117 @@ private final class FakeHTTPSession: SupabaseHTTPSession, @unchecked Sendable {
         }
     }
 }
+
+// MARK: - Opt-in leaderboard
+
+extension SupabaseServiceTests {
+
+    /// A keychain holding a live session for `userID`, so calls that need
+    /// `supabaseUserID` (leave) behave as they do when signed in.
+    private func signedInKeychain(userID: String) throws -> FakeSupabaseKeychainStore {
+        let keychain = FakeSupabaseKeychainStore()
+        let stored = SupabaseSession(
+            accessToken: "access", refreshToken: "refresh",
+            userID: userID, expiresAt: Date().addingTimeInterval(3600))
+        let json = try #require(String(data: try JSONEncoder().encode(stored), encoding: .utf8))
+        keychain.save(account: "supabase.session", value: json)
+        return keychain
+    }
+
+    @Test @MainActor func fetchLeaderboardCallsTheRPCAndDecodesHandleOnlyRows() async throws {
+        let session = FakeHTTPSession(responses: [
+            .success(status: 200, body: Data("""
+            [{"handle":"Calm Otter 4821","total_points":90,"streak":4,"total_minutes":60,"is_me":true},
+             {"handle":"Quiet Fox 1234","total_points":40,"streak":1,"total_minutes":20,"is_me":false}]
+            """.utf8))
+        ])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        let rows = try await service.fetchLeaderboard(limit: 25)
+
+        #expect(rows.map(\.handle) == ["Calm Otter 4821", "Quiet Fox 1234"])
+        #expect(rows.map(\.isMe) == [true, false])
+        #expect(rows.first?.totalPoints == 90)
+
+        let request = try #require(session.requests.first)
+        #expect(request.httpMethod == "POST")
+        #expect(request.url?.path == "/rest/v1/rpc/get_leaderboard")
+        let body = try #require(request.httpBody)
+        let json = try #require(try JSONSerialization.jsonObject(with: body) as? [String: Any])
+        #expect(json["row_limit"] as? Int == 25)
+    }
+
+    @Test @MainActor func fetchLeaderboardNeverReadsThePrivateProfilesTable() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 200, body: Data("[]".utf8))])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        _ = try await service.fetchLeaderboard()
+        let url = try #require(session.requests.first?.url?.absoluteString)
+        #expect(!url.contains("/profiles"))
+    }
+
+    @Test @MainActor func fetchLeaderboardThrowsOnAnHTTPErrorStatus() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 403, body: Data("{}".utf8))])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        await #expect(throws: (any Error).self) {
+            _ = try await service.fetchLeaderboard()
+        }
+    }
+
+    @Test @MainActor func fetchOwnLeaderboardRowReturnsNilWhenNotOptedIn() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 200, body: Data("[]".utf8))])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        #expect(try await service.fetchOwnLeaderboardRow() == nil)
+        #expect(session.requests.first?.url?.path == "/rest/v1/leaderboard")
+    }
+
+    @Test @MainActor func fetchOwnLeaderboardRowDecodesTheOptedInRow() async throws {
+        let session = FakeHTTPSession(responses: [
+            .success(status: 200, body: Data("""
+            [{"user_id":"u1","handle":"Calm Otter 4821","total_points":90,"streak":4,"total_minutes":60}]
+            """.utf8))
+        ])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        let row = try await service.fetchOwnLeaderboardRow()
+        #expect(row?.handle == "Calm Otter 4821")
+        #expect(row?.userID == "u1")
+    }
+
+    @Test @MainActor func joinLeaderboardUpsertsTheCallersOwnRowAsAMergeUpsert() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 201, body: Data())])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        try await service.joinLeaderboard(RemoteLeaderboardRow(
+            userID: "u1", handle: "Calm Otter 4821",
+            totalPoints: 90, streak: 4, totalMinutes: 60))
+
+        let request = try #require(session.requests.first)
+        #expect(request.httpMethod == "POST")
+        #expect(request.url?.path == "/rest/v1/leaderboard")
+        #expect(request.value(forHTTPHeaderField: "Prefer") == "resolution=merge-duplicates")
+        let body = try #require(request.httpBody)
+        let json = try #require(try JSONSerialization.jsonObject(with: body) as? [String: Any])
+        #expect(json["user_id"] as? String == "u1")
+        #expect(json["handle"] as? String == "Calm Otter 4821")
+        #expect(json["total_points"] as? Int == 90)
+        // The whole point of the opt-in design: no real-name fields ever sent.
+        #expect(json["display_name"] == nil)
+        #expect(json["first_name"] == nil)
+        #expect(json["last_name"] == nil)
+    }
+
+    @Test @MainActor func leaveLeaderboardDeletesOnlyTheSignedInUsersRow() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 204, body: Data())])
+        let service = SupabaseService(keychain: try signedInKeychain(userID: "u1"), urlSession: session)
+        try await service.leaveLeaderboard()
+
+        let request = try #require(session.requests.first)
+        #expect(request.httpMethod == "DELETE")
+        #expect(request.url?.path == "/rest/v1/leaderboard")
+        #expect(request.url?.absoluteString.contains("user_id=eq.u1") == true)
+    }
+
+    @Test @MainActor func leaveLeaderboardIsANoOpWithoutASession() async throws {
+        let session = FakeHTTPSession(responses: [])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        try await service.leaveLeaderboard()
+        #expect(session.requests.isEmpty)   // never sends an unfiltered DELETE
+    }
+}
