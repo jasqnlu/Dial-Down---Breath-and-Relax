@@ -25,7 +25,9 @@ struct ProfileView: View {
     @EnvironmentObject private var auth: AuthManager
     @EnvironmentObject private var tourCoordinator: TourCoordinator
 
-    @State private var selectedTab: ProfileTab = .account
+    // SceneStorage (not @State): a language change rebuilds this tab, and the
+    // user should land back on the segment they were on (usually Settings).
+    @SceneStorage("profileSelectedTab") private var selectedTab: ProfileTab = .account
     @State private var showSignOutConfirm = false
 
     // Profile photo

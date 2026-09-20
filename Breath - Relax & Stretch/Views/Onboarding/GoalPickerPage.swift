@@ -8,7 +8,7 @@ struct GoalPickerPage: View {
     private struct Goal: Identifiable {
         let id: String   // used as the key in selectedGoals
         let icon: String
-        let label: String
+        let label: LocalizedStringKey
     }
 
     private let goals: [Goal] = [
@@ -71,7 +71,7 @@ struct GoalPickerPage: View {
 
 struct GoalCard: View {
     let icon: String
-    let label: String
+    let label: LocalizedStringKey
     let isSelected: Bool
     let action: () -> Void
 
@@ -149,7 +149,7 @@ struct FocusAreaPickerPage: View {
                 LazyVGrid(columns: columns, spacing: 14) {
                     ForEach(ExerciseCategory.allCases) { area in
                         FocusAreaCard(
-                            title: area.rawValue,
+                            title: LocalizedStringKey(area.rawValue),
                             icon: Self.icons[area] ?? "figure.mind.and.body",
                             accent: area.accentColor,
                             isSelected: selectedAreas.contains(area.rawValue)
@@ -179,7 +179,7 @@ struct FocusAreaPickerPage: View {
 // MARK: - Focus Area Card
 
 struct FocusAreaCard: View {
-    let title: String
+    let title: LocalizedStringKey
     let icon: String
     let accent: Color
     let isSelected: Bool

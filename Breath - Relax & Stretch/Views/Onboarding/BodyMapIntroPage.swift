@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - Body Map Intro Page
 
 struct BodyMapIntroPage: View {
-    private let bullets: [(icon: String, text: String)] = [
+    private let bullets: [(icon: String, text: LocalizedStringKey)] = [
         ("hand.tap.fill",
          "Tap any body region to explore targeted exercises"),
         ("pencil.and.outline",
@@ -38,7 +38,7 @@ struct BodyMapIntroPage: View {
                 .padding(.top, 12)
 
                 VStack(alignment: .leading, spacing: 16) {
-                    ForEach(bullets, id: \.text) { bullet in
+                    ForEach(bullets, id: \.icon) { bullet in
                         HStack(alignment: .top, spacing: 14) {
                             Image(systemName: bullet.icon)
                                 .font(.title3)

@@ -9,6 +9,7 @@ struct HomeView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Query private var exercises: [Exercise]
     @AppStorage("onboardingGoals") private var goalsStr = ""
+    @Environment(\.locale) private var locale
     @State private var selectedTab: Int
     // Tabs are created on first visit and kept alive after, so nav/scroll
     // state survives switching (what TabView used to give us) without
@@ -33,6 +34,12 @@ struct HomeView: View {
             ZStack {
                 ForEach(visitedTabs.sorted(), id: \.self) { index in
                     tabContent(index)
+                        // Navigation titles are UIKit-owned and keep the string they
+                        // first resolved; rebuilding the tab when the locale changes
+                        // refreshes them. Keyed on the environment locale itself (not
+                        // the stored preference) so the rebuild and the new locale land
+                        // in the same update. `selectedTab` lives here, so the user stays put.
+                        .id(locale.identifier)
                         .opacity(selectedTab == index ? 1 : 0)
                         .allowsHitTesting(selectedTab == index)
                         .accessibilityHidden(selectedTab != index)

@@ -9,6 +9,7 @@ struct ProfileSettingsTab: View {
     @AppStorage("reminderHour")         private var reminderHour = 8
     @AppStorage("reminderWeekdays")     private var weekdaysStr = "2,3,4,5,6" // Mon–Fri default
     @AppStorage("onboardingGoals")      private var goalsStr = ""
+    @AppStorage(AppLanguage.storageKey) private var appLanguage = AppLanguage.system.rawValue
     @AppStorage("voiceCuesEnabled")     private var voiceCuesEnabled = false
     @AppStorage("autoSkipGetReadyCountdown") private var autoSkipGetReadyCountdown = false
     @AppStorage("calendarSyncEnabled")  private var calendarSyncEnabled = false
@@ -102,6 +103,26 @@ struct ProfileSettingsTab: View {
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
             } footer: {
                 Text("Shapes the \"For You\" exercises in the Exercises tab.")
+            }
+
+            // Language
+            Section {
+                Picker(selection: $appLanguage) {
+                    ForEach(AppLanguage.allCases) { language in
+                        if let nativeName = language.nativeName {
+                            Text(verbatim: nativeName).tag(language.rawValue)
+                        } else {
+                            Text("System Default").tag(language.rawValue)
+                        }
+                    }
+                } label: {
+                    Label("Language", systemImage: "globe")
+                }
+                .accessibilityIdentifier("settings.language")
+            } header: {
+                Text("Language")
+                    .font(.luminaLabel)
+                    .foregroundStyle(Color.luminaOnSurfaceVariant)
             }
 
             // Session
