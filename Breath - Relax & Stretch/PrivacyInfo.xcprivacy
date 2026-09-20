@@ -30,20 +30,24 @@
 
 	  NSPrivacyCollectedDataTypes: two categories of data leave the device.
 
-	    1. The community leaderboard upload in LeaderboardView.swift /
-	       SupabaseService.uploadProfile (RemoteProfile in
-	       Services/SupabaseDTOs.swift): a user-chosen display name plus
-	       points/streak/total-minutes stats, keyed by an anonymous
-	       per-install/auth UUID (auth.backendID) — per the code comments in
-	       SupabaseService.swift ("Only points/streak/minutes are shared —
-	       no email; id is the anonymous per-install UUID").
+	    1. Profile and opt-in leaderboard data (SupabaseService.uploadProfile /
+	       joinLeaderboard; RemoteProfile and RemoteLeaderboardRow in
+	       Services/SupabaseDTOs.swift):
+	         - A private profile row (real name, points/streak/total-minutes,
+	           last session time) readable and writable ONLY by its owner, used
+	           to restore the account and to send streak reminders.
+	         - If, and only if, the user taps Join in LeaderboardView: a
+	           generated pseudonymous handle (never a real name) plus
+	           points/streak/total-minutes, visible to other signed-in users
+	           without any user id. Leaving deletes it.
+	       Both are keyed by the Supabase auth UUID (AuthManager.backendID).
 
 	    2. Email address, sent to our authentication provider (Supabase) when
 	       creating or signing into an account via Sign in with Apple,
 	       Google, or email/password (SupabaseService.swift's
 	       signInWithApple/signInWithGoogle/signUpWithPassword/
 	       signInWithPassword). Used solely to verify identity on future
-	       sign-ins; never linked to the anonymous leaderboard data above.
+	       sign-ins; never stored in the leaderboard row.
 
 	  Neither category is used for tracking.
 	-->
