@@ -393,3 +393,130 @@ alter policy "users can update their own push token" on public.push_tokens
 
 alter policy "users can delete their own push token" on public.push_tokens
   using ((select auth.uid())::text = user_id);
+
+-- ───────── Private profiles + opt-in leaderboard (2026-09-19) ─────────
+-- Root cause of "Apple accounts don't have their data saved" (see
+-- docs/investigations/2026-09-19-apple-account-data-not-saved.md): the live
+-- project had RLS policies but NO table privileges for anon/authenticated,
+-- and Postgres checks GRANTs before RLS, so every request was a 403 and no
+-- policy ever ran. This block restores the grants, and — because names now
+-- live in `profiles` — makes that table owner-only instead of public.
+--
+-- Privacy model:
+--   * profiles     PRIVATE. Real name, stats, last_session_at. Only the owner
+--                  can read/write their own row; anon has no access at all.
+--   * leaderboard  OPT-IN. A row exists only if the user switched it on. It
+--                  holds a generated handle plus points/streak/minutes and
+--                  never a real name. RLS lets an owner see only their own
+--                  row; everyone else reads it through get_leaderboard(),
+--                  which does not return user ids.
+--   * The streak-warning job keeps working: get_streak_warning_candidates()
+--     is SECURITY DEFINER and reads profiles regardless of RLS.
+
+-- 1. Table privileges the existing policies already assume. RLS still scopes
+--    every row to its owner; these only let the request reach RLS at all.
+grant usage on schema public to anon, authenticated, service_role;
+
+grant select on public.exercises to anon, authenticated;
+-- Public routines are readable by anyone (is_public = true); writes are
+-- authors only. NOTE: routines.author_name is visible on public routines —
+-- never store a real name there when the upload path is built.
+grant select on public.routines to anon, authenticated;
+grant insert, update, delete on public.routines to authenticated;
+grant select, insert, update, delete on public.sessions to authenticated;
+grant select, insert, update, delete on public.profiles to authenticated;
+grant select, insert, update, delete on public.push_tokens to authenticated;
+grant all on all tables in schema public to service_role;
+
+-- 2. profiles: real-name columns (PR #26) and owner-only policies.
+alter table profiles add column if not exists first_name text check (char_length(first_name) <= 40);
+alter table profiles add column if not exists last_name  text check (char_length(last_name)  <= 40);
+
+drop policy if exists "profiles are publicly readable" on profiles;
+drop policy if exists "users can read their own profile" on profiles;
+drop policy if exists "users can insert their profile" on profiles;
+drop policy if exists "users can update their profile" on profiles;
+drop policy if exists "users can delete their profile" on profiles;
+
+create policy "users can read their own profile"
+  on profiles for select to authenticated
+  using ((select auth.uid())::text = id);
+
+create policy "users can insert their profile"
+  on profiles for insert to authenticated
+  with check ((select auth.uid())::text = id);
+
+create policy "users can update their profile"
+  on profiles for update to authenticated
+  using ((select auth.uid())::text = id)
+  with check ((select auth.uid())::text = id);
+
+create policy "users can delete their profile"
+  on profiles for delete to authenticated
+  using ((select auth.uid())::text = id);
+
+-- 3. push_tokens: PostgREST upserts are INSERT ... ON CONFLICT DO UPDATE,
+--    which needs SELECT on the existing row. Owner-only, so nothing new is
+--    exposed; the Edge Function still reads via service_role.
+drop policy if exists "users can read their own push token" on push_tokens;
+create policy "users can read their own push token"
+  on push_tokens for select to authenticated
+  using ((select auth.uid())::text = user_id);
+
+-- 4. leaderboard: opt-in, pseudonymous.
+create table if not exists leaderboard (
+  user_id        text primary key check (char_length(user_id) <= 40), -- auth.uid(); never returned to other users
+  handle         text not null check (char_length(handle) between 2 and 32),
+  total_points   int4 not null default 0 check (total_points between 0 and 100000000),
+  streak         int4 not null default 0 check (streak between 0 and 100000),
+  total_minutes  int4 not null default 0 check (total_minutes between 0 and 100000000),
+  updated_at     timestamptz not null default now()
+);
+
+alter table leaderboard enable row level security;
+
+grant select, insert, update, delete on public.leaderboard to authenticated;
+
+create policy "users can read their own leaderboard row"
+  on leaderboard for select to authenticated
+  using ((select auth.uid())::text = user_id);
+
+create policy "users can join the leaderboard"
+  on leaderboard for insert to authenticated
+  with check ((select auth.uid())::text = user_id);
+
+create policy "users can update their leaderboard row"
+  on leaderboard for update to authenticated
+  using ((select auth.uid())::text = user_id)
+  with check ((select auth.uid())::text = user_id);
+
+create policy "users can leave the leaderboard"
+  on leaderboard for delete to authenticated
+  using ((select auth.uid())::text = user_id);
+
+-- Other users' rows are only reachable through this function, which returns
+-- no user ids (is_me marks the caller's own row). security definer so it can
+-- read past the owner-only RLS; search_path locked; limit clamped so it can't
+-- be used to dump the table in one call; signed-in users only.
+create or replace function get_leaderboard(row_limit int default 50)
+returns table (
+  handle        text,
+  total_points  int4,
+  streak        int4,
+  total_minutes int4,
+  is_me         boolean
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select l.handle, l.total_points, l.streak, l.total_minutes,
+         l.user_id = (select auth.uid())::text
+  from leaderboard l
+  order by l.total_points desc, l.updated_at asc
+  limit least(greatest(row_limit, 1), 100)
+$$;
+
+revoke all on function get_leaderboard(int) from public, anon;
+grant execute on function get_leaderboard(int) to authenticated;
