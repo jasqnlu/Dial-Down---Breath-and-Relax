@@ -94,10 +94,12 @@ enum SessionRecorder {
             }
         }
 
-        // Community — best-effort upload of last_session_at so the
-        // streak-warning server job knows this user already practiced
-        // today. Snapshot scalar fields now; `profile` is a SwiftData
-        // @Model and shouldn't be captured into the Task below.
+        // Community — best-effort upload to the user's own *private* profiles
+        // row (last_session_at lets the streak-warning server job know this
+        // user already practiced today). Only if the user opted in to the
+        // leaderboard is a pseudonymous stats row refreshed too. Snapshot
+        // scalar fields now; `profile` is a SwiftData @Model and shouldn't
+        // be captured into the Task below.
         if let profile = try? modelContext.fetch(FetchDescriptor<UserProfile>()).first {
             let snapshot = RemoteProfile(
                 id: AuthManager.shared.backendID,
@@ -110,6 +112,12 @@ enum SessionRecorder {
             Task {
                 guard SupabaseService.isConfigured, AuthManager.shared.isBackendAuthenticated else { return }
                 try? await SupabaseService.shared.uploadProfile(snapshot)
+                if let handle = LeaderboardPreference.handle {
+                    try? await SupabaseService.shared.joinLeaderboard(RemoteLeaderboardRow(
+                        userID: snapshot.id, handle: handle,
+                        totalPoints: snapshot.totalPoints, streak: snapshot.streak,
+                        totalMinutes: snapshot.totalMinutes))
+                }
             }
         }
 
