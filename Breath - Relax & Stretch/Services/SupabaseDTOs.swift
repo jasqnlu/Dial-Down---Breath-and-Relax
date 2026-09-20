@@ -88,3 +88,43 @@ struct RemotePushToken: Codable, Sendable {
 
 // RemoteSession was removed along with SupabaseService.uploadSession() — it
 // existed solely to support that dead write path (no in-app caller).
+
+// MARK: - Opt-in leaderboard
+
+/// One row as returned by the `get_leaderboard()` function. Deliberately has
+/// no user id and no name: `handle` is a generated pseudonym and `isMe` is
+/// computed server-side, so a client can neither display nor leak identity
+/// the server never sent.
+struct RemoteLeaderboardEntry: Codable, Sendable {
+    let handle: String
+    let totalPoints: Int
+    let streak: Int
+    let totalMinutes: Int
+    let isMe: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case handle
+        case totalPoints  = "total_points"
+        case streak
+        case totalMinutes = "total_minutes"
+        case isMe         = "is_me"
+    }
+}
+
+/// The caller's own `leaderboard` row. Its existence is the opt-in: joining
+/// upserts it, leaving deletes it. `userID` must equal `auth.uid()` (RLS).
+struct RemoteLeaderboardRow: Codable, Sendable {
+    let userID: String
+    let handle: String
+    let totalPoints: Int
+    let streak: Int
+    let totalMinutes: Int
+
+    enum CodingKeys: String, CodingKey {
+        case userID       = "user_id"
+        case handle
+        case totalPoints  = "total_points"
+        case streak
+        case totalMinutes = "total_minutes"
+    }
+}
