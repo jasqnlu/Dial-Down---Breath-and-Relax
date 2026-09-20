@@ -31,34 +31,35 @@ struct OnboardingView: View {
 
     @State private var currentPage = 0
     private enum Page {
-        static let showcase = 1...3
-        static let goals = 4
-        static let total = 8
+        static let showcase = 2...4
+        static let goals = 5
+        static let total = 9
     }
     private var totalPages: Int { Page.total }
 
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $currentPage) {
-                WelcomePage().tag(0)
+                LanguagePage().tag(0)
+                WelcomePage().tag(1)
 
                 ShowcasePage(imageName: "showcase-bodymap",
                              title: "Tap a muscle, get the stretch",
                              subtitle: "Explore the 3D Body Map to find exercises for exactly where you feel tight.")
-                    .tag(1)
+                    .tag(2)
                 ShowcasePage(imageName: "showcase-exercises",
                              title: "200+ guided exercises",
                              subtitle: "Browse animated demos with clear, step-by-step instructions.")
-                    .tag(2)
+                    .tag(3)
                 ShowcasePage(imageName: "showcase-routines",
                              title: "Build your routine",
                              subtitle: "Save your favorites, keep your streak, and earn badges.")
-                    .tag(3)
+                    .tag(4)
 
                 GoalPickerPage(selectedGoals: onboardingGoalsBinding).tag(Page.goals)
-                FocusAreaPickerPage(selectedAreas: onboardingAreasBinding).tag(5)
-                BodyMapIntroPage().tag(6)
-                NotificationsPage(onComplete: completeOnboarding).tag(7)
+                FocusAreaPickerPage(selectedAreas: onboardingAreasBinding).tag(6)
+                BodyMapIntroPage().tag(7)
+                NotificationsPage(onComplete: completeOnboarding).tag(8)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.easeInOut, value: currentPage)
