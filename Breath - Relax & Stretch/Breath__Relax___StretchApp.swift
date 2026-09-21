@@ -57,6 +57,7 @@ struct BreathRelaxStretchApp: App {
     @State private var isPreloading = true
     private static let minimumSplashDuration: UInt64 = 1_500_000_000 // 1.5s, in nanoseconds
 
+    @AppStorage(AppLanguage.storageKey) private var appLanguage = AppLanguage.system.rawValue
     @AppStorage("seedDataVersion") private var seedDataVersion: Int = 0
     /// Highest seed version that added new exercises the user should be told
     /// about. Later data-only migrations bump `seedDataVersion` past this.
@@ -120,6 +121,10 @@ struct BreathRelaxStretchApp: App {
                     }
                 }
             }
+            // In-app language override (onboarding's first page / Settings).
+            // Applied above the splash/onboarding split so every screen, alert
+            // and sheet resolves its strings in the chosen language live.
+            .environment(\.locale, AppLanguage(stored: appLanguage).locale ?? .autoupdatingCurrent)
             // Mounted unconditionally (not inside the `else` branch above) so a
             // cold-launch deep link — a widget tap, a shared routine/challenge
             // link — is still caught during the splash window, not only once

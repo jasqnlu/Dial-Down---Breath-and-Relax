@@ -6,8 +6,8 @@ struct WelcomePage: View {
     private struct Feature: Identifiable {
         let id   = UUID()
         let icon: String
-        let title: String
-        let description: String
+        let title: LocalizedStringKey
+        let description: LocalizedStringKey
     }
 
     private let features: [Feature] = [
@@ -73,8 +73,8 @@ struct WelcomePage: View {
 
 struct FeatureRow: View {
     let icon: String
-    let title: String
-    let description: String
+    let title: LocalizedStringKey
+    let description: LocalizedStringKey
 
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
