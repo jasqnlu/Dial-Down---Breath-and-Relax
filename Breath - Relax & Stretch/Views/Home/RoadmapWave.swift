@@ -460,7 +460,7 @@ struct RoadmapWave: View {
 
     private var accessibilityLabel: String {
         guard !exercises.isEmpty else { return "No exercises" }
-        let items = exercises.map { "\($0.name), \(durationFormatted(for: $0))" }.joined(separator: "; ")
+        let items = exercises.map { "\($0.localizedName()), \(durationFormatted(for: $0))" }.joined(separator: "; ")
         return "\(exercises.count) exercise\(exercises.count == 1 ? "" : "s"): \(items)"
     }
 }

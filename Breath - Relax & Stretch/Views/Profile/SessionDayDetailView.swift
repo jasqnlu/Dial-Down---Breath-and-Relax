@@ -60,7 +60,7 @@ private struct SessionDetailRow: View {
 
     private var resolvedNames: [String] {
         let byID = Dictionary(uniqueKeysWithValues: exercises.map { ($0.uuid, $0) })
-        return session.exerciseIDs.compactMap { byID[$0]?.name }
+        return session.exerciseIDs.compactMap { byID[$0]?.localizedName() }
     }
 
     private var timeLabel: String {

@@ -253,7 +253,7 @@ struct SessionPlayerView: View {
             // and an SE-class one both show everything at once.
             GeometryReader { proxy in
                 VStack(spacing: 0) {
-                    Text(exercise.name)
+                    Text(exercise.localizedName())
                         .font(.luminaDisplay)
                         .foregroundStyle(Color.luminaOnSurface)
                         .multilineTextAlignment(.center)
@@ -425,7 +425,7 @@ struct SessionPlayerView: View {
             .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Up next: \(exercise.name). Tap to skip ahead.")
+        .accessibilityLabel("Up next: \(exercise.localizedName()). Tap to skip ahead.")
     }
 
     @ViewBuilder
@@ -493,9 +493,10 @@ struct SessionPlayerView: View {
 
     @ViewBuilder
     private func instructionCue(for exercise: Exercise) -> some View {
-        if !exercise.instructions.isEmpty {
-            let index = min(instructionCueIndex, exercise.instructions.count - 1)
-            Text(exercise.instructions[index])
+        let steps = exercise.localizedInstructions()
+        if !steps.isEmpty {
+            let index = min(instructionCueIndex, steps.count - 1)
+            Text(steps[index])
                 .id(index)
                 .font(.luminaLabel)
                 .foregroundStyle(Color.luminaOnSurface)
@@ -509,7 +510,7 @@ struct SessionPlayerView: View {
                         .animation(.easeIn(duration: 0.25))
                 ))
                 .accessibilityLabel("Exercise instruction")
-                .accessibilityValue(exercise.instructions[index])
+                .accessibilityValue(steps[index])
         }
     }
 
@@ -576,13 +577,13 @@ struct SessionPlayerView: View {
             // screen every session-launch path passes through, so users who
             // start a Quick / For You / guided-program session (skipping the
             // exercise detail page) still see it before the exercise begins.
-            if let caution = currentExercise?.caution, !caution.isEmpty {
+            if let caution = currentExercise?.localizedCaution(), !caution.isEmpty {
                 CautionCard(text: caution)
                     .padding(.horizontal)
             }
             if let exercise = currentExercise, !exercise.breathPattern.isEmpty, !exercise.instructions.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    ForEach(exercise.instructions, id: \.self) { line in
+                    ForEach(exercise.localizedInstructions(), id: \.self) { line in
                         Text(line)
                             .font(.luminaCaption)
                             .foregroundStyle(Color.luminaOnSurfaceVariant)
@@ -650,7 +651,7 @@ struct SessionPlayerView: View {
             startExercise()
             return
         }
-        getReadyExerciseName = exercise.name
+        getReadyExerciseName = exercise.localizedName()
         getReadyCount = 3
         isShowingGetReady = true
         runGetReadyCountdown()
@@ -702,7 +703,7 @@ struct SessionPlayerView: View {
             // announcement below would immediately cut off the exercise name
             // before it finished. The exercise name is still shown as
             // on-screen text; the phase label is the more actionable cue.
-            VoiceCueService.shared.speak(exercise.name)
+            VoiceCueService.shared.speak(exercise.localizedName())
         }
         AudioServicesPlaySystemSound(soundCueBeep)
         instructionCueTask?.cancel()

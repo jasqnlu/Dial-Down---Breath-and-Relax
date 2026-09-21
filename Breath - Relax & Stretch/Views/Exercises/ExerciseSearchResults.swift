@@ -42,6 +42,7 @@ struct ExerciseSearchResults {
         self.matches = exercises.filter { exercise in
             let matchesSearch = normalizedSearchText.isEmpty
                 || exercise.name.localizedCaseInsensitiveContains(normalizedSearchText)
+                || exercise.localizedName().localizedCaseInsensitiveContains(normalizedSearchText)
                 || exercise.type.rawValue.localizedCaseInsensitiveContains(normalizedSearchText)
                 || exercise.targetBodyParts.contains {
                     $0.localizedCaseInsensitiveContains(normalizedSearchText)

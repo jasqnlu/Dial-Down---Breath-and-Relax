@@ -26,7 +26,7 @@ struct ExerciseDetailView: View {
                 .padding(.horizontal)
 
                 // ── Safety caution (only when the exercise has one) ─────────
-                if let caution = exercise.caution, !caution.isEmpty {
+                if let caution = exercise.localizedCaution(), !caution.isEmpty {
                     CautionCard(text: caution)
                         .padding(.horizontal)
                 }
@@ -66,7 +66,7 @@ struct ExerciseDetailView: View {
                     Text("Instructions")
                         .font(.luminaCardTitle)
                         .padding(.horizontal)
-                    ForEach(Array(exercise.instructions.enumerated()), id: \.offset) { index, step in
+                    ForEach(Array(exercise.localizedInstructions().enumerated()), id: \.offset) { index, step in
                         HStack(alignment: .top, spacing: 14) {
                             Text("\(index + 1)")
                                 .font(.luminaLabel)
@@ -93,7 +93,7 @@ struct ExerciseDetailView: View {
             .padding(.vertical)
         }
         .background(Color.luminaSurface)
-        .navigationTitle(exercise.name)
+        .navigationTitle(exercise.localizedName())
         .safeAreaInset(edge: .bottom) {
             Button {
                 showingPlayer = true

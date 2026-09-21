@@ -235,7 +235,7 @@ struct RoutineBuilderView: View {
             let category = ExerciseCategory.primary(for: exercise.targetBodyParts)
             PoseGlyphIcon(exercise: exercise, category: category, size: 46)
 
-            Text(exercise.name)
+            Text(exercise.localizedName())
                 .font(.luminaCardTitle)
                 .foregroundStyle(Color.luminaOnSurface)
                 .lineLimit(1)
@@ -257,7 +257,7 @@ struct RoutineBuilderView: View {
             ) {
                 Image(systemName: "minus.circle.fill")
             }
-            .accessibilityLabel("Remove \(exercise.name)")
+            .accessibilityLabel("Remove \(exercise.localizedName())")
             .accessibilityIdentifier("removeExercise-\(exercise.uuid)")
             .buttonStyle(.plain)
             .foregroundStyle(.red)
@@ -298,7 +298,7 @@ struct RoutineBuilderView: View {
             .foregroundStyle(Color.luminaPrimary)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(exercise.name) duration, \(formattedDuration(duration(for: exercise)))")
+        .accessibilityLabel("\(exercise.localizedName()) duration, \(formattedDuration(duration(for: exercise)))")
         .accessibilityAdjustableAction { direction in
             switch direction {
             case .increment: adjustDuration(for: exercise, by: 5)
