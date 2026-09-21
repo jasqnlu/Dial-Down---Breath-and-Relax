@@ -40,10 +40,10 @@ struct BadgesView: View {
                     .foregroundStyle(earned ? Color.yellow : Color.luminaOnSurfaceVariant.opacity(0.4))
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(badge.name)
+                    Text(LocalizedStringKey(badge.name))
                         .font(.luminaCardTitle)
                         .foregroundStyle(earned ? Color.luminaOnSurface : Color.luminaOnSurfaceVariant)
-                    Text(badge.description)
+                    Text(LocalizedStringKey(badge.description))
                         .font(.luminaCaption)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
                 }

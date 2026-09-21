@@ -67,9 +67,9 @@ struct TodayView: View {
 
         var heroTitle: String {
             switch self {
-            case .wakeUp: return "Wake Up"
-            case .unwind: return "Unwind"
-            case .none:   return "Today's session"
+            case .wakeUp: return L10n.string("Wake Up")
+            case .unwind: return L10n.string("Unwind")
+            case .none:   return L10n.string("Today's session")
             }
         }
     }
@@ -365,10 +365,10 @@ struct TodayView: View {
 
     private var greeting: String {
         switch Calendar.current.component(.hour, from: .now) {
-        case 5..<12:  return "Good morning"
-        case 12..<17: return "Good afternoon"
-        case 17..<22: return "Good evening"
-        default:      return "Time to unwind"
+        case 5..<12:  return L10n.string("Good morning")
+        case 12..<17: return L10n.string("Good afternoon")
+        case 17..<22: return L10n.string("Good evening")
+        default:      return L10n.string("Time to unwind")
         }
     }
 

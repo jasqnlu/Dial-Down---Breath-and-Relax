@@ -9,6 +9,15 @@ private enum ProfileTab: String, CaseIterable {
     case settings   = "Settings"
     case appearance = "Appearance"
 
+    /// Display text; `rawValue` stays the stable `@SceneStorage` key.
+    var title: LocalizedStringKey {
+        switch self {
+        case .account:    return "Account"
+        case .settings:   return "Settings"
+        case .appearance: return "Appearance"
+        }
+    }
+
     var icon: String {
         switch self {
         case .account:    return "person.circle"
@@ -194,7 +203,7 @@ struct ProfileView: View {
                         Image(systemName: tab.icon)
                             .font(.system(size: tabBarIconSize,
                                           weight: selectedTab == tab ? .semibold : .regular))
-                        Text(tab.rawValue)
+                        Text(tab.title)
                             .font(.system(size: tabBarLabelSize,
                                           weight: selectedTab == tab ? .semibold : .regular))
                     }
@@ -207,7 +216,7 @@ struct ProfileView: View {
                     )
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(tab.rawValue)
+                .accessibilityLabel(tab.title)
                 .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
             }
         }

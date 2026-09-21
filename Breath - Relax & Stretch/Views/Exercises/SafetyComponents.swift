@@ -4,10 +4,10 @@ import SwiftUI
 
 enum Safety {
     /// App-wide disclaimer. Shown wherever exercises are presented.
-    static let disclaimer = "This app offers general wellness and stretching guidance only — it is not medical advice and not a substitute for a qualified healthcare professional. Stop any exercise that causes sharp or worsening pain, numbness, tingling, dizziness, or chest pain, and seek medical care. If you have an injury or a medical condition, check with a professional before starting."
+    static var disclaimer: String { L10n.string("This app offers general wellness and stretching guidance only — it is not medical advice and not a substitute for a qualified healthcare professional. Stop any exercise that causes sharp or worsening pain, numbness, tingling, dizziness, or chest pain, and seek medical care. If you have an injury or a medical condition, check with a professional before starting.") }
 
     /// Red-flag symptoms that warrant professional / urgent care.
-    static let redFlags = "sharp or severe pain, pain after a fall or injury, numbness or tingling, weakness, dizziness, or chest pain"
+    static var redFlags: String { L10n.string("sharp or severe pain, pain after a fall or injury, numbness or tingling, weakness, dizziness, or chest pain") }
 }
 
 // MARK: - Caution card (per-exercise)

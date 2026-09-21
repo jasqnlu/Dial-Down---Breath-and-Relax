@@ -121,6 +121,41 @@ final class LanguageSelectionUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Language"].waitForExistence(timeout: 5))
     }
 
+    /// The chrome a user sees on every launch — tab bar, Profile segments, home
+    /// greeting and the medical disclaimer — is in the chosen language.
+    /// (`-appLanguage` is fine here: this test only reads the value.)
+    func testAlwaysVisibleChromeIsTranslatedToSpanish() {
+        let app = XCUIApplication()
+        app.launchArguments += ["-hasCompletedOnboarding", "YES",
+                                "-appLanguage", "es",
+                                "-auth.anonymousID", UUID().uuidString,
+                                "-auth.isSignedIn", "YES",
+                                "-auth.provider", "email",
+                                "-auth.firstName", "Ada", "-auth.lastName", "Lovelace",
+                                "-auth.displayName", "Ada Lovelace",
+                                "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+
+        let greeting = app.staticTexts.containing(NSPredicate(
+            format: "label CONTAINS ', Ada' AND (label BEGINSWITH 'Buen' OR label BEGINSWITH 'Hora')")).firstMatch
+        XCTAssertTrue(greeting.waitForExistence(timeout: 20), "Home greeting should be Spanish")
+        XCTAssertTrue(app.buttons["Hoy"].exists, "Tab bar: Today")
+
+        app.buttons["Perfil"].tap()
+        XCTAssertTrue(app.buttons["Ajustes"].waitForExistence(timeout: 5), "Profile segment: Settings")
+        XCTAssertTrue(app.buttons["Apariencia"].exists, "Profile segment: Appearance")
+        app.buttons["Ajustes"].tap()
+
+        let safety = app.buttons["Salud y Seguridad"]
+        for _ in 0..<8 where !safety.exists { app.swipeUp() }
+        XCTAssertTrue(safety.waitForExistence(timeout: 5))
+        safety.tap()
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(
+            format: "label BEGINSWITH 'Esta app ofrece únicamente'")).firstMatch.waitForExistence(timeout: 5),
+                      "Medical disclaimer must be translated")
+        attach(app, "safety-spanish")
+    }
+
     /// The choice survives leaving the language page — the Welcome page that
     /// follows is already in the chosen language.
     func testChosenLanguagePersistsToNextPage() {

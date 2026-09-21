@@ -23,7 +23,7 @@ struct CustomTabBar: View {
     private struct TabItem {
         let icon: String
         let activeIcon: String
-        let label: String
+        let label: LocalizedStringKey
         let anchorID: String
     }
 

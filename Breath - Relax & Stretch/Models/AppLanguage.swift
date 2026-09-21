@@ -36,4 +36,28 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     init(stored: String) {
         self = AppLanguage(rawValue: stored) ?? .system
     }
+
+    /// The saved choice, for code outside the view tree (formatters, notification
+    /// text, model strings) that can't read the SwiftUI `\.locale` environment.
+    static func current(defaults: UserDefaults = .standard) -> AppLanguage {
+        AppLanguage(stored: defaults.string(forKey: storageKey) ?? "")
+    }
+
+    /// Never nil: the explicit locale, or the device's for `.system`.
+    var effectiveLocale: Locale { locale ?? .autoupdatingCurrent }
+}
+
+/// Resolves a catalog key to a `String` for the chosen language — for the places
+/// SwiftUI's own `Text("literal")` lookup can't reach (plain `String` values,
+/// notification bodies, `DateFormatter` output). Views should still prefer
+/// literals / `LocalizedStringKey`.
+enum L10n {
+    static func string(_ key: String, language: AppLanguage = .current()) -> String {
+        guard language != .system,
+              let path = Bundle.main.path(forResource: language.rawValue, ofType: "lproj"),
+              let bundle = Bundle(path: path)
+        else { return NSLocalizedString(key, comment: "") }
+        // `value: key` makes a missing entry fall back to the key (English source).
+        return bundle.localizedString(forKey: key, value: key, table: nil)
+    }
 }

@@ -15,7 +15,7 @@ struct ProfileSettingsTab: View {
     @AppStorage("calendarSyncEnabled")  private var calendarSyncEnabled = false
     @State private var legalDocument: LegalDocument?
 
-    private let allGoals: [(id: String, label: String, icon: String)] = [
+    private let allGoals: [(id: String, label: LocalizedStringKey, icon: String)] = [
         ("flexibility",      "Flexibility",       "figure.flexibility"),
         ("stress_relief",    "Stress Relief",     "leaf.fill"),
         ("pain_relief",      "Pain Relief",       "bandage.fill"),
@@ -32,10 +32,25 @@ struct ProfileSettingsTab: View {
         goalsStr = current.sorted().joined(separator: ",")
     }
 
-    // Calendar weekday numbers 1=Sun … 7=Sat, with display labels
-    private let weekdays: [(Int, String)] = [
-        (2,"Mo"), (3,"Tu"), (4,"We"), (5,"Th"), (6,"Fr"), (7,"Sa"), (1,"Su")
-    ]
+    private var displayLocale: Locale { AppLanguage(stored: appLanguage).effectiveLocale }
+
+    private var displayCalendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.locale = displayLocale
+        return calendar
+    }
+
+    // Calendar weekday numbers 1=Sun … 7=Sat (Mon-first), with short labels in
+    // the chosen language. English keeps its familiar two-letter "Mo"/"Tu".
+    private var weekdays: [(Int, String)] {
+        let symbols = displayCalendar.shortStandaloneWeekdaySymbols
+        let isEnglish = displayLocale.language.languageCode?.identifier == "en"
+        return [2, 3, 4, 5, 6, 7, 1].map { day in
+            let symbol = symbols[day - 1]
+            return (day, isEnglish ? String(symbol.prefix(2))
+                                   : symbol.trimmingCharacters(in: CharacterSet(charactersIn: ".")))
+        }
+    }
 
     private var selectedWeekdays: Set<Int> {
         get { Set(weekdaysStr.split(separator: ",").compactMap { Int($0) }) }
@@ -119,6 +134,8 @@ struct ProfileSettingsTab: View {
                     Label("Language", systemImage: "globe")
                 }
                 .accessibilityIdentifier("settings.language")
+                // Reminder text is fixed at scheduling time, so re-issue it in the new language.
+                .onChange(of: appLanguage) { _, _ in reschedule(weekdays: selectedWeekdays) }
             } header: {
                 Text("Language")
                     .font(.luminaLabel)
@@ -330,6 +347,7 @@ struct ProfileSettingsTab: View {
 
     private func hourString(_ h: Int) -> String {
         let fmt = DateFormatter()
+        fmt.locale = displayLocale
         fmt.dateFormat = "h a"
         var c = Calendar.current.dateComponents([.hour, .minute], from: Date())
         c.hour = h; c.minute = 0
@@ -337,7 +355,7 @@ struct ProfileSettingsTab: View {
     }
 
     private func fullDayName(_ weekday: Int) -> String {
-        let names = [1:"Sunday",2:"Monday",3:"Tuesday",4:"Wednesday",5:"Thursday",6:"Friday",7:"Saturday"]
-        return names[weekday] ?? "Day \(weekday)"
+        let names = displayCalendar.standaloneWeekdaySymbols
+        return names.indices.contains(weekday - 1) ? names[weekday - 1] : "Day \(weekday)"
     }
 }

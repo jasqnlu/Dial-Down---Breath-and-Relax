@@ -11,8 +11,8 @@ struct TourStep: Identifiable {
     /// tab the previous step left us on" — every section's first step
     /// carries a tabIndex, no other step does.
     let tabIndex: Int?
-    let title: String
-    let message: String
+    let title: LocalizedStringKey
+    let message: LocalizedStringKey
     /// True only for the two body-map steps, which wait for a real tap
     /// instead of a Next button.
     let isInteractive: Bool
@@ -22,7 +22,7 @@ struct TourStep: Identifiable {
     /// now), but the mechanism stays available for a future toolbar callout.
     let fixedFrame: ((GeometryProxy) -> CGRect)?
 
-    init(id: String, tabIndex: Int? = nil, title: String, message: String,
+    init(id: String, tabIndex: Int? = nil, title: LocalizedStringKey, message: LocalizedStringKey,
          isInteractive: Bool = false, fixedFrame: ((GeometryProxy) -> CGRect)? = nil) {
         self.id = id
         self.tabIndex = tabIndex

@@ -31,8 +31,8 @@ final class NotificationService {
         center.removePendingNotificationRequests(withIdentifiers: allIdentifiers)
 
         let content = UNMutableNotificationContent()
-        content.title = "Time to Breathe & Stretch"
-        content.body  = "Your daily wellness session is waiting. Just 5 minutes makes a difference."
+        content.title = L10n.string("Time to Breathe & Stretch")
+        content.body  = L10n.string("Your daily wellness session is waiting. Just 5 minutes makes a difference.")
         content.sound = .default
 
         for weekday in weekdays {
