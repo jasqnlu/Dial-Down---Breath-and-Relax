@@ -54,6 +54,14 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         }
     }
 
+    /// The concrete language in effect: itself, or — for `.system` — the shipped
+    /// language the device prefers (English when none matches).
+    var resolved: AppLanguage {
+        guard self == .system else { return self }
+        let preferred = Bundle.main.preferredLocalizations.first ?? "en"
+        return AppLanguage.allCases.first { $0 != .system && preferred.hasPrefix($0.rawValue) } ?? .en
+    }
+
     /// Never nil: the explicit locale, or the device's for `.system`.
     var effectiveLocale: Locale { locale ?? .autoupdatingCurrent }
 }

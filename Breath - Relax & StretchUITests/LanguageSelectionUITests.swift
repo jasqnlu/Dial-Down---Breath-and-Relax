@@ -156,6 +156,49 @@ final class LanguageSelectionUITests: XCTestCase {
         attach(app, "safety-spanish")
     }
 
+    /// Exercise names, instructions and cautions are content (per-language overlay
+    /// files), not catalog strings — a Spanish user must see them translated.
+    func testExerciseContentIsTranslatedToSpanish() {
+        let app = XCUIApplication()
+        app.launchArguments += ["-hasCompletedOnboarding", "YES",
+                                "-appLanguage", "es",
+                                "-auth.anonymousID", UUID().uuidString,
+                                "-auth.isSignedIn", "YES",
+                                "-auth.provider", "email",
+                                "-auth.firstName", "Ada", "-auth.lastName", "Lovelace",
+                                "-auth.displayName", "Ada Lovelace",
+                                "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+
+        let tab = app.buttons["Ejercicios"]
+        XCTAssertTrue(tab.waitForExistence(timeout: 20))
+        tab.tap()
+
+        // Search works on the localized name, and the result tile leads with it.
+        let search = app.textFields["Buscar ejercicios"]
+        XCTAssertTrue(search.waitForExistence(timeout: 10))
+        search.tap()
+        search.typeText("Postura del ni")
+        let tile = app.descendants(matching: .any).matching(NSPredicate(
+            format: "label BEGINSWITH 'Postura del niño'")).firstMatch
+        attach(app, "exercises-search-spanish")
+        XCTAssertTrue(tile.waitForExistence(timeout: 10), "Exercise tile should use the Spanish name")
+        XCTAssertFalse(app.descendants(matching: .any)["Child's Pose"].exists)
+        tile.tap()
+
+        XCTAssertTrue(app.navigationBars["Postura del niño"].waitForExistence(timeout: 10),
+                      "Detail title should be the Spanish name")
+        let instruction = app.staticTexts.containing(NSPredicate(
+            format: "label BEGINSWITH 'Arrodíllate en el suelo'")).firstMatch
+        for _ in 0..<6 where !instruction.exists { app.swipeUp() }
+        XCTAssertTrue(instruction.waitForExistence(timeout: 5), "Instructions should be Spanish")
+        let caution = app.staticTexts.containing(NSPredicate(
+            format: "label CONTAINS 'Omítelo si arrodillarte'")).firstMatch
+        for _ in 0..<6 where !caution.exists { app.swipeDown() }
+        XCTAssertTrue(caution.waitForExistence(timeout: 5), "Safety caution should be Spanish")
+        attach(app, "exercise-detail-spanish")
+    }
+
     /// The choice survives leaving the language page — the Welcome page that
     /// follows is already in the chosen language.
     func testChosenLanguagePersistsToNextPage() {

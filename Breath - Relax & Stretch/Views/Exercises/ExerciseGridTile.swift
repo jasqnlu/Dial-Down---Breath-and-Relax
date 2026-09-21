@@ -36,7 +36,7 @@ struct ExerciseGridTile: View {
                     badgeView
                 }
 
-                Text(exercise.name)
+                Text(exercise.localizedName())
                     .font(.luminaCardTitle)
                     .foregroundStyle(Color.luminaOnSurface)
                     .lineLimit(2)
@@ -52,7 +52,7 @@ struct ExerciseGridTile: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(exercise.name), \(exercise.durationFormatted), \(exercise.type.rawValue)")
+        .accessibilityLabel("\(exercise.localizedName()), \(exercise.durationFormatted), \(exercise.type.rawValue)")
         // Stable handle for UI tests (the visible label is seed-data
         // dependent); has no effect on VoiceOver, which reads the label above.
         .accessibilityIdentifier("exerciseGridTile")
@@ -74,7 +74,7 @@ struct ExerciseGridTile: View {
                     .background(isSelected ? Color.luminaPrimary : Color.luminaContainer, in: Circle())
             }
             .padding(8)
-            .accessibilityLabel(isSelected ? "Remove \(exercise.name)" : "Add \(exercise.name)")
+            .accessibilityLabel(isSelected ? "Remove \(exercise.localizedName())" : "Add \(exercise.localizedName())")
         }
     }
 }

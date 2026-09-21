@@ -30,7 +30,7 @@ struct ExerciseMediaCard: View {
                         // animation's timing/anchor — gated the same way as
                         // the legacy disclaimer below so one can never render
                         // over a filmed clip it wasn't positioned for.
-                        if exercise.demoIsAnimation, let callout = exercise.animationCallout {
+                        if exercise.demoIsAnimation, let callout = exercise.localizedCallout() {
                             GeometryReader { proxy in
                                 // Clamp inward from the raw anchor fraction so
                                 // an anchor authored near an edge (e.g. a hand
@@ -86,7 +86,7 @@ struct ExerciseMediaCard: View {
                 object: p.currentItem, queue: .main) { _ in
                     p.seek(to: .zero); p.play()
                 }
-            if let callout = exercise.animationCallout {
+            if let callout = exercise.localizedCallout() {
                 // Re-arms every loop for free: the observer above seeks the
                 // player back to `.zero` on each end-of-item, so the time
                 // this callback receives naturally restarts from 0 each loop.

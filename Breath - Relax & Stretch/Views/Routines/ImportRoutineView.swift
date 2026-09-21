@@ -48,7 +48,7 @@ struct ImportRoutineView: View {
                 }
 
                 List(matched) { exercise in
-                    Text(exercise.name)
+                    Text(exercise.localizedName())
                         .font(.luminaBody)
                         .foregroundStyle(Color.luminaOnSurface)
                         .listRowBackground(Color.luminaCardFill)

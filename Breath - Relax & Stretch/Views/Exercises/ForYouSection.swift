@@ -13,7 +13,7 @@ struct ForYouCard: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 110)
 
-            Text(exercise.name)
+            Text(exercise.localizedName())
                 .font(.luminaLabel)
                 .foregroundStyle(Color.luminaOnSurface)
                 .lineLimit(2)
@@ -33,7 +33,7 @@ struct ForYouCard: View {
 
     private func accessibilityLabel(for exercise: Exercise) -> String {
         let motion = MotionAccent.resolve(for: exercise) == .circular ? ", circular motion" : ""
-        return "\(exercise.name), \(exercise.durationFormatted), \(exercise.type.rawValue)\(motion)"
+        return "\(exercise.localizedName()), \(exercise.durationFormatted), \(exercise.type.rawValue)\(motion)"
     }
 }
 
@@ -140,7 +140,7 @@ private struct RecommendedCard: View {
                     .padding(.vertical, 3)
                     .background(item.category.accentColor.opacity(0.14), in: Capsule())
 
-                Text(item.exercise.name)
+                Text(item.exercise.localizedName())
                     .font(.luminaCardTitle)
                     .foregroundStyle(Color.luminaOnSurface)
                     .lineLimit(2)
@@ -167,7 +167,7 @@ private struct RecommendedCard: View {
 
     private var accessibilityLabel: String {
         let motion = MotionAccent.resolve(for: item.exercise) == .circular ? ", circular motion" : ""
-        return "\(item.category.rawValue): \(item.exercise.name), \(item.exercise.durationFormatted), \(item.exercise.type.rawValue)\(motion)"
+        return "\(L10n.string(item.category.rawValue)): \(item.exercise.localizedName()), \(item.exercise.durationFormatted), \(item.exercise.type.rawValue)\(motion)"
     }
 }
 

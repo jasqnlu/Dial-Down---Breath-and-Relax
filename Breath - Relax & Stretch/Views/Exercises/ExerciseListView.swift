@@ -349,7 +349,7 @@ struct ExerciseRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(exercise.name)
+            Text(exercise.localizedName())
                 .font(.luminaCardTitle)
                 .foregroundStyle(Color.luminaOnSurface)
                 .lineLimit(2)
@@ -367,7 +367,7 @@ struct ExerciseRow: View {
         .padding(.vertical, 4)
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(exercise.name), \(exercise.type.rawValue), \(exercise.durationFormatted), \(difficultyLabel)\(hasDemo ? ", has animated demo" : "")\(exercise.caution.map { ", caution: \($0)" } ?? "")")
+        .accessibilityLabel("\(exercise.localizedName()), \(exercise.type.rawValue), \(exercise.durationFormatted), \(difficultyLabel)\(hasDemo ? ", has animated demo" : "")\(exercise.caution.map { ", caution: \($0)" } ?? "")")
     }
 
     @ViewBuilder
@@ -401,7 +401,7 @@ struct ExerciseRow: View {
                 .font(.luminaCaption)
                 .foregroundStyle(Color.luminaOnSurfaceVariant)
 
-            if let caution = exercise.caution, !caution.isEmpty {
+            if let caution = exercise.localizedCaution(), !caution.isEmpty {
                 cautionLine(caution)
             }
         }
