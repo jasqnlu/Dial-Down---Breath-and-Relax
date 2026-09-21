@@ -72,9 +72,9 @@ enum BreathPhase: String {
     /// Human-readable label — both hold phases show "Hold..."
     var displayLabel: String {
         switch self {
-        case .inhale:       return "Inhale..."
-        case .hold, .hold2: return "Hold..."
-        case .exhale:       return "Exhale..."
+        case .inhale:       return L10n.string("Inhale...")
+        case .hold, .hold2: return L10n.string("Hold...")
+        case .exhale:       return L10n.string("Exhale...")
         }
     }
 

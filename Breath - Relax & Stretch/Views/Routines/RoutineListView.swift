@@ -278,7 +278,7 @@ struct RoutineRow: View {
                 }
 
                 HStack(spacing: 12) {
-                    Label("\(resolvedCount) exercise\(resolvedCount == 1 ? "" : "s")",
+                    Label("\(resolvedCount) exercises",
                           systemImage: "list.number")
                 }
                 .font(.luminaCaption)

@@ -157,7 +157,7 @@ struct CreateExerciseView: View {
                     }
                 } label: {
                     HStack {
-                        Text(part)
+                        Text(LocalizedStringKey(part))
                             .font(.luminaBody)
                             .foregroundStyle(Color.luminaOnSurface)
                         Spacer()

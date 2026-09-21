@@ -43,6 +43,17 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         AppLanguage(stored: defaults.string(forKey: storageKey) ?? "")
     }
 
+    /// BCP-47 tag for spoken voice cues; `nil` lets the system pick its default voice.
+    var speechLanguage: String? {
+        switch self {
+        case .system: nil
+        case .en:     "en-US"
+        case .es:     "es-ES"
+        case .fr:     "fr-FR"
+        case .zhHans: "zh-CN"
+        }
+    }
+
     /// Never nil: the explicit locale, or the device's for `.system`.
     var effectiveLocale: Locale { locale ?? .autoupdatingCurrent }
 }

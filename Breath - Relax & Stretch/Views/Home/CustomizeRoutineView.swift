@@ -131,7 +131,8 @@ struct CustomizeRoutineView: View {
                             .listRowSeparator(.hidden)
                     }
 
-                    Text("\(currentExercises.count) EXERCISE\(currentExercises.count == 1 ? "" : "S") · \(totalMinutes) MIN")
+                    (Text("\(currentExercises.count) exercises") + Text(verbatim: " · ") + Text("\(totalMinutes) min"))
+                        .textCase(.uppercase)
                         .font(.luminaCaption)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
                         .listRowBackground(Color.clear)
@@ -166,7 +167,7 @@ struct CustomizeRoutineView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background(Color.luminaSurface)
-            .navigationTitle(title)
+            .navigationTitle(LocalizedStringKey(title))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -214,7 +215,7 @@ struct CustomizeRoutineView: View {
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: primaryActionIcon)
-                        Text(primaryActionLabel)
+                        Text(LocalizedStringKey(primaryActionLabel))
                     }
                 }
                 .buttonStyle(LuminaPillButtonStyle(kind: .prominent))

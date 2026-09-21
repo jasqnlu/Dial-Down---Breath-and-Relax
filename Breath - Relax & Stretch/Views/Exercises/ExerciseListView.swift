@@ -284,7 +284,7 @@ struct PickingBar: View {
     var body: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 1) {
-                Text("\(pickingSession.picked.count) exercise\(pickingSession.picked.count == 1 ? "" : "s")")
+                Text("\(pickingSession.picked.count) exercises")
                     .font(.luminaCardTitle)
                     .accessibilityIdentifier("pickingBarCount")
                 Text("\(pickedMinutes) min")

@@ -73,7 +73,7 @@ private struct PremadeRoutineRow: View {
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
                     .lineLimit(2)
                 if let meta {
-                    Text("\(meta.count) exercise\(meta.count == 1 ? "" : "s") · \(meta.minutes) min")
+                    (Text("\(meta.count) exercises") + Text(verbatim: " · ") + Text("\(meta.minutes) min"))
                         .font(.luminaCaption)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
                 } else {

@@ -40,7 +40,7 @@ struct ImportRoutineView: View {
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
 
                 if missingCount > 0 {
-                    Text("\(missingCount) exercise\(missingCount == 1 ? "" : "s") couldn't be matched and will be skipped.")
+                    Text("\(missingCount) exercises couldn't be matched and will be skipped.")
                         .font(.luminaCaption)
                         .foregroundStyle(Color.luminaOrange)
                         .multilineTextAlignment(.center)

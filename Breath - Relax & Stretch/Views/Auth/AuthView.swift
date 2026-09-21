@@ -186,7 +186,7 @@ struct AuthView: View {
             .frame(height: 1)
     }
 
-    private func secondaryButton(icon: String, title: String, enabled: Bool,
+    private func secondaryButton(icon: String, title: LocalizedStringKey, enabled: Bool,
                                  action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 8) {

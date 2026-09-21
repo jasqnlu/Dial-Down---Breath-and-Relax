@@ -743,7 +743,7 @@ struct SessionPlayerView: View {
         guard Date() >= switchDate else { return }
         sideSwitchPending = false
         impactMedium.impactOccurred()
-        VoiceCueService.shared.speak("Switch sides")
+        VoiceCueService.shared.speak(L10n.string("Switch sides"))
         AudioServicesPlaySystemSound(soundCueBeep)
     }
 

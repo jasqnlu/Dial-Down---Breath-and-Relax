@@ -15,7 +15,8 @@ struct SessionDayDetailView: View {
 
     private var dateLabel: String {
         let fmt = DateFormatter()
-        fmt.dateFormat = "EEEE, MMMM d"
+        fmt.locale = AppLanguage.current().effectiveLocale
+        fmt.setLocalizedDateFormatFromTemplate("EEEEMMMMd")
         return fmt.string(from: date)
     }
 
@@ -64,14 +65,15 @@ private struct SessionDetailRow: View {
 
     private var timeLabel: String {
         let fmt = DateFormatter()
-        fmt.dateFormat = "h:mm a"
+        fmt.locale = AppLanguage.current().effectiveLocale
+        fmt.setLocalizedDateFormatFromTemplate("jmm")
         return fmt.string(from: session.startedAt)
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(session.sessionLabel ?? "Exercise Session")
+                (session.sessionLabel.map { Text(verbatim: $0) } ?? Text("Exercise Session"))
                     .font(.subheadline.weight(.semibold))
                 Spacer()
                 Text(timeLabel)
@@ -85,7 +87,7 @@ private struct SessionDetailRow: View {
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             } else if session.roundsCompleted > 0 {
-                Text("\(session.roundsCompleted) round\(session.roundsCompleted == 1 ? "" : "s")")
+                Text("\(session.roundsCompleted) rounds")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

@@ -155,7 +155,7 @@ struct BodyPartExercisesView: View {
                                 .foregroundStyle(Color.luminaOnSurfaceVariant)
                         }
                         if !resolver.direct.isEmpty {
-                            exerciseSection(title: "\(resolver.direct.count) exercise\(resolver.direct.count == 1 ? "" : "s")", exercises: resolver.direct)
+                            exerciseSection(title: "\(resolver.direct.count) exercises", exercises: resolver.direct)
                         }
                         if !resolver.related.isEmpty {
                             exerciseSection(title: relatedSectionTitle, footer: relatedFooterText, exercises: resolver.related)
@@ -209,7 +209,7 @@ struct BodyPartExercisesView: View {
     }
 
     @ViewBuilder
-    private func exerciseSection(title: String, footer: String? = nil, exercises: [Exercise]) -> some View {
+    private func exerciseSection(title: LocalizedStringKey, footer: LocalizedStringKey? = nil, exercises: [Exercise]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.luminaLabel)
@@ -244,11 +244,11 @@ struct BodyPartExercisesView: View {
     // than lumped into generic "this area" copy, so a specific muscle/joint
     // reads as its own distinct thing even when it has no exercises of its
     // own yet and is falling back to a nearby one's stretches.
-    private var relatedSectionTitle: String {
+    private var relatedSectionTitle: LocalizedStringKey {
         bodyParts.count == 1 ? "Related to \(bodyParts[0])" : "More from this area"
     }
 
-    private var relatedFooterText: String {
+    private var relatedFooterText: LocalizedStringKey {
         guard bodyParts.count == 1 else {
             return resolver.direct.isEmpty
                 ? "No exercises target this exact spot yet — here are related ones for the same area."
@@ -259,7 +259,7 @@ struct BodyPartExercisesView: View {
             : "Other exercises that work near \(bodyParts[0])."
     }
 
-    private var emptyDescription: String {
+    private var emptyDescription: LocalizedStringKey {
         bodyParts.count == 1
             ? "No exercises target \(bodyParts[0]) yet."
             : "No exercises target the marked areas yet."

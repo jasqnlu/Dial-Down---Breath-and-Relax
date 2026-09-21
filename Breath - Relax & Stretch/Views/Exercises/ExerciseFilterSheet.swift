@@ -31,7 +31,7 @@ struct ExerciseFilterSheet: View {
                                 selectedType = nil
                             }
                             ForEach(ExerciseType.allCases, id: \.self) { type in
-                                LuminaChip(title: type.rawValue, isSelected: selectedType == type) {
+                                LuminaChip(title: LocalizedStringKey(type.rawValue), isSelected: selectedType == type) {
                                     selectedType = type
                                 }
                             }
@@ -55,7 +55,7 @@ struct ExerciseFilterSheet: View {
                     section(title: "Duration") {
                         chipRow {
                             ForEach(ExerciseDurationBucket.allCases) { bucket in
-                                LuminaChip(title: bucket.rawValue, isSelected: durationBucket == bucket) {
+                                LuminaChip(title: LocalizedStringKey(bucket.rawValue), isSelected: durationBucket == bucket) {
                                     durationBucket = bucket
                                 }
                             }
@@ -85,12 +85,12 @@ struct ExerciseFilterSheet: View {
         .presentationDetents([.medium])
     }
 
-    private let difficultyLevels: [(level: Int, title: String)] = [
+    private let difficultyLevels: [(level: Int, title: LocalizedStringKey)] = [
         (1, "Easier"), (2, "Medium"), (3, "Hard")
     ]
 
     @ViewBuilder
-    private func section(title: String, @ViewBuilder content: () -> some View) -> some View {
+    private func section(title: LocalizedStringKey, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.luminaCardTitle)

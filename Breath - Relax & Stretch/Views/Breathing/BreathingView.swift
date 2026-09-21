@@ -406,7 +406,7 @@ struct BreathingView: View {
         }
     }
 
-    private func statRow(icon: String, color: Color, label: String, value: String) -> some View {
+    private func statRow(icon: String, color: Color, label: LocalizedStringKey, value: String) -> some View {
         HStack {
             Image(systemName: icon)
                 .foregroundStyle(color)

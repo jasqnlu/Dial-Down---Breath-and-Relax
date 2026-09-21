@@ -230,13 +230,14 @@ struct ProgressChartsView: View {
         HStack(spacing: 3) {
             Image(systemName: delta > 0 ? "arrow.up.right" : delta < 0 ? "arrow.down.right" : "equal")
                 .font(.luminaCaption)
-            Text(delta == 0 ? "steady" : "\(abs(delta)) \(abs(delta) == 1 ? "level" : "levels")")
+            (delta == 0 ? Text("steady") : Text("\(abs(delta)) levels"))
                 .font(.luminaCaption)
         }
         .foregroundStyle(Color.luminaOnSurfaceVariant)
         .accessibilityLabel(
-            delta == 0 ? "No change since first check-in"
-                       : "\(delta > 0 ? "Up" : "Down") \(abs(delta)) levels since first check-in"
+            delta == 0 ? Text("No change since first check-in")
+                       : delta > 0 ? Text("Up \(abs(delta)) levels since first check-in")
+                                   : Text("Down \(abs(delta)) levels since first check-in")
         )
     }
 
@@ -557,7 +558,8 @@ struct ProgressChartsView: View {
 
     private var currentMonthLabel: String {
         let fmt = DateFormatter()
-        fmt.dateFormat = "MMMM yyyy"
+        fmt.locale = AppLanguage.current().effectiveLocale
+        fmt.setLocalizedDateFormatFromTemplate("MMMMyyyy")
         return fmt.string(from: Date())
     }
 
@@ -659,7 +661,8 @@ private extension View {
 private extension Date {
     var shortWeekdayLabel: String {
         let fmt = DateFormatter()
-        fmt.dateFormat = "EEE"
+        fmt.locale = AppLanguage.current().effectiveLocale
+        fmt.setLocalizedDateFormatFromTemplate("EEE")
         let full = fmt.string(from: self)   // e.g. "Mon"
         return String(full.prefix(3))
     }

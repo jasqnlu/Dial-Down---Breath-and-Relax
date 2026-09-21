@@ -379,7 +379,7 @@ private struct CategoryNode: View {
         }
         .contentShape(Circle())
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(category.rawValue), \(count) exercise\(count == 1 ? "" : "s")")
+        .accessibilityLabel(Text(LocalizedStringKey(category.rawValue)) + Text(verbatim: ", ") + Text("\(count) exercises"))
         .animation(reduceMotion ? .easeInOut(duration: 0.15) : .spring(response: 0.34, dampingFraction: 0.86),
                    value: isFocused)
     }
@@ -415,14 +415,14 @@ private struct ExerciseGroupCorpusSheet: View {
             .padding(.vertical, 12)
         }
         .background(Color.luminaSurface)
-        .navigationTitle(selected.group.title)
+        .navigationTitle(LocalizedStringKey(selected.group.title))
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .top) {
             HStack(spacing: 8) {
                 Circle()
                     .fill(selected.category.accentColor.opacity(0.66))
                     .frame(width: 10, height: 10)
-                Text("\(selected.group.exercises.count) exercise\(selected.group.exercises.count == 1 ? "" : "s")")
+                Text("\(selected.group.exercises.count) exercises")
                     .font(.luminaCaption)
                     .foregroundStyle(Color.luminaOnSurfaceVariant)
                 Spacer()
@@ -466,7 +466,7 @@ private struct ExerciseGroupNode: View {
                 .overlay(Circle().strokeBorder(.white.opacity(isFocused ? 0.55 : 0.34), lineWidth: isFocused ? 1 : 0.7))
                 .shadow(color: color.opacity(isFocused ? 0.16 : 0.08), radius: isFocused ? 9 : 3)
             VStack(spacing: isFocused ? 2 : 0) {
-                Text(group.title)
+                Text(LocalizedStringKey(group.title))
                     .font(.system(size: isFocused ? 9.5 : 5.2, weight: .semibold, design: .rounded))
                     .foregroundStyle(Color.luminaOnSurface)
                     .multilineTextAlignment(.center)
@@ -482,7 +482,7 @@ private struct ExerciseGroupNode: View {
         }
         .contentShape(Circle())
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(group.title), \(group.exercises.count) exercise\(group.exercises.count == 1 ? "" : "s")")
+        .accessibilityLabel(Text(LocalizedStringKey(group.title)) + Text(verbatim: ", ") + Text("\(group.exercises.count) exercises"))
     }
 }
 

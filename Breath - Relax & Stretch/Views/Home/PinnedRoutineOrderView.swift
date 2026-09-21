@@ -38,7 +38,7 @@ struct PinnedRoutineOrderView: View {
                                 Text(routine.name)
                                     .font(.luminaCardTitle)
                                     .foregroundStyle(Color.luminaOnSurface)
-                                Text("\(routine.exerciseIDs.count) exercise\(routine.exerciseIDs.count == 1 ? "" : "s")")
+                                Text("\(routine.exerciseIDs.count) exercises")
                                     .font(.luminaCaption)
                                     .foregroundStyle(Color.luminaOnSurfaceVariant)
                             }

@@ -47,7 +47,8 @@ struct MiniRoutineReviewView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("\(pickedExercises.count) EXERCISE\(pickedExercises.count == 1 ? "" : "S") · \(totalMinutes) MIN")
+                    (Text("\(pickedExercises.count) exercises") + Text(verbatim: " · ") + Text("\(totalMinutes) min"))
+                        .textCase(.uppercase)
                         .font(.luminaCaption)
                         .foregroundStyle(Color.luminaOnSurfaceVariant)
 
@@ -151,7 +152,7 @@ struct MiniRoutineReviewView: View {
         }
     }
 
-    private func destinationRow(title: String, subtitle: String, systemImage: String,
+    private func destinationRow(title: LocalizedStringKey, subtitle: LocalizedStringKey, systemImage: String,
                                  action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 14) {
@@ -218,7 +219,7 @@ private struct RoutineChooserView: View {
                             Text(routine.name)
                                 .font(.luminaCardTitle)
                                 .foregroundStyle(Color.luminaOnSurface)
-                            Text("\(routine.exerciseIDs.count) exercise\(routine.exerciseIDs.count == 1 ? "" : "s")")
+                            Text("\(routine.exerciseIDs.count) exercises")
                                 .font(.luminaCaption)
                                 .foregroundStyle(Color.luminaOnSurfaceVariant)
                         }

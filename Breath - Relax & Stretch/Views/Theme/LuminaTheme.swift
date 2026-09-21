@@ -114,7 +114,7 @@ extension View {
 // MARK: - Filter chip
 
 struct LuminaChip: View {
-    let title: String
+    let title: LocalizedStringKey
     let isSelected: Bool
     let action: () -> Void
 

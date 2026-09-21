@@ -129,7 +129,7 @@ struct EmailAuthView: View {
         Task {
             if isSignUp {
                 guard password == confirmPwd else {
-                    errorMsg = "Passwords do not match."
+                    errorMsg = L10n.string("Passwords do not match.")
                     notifyFeedback.notificationOccurred(.error)
                     isLoading = false
                     return
@@ -170,7 +170,7 @@ private struct PasswordStrengthBar: View {
         return s
     }
 
-    private var label: String {
+    private var label: LocalizedStringKey {
         switch score {
         case 0, 1: return "Weak"
         case 2:    return "Fair"
@@ -215,7 +215,7 @@ private struct PasswordStrengthBar: View {
 // MARK: - Reusable field
 
 private struct AuthField: View {
-    let label: String
+    let label: LocalizedStringKey
     @Binding var text: String
     let icon: String
     var contentType: UITextContentType? = nil
