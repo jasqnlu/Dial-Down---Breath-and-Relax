@@ -54,3 +54,6 @@ Tools/blender/generated/
 
 # Subagent-driven-development scratch (ledger, briefs, review packages)
 .superpowers/
+
+# Claude Code local settings (personal permission allowlist, machine-specific)
+.claude/settings.local.json
