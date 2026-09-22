@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Credits</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font: -apple-system-body, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+    margin: 0;
+    padding: 20px 20px 48px;
+    color: #1c1c1e;
+    background: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { color: #f2f2f7; background: #000000; }
+  }
+  h1 { font-size: 1.4em; margin-bottom: 4px; }
+  h2 { font-size: 1.1em; margin-top: 28px; }
+  p, li { font-size: 0.95em; }
+  a { color: inherit; }
+  .updated { color: #8e8e93; font-size: 0.85em; margin-bottom: 24px; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+  td { font-size: 0.9em; padding: 4px 8px 4px 0; vertical-align: top; }
+</style>
+</head>
+<body>
+  <h1>Credits</h1>
+  <p class="updated">Last updated: September 8, 2026</p>
+
+  <h2>3D Body Map</h2>
+  <p>
+    The 3D body-map model used throughout this app is built on
+    <strong>Z-Anatomy — The libre 3D atlas of anatomy</strong>, licensed under
+    <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>,
+    which is in turn built on <strong>BodyParts3D — The Database Center for
+    Life Science</strong>, © Kousaku Okubo / DBCLS, licensed under
+    CC BY-SA 2.1 Japan.
+  </p>
+  <p>
+    Changes made: the skin and muscle meshes were welded into single shells,
+    decimated for real-time mobile rendering, re-normalized to this app's
+    model space, grouped into this app's muscle-group categories, and rigged
+    and posed to produce this app's exercise animation loops.
+  </p>
+
+  <h3>Model authors credited by Z-Anatomy</h3>
+  <table>
+    <tr><td>Kousaku Okubo</td><td>Original model (BodyParts3D)</td></tr>
+    <tr><td>Gauthier Kervyn</td><td>Design, 3D, anatomy</td></tr>
+    <tr><td>Marcin Zielinski</td><td>Blender add-on</td></tr>
+    <tr><td>Lluis Vinent</td><td>Unity development</td></tr>
+    <tr><td>Ana Teresa Bigio</td><td>Portuguese translation of anatomical structures</td></tr>
+    <tr><td>Carlos Torres Villar</td><td>Spanish translation of anatomical structures</td></tr>
+    <tr><td>Paola Perin, Daniele Cossellu, Elisa Vivado</td><td>Italian translation</td></tr>
+    <tr><td>Jadwiga Palosz</td><td>Polish translation</td></tr>
+    <tr><td>Shariar Ahmadpour</td><td>Parsi translation</td></tr>
+  </table>
+
+  <p>
+    This app's body-map assets — the exported meshes, muscle-group metadata,
+    and rendered exercise animation loops derived from the model above — are
+    themselves distributed under
+    <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.
+    A full account of what was used, what wasn't, and what changed is kept in
+    this project's public repository (<code>ASSET_CREDITS.md</code>).
+  </p>
+
+  <h2>Typeface</h2>
+  <p>
+    This app's Lumina design system uses <strong>Manrope</strong>, licensed
+    under the
+    <a href="https://openfontlicense.org">SIL Open Font License 1.1</a>.
+  </p>
+
+  <h2>Everything else</h2>
+  <p>
+    The application source code, exercise text content, and breathing
+    patterns are original to this project.
+  </p>
+</body>
+</html>
