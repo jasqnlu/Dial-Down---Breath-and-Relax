@@ -164,20 +164,16 @@ actor SupabaseService {
         return try Self.makeDecoder().decode([RemoteExercise].self, from: data)
     }
 
-    // MARK: - Community (leaderboard / public profile)
+    // MARK: - Community (private profile + opt-in leaderboard)
 
-    /// Upserts the local profile to a public-readable table so it can appear
-    /// on the leaderboard. Only points/streak/minutes are shared — no email;
-    /// `id` is the anonymous per-install UUID (AuthManager.anonymousID) used
-    /// to dedupe rows.
+    /// Upserts the local profile to `profiles`, which is **private**: RLS lets
+    /// only the owner read or write their own row, and `anon` has no access.
+    /// It mirrors stats (and the real name) so the streak-warning server job
+    /// can see them; nothing here is visible to other users. The leaderboard
+    /// is a separate, opt-in table — see `joinLeaderboard`.
     ///
-    /// Expected Supabase table `profiles`:
-    ///   id            text  primary key  (anonymous UUID, never an email)
-    ///   display_name  text  not null
-    ///   total_points  int4  not null
-    ///   streak        int4  not null
-    ///   total_minutes int4  not null
-    /// Enable RLS with a "read for all" select policy for the leaderboard.
+    /// `id` is the Supabase auth uid (`AuthManager.backendID`). Table shape
+    /// and policies live in supabase_schema.sql.
     func uploadProfile(_ profile: RemoteProfile) async throws {
         // RemoteProfile.encode(to:) is @MainActor-isolated (Swift 6 inference);
         // hop to main actor for the encode, then continue in the actor.
@@ -185,10 +181,9 @@ actor SupabaseService {
         try await post(path: "/rest/v1/profiles", body: data, upsert: true)
     }
 
-    /// Deletes the leaderboard row for an anonymous ID. Called on account
-    /// deletion so the display name/points don't stay public forever after
-    /// the local identity is rotated. Requires the profiles delete policy in
-    /// supabase_schema.sql.
+    /// Deletes the private profile row. Called on account deletion so the
+    /// saved name and stats don't outlive the local identity that is rotated
+    /// right after. Requires the profiles delete policy in supabase_schema.sql.
     func deleteProfile(id: String) async throws {
         // Strict percent-encoding (unreserved characters only): the id should
         // always be a UUID, but it round-trips through UserDefaults, so never
@@ -233,18 +228,42 @@ actor SupabaseService {
         try await delete(path: "/rest/v1/push_tokens?user_id=eq.\(encoded)")
     }
 
-    /// Fetches the top profiles by points for the leaderboard.
-    func fetchLeaderboard(limit: Int = 50) async throws -> [RemoteProfile] {
-        let data = try await get(path: "/rest/v1/profiles?select=*&order=total_points.desc&limit=\(limit)")
-        return try Self.makeDecoder().decode([RemoteProfile].self, from: data)
+    /// Top of the opt-in leaderboard, via `get_leaderboard()`. The function
+    /// returns handles and stats only — no user ids, no names — and requires a
+    /// signed-in session (anon can't call it).
+    func fetchLeaderboard(limit: Int = 50) async throws -> [RemoteLeaderboardEntry] {
+        let body = try JSONSerialization.data(withJSONObject: ["row_limit": limit])
+        let data = try await post(path: "/rest/v1/rpc/get_leaderboard", body: body, upsert: false) ?? Data()
+        return try Self.makeDecoder().decode([RemoteLeaderboardEntry].self, from: data)
+    }
+
+    /// The caller's own leaderboard row, or nil if they haven't opted in. RLS
+    /// scopes the table to the owner, so no filter is needed. This is how a
+    /// fresh sign-in or a new device restores the opt-in choice.
+    func fetchOwnLeaderboardRow() async throws -> RemoteLeaderboardRow? {
+        let data = try await get(path: "/rest/v1/leaderboard?select=*&limit=1")
+        return try Self.makeDecoder().decode([RemoteLeaderboardRow].self, from: data).first
+    }
+
+    /// Opts in (or refreshes stats when already opted in). Inserting this row
+    /// *is* the opt-in.
+    func joinLeaderboard(_ row: RemoteLeaderboardRow) async throws {
+        let data = try await MainActor.run { try Self.makeEncoder().encode(row) }
+        try await post(path: "/rest/v1/leaderboard", body: data, upsert: true)
+    }
+
+    /// Opts out by deleting the caller's own row.
+    func leaveLeaderboard() async throws {
+        guard let userID = supabaseUserID else { return }
+        let encoded = userID.addingPercentEncoding(withAllowedCharacters: .alphanumerics.union(.init(charactersIn: "-._~"))) ?? ""
+        try await delete(path: "/rest/v1/leaderboard?user_id=eq.\(encoded)")
     }
 
     // MARK: - Registration (name step)
 
     /// Fetches this account's own `profiles` row, or nil when none exists.
-    /// `profiles` is publicly readable, so no session is needed to *read*;
-    /// callers still wait for one because the id is only meaningful once it is
-    /// the Supabase uid (see RegistrationCoordinator).
+    /// `profiles` is private (owner-only RLS), so this needs a Supabase
+    /// session; without one the request is rejected (see RegistrationCoordinator).
     func fetchProfile(id: String) async throws -> RemoteProfile? {
         let encoded = id.addingPercentEncoding(withAllowedCharacters: .alphanumerics.union(.init(charactersIn: "-._~"))) ?? ""
         let data = try await get(path: "/rest/v1/profiles?id=eq.\(encoded)&select=*&limit=1")

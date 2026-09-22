@@ -411,6 +411,10 @@ final class AuthManager: ObservableObject {
         d.removeObject(forKey: kLastName)
         d.removeObject(forKey: kEmail)
         d.removeObject(forKey: kProvider)
+        // Local cache only — signing out never deletes the server row, so the
+        // opt-in restores on next sign-in. Cleared so the next account on this
+        // device doesn't inherit this one's leaderboard choice.
+        LeaderboardPreference.clear()
         isSignedIn  = false
         needsUnlock = false
         displayName = ""
@@ -444,10 +448,11 @@ final class AuthManager: ObservableObject {
     // history (SwiftData) is untouched — it belongs to the device, not the account.
 
     func deleteAccount() {
-        // Best-effort: remove the public leaderboard row before rotating the
-        // identity — once rotated, nothing can ever address that row again.
-        // Ordered inside one task: the profiles delete policy requires
-        // id = auth.uid(), so the row must go *before* the session is revoked.
+        // Best-effort: remove the leaderboard row and the private profile row
+        // before rotating the identity — once rotated, nothing can ever
+        // address them again. Ordered inside one task: both delete policies
+        // require auth.uid() to match, so the rows must go *before* the
+        // session is revoked.
         if SupabaseService.isConfigured {
             let departingID = backendID
             Task.detached {
@@ -457,6 +462,7 @@ final class AuthManager: ObservableObject {
                 // can ever authorize removing it, and a deleted account's
                 // device would keep receiving streak pushes.
                 try? await SupabaseService.shared.deletePushToken()
+                try? await SupabaseService.shared.leaveLeaderboard()
                 try? await SupabaseService.shared.deleteProfile(id: departingID)
                 await SupabaseService.shared.signOut()
             }
