@@ -24,7 +24,14 @@ struct GamificationServiceTests {
                              badges: [String] = [],
                              lastSession: Date? = nil,
                              pendingStreakBreak: Int = 0,
-                             streakFreezeTokens: Int = 0) -> UserProfile {
+                             streakFreezeTokens: Int = 0,
+                             earlyBirdSessionCount: Int = 0,
+                             nightOwlSessionCount: Int = 0,
+                             weekendSessionCount: Int = 0,
+                             categoriesTouched: [String] = [],
+                             difficultiesTouched: [Int] = [],
+                             hasCompletedBreathing: Bool = false,
+                             hasCompletedStretch: Bool = false) -> UserProfile {
         let p = UserProfile(profileID: "test", displayName: "Tester")
         p.streak = streak
         p.totalMinutes = minutes
@@ -33,6 +40,13 @@ struct GamificationServiceTests {
         p.lastSessionDate = lastSession
         p.pendingStreakBreak = pendingStreakBreak
         p.streakFreezeTokens = streakFreezeTokens
+        p.earlyBirdSessionCount = earlyBirdSessionCount
+        p.nightOwlSessionCount = nightOwlSessionCount
+        p.weekendSessionCount = weekendSessionCount
+        p.categoriesTouched = categoriesTouched
+        p.difficultiesTouched = difficultiesTouched
+        p.hasCompletedBreathing = hasCompletedBreathing
+        p.hasCompletedStretch = hasCompletedStretch
         return p
     }
 
@@ -163,7 +177,7 @@ struct GamificationServiceTests {
         #expect(GamificationService.newBadges(for: makeProfile(streak: 3)) == ["First Breath", "Streak Starter"])
         #expect(GamificationService.newBadges(for: makeProfile(streak: 7)) == ["First Breath", "Streak Starter", "Weekly Warrior"])
         #expect(GamificationService.newBadges(for: makeProfile(streak: 30)) ==
-                ["First Breath", "Streak Starter", "Weekly Warrior", "Month of Mindfulness"])
+                ["First Breath", "Streak Starter", "Weekly Warrior", "Two Week Streak", "Month of Mindfulness"])
     }
 
     @Test func alreadyEarnedBadgesAreNotReported() {
@@ -200,11 +214,59 @@ struct GamificationServiceTests {
         let p = makeProfile(streak: 30, minutes: 300, points: 1000)
         let groups: Set<String> = ["Neck", "Shoulders", "Chest", "Back", "Core"]
         #expect(GamificationService.newBadges(for: p, bodyPartsCovered: groups) == [
-            "First Breath", "Streak Starter", "Weekly Warrior", "Month of Mindfulness",
+            "First Breath", "Streak Starter", "Weekly Warrior", "Two Week Streak", "Month of Mindfulness",
             "30 Min Club", "Hour Hero", "5 Hour Club",
             "Century", "High Achiever", "Elite Breather",
             "Full Body"
         ])
+    }
+
+    @Test func higherStreakMilestonesUnlockInOrder() {
+        #expect(GamificationService.newBadges(for: makeProfile(streak: 14)).contains("Two Week Streak"))
+        #expect(GamificationService.newBadges(for: makeProfile(streak: 60)).contains("Streak Legend"))
+        #expect(GamificationService.newBadges(for: makeProfile(streak: 100)).contains("Unstoppable"))
+        #expect(!GamificationService.newBadges(for: makeProfile(streak: 13)).contains("Two Week Streak"))
+    }
+
+    @Test func higherMinuteMilestonesUnlockInOrder() {
+        #expect(GamificationService.newBadges(for: makeProfile(minutes: 600)).contains("Ten Hour Club"))
+        #expect(GamificationService.newBadges(for: makeProfile(minutes: 1200)).contains("Marathoner"))
+        #expect(GamificationService.newBadges(for: makeProfile(minutes: 2000)).contains("2000 Club"))
+        #expect(!GamificationService.newBadges(for: makeProfile(minutes: 599)).contains("Ten Hour Club"))
+    }
+
+    @Test func earlyBirdBadgeNeedsFiveMorningSessions() {
+        #expect(GamificationService.newBadges(for: makeProfile(earlyBirdSessionCount: 5)).contains("Early Bird"))
+        #expect(!GamificationService.newBadges(for: makeProfile(earlyBirdSessionCount: 4)).contains("Early Bird"))
+    }
+
+    @Test func nightOwlBadgeNeedsFiveLateSessions() {
+        #expect(GamificationService.newBadges(for: makeProfile(nightOwlSessionCount: 5)).contains("Night Owl"))
+        #expect(!GamificationService.newBadges(for: makeProfile(nightOwlSessionCount: 4)).contains("Night Owl"))
+    }
+
+    @Test func weekendWarriorBadgeNeedsFiveWeekendSessions() {
+        #expect(GamificationService.newBadges(for: makeProfile(weekendSessionCount: 5)).contains("Weekend Warrior"))
+        #expect(!GamificationService.newBadges(for: makeProfile(weekendSessionCount: 4)).contains("Weekend Warrior"))
+    }
+
+    @Test func wellRoundedNeedsAllTenMajorMuscleGroups() {
+        let nine = Array(GamificationService.majorMuscleGroups.dropLast())
+        #expect(!GamificationService.newBadges(for: makeProfile(categoriesTouched: nine)).contains("Well Rounded"))
+
+        let allTen = GamificationService.majorMuscleGroups
+        #expect(GamificationService.newBadges(for: makeProfile(categoriesTouched: allTen)).contains("Well Rounded"))
+    }
+
+    @Test func difficultyClimberNeedsAllThreeDifficulties() {
+        #expect(!GamificationService.newBadges(for: makeProfile(difficultiesTouched: [1, 2])).contains("Difficulty Climber"))
+        #expect(GamificationService.newBadges(for: makeProfile(difficultiesTouched: [1, 2, 3])).contains("Difficulty Climber"))
+    }
+
+    @Test func bestOfBothNeedsBreathingAndStretchCompleted() {
+        #expect(!GamificationService.newBadges(for: makeProfile(hasCompletedBreathing: true, hasCompletedStretch: false)).contains("Best of Both"))
+        #expect(!GamificationService.newBadges(for: makeProfile(hasCompletedBreathing: false, hasCompletedStretch: true)).contains("Best of Both"))
+        #expect(GamificationService.newBadges(for: makeProfile(hasCompletedBreathing: true, hasCompletedStretch: true)).contains("Best of Both"))
     }
 
     // MARK: - awardBadge / applyBadges (these DO mutate the profile)

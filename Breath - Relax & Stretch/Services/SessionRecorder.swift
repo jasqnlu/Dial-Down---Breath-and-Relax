@@ -26,6 +26,7 @@ enum SessionRecorder {
         var sessionLabel: String? = nil
         var roundsCompleted: Int = 0
         var bodyPartsCovered: Set<String> = []
+        var difficultiesCovered: Set<Int> = []
         var isBorrowedRoutine: Bool = false
         var calendarTitle: String
         var healthKitKind: HealthKitKind
@@ -38,6 +39,7 @@ enum SessionRecorder {
     struct Outcome {
         var streak: Int
         var streakIncreased: Bool
+        var newlyEarnedBadges: [String] = []
     }
 
     /// Persists the session, updates profile stats/streak/badges, and fans out
@@ -66,15 +68,39 @@ enum SessionRecorder {
         let descriptor = FetchDescriptor<UserProfile>()
         if let profile = try? modelContext.fetch(descriptor).first {
             profile.totalPoints += input.pointsEarned
-            profile.totalMinutes += max(1, Int(input.completedAt.timeIntervalSince(input.startedAt) / 60))
+            let elapsedSeconds = input.completedAt.timeIntervalSince(input.startedAt)
+            let earnedMinutes = elapsedSeconds >= 30 ? max(1, Int((elapsedSeconds / 60).rounded())) : 0
+            profile.totalMinutes += earnedMinutes
             let previousStreak = profile.streak
             GamificationService.updateStreak(for: profile)
-            let newBadges = GamificationService.newBadges(for: profile, bodyPartsCovered: input.bodyPartsCovered)
-            GamificationService.applyBadges(newBadges, to: profile)
-            if input.isBorrowedRoutine {
-                GamificationService.awardBadge("Borrowed & Built", to: profile)
+
+            let calendar = Calendar.current
+            let hour = calendar.component(.hour, from: input.startedAt)
+            if hour < 8 { profile.earlyBirdSessionCount += 1 }
+            if hour >= 22 { profile.nightOwlSessionCount += 1 }
+            if calendar.isDateInWeekend(input.startedAt) { profile.weekendSessionCount += 1 }
+            for group in GamificationService.majorMuscleGroups
+            where input.bodyPartsCovered.contains(where: { $0.localizedCaseInsensitiveContains(group) })
+                && !profile.categoriesTouched.contains(group) {
+                profile.categoriesTouched.append(group)
             }
-            outcome = Outcome(streak: profile.streak, streakIncreased: profile.streak > previousStreak)
+            for difficulty in input.difficultiesCovered where !profile.difficultiesTouched.contains(difficulty) {
+                profile.difficultiesTouched.append(difficulty)
+            }
+            switch input.healthKitKind {
+            case .breathing: profile.hasCompletedBreathing = true
+            case .stretch:   profile.hasCompletedStretch = true
+            }
+
+            var newBadges = GamificationService.newBadges(for: profile, bodyPartsCovered: input.bodyPartsCovered)
+            GamificationService.applyBadges(newBadges, to: profile)
+            if input.isBorrowedRoutine, GamificationService.awardBadge("Borrowed & Built", to: profile) {
+                newBadges.append("Borrowed & Built")
+            }
+            outcome = Outcome(
+                streak: profile.streak,
+                streakIncreased: profile.streak > previousStreak,
+                newlyEarnedBadges: newBadges)
         }
 
         do {

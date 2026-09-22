@@ -97,6 +97,13 @@ struct GamificationService {
 
     // MARK: - Badges
 
+    /// The coarse muscle-group buckets "Full Body" and "Well Rounded" are
+    /// evaluated against. Kept as a shared constant so a session's covered
+    /// body parts and a profile's lifetime-touched categories are always
+    /// bucketed the same way.
+    static let majorMuscleGroups = ["Neck", "Shoulders", "Chest", "Back", "Core",
+                                     "Arms", "Forearm", "Legs", "Hips", "Glutes"]
+
     /// Returns badges newly earned after a session.
     /// - Parameters:
     ///   - profile: The user profile to evaluate (already updated with this session's stats).
@@ -111,14 +118,30 @@ struct GamificationService {
         award("First Breath")
 
         // Streak milestones
-        if profile.streak >= 3  { award("Streak Starter") }
-        if profile.streak >= 7  { award("Weekly Warrior") }
-        if profile.streak >= 30 { award("Month of Mindfulness") }
+        if profile.streak >= 3   { award("Streak Starter") }
+        if profile.streak >= 7   { award("Weekly Warrior") }
+        if profile.streak >= 14  { award("Two Week Streak") }
+        if profile.streak >= 30  { award("Month of Mindfulness") }
+        if profile.streak >= 60  { award("Streak Legend") }
+        if profile.streak >= 100 { award("Unstoppable") }
 
         // Time milestones
-        if profile.totalMinutes >= 30  { award("30 Min Club") }
-        if profile.totalMinutes >= 60  { award("Hour Hero") }
-        if profile.totalMinutes >= 300 { award("5 Hour Club") }
+        if profile.totalMinutes >= 30   { award("30 Min Club") }
+        if profile.totalMinutes >= 60   { award("Hour Hero") }
+        if profile.totalMinutes >= 300  { award("5 Hour Club") }
+        if profile.totalMinutes >= 600  { award("Ten Hour Club") }
+        if profile.totalMinutes >= 1200 { award("Marathoner") }
+        if profile.totalMinutes >= 2000 { award("2000 Club") }
+
+        // Time-of-day / habit-shape milestones
+        if profile.earlyBirdSessionCount >= 5 { award("Early Bird") }
+        if profile.nightOwlSessionCount >= 5  { award("Night Owl") }
+        if profile.weekendSessionCount >= 5   { award("Weekend Warrior") }
+
+        // Variety milestones
+        if Set(profile.categoriesTouched).isSuperset(of: majorMuscleGroups) { award("Well Rounded") }
+        if Set(profile.difficultiesTouched).isSuperset(of: [1, 2, 3]) { award("Difficulty Climber") }
+        if profile.hasCompletedBreathing && profile.hasCompletedStretch { award("Best of Both") }
 
         // Points milestones
         if profile.totalPoints >= 100  { award("Century") }
@@ -127,9 +150,7 @@ struct GamificationService {
 
         // Full body — session must touch 5+ distinct major muscle groups
         if !bodyPartsCovered.isEmpty {
-            let majorGroups = ["Neck", "Shoulders", "Chest", "Back", "Core",
-                               "Arms", "Forearm", "Legs", "Hips", "Glutes"]
-            let coveredCount = majorGroups.filter { group in
+            let coveredCount = majorMuscleGroups.filter { group in
                 bodyPartsCovered.contains { $0.localizedCaseInsensitiveContains(group) }
             }.count
             if coveredCount >= 5 { award("Full Body") }

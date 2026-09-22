@@ -22,19 +22,25 @@ struct SessionRecorderTests {
         routineID: UUID = UUID(),
         pointsEarned: Int = 20,
         bodyPartsCovered: Set<String> = [],
-        isBorrowedRoutine: Bool = false
+        difficultiesCovered: Set<Int> = [],
+        isBorrowedRoutine: Bool = false,
+        elapsedSeconds: TimeInterval = 120,
+        startedAt: Date? = nil,
+        healthKitKind: SessionRecorder.HealthKitKind = .stretch
     ) -> SessionRecorder.Input {
-        SessionRecorder.Input(
+        let resolvedStartedAt = startedAt ?? Date().addingTimeInterval(-elapsedSeconds)
+        return SessionRecorder.Input(
             routineID: routineID,
-            startedAt: Date().addingTimeInterval(-120),
-            completedAt: Date(),
+            startedAt: resolvedStartedAt,
+            completedAt: startedAt != nil ? resolvedStartedAt.addingTimeInterval(elapsedSeconds) : Date(),
             completionPercent: 1.0,
             pointsEarned: pointsEarned,
             exerciseIDs: [UUID()],
             bodyPartsCovered: bodyPartsCovered,
+            difficultiesCovered: difficultiesCovered,
             isBorrowedRoutine: isBorrowedRoutine,
             calendarTitle: "Test Session",
-            healthKitKind: .stretch
+            healthKitKind: healthKitKind
         )
     }
 
@@ -121,6 +127,139 @@ struct SessionRecorderTests {
         #expect(outcome.streak == 0)
         #expect(outcome.streakIncreased == false)
         #expect(try! context.fetch(FetchDescriptor<Session>()).count == 1)
+    }
+
+    @Test func recordAwardsNoMinutesForASkipThroughUnderThirtySeconds() {
+        let context = makeContext()
+        let profile = UserProfile(profileID: "test", displayName: "Tester")
+        context.insert(profile)
+
+        SessionRecorder.record(
+            baseInput(elapsedSeconds: 8), modelContext: context,
+            calendarSyncEnabled: false)
+
+        #expect(profile.totalMinutes == 0)
+    }
+
+    @Test func recordAwardsOneMinuteForASessionAtLeastThirtySecondsLong() {
+        let context = makeContext()
+        let profile = UserProfile(profileID: "test", displayName: "Tester")
+        context.insert(profile)
+
+        SessionRecorder.record(
+            baseInput(elapsedSeconds: 45), modelContext: context,
+            calendarSyncEnabled: false)
+
+        #expect(profile.totalMinutes == 1)
+    }
+
+    @Test func recordRoundsMinutesToNearestForLongerSessions() {
+        let context = makeContext()
+        let profile = UserProfile(profileID: "test", displayName: "Tester")
+        context.insert(profile)
+
+        SessionRecorder.record(
+            baseInput(elapsedSeconds: 340), modelContext: context,
+            calendarSyncEnabled: false)
+
+        #expect(profile.totalMinutes == 6)
+    }
+
+    @Test func recordTracksEarlyBirdSessionsByStartHour() {
+        let context = makeContext()
+        let profile = UserProfile(profileID: "test", displayName: "Tester")
+        context.insert(profile)
+        let sevenAM = Calendar.current.date(bySettingHour: 7, minute: 0, second: 0, of: Date())!
+
+        SessionRecorder.record(
+            baseInput(startedAt: sevenAM), modelContext: context, calendarSyncEnabled: false)
+
+        #expect(profile.earlyBirdSessionCount == 1)
+        #expect(profile.nightOwlSessionCount == 0)
+    }
+
+    @Test func recordTracksNightOwlSessionsByStartHour() {
+        let context = makeContext()
+        let profile = UserProfile(profileID: "test", displayName: "Tester")
+        context.insert(profile)
+        let elevenPM = Calendar.current.date(bySettingHour: 23, minute: 0, second: 0, of: Date())!
+
+        SessionRecorder.record(
+            baseInput(startedAt: elevenPM), modelContext: context, calendarSyncEnabled: false)
+
+        #expect(profile.nightOwlSessionCount == 1)
+        #expect(profile.earlyBirdSessionCount == 0)
+    }
+
+    @Test func recordTracksWeekendSessions() {
+        let context = makeContext()
+        let profile = UserProfile(profileID: "test", displayName: "Tester")
+        context.insert(profile)
+        let calendar = Calendar.current
+        // Find the next Saturday from today so this test is stable regardless of when it runs.
+        var saturday = Date()
+        while calendar.component(.weekday, from: saturday) != 7 {
+            saturday = calendar.date(byAdding: .day, value: 1, to: saturday)!
+        }
+
+        SessionRecorder.record(
+            baseInput(startedAt: saturday), modelContext: context, calendarSyncEnabled: false)
+
+        #expect(profile.weekendSessionCount == 1)
+    }
+
+    @Test func recordAccumulatesCategoriesTouchedWithoutDuplicates() {
+        let context = makeContext()
+        let profile = UserProfile(profileID: "test", displayName: "Tester")
+        context.insert(profile)
+
+        SessionRecorder.record(
+            baseInput(bodyPartsCovered: ["Neck", "Shoulders"]), modelContext: context, calendarSyncEnabled: false)
+        SessionRecorder.record(
+            baseInput(bodyPartsCovered: ["Neck", "Chest"]), modelContext: context, calendarSyncEnabled: false)
+
+        #expect(Set(profile.categoriesTouched) == ["Neck", "Shoulders", "Chest"])
+    }
+
+    @Test func recordAccumulatesDifficultiesTouchedWithoutDuplicates() {
+        let context = makeContext()
+        let profile = UserProfile(profileID: "test", displayName: "Tester")
+        context.insert(profile)
+
+        SessionRecorder.record(
+            baseInput(difficultiesCovered: [1, 2]), modelContext: context, calendarSyncEnabled: false)
+        SessionRecorder.record(
+            baseInput(difficultiesCovered: [2, 3]), modelContext: context, calendarSyncEnabled: false)
+
+        #expect(Set(profile.difficultiesTouched) == [1, 2, 3])
+    }
+
+    @Test func recordSetsHasCompletedFlagsFromHealthKitKind() {
+        let context = makeContext()
+        let profile = UserProfile(profileID: "test", displayName: "Tester")
+        context.insert(profile)
+
+        SessionRecorder.record(
+            baseInput(healthKitKind: .breathing), modelContext: context, calendarSyncEnabled: false)
+
+        #expect(profile.hasCompletedBreathing == true)
+        #expect(profile.hasCompletedStretch == false)
+
+        SessionRecorder.record(
+            baseInput(healthKitKind: .stretch), modelContext: context, calendarSyncEnabled: false)
+
+        #expect(profile.hasCompletedStretch == true)
+    }
+
+    @Test func recordOutcomeReportsNewlyEarnedBadges() {
+        let context = makeContext()
+        let profile = UserProfile(profileID: "test", displayName: "Tester")
+        context.insert(profile)
+
+        let outcome = SessionRecorder.record(
+            baseInput(), modelContext: context, calendarSyncEnabled: false)
+
+        #expect(outcome.newlyEarnedBadges == ["First Breath"])
     }
 
     @Test func recordCarriesBreathingSpecificFieldsThrough() {

@@ -126,7 +126,8 @@ struct SessionPlayerView: View {
                 SessionSummaryView(
                     pointsEarned: totalPointsEarned,
                     streak: streakOutcome.streak,
-                    streakIncreased: streakOutcome.streakIncreased
+                    streakIncreased: streakOutcome.streakIncreased,
+                    newlyEarnedBadges: streakOutcome.newlyEarnedBadges
                 ) {
                     onComplete?(totalPointsEarned)
                     dismiss()
@@ -827,6 +828,7 @@ struct SessionPlayerView: View {
     private func saveSession() {
         let completedAt = Date()
         let bodyPartsCovered = Set(exercises.flatMap { $0.targetBodyParts })
+        let difficultiesCovered = Set(exercises.map { $0.difficulty })
         let exerciseNames = exercises.map { $0.name }.joined(separator: ", ")
 
         totalSessionsCompleted += 1
@@ -839,6 +841,7 @@ struct SessionPlayerView: View {
                 pointsEarned: totalPointsEarned,
                 exerciseIDs: exercises.map { $0.uuid },
                 bodyPartsCovered: bodyPartsCovered,
+                difficultiesCovered: difficultiesCovered,
                 isBorrowedRoutine: isBorrowedRoutine,
                 calendarTitle: "Stretch Session: \(exerciseNames)",
                 healthKitKind: .stretch

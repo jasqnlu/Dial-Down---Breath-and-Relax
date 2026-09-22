@@ -22,6 +22,7 @@ struct BreathingView: View {
     @State private var sessionStarted:   Date            = Date()
     @State private var showCompletion:   Bool            = false
     @State private var showingCustomEditor: Bool         = false
+    @State private var newlyEarnedBadges: [String]       = []
 
     // Animation
     @State private var circleScale:  CGFloat = 1.0
@@ -337,6 +338,8 @@ struct BreathingView: View {
         ZStack {
             Color.luminaSurface.ignoresSafeArea()
 
+            NewBadgesOverlay(newlyEarnedBadges: newlyEarnedBadges)
+
             VStack(spacing: 32) {
                 Spacer()
 
@@ -598,6 +601,7 @@ struct BreathingView: View {
         withAnimation(.easeInOut(duration: 0.3)) {
             showCompletion = false
         }
+        newlyEarnedBadges = []
         circleScale      = 1.0
         circleColor      = BreathPhase.inhale.color
         currentPhase     = .inhale
@@ -627,7 +631,7 @@ struct BreathingView: View {
         let pointsEarned = roundsCompleted * 5
 
         totalSessionsCompleted += 1
-        SessionRecorder.record(
+        let outcome = SessionRecorder.record(
             SessionRecorder.Input(
                 routineID: breathingRoutineID,
                 startedAt: sessionStarted,
@@ -642,6 +646,7 @@ struct BreathingView: View {
             modelContext: modelContext,
             calendarSyncEnabled: calendarSyncEnabled
         )
+        newlyEarnedBadges = outcome.newlyEarnedBadges
 
         let reviewMilestones: Set<Int> = [10, 25]
         if reviewMilestones.contains(totalSessionsCompleted) {

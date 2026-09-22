@@ -14,6 +14,13 @@ final class UserProfile {
     var streakFreezeTokens: Int = 0
     var sessionsTowardNextFreezeToken: Int = 0
     var pendingStreakBreak: Int = 0
+    var earlyBirdSessionCount: Int = 0
+    var nightOwlSessionCount: Int = 0
+    var weekendSessionCount: Int = 0
+    var categoriesTouched: [String] = []
+    var difficultiesTouched: [Int] = []
+    var hasCompletedBreathing: Bool = false
+    var hasCompletedStretch: Bool = false
 
     init(profileID: String, displayName: String) {
         self.profileID = profileID

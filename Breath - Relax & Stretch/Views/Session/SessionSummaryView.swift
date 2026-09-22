@@ -8,12 +8,14 @@ struct SessionSummaryView: View {
     /// session completed the same day, where `streak` is unchanged and the
     /// flame shouldn't replay its "just lit" animation.
     var streakIncreased: Bool = false
+    var newlyEarnedBadges: [String] = []
     let onDismiss: () -> Void
 
     @State private var flameIsLit = false
     @State private var displayedStreak = 0
 
     var body: some View {
+        ZStack {
         VStack(spacing: 32) {
             HStack {
                 Button(action: onDismiss) {
@@ -113,6 +115,9 @@ struct SessionSummaryView: View {
                            startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea()
         )
+
+            NewBadgesOverlay(newlyEarnedBadges: newlyEarnedBadges)
+        }
     }
 }
 
@@ -122,4 +127,9 @@ struct SessionSummaryView: View {
 
 #Preview("Second session today") {
     SessionSummaryView(pointsEarned: 18, streak: 4, streakIncreased: false) {}
+}
+
+#Preview("New badges earned") {
+    SessionSummaryView(pointsEarned: 42, streak: 4, streakIncreased: true,
+                        newlyEarnedBadges: ["First Breath", "30 Min Club"]) {}
 }
