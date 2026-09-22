@@ -21,7 +21,7 @@ struct ProfileAccountTab: View {
                     statsRow(icon: "star.fill",   color: .yellow,
                              label: "Total Points",  value: "\(profile.totalPoints) pts")
                     statsRow(icon: "flame.fill",  color: .orange,
-                             label: "Current Streak", value: "\(profile.streak) days")
+                             label: "Current Streak", value: String(localized: "\(profile.streak) days"))
                     statsRow(icon: "medal.fill",  color: .purple,
                              label: "Badges Earned", value: "\(profile.badges.count)")
                 }
@@ -122,7 +122,7 @@ struct ProfileAccountTab: View {
     }
 
     private func statsRow(icon: String, color: Color,
-                          label: String, value: String) -> some View {
+                          label: LocalizedStringKey, value: String) -> some View {
         HStack {
             Image(systemName: icon).foregroundStyle(color).frame(width: 28)
             Text(label)
