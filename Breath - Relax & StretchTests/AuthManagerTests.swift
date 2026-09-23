@@ -247,6 +247,88 @@ struct AuthManagerTests {
         #expect(!manager.isBackendAuthenticated)
     }
 
+    // MARK: - Apple backend sync (exchange failure/retry)
+
+    @Test func appleExchangeFailureSetsBackendSyncFailedWithoutAffectingLocalSignIn() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signInWithAppleResult = .failure(SupabaseAuthError(code: "invalid_grant", message: nil))
+        let manager = makeManager(supabase: fake)
+
+        await manager.exchangeAppleToken(identityToken: "fake-token", nonce: "fake-nonce")
+
+        #expect(manager.backendSyncFailed)
+        #expect(!manager.justReconnected)
+        #expect(!manager.isBackendAuthenticated)
+    }
+
+    @Test func appleExchangeSuccessNeverSetsJustReconnectedOnAFirstTryPass() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signInWithAppleResult = .success("apple-uid-1")
+        let manager = makeManager(supabase: fake)
+
+        await manager.exchangeAppleToken(identityToken: "fake-token", nonce: "fake-nonce")
+
+        #expect(!manager.backendSyncFailed)
+        #expect(!manager.justReconnected)   // silent on a normal first-try success
+        #expect(manager.isBackendAuthenticated)
+        #expect(manager.backendID == "apple-uid-1")
+    }
+
+    @Test func retryAfterFailureSucceedsAndPulsesJustReconnected() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signInWithAppleResult = .failure(SupabaseAuthError(code: "invalid_grant", message: nil))
+        let manager = makeManager(supabase: fake)
+        await manager.exchangeAppleToken(identityToken: "fake-token", nonce: "fake-nonce")
+        #expect(manager.backendSyncFailed)
+
+        fake.signInWithAppleResult = .success("apple-uid-1")
+        await manager.retryBackendConnection()
+
+        #expect(!manager.backendSyncFailed)
+        #expect(manager.justReconnected)
+        #expect(manager.isBackendAuthenticated)
+        #expect(manager.backendID == "apple-uid-1")
+    }
+
+    @Test func retryWithNothingPendingIsANoOp() async {
+        let fake = FakeSupabaseAuthenticating()
+        let manager = makeManager(supabase: fake)
+
+        await manager.retryBackendConnection()
+
+        #expect(!manager.backendSyncFailed)
+        #expect(!manager.isBackendAuthenticated)
+    }
+
+    @Test func retryThatFailsAgainKeepsBackendSyncFailedAndDoesNotPulseJustReconnected() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signInWithAppleResult = .failure(SupabaseAuthError(code: "invalid_grant", message: nil))
+        let manager = makeManager(supabase: fake)
+        await manager.exchangeAppleToken(identityToken: "fake-token", nonce: "fake-nonce")
+
+        await manager.retryBackendConnection()
+
+        #expect(manager.backendSyncFailed)
+        #expect(!manager.justReconnected)
+        #expect(!manager.isBackendAuthenticated)
+    }
+
+    @Test func signOutClearsAPendingBackendSyncFailure() async {
+        let fake = FakeSupabaseAuthenticating()
+        fake.signInWithAppleResult = .failure(SupabaseAuthError(code: "invalid_grant", message: nil))
+        let manager = makeManager(supabase: fake)
+        await manager.exchangeAppleToken(identityToken: "fake-token", nonce: "fake-nonce")
+        #expect(manager.backendSyncFailed)
+
+        manager.signOut()
+
+        #expect(!manager.backendSyncFailed)
+        // The stale token must not still be retryable after sign-out.
+        fake.signInWithAppleResult = .success("should-not-be-used")
+        await manager.retryBackendConnection()
+        #expect(!manager.isBackendAuthenticated)
+    }
+
     @Test func signOutDoesNotResetDeviceLevelOnboarding() {
         let key = "hasCompletedOnboarding"
         let previous = UserDefaults.standard.object(forKey: key)
@@ -272,11 +354,15 @@ private final class FakeKeychainStore: KeychainStore {
 }
 
 private final class FakeSupabaseAuthenticating: SupabaseAuthenticating, @unchecked Sendable {
+    var signInWithAppleResult: Result<String, Error> = .failure(SupabaseAuthError(code: nil, message: nil))
     var signInWithGoogleResult: Result<String, Error> = .failure(SupabaseAuthError(code: nil, message: nil))
     var signUpWithPasswordResult: Result<String, Error> = .failure(SupabaseAuthError(code: nil, message: nil))
     var signInWithPasswordResult: Result<(userID: String, name: String?), Error> =
         .failure(SupabaseAuthError(code: nil, message: nil))
 
+    func signInWithApple(identityToken: String, nonce: String?) async throws -> String {
+        try signInWithAppleResult.get()
+    }
     func signInWithGoogle(idToken: String, nonce: String?) async throws -> String {
         try signInWithGoogleResult.get()
     }

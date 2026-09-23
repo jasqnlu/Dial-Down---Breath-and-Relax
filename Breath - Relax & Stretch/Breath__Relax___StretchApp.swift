@@ -496,14 +496,19 @@ struct RootView: View {
                 RegistrationGate { HomeView() }
             }
         }
+        .overlay(alignment: .top) { BackendSyncBanner() }
         .animation(.easeInOut(duration: 0.35), value: auth.isSignedIn)
         .animation(.easeInOut(duration: 0.35), value: auth.needsUnlock)
         .onChange(of: auth.isSignedIn) { _, signedIn in
             if signedIn { ensureUserProfile() }
         }
         .onChange(of: auth.displayName) { _, _ in syncProfileDisplayName() }
+        .onChange(of: auth.isBackendAuthenticated) { _, authenticated in
+            if authenticated { Task { await pullRemoteProfile() } }
+        }
         .onAppear {
             if auth.isSignedIn { ensureUserProfile(); syncProfileDisplayName() }
+            if auth.isBackendAuthenticated { Task { await pullRemoteProfile() } }
         }
     }
 
@@ -539,6 +544,54 @@ struct RootView: View {
             try modelContext.save()
         } catch {
             Logger(subsystem: "com.jasonlu.breath", category: "profile").warning("Profile name sync failed: \(error)")
+        }
+    }
+
+    // MARK: - Pull remote stats on sign-in (cross-device streak/points/minutes)
+
+    /// Local storage is device-only (no CloudKit — see `sharedModelContainer`),
+    /// so Supabase's `profiles` row is the only channel a streak/points/minutes
+    /// earned on another device can travel through. `SessionRecorder` already
+    /// uploads after every session; this is the missing other half — pull the
+    /// row back down and fold it into the local `UserProfile` whenever a
+    /// Supabase Auth session lands (sign-in, or a session restored on cold
+    /// launch). Takes the max of each stat, same reconciliation policy as
+    /// `UserProfile.dedupe`, so a device that's behind catches up without a
+    /// device that's ahead (but hasn't uploaded yet) ever losing progress.
+    private func pullRemoteProfile() async {
+        let log = Logger(subsystem: "com.jasonlu.breath", category: "profile")
+        guard SupabaseService.isConfigured, auth.isBackendAuthenticated else {
+            log.debug("pullRemoteProfile: skipped (configured=\(SupabaseService.isConfigured), backendAuthenticated=\(auth.isBackendAuthenticated))")
+            return
+        }
+        let remote: RemoteProfile?
+        do {
+            remote = try await SupabaseService.shared.fetchProfile(id: auth.backendID)
+        } catch {
+            log.warning("pullRemoteProfile: fetch failed for id=\(auth.backendID, privacy: .public): \(error)")
+            return
+        }
+        guard let remote else {
+            log.debug("pullRemoteProfile: no remote row for id=\(auth.backendID, privacy: .public)")
+            return
+        }
+        guard let profile = try? modelContext.fetch(FetchDescriptor<UserProfile>()).first else {
+            log.warning("pullRemoteProfile: no local UserProfile row to merge into")
+            return
+        }
+        log.debug("pullRemoteProfile: local streak=\(profile.streak) remote streak=\(remote.streak)")
+
+        profile.totalPoints = max(profile.totalPoints, remote.totalPoints)
+        profile.totalMinutes = max(profile.totalMinutes, remote.totalMinutes)
+        profile.streak = max(profile.streak, remote.streak)
+        if let remoteDate = remote.lastSessionAt,
+           remoteDate > (profile.lastSessionDate ?? .distantPast) {
+            profile.lastSessionDate = remoteDate
+        }
+        do {
+            try modelContext.save()
+        } catch {
+            Logger(subsystem: "com.jasonlu.breath", category: "profile").warning("Remote profile merge save failed: \(error)")
         }
     }
 }

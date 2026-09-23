@@ -90,6 +90,29 @@ final class AuthManager: ObservableObject {
     @Published private(set) var firstName: String = ""
     @Published private(set) var lastName: String  = ""
 
+    /// True when local (Apple) sign-in succeeded but the backend exchange
+    /// didn't — the account is usable offline, but sync/leaderboard/streak
+    /// pull from other devices won't work until it's retried. Google and
+    /// email/password never enter this state: `handleGoogleSignIn`/`signIn`/
+    /// `signUp` only persist local sign-in *after* the backend exchange
+    /// succeeds, so a failure there is reported synchronously to the caller
+    /// instead. Apple's credential arrives from a system delegate callback
+    /// with nowhere synchronous to report to, so the exchange runs in a
+    /// background `Task` and this flag is how its outcome surfaces.
+    @Published private(set) var backendSyncFailed = false
+    /// Transient pulse set true right after a manual retry succeeds, so the
+    /// UI can show a brief "Connected" confirmation. The UI is expected to
+    /// reset it back to false once it's done showing that.
+    @Published var justReconnected = false
+
+    /// The most recent failed Apple credential, kept in memory only (never
+    /// persisted) so `retryBackendConnection()` can resend it. Apple identity
+    /// tokens are single-use with a ~10 minute TTL, so a retry attempted long
+    /// after the original failure will just fail again — there is no stored-
+    /// token retry across app launches, matching `handleAppleCredential`'s
+    /// existing behavior of telling the user to sign in with Apple again.
+    private var pendingAppleRetry: (identityToken: String, nonce: String?)?
+
     /// Complete only once the name step has run — provider-supplied names
     /// (Apple/Google/email) deliberately never populate these.
     var personName: PersonName { PersonName(first: firstName, last: lastName) }
@@ -284,28 +307,55 @@ final class AuthManager: ObservableObject {
         persist(name: name, email: email, providerVal: .apple)
 
         // Exchange the Apple identity token for a Supabase Auth session so
-        // backend writes are authorized as this user (auth.uid() RLS).
-        // Best-effort: on failure (offline, provider not enabled in the
-        // dashboard) the app keeps working locally. Identity tokens are
-        // single-use with a ~10 min TTL, so there is no stored-token retry —
-        // the user can just sign in with Apple again.
+        // backend writes are authorized as this user (auth.uid() RLS). Runs
+        // in the background because local sign-in has already been persisted
+        // above and there's no synchronous caller left to report to — on
+        // failure `backendSyncFailed` is how the UI finds out (see
+        // BackendSyncBanner) instead of the exchange failing silently.
         let nonce = pendingAppleNonce
         pendingAppleNonce = nil
         guard SupabaseService.isConfigured,
               let tokenData = credential.identityToken,
               let identityToken = String(data: tokenData, encoding: .utf8) else { return }
         Task { [weak self] in
-            do {
-                let uid = try await SupabaseService.shared.signInWithApple(
-                    identityToken: identityToken, nonce: nonce)
-                guard let self else { return }
-                UserDefaults.standard.set(uid, forKey: self.kSupabaseUserID)
-                self.objectWillChange.send() // backendID/isBackendAuthenticated changed
-            } catch {
-                Logger(subsystem: "com.jasonlu.breath", category: "supabaseAuth")
-                    .warning("Apple → Supabase token exchange failed: \(error)")
-            }
+            await self?.exchangeAppleToken(identityToken: identityToken, nonce: nonce)
         }
+    }
+
+    /// Runs the Apple → Supabase exchange and records the outcome.
+    /// `pendingAppleRetry` is kept on failure (not just logged) so
+    /// `retryBackendConnection()` can resend the same token — it's still
+    /// single-use/~10-minute-TTL, so a retry long after the original failure
+    /// will just fail again, same as it would if the user signed in fresh.
+    ///
+    /// `internal` (not `private`), same reason as `AuthManager.init` — tests
+    /// drive this directly since `ASAuthorizationAppleIDCredential` has no
+    /// public initializer, so `handleAppleCredential` itself can't be called
+    /// from a test.
+    func exchangeAppleToken(identityToken: String, nonce: String?) async {
+        do {
+            let uid = try await supabase.signInWithApple(identityToken: identityToken, nonce: nonce)
+            UserDefaults.standard.set(uid, forKey: kSupabaseUserID)
+            objectWillChange.send() // backendID/isBackendAuthenticated changed
+            let wasFailed = backendSyncFailed
+            backendSyncFailed = false
+            pendingAppleRetry = nil
+            if wasFailed { justReconnected = true }
+        } catch {
+            Logger(subsystem: "com.jasonlu.breath", category: "supabaseAuth")
+                .warning("Apple → Supabase token exchange failed: \(error)")
+            backendSyncFailed = true
+            pendingAppleRetry = (identityToken, nonce)
+        }
+    }
+
+    /// Resends the most recent failed Apple exchange. No-op if there's
+    /// nothing pending (e.g. the failure was Google's or email/password's,
+    /// which never reach this state in the first place — see
+    /// `backendSyncFailed`'s doc comment).
+    func retryBackendConnection() async {
+        guard let pending = pendingAppleRetry else { return }
+        await exchangeAppleToken(identityToken: pending.identityToken, nonce: pending.nonce)
     }
 
     /// Random URL-safe nonce for Sign in with Apple. The slight modulo bias
@@ -427,6 +477,8 @@ final class AuthManager: ObservableObject {
     /// refresh token server-side.
     private func endSupabaseSession() {
         UserDefaults.standard.removeObject(forKey: kSupabaseUserID)
+        backendSyncFailed = false
+        pendingAppleRetry = nil
         guard SupabaseService.isConfigured else { return }
         Task.detached {
             // Best-effort, and ordered *before* the revoke for the same reason

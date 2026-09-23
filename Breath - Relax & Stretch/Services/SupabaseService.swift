@@ -542,6 +542,7 @@ enum SupabaseError: LocalizedError {
 // so tests can inject a fake instead of hitting the network — mirrors the
 // KeychainStore seam.
 protocol SupabaseAuthenticating: Sendable {
+    func signInWithApple(identityToken: String, nonce: String?) async throws -> String
     func signInWithGoogle(idToken: String, nonce: String?) async throws -> String
     func signUpWithPassword(email: String, password: String) async throws -> String
     func signInWithPassword(email: String, password: String) async throws -> (userID: String, name: String?)
