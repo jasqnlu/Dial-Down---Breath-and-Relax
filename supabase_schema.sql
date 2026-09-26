@@ -71,6 +71,19 @@ create table if not exists routines (
 
 alter table routines enable row level security;
 
+-- Sync engine (2026-09-23): last-write-wins needs a timestamp to compare,
+-- and a delete needs a tombstone so a device that missed it doesn't
+-- resurrect the row on its next pull. exercise_duration_overrides/
+-- is_pinned_to_today/pinned_order are user-editable fields that were
+-- missing from this table entirely (pinning/duration edits never had
+-- anywhere to sync to). See docs/superpowers/specs/
+-- 2026-09-23-routine-session-sync-engine-design.md.
+alter table routines add column if not exists updated_at timestamptz not null default now();
+alter table routines add column if not exists deleted_at timestamptz;
+alter table routines add column if not exists exercise_duration_overrides jsonb not null default '{}'::jsonb;
+alter table routines add column if not exists is_pinned_to_today bool not null default false;
+alter table routines add column if not exists pinned_order int4 not null default 0;
+
 drop policy if exists "anyone can upsert routines" on routines;
 drop policy if exists "anyone can update routines" on routines;
 drop policy if exists "authors can insert their routines" on routines;
