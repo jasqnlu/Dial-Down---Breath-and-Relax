@@ -21,6 +21,7 @@ struct BreathRelaxStretchApp: App {
         let schema = Schema([
             Exercise.self,
             FlexibilityCheckIn.self,
+            PendingSyncOp.self,
             Routine.self,
             Session.self,
             UserProfile.self,
@@ -485,6 +486,7 @@ struct BreathRelaxStretchApp: App {
 struct RootView: View {
     @EnvironmentObject private var auth: AuthManager
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Group {
@@ -504,11 +506,30 @@ struct RootView: View {
         }
         .onChange(of: auth.displayName) { _, _ in syncProfileDisplayName() }
         .onChange(of: auth.isBackendAuthenticated) { _, authenticated in
-            if authenticated { Task { await pullRemoteProfile() } }
+            if authenticated { Task { await pullRemoteProfile() }; syncRoutinesAndSessions() }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            // Foreground trigger for the sync engine — catches anything
+            // that piled up in the outbox while the app was backgrounded or
+            // offline (SyncOutbox.enqueue already pushes best-effort at
+            // write time; this is the fallback/reconnect path).
+            if phase == .active { syncRoutinesAndSessions() }
         }
         .onAppear {
             if auth.isSignedIn { ensureUserProfile(); syncProfileDisplayName() }
-            if auth.isBackendAuthenticated { Task { await pullRemoteProfile() } }
+            if auth.isBackendAuthenticated { Task { await pullRemoteProfile() }; syncRoutinesAndSessions() }
+        }
+    }
+
+    /// Drains any pending routine/session writes, then pulls the remote sets
+    /// down and merges — in that order, so a local edit still in the outbox
+    /// gets pushed before the pull runs and could otherwise treat it as
+    /// stale. See SyncEngine.
+    private func syncRoutinesAndSessions() {
+        guard auth.isBackendAuthenticated else { return }
+        Task {
+            await SyncEngine.shared.drain(context: modelContext)
+            await SyncEngine.shared.pullRemote(context: modelContext)
         }
     }
 
