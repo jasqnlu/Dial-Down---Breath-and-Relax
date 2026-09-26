@@ -156,6 +156,76 @@ struct SupabaseServiceTests {
         #expect(url.contains("limit=1"))
     }
 
+    // MARK: - Sync engine (routines + sessions)
+
+    @Test @MainActor func uploadRoutinePostsToRoutinesAsAnUpsert() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 201, body: Data())])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        let routine = RemoteRoutine(
+            id: "r1", name: "Morning", exerciseIDs: ["e1"], authorID: "u1",
+            borrowedFromID: nil, exerciseDurationOverrides: ["e1": 45],
+            isPinnedToToday: true, pinnedOrder: 0,
+            updatedAt: .now, deletedAt: nil
+        )
+        try await service.uploadRoutine(routine)
+
+        let request = try #require(session.requests.first)
+        #expect(request.url?.absoluteString.contains("/rest/v1/routines") == true)
+        #expect(request.httpMethod == "POST")
+        #expect(request.value(forHTTPHeaderField: "Prefer") == "resolution=merge-duplicates")
+    }
+
+    @Test @MainActor func fetchRoutinesDecodesTheRowsIncludingSoftDeletedOnes() async throws {
+        let session = FakeHTTPSession(responses: [
+            .success(status: 200, body: Data("""
+            [
+              {"id":"r1","name":"Morning","exercise_ids":["e1"],"author_id":"u1","borrowed_from_id":null,
+               "exercise_duration_overrides":{},"is_pinned_to_today":false,"pinned_order":0,
+               "updated_at":"2026-09-23T00:00:00Z","deleted_at":null},
+              {"id":"r2","name":"Deleted One","exercise_ids":[],"author_id":"u1","borrowed_from_id":null,
+               "exercise_duration_overrides":{},"is_pinned_to_today":false,"pinned_order":0,
+               "updated_at":"2026-09-23T01:00:00Z","deleted_at":"2026-09-23T01:00:00Z"}
+            ]
+            """.utf8))
+        ])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        let routines = try await service.fetchRoutines(ownerID: "u1")
+
+        #expect(routines.count == 2)
+        #expect(routines.first(where: { $0.id == "r2" })?.deletedAt != nil)
+    }
+
+    @Test @MainActor func fetchRoutinesFiltersByAuthorID() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 200, body: Data("[]".utf8))])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        _ = try await service.fetchRoutines(ownerID: "u1")
+        let url = try #require(session.requests.first?.url?.absoluteString)
+        #expect(url.contains("/rest/v1/routines?author_id=eq.u1"))
+    }
+
+    @Test @MainActor func uploadSessionPostsToSessionsAsAnUpsert() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 201, body: Data())])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        let remoteSession = RemoteSession(
+            id: "s1", userID: "u1", routineID: "r1",
+            startedAt: .now, completedAt: .now, completionPercent: 100, pointsEarned: 10
+        )
+        try await service.uploadSession(remoteSession)
+
+        let request = try #require(session.requests.first)
+        #expect(request.url?.absoluteString.contains("/rest/v1/sessions") == true)
+        #expect(request.httpMethod == "POST")
+        #expect(request.value(forHTTPHeaderField: "Prefer") == "resolution=merge-duplicates")
+    }
+
+    @Test @MainActor func fetchSessionsFiltersByUserID() async throws {
+        let session = FakeHTTPSession(responses: [.success(status: 200, body: Data("[]".utf8))])
+        let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
+        _ = try await service.fetchSessions(userID: "u1")
+        let url = try #require(session.requests.first?.url?.absoluteString)
+        #expect(url.contains("/rest/v1/sessions?user_id=eq.u1"))
+    }
+
     @Test @MainActor func fetchProfileThrowsOnAnHTTPErrorStatus() async throws {
         let session = FakeHTTPSession(responses: [.success(status: 500, body: Data("{}".utf8))])
         let service = SupabaseService(keychain: FakeSupabaseKeychainStore(), urlSession: session)
