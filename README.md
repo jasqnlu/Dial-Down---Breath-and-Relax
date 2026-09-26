@@ -1,4 +1,4 @@
-# Dial Down – Breath and Relax
+# Dial Down – Breathe and Relax
 
 A calm iOS app for breathing, stretching and body awareness. Tap a muscle on a 3D body map, see exactly which stretches work it, and follow guided sessions that pair movement with breath.
 
