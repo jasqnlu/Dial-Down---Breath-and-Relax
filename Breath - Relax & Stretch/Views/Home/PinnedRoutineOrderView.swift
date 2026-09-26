@@ -10,7 +10,10 @@ struct PinnedRoutineOrderView: View {
     let routines: [Routine]
     /// Called once, on dismiss, after `pinnedOrder` has been written back
     /// onto every routine — the caller (TodayView) owns the `modelContext`,
-    /// this view only reorders in-memory and reports when it's done.
+    /// this view only reorders in-memory and reports when it's done. The
+    /// caller is also responsible for calling `markUpdated(in:)` on each
+    /// reordered routine so the new `pinnedOrder` reaches the sync engine —
+    /// this view has no `ModelContext` to enqueue with.
     let onSave: () -> Void
 
     @Environment(\.dismiss) private var dismiss
