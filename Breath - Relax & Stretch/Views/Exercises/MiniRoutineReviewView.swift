@@ -204,7 +204,7 @@ private struct RoutineChooserView: View {
 
     /// Only the current account's routines — see `Routine.ownerID`.
     private var routines: [Routine] {
-        allRoutines.filter { $0.ownerID == auth.backendID }
+        allRoutines.filter { $0.ownerID == auth.backendID && $0.deletedAt == nil }
     }
 
     var body: some View {
