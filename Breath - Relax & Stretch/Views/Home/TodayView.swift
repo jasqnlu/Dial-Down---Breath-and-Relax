@@ -22,7 +22,7 @@ struct TodayView: View {
 
     /// Only the current account's routines — see `Routine.ownerID`.
     private var routines: [Routine] {
-        allRoutines.filter { $0.ownerID == auth.backendID }
+        allRoutines.filter { $0.ownerID == auth.backendID && $0.deletedAt == nil }
     }
     @AppStorage("onboardingGoals") private var goalsStr = ""
     @AppStorage("onboardingAreas") private var onboardingAreas = ""
@@ -246,6 +246,7 @@ struct TodayView: View {
                                 existing.isPinnedToToday = true
                                 existing.pinnedOrder = nextPinnedOrder()
                             }
+                            existing.markUpdated(in: modelContext)
                         } else {
                             let routine = Routine(
                                 name: "Today",
@@ -256,19 +257,22 @@ struct TodayView: View {
                                 ownerID: auth.backendID
                             )
                             modelContext.insert(routine)
+                            routine.markUpdated(in: modelContext)
                             customizeManagedRoutineIDString = routine.uuid.uuidString
                         }
-                        try? modelContext.save()
                     } else {
-                        // Delete the underlying Routine on unpin, not just the
-                        // AppStorage pointer to it — otherwise it survives as
-                        // an orphan in the CloudKit-synced store, and the next
-                        // re-pin (with the ID already cleared) would insert a
-                        // brand-new duplicate instead of ever finding it again.
+                        // Soft-deletes the underlying Routine on unpin, not
+                        // just the AppStorage pointer to it — otherwise it
+                        // survives as an orphan, and the next re-pin (with the
+                        // ID already cleared) would insert a brand-new
+                        // duplicate instead of ever finding it again. Soft
+                        // (not hard) delete since 2026-09-23: a hard delete
+                        // here would never reach the sync engine, so the
+                        // routine would silently un-delete itself on other
+                        // devices' next pull.
                         if let existingID = UUID(uuidString: customizeManagedRoutineIDString),
                            let existing = routines.first(where: { $0.uuid == existingID }) {
-                            modelContext.delete(existing)
-                            try? modelContext.save()
+                            existing.markDeleted(in: modelContext)
                         }
                         customizeManagedRoutineIDString = ""
                         // Not pinned, so there's no Routine to persist these
@@ -346,7 +350,7 @@ struct TodayView: View {
                    !routine.isPinnedToToday {
                     routine.isPinnedToToday = true
                     routine.pinnedOrder = 0
-                    try? modelContext.save()
+                    routine.markUpdated(in: modelContext)
                 }
                 didMigrateToPriorityModel = true
             }
@@ -396,7 +400,9 @@ struct TodayView: View {
             streakButton
         }
         .sheet(isPresented: $showingPinnedOrderEditor) {
-            PinnedRoutineOrderView(routines: pinnedRoutinesInOrder) { try? modelContext.save() }
+            PinnedRoutineOrderView(routines: pinnedRoutinesInOrder) {
+                for routine in pinnedRoutinesInOrder { routine.markUpdated(in: modelContext) }
+            }
         }
     }
 
