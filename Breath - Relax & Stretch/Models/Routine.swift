@@ -33,6 +33,16 @@ final class Routine {
     /// those once at launch. Every query site filters on this so one
     /// device's routines don't leak across different signed-in accounts.
     var ownerID: String = ""
+    /// Bumped on every local mutation (rename, exercise list edit, duration
+    /// override, pin/unpin, reorder). The sync engine compares this against
+    /// the remote row's `updated_at` — whichever is newer wins the whole
+    /// row. See docs/superpowers/specs/2026-09-23-routine-session-sync-engine-design.md.
+    var updatedAt: Date = Date()
+    /// Soft-delete marker: set instead of removing the row, so a pull-merge
+    /// on another device can tell "this was deleted" apart from "never
+    /// synced" and delete its own copy too. Every fetch that lists routines
+    /// for display must filter `deletedAt == nil`.
+    var deletedAt: Date? = nil
 
     init(
         uuid: UUID = UUID(),
@@ -53,5 +63,28 @@ final class Routine {
         self.isPinnedToToday = isPinnedToToday
         self.pinnedOrder = pinnedOrder
         self.ownerID = ownerID
+        self.updatedAt = Date()
+    }
+
+    /// Marks this routine changed and queues it for the next sync drain.
+    /// Every mutation site (rename, exercise edit, pin/unpin, reorder, and
+    /// the `.delete` case below) should go through this instead of touching
+    /// `updatedAt`/`deletedAt` directly, so nothing forgets to enqueue.
+    @MainActor
+    func markUpdated(in context: ModelContext) {
+        updatedAt = Date()
+        SyncOutbox().enqueue(.routine, id: uuid, op: .upsert, in: context)
+    }
+
+    /// Soft-deletes and queues the tombstone for sync. Callers should NOT
+    /// also call `modelContext.delete(_:)` — the row has to stay (with
+    /// `deletedAt` set) until it's synced, otherwise there's nothing left
+    /// for `markUpdated`'s upsert-turned-delete collapse in `SyncOutbox` to
+    /// read when the outbox drains.
+    @MainActor
+    func markDeleted(in context: ModelContext) {
+        deletedAt = Date()
+        updatedAt = Date()
+        SyncOutbox().enqueue(.routine, id: uuid, op: .delete, in: context)
     }
 }
