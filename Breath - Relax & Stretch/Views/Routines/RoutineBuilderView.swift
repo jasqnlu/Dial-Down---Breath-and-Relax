@@ -196,6 +196,7 @@ struct RoutineBuilderView: View {
             r.name        = routineName
             r.exerciseIDs = selectedIDs
             r.exerciseDurationOverrides = durationOverrides
+            r.markUpdated(in: modelContext)
         } else {
             let routine = Routine(
                 name: routineName,
@@ -204,6 +205,7 @@ struct RoutineBuilderView: View {
                 ownerID: auth.backendID
             )
             modelContext.insert(routine)
+            routine.markUpdated(in: modelContext)
 
             if let profile = (try? modelContext.fetch(FetchDescriptor<UserProfile>()))?.first {
                 GamificationService.awardBadge("Routine Builder", to: profile)
