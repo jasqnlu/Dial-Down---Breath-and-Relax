@@ -14,7 +14,7 @@ struct DataExportView: View {
     /// export should reflect what this account can see, not every routine
     /// ever created on this device.
     private var routines: [Routine] {
-        allRoutines.filter { $0.ownerID == auth.backendID }
+        allRoutines.filter { $0.ownerID == auth.backendID && $0.deletedAt == nil }
     }
 
     @State private var exportFormat: ExportFormat = .csv
