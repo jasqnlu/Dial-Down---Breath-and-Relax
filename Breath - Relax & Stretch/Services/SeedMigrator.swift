@@ -432,6 +432,7 @@ enum SeedMigrator {
         guard let ownerless = try? context.fetch(descriptor), !ownerless.isEmpty else { return false }
         for routine in ownerless {
             routine.ownerID = claimant
+            routine.markUpdated(in: context)
         }
         return true
     }
