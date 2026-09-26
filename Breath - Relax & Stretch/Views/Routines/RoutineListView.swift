@@ -12,7 +12,7 @@ struct RoutineListView: View {
     /// routine ever created on this device, across every account that's
     /// signed in on it. See `Routine.ownerID`.
     private var routines: [Routine] {
-        allRoutines.filter { $0.ownerID == auth.backendID }
+        allRoutines.filter { $0.ownerID == auth.backendID && $0.deletedAt == nil }
     }
 
     @State private var routineToPlay: Routine?
@@ -174,7 +174,7 @@ struct RoutineListView: View {
                 presenting: routinePendingDelete
             ) { routine in
                 Button("Delete", role: .destructive) {
-                    modelContext.delete(routine)
+                    routine.markDeleted(in: modelContext)
                     routinePendingDelete = nil
                 }
                 Button("Cancel", role: .cancel) {}
@@ -220,7 +220,7 @@ struct RoutineListView: View {
             routine.isPinnedToToday = true
             routine.pinnedOrder = maxOrder + 1
         }
-        try? modelContext.save()
+        routine.markUpdated(in: modelContext)
     }
 
     private func shareURL(for routine: Routine) -> URL? {
