@@ -63,6 +63,10 @@ enum SessionRecorder {
         session.sessionLabel = input.sessionLabel
         session.roundsCompleted = input.roundsCompleted
         modelContext.insert(session)
+        // Sessions are append-only — never edited or deleted after this, so
+        // this is the only place a session ever needs to enqueue. See
+        // docs/superpowers/specs/2026-09-23-routine-session-sync-engine-design.md.
+        SyncOutbox().enqueue(.session, id: session.uuid, op: .upsert, in: modelContext)
 
         var outcome = Outcome(streak: 0, streakIncreased: false)
         let descriptor = FetchDescriptor<UserProfile>()
