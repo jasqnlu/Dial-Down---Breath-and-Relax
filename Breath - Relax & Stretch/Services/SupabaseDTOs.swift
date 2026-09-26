@@ -86,8 +86,64 @@ struct RemotePushToken: Codable, Sendable {
     }
 }
 
-// RemoteSession was removed along with SupabaseService.uploadSession() — it
-// existed solely to support that dead write path (no in-app caller).
+// MARK: - Sync engine (2026-09-23)
+//
+// See docs/superpowers/specs/2026-09-23-routine-session-sync-engine-design.md.
+// `RemoteSession` was removed once before, along with the original
+// `SupabaseService.uploadSession()` — it existed solely to support that dead
+// write path (no in-app caller). This is the real one, wired to `SyncEngine`.
+
+struct RemoteRoutine: Codable, Sendable, Identifiable {
+    let id: String                 // Routine.uuid, stringified
+    let name: String
+    let exerciseIDs: [String]
+    let authorID: String           // AuthManager.backendID — must equal auth.uid() for RLS
+    let borrowedFromID: String?
+    /// Keyed by exercise uuid string, not `Routine.exerciseDurationOverrides`'s
+    /// `[UUID: Int]` — Foundation's JSONEncoder only writes a real JSON
+    /// object for `String`/`Int`-keyed dictionaries; a `UUID` key would
+    /// silently encode as a flat alternating array instead, which wouldn't
+    /// read as a sensible `jsonb` column. The `SyncEngine` conversion layer
+    /// is what translates `UUID` keys to/from `String` at this boundary.
+    let exerciseDurationOverrides: [String: Int]
+    let isPinnedToToday: Bool
+    let pinnedOrder: Int
+    let updatedAt: Date
+    let deletedAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case exerciseIDs               = "exercise_ids"
+        case authorID                  = "author_id"
+        case borrowedFromID            = "borrowed_from_id"
+        case exerciseDurationOverrides = "exercise_duration_overrides"
+        case isPinnedToToday           = "is_pinned_to_today"
+        case pinnedOrder               = "pinned_order"
+        case updatedAt                 = "updated_at"
+        case deletedAt                 = "deleted_at"
+    }
+}
+
+struct RemoteSession: Codable, Sendable, Identifiable {
+    let id: String                 // Session.uuid, stringified
+    let userID: String             // AuthManager.backendID — must equal auth.uid() for RLS
+    let routineID: String
+    let startedAt: Date
+    let completedAt: Date?
+    let completionPercent: Double
+    let pointsEarned: Int
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userID            = "user_id"
+        case routineID         = "routine_id"
+        case startedAt         = "started_at"
+        case completedAt       = "completed_at"
+        case completionPercent = "completion_percent"
+        case pointsEarned      = "points_earned"
+    }
+}
 
 // MARK: - Opt-in leaderboard
 
