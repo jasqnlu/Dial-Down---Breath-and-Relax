@@ -192,6 +192,38 @@ actor SupabaseService {
         try await delete(path: "/rest/v1/profiles?id=eq.\(encoded)")
     }
 
+    // MARK: - Sync engine (routines + sessions)
+    // See docs/superpowers/specs/2026-09-23-routine-session-sync-engine-design.md.
+    // A "delete" in the outbox still calls uploadRoutine — deletes are soft
+    // (deletedAt set on the local row), so from the wire's perspective a
+    // delete and an edit are both just "upsert this row's current state."
+    // There's no separate delete endpoint for routines/sessions.
+
+    func uploadRoutine(_ routine: RemoteRoutine) async throws {
+        let data = try await MainActor.run { try Self.makeEncoder().encode(routine) }
+        try await post(path: "/rest/v1/routines", body: data, upsert: true)
+    }
+
+    /// Fetches every routine this account owns, including soft-deleted ones
+    /// (deletedAt is how the sync engine's pull-merge propagates a delete to
+    /// other devices — filtering them out here would hide that signal).
+    func fetchRoutines(ownerID: String) async throws -> [RemoteRoutine] {
+        let encoded = ownerID.addingPercentEncoding(withAllowedCharacters: .alphanumerics.union(.init(charactersIn: "-._~"))) ?? ""
+        let data = try await get(path: "/rest/v1/routines?author_id=eq.\(encoded)&select=*")
+        return try Self.makeDecoder().decode([RemoteRoutine].self, from: data)
+    }
+
+    func uploadSession(_ session: RemoteSession) async throws {
+        let data = try await MainActor.run { try Self.makeEncoder().encode(session) }
+        try await post(path: "/rest/v1/sessions", body: data, upsert: true)
+    }
+
+    func fetchSessions(userID: String) async throws -> [RemoteSession] {
+        let encoded = userID.addingPercentEncoding(withAllowedCharacters: .alphanumerics.union(.init(charactersIn: "-._~"))) ?? ""
+        let data = try await get(path: "/rest/v1/sessions?user_id=eq.\(encoded)&select=*")
+        return try Self.makeDecoder().decode([RemoteSession].self, from: data)
+    }
+
     // MARK: - Push tokens (streak-about-to-break notifications)
 
     /// Upserts this device's APNs token + IANA timezone. Requires a Supabase
